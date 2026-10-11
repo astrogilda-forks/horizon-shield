@@ -1,0 +1,421 @@
+{
+ "schema": "hs-aps-v2-reader-results-v0",
+ "what": "the per-case output of HORIZON SHIELD's APS 2.0 passport reader (the admission door's aps-v2 adapter, local_check with the file's resolver table) over aeoess's frozen 2.0 vectors, revision 2. The reader is closed source; this file is its output, so others can compare outputs without rerunning it.",
+ "vectors": {
+  "repository": "https://github.com/agent-passport-system/agent-passport-system",
+  "path": "fixtures/agent-passport-v2/agent-passport-vectors-v2-r2.json",
+  "commit": "e061462cea95b029203374496bbd14488d8d2993",
+  "sha256": "9bd1f1849910c85f0555baf8efaa529aa9d057dce13c24606285b8643a003b89",
+  "family_revision": 2,
+  "supersedes_sha256": "9fce76dbf13de9749a2ef52c8dedecce08e4874da0203b39a7d941eb479b5ac5"
+ },
+ "reader": {
+  "repository": "ogasurfproject-jpg/hs-seki-private (private)",
+  "commit": "a286fb2",
+  "file": "adapter_aps_v2.py",
+  "file_sha256": "00446ceabc321a6b51d7db0b6c4886f9388907dafe308795f951567e901c6081",
+  "command": "python3 adapter_aps_v2.py --selftest   (check [7]; this file is official_vectors_check() printed per case)",
+  "python": "3.10.12",
+  "cryptography": "50.0.1",
+  "imports_aps_sdk": false
+ },
+ "summary": {
+  "cases": 20,
+  "agree_with_sdk_on_state_and_code": 20
+ },
+ "changes_from_revision_1": [
+  "a resolver answering not_found gives indeterminate / PASSPORT_KEY_NOT_FOUND with key_authority unresolved (revision 1 and results-407ca2d5.json: invalid / rejected)",
+  "a string record_type or version this reader does not know gives unsupported / PASSPORT_UNSUPPORTED_RECORD_TYPE or PASSPORT_UNSUPPORTED_VERSION (revision 1 and results-407ca2d5.json: invalid / PASSPORT_MALFORMED)"
+ ],
+ "admission": "verified stays null for every 2.0 passport: agreeing with these twenty is the condition for reporting true or false, and that switch is not made",
+ "cases": [
+  {
+   "name": "valid-did-key-minimal",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "valid",
+    "code": "OK",
+    "proof_of_possession": true,
+    "key_authority": "verified"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "valid",
+    "code": "OK",
+    "proof_of_possession": true,
+    "key_authority": "verified"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "valid-did-key-with-self-asserted",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "valid",
+    "code": "OK",
+    "proof_of_possession": true,
+    "key_authority": "verified"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "valid",
+    "code": "OK",
+    "proof_of_possession": true,
+    "key_authority": "verified"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "valid-did-web-resolved",
+   "resolver": "table",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "proof_of_possession": true,
+    "resolver_outcome": "resolved",
+    "state": "valid",
+    "code": "OK",
+    "key_authority": "verified"
+   },
+   "resolver_requests": [
+    {
+     "controller": "did:web:agents.example",
+     "verification_method": "did:web:agents.example#key-1",
+     "at": "2026-10-01T00:00:00.000Z"
+    }
+   ],
+   "sdk": {
+    "state": "valid",
+    "code": "OK",
+    "proof_of_possession": true,
+    "key_authority": "verified"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "valid-at-issued-at",
+   "resolver": "none",
+   "now": "2026-10-01T00:00:00.000Z",
+   "reader": {
+    "state": "valid",
+    "code": "OK",
+    "proof_of_possession": true,
+    "key_authority": "verified"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "valid",
+    "code": "OK",
+    "proof_of_possession": true,
+    "key_authority": "verified"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "tampered-display-name-stale-id",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_ID_MISMATCH"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_ID_MISMATCH",
+    "proof_of_possession": false,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "tampered-display-name-id-repaired",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_SIGNATURE_INVALID"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_SIGNATURE_INVALID",
+    "proof_of_possession": false,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "passport-id-wrong-signature-valid",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_ID_MISMATCH"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_ID_MISMATCH",
+    "proof_of_possession": false,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "signed-by-other-key",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_SIGNATURE_INVALID"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_SIGNATURE_INVALID",
+    "proof_of_possession": false,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "public-key-not-the-did-key",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_KEY_AUTHORITY_REJECTED",
+    "proof_of_possession": true,
+    "key_authority": "rejected"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_KEY_AUTHORITY_REJECTED",
+    "proof_of_possession": true,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "expired",
+   "resolver": "none",
+   "now": "2027-10-01T00:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_NOT_CURRENT",
+    "proof_of_possession": true
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_NOT_CURRENT",
+    "proof_of_possession": true,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "not-yet-valid",
+   "resolver": "none",
+   "now": "2026-09-30T23:59:59.999Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_NOT_CURRENT",
+    "proof_of_possession": true
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_NOT_CURRENT",
+    "proof_of_possession": true,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "did-web-no-resolver",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "indeterminate",
+    "code": "PASSPORT_KEY_AUTHORITY_UNRESOLVED",
+    "proof_of_possession": true,
+    "key_authority": "unresolved"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "indeterminate",
+    "code": "PASSPORT_KEY_AUTHORITY_UNRESOLVED",
+    "proof_of_possession": true,
+    "key_authority": "unresolved"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "did-web-resolver-answers-other-key",
+   "resolver": "table",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "proof_of_possession": true,
+    "resolver_outcome": "resolved",
+    "state": "invalid",
+    "code": "PASSPORT_KEY_AUTHORITY_REJECTED",
+    "key_authority": "rejected"
+   },
+   "resolver_requests": [
+    {
+     "controller": "did:web:agents.example",
+     "verification_method": "did:web:agents.example#key-1",
+     "at": "2026-10-01T00:00:00.000Z"
+    }
+   ],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_KEY_AUTHORITY_REJECTED",
+    "proof_of_possession": true,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "did-web-resolver-not-found",
+   "resolver": "table",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "proof_of_possession": true,
+    "resolver_outcome": "not_found",
+    "state": "indeterminate",
+    "code": "PASSPORT_KEY_NOT_FOUND",
+    "key_authority": "unresolved"
+   },
+   "resolver_requests": [
+    {
+     "controller": "did:web:unknown.example",
+     "verification_method": "did:web:unknown.example#key-1",
+     "at": "2026-10-01T00:00:00.000Z"
+    }
+   ],
+   "sdk": {
+    "state": "indeterminate",
+    "code": "PASSPORT_KEY_NOT_FOUND",
+    "proof_of_possession": true,
+    "key_authority": "unresolved"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "did-web-resolver-unreachable",
+   "resolver": "table",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "proof_of_possession": true,
+    "resolver_outcome": "unreachable",
+    "state": "indeterminate",
+    "code": "PASSPORT_KEY_UNREACHABLE",
+    "key_authority": "unresolved"
+   },
+   "resolver_requests": [
+    {
+     "controller": "did:web:offline.example",
+     "verification_method": "did:web:offline.example#key-1",
+     "at": "2026-10-01T00:00:00.000Z"
+    }
+   ],
+   "sdk": {
+    "state": "indeterminate",
+    "code": "PASSPORT_KEY_UNREACHABLE",
+    "proof_of_possession": true,
+    "key_authority": "unresolved"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "version-changed",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "unsupported",
+    "code": "PASSPORT_UNSUPPORTED_VERSION"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "unsupported",
+    "code": "PASSPORT_UNSUPPORTED_VERSION",
+    "proof_of_possession": false,
+    "key_authority": "unresolved"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "record-type-changed",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "unsupported",
+    "code": "PASSPORT_UNSUPPORTED_RECORD_TYPE"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "unsupported",
+    "code": "PASSPORT_UNSUPPORTED_RECORD_TYPE",
+    "proof_of_possession": false,
+    "key_authority": "unresolved"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "capabilities-unsorted",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_MALFORMED"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_MALFORMED",
+    "proof_of_possession": false,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "principal-member-present",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_MALFORMED"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_MALFORMED",
+    "proof_of_possession": false,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  },
+  {
+   "name": "timestamp-without-milliseconds",
+   "resolver": "none",
+   "now": "2026-10-10T12:00:00.000Z",
+   "reader": {
+    "state": "invalid",
+    "code": "PASSPORT_MALFORMED"
+   },
+   "resolver_requests": [],
+   "sdk": {
+    "state": "invalid",
+    "code": "PASSPORT_MALFORMED",
+    "proof_of_possession": false,
+    "key_authority": "rejected"
+   },
+   "agrees_with_sdk": true
+  }
+ ]
+}

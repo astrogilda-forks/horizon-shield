@@ -13,12 +13,21 @@ did-web-resolver-not-found (ours invalid / key_authority rejected, following the
 unresolved, following draft-04 section 3.5), version-changed and record-type-changed (ours invalid, Probity
 unsupported). Exit 0 when everything else agrees and the declared differences are exactly these; 1 otherwise.
 It does not run either reader: it compares what each published. Standard library only.
+
+Revision 2 (2026-10-12). aeoess published a second revision of the vectors (agent-passport-vectors-v2-r2.json, commit
+e061462, sha256 9bd1f184...): the same twenty passports, preimages, keys and resolver table, with the three outcomes
+above changed to what Probity reported. Our reader now follows revision 2; results-e061462.json is its output. The
+second comparison holds that file beside the same Probity report (which ran on revision 1: the inputs are identical,
+only the expected outcomes moved) and declares no difference: all twenty must agree. The first comparison stays as it
+was, over results-407ca2d5.json, the published output of the reader at 270502b. By default both run.
 """
 import argparse, hashlib, json, os, sys, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 OURS = os.path.join(ROOT, "verify-directory", "admission", "aps-v2", "results-407ca2d5.json")
+OURS_R2 = os.path.join(ROOT, "verify-directory", "admission", "aps-v2", "results-e061462.json")
+VECTORS_R2_SHA256 = "9bd1f1849910c85f0555baf8efaa529aa9d057dce13c24606285b8643a003b89"
 PROBITY_URL = ("https://raw.githubusercontent.com/probityai/agent-evidence-atlas/82436c01307d425960f3b3353af35a824a1d3b21/"
                "experiments/aps-corrected20-2026-10-10/report.json")
 PROBITY_SHA256 = "1598f87559130cb0e7a2e4ca59e5d6a2a584b402149bc28baad30dd9eaa01df1"
@@ -36,11 +45,15 @@ def fetch(url):
         return r.read()
 
 
-def compare(ours, probity):
-    """Returns (rows, problems)."""
+def compare(ours, probity, declared=None, revision=1):
+    """Returns (rows, problems). revision 1: our results over the 407ca2d5 vectors, three declared differences.
+    revision 2: our results over the e061462 vectors (which supersede 407ca2d5), no declared difference."""
+    declared = DECLARED if declared is None and revision == 1 else (declared or {})
     prob = []
-    if ours.get("vectors", {}).get("sha256") != VECTORS_SHA256:
+    if revision == 1 and ours.get("vectors", {}).get("sha256") != VECTORS_SHA256:
         prob.append("our results are not over the 407ca2d5 vectors")
+    if revision == 2 and (ours.get("vectors", {}).get("sha256") != VECTORS_R2_SHA256 or ours.get("vectors", {}).get("supersedes_sha256") != VECTORS_SHA256):
+        prob.append("our results are not over the e061462 vectors (revision 2 of the 407ca2d5 file)")
     if probity.get("fixtureSHA256") != VECTORS_SHA256:
         prob.append("Probity's report is not over the 407ca2d5 vectors")
     theirs = {c["name"]: c for c in probity.get("cases", [])}
@@ -61,7 +74,7 @@ def compare(ours, probity):
             diffs.append("key_authority %s / %s" % (r["key_authority"], tl.get("key_authority")))
         if (c.get("resolver_requests") or []) != (t.get("resolverRequests") or []):
             diffs.append("resolver requests differ")
-        d = DECLARED.get(name)
+        d = declared.get(name)
         if d:
             want = d["ours"][0] == r.get("state") and d["probity"][0] == t.get("readerOutcome") \
                 and (d["ours"][1] is None or (r.get("key_authority") == d["ours"][1] and tl.get("key_authority") == d["probity"][1]))
@@ -82,21 +95,28 @@ def compare(ours, probity):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--report", help="a local copy of Probity's report.json (else fetched at the pinned commit)")
-    ap.add_argument("--ours", default=OURS)
+    ap.add_argument("--ours", default=None, help="our results file (default: the one for the revision)")
+    ap.add_argument("--revision", choices=("1", "2", "both"), default="both")
     a = ap.parse_args()
     raw = open(a.report, "rb").read() if a.report else fetch(PROBITY_URL)
     if hashlib.sha256(raw).hexdigest() != PROBITY_SHA256:
         print("Probity's report is not the pinned file (sha256 %s, pinned %s)" % (hashlib.sha256(raw).hexdigest(), PROBITY_SHA256))
         return 1
-    rows, prob = compare(json.load(open(a.ours, encoding="utf-8")), json.loads(raw.decode("utf-8")))
-    for r in rows:
-        print("%-36s %-20s %s" % (r["name"], r["status"], "; ".join(r["detail"])))
-    agree = sum(r["status"] == "agree" for r in rows)
-    declared = sum(r["status"] == "declared difference" for r in rows)
-    print("\n%d agree, %d declared differences as declared, %d problems" % (agree, declared, len(prob)))
-    for p in prob:
-        print("PROBLEM " + p)
-    return 1 if prob else 0
+    probity = json.loads(raw.decode("utf-8"))
+    failed = False
+    for rev in ((1, 2) if a.revision == "both" else (int(a.revision),)):
+        path = a.ours or (OURS if rev == 1 else OURS_R2)
+        print("== revision %d: %s beside Probity's report at 82436c01 ==" % (rev, os.path.basename(path)))
+        rows, prob = compare(json.load(open(path, encoding="utf-8")), probity, revision=rev)
+        for r in rows:
+            print("%-36s %-20s %s" % (r["name"], r["status"], "; ".join(r["detail"])))
+        agree = sum(r["status"] == "agree" for r in rows)
+        declared = sum(r["status"] == "declared difference" for r in rows)
+        print("\n%d agree, %d declared differences as declared, %d problems\n" % (agree, declared, len(prob)))
+        for p in prob:
+            print("PROBLEM " + p)
+        failed = failed or bool(prob)
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

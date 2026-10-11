@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """compare_probity_test: the comparison on a report built here from our own results (no network), and the ways it must
-refuse: a case that disagrees, a declared difference that is not as declared, a missing case, other vectors."""
+refuse: a case that disagrees, a declared difference that is not as declared, a missing case, other vectors; and the
+same for the revision 2 results, where nothing is declared."""
 import copy, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -49,6 +50,17 @@ p4["cases"] = p4["cases"][:-1]
 t("a case missing from the report is a problem", any("not in Probity" in p for p in C.compare(ours, p4)[1]))
 p5 = dict(P, fixtureSHA256="0" * 64)
 t("a report over other vectors is a problem", any("not over the 407ca2d5" in p for p in C.compare(ours, p5)[1]))
+ours2 = json.load(open(C.OURS_R2, encoding="utf-8"))
+P_r1 = probity_from(ours)                       # what Probity published, over revision 1
+rows2, prob2 = C.compare(ours2, P_r1, revision=2)
+t("revision 2: our published results beside the same report: 20 agree, nothing declared, no problem",
+  not prob2 and sum(r["status"] == "agree" for r in rows2) == 20)
+o3 = copy.deepcopy(ours2)
+next(c for c in o3["cases"] if c["name"] == "version-changed")["reader"]["state"] = "invalid"
+t("revision 2: the revision 1 outcome on a superseded case is now a problem", any(p.startswith("version-changed:") for p in C.compare(o3, P_r1, revision=2)[1]))
+t("revision 2: results over revision 1 are refused as revision 2", any("e061462" in p for p in C.compare(ours, P_r1, revision=2)[1]))
+t("revision 2: our results name the reader commit, the file sha and the superseded vectors", ours2["reader"]["commit"] and len(ours2["reader"]["file_sha256"]) == 64
+  and ours2["vectors"]["supersedes_sha256"] == C.VECTORS_SHA256 and ours2["summary"] == {"cases": 20, "agree_with_sdk_on_state_and_code": 20})
 t("our results name the closed reader, its commit and file sha, and the vectors", ours["reader"]["commit"] and len(ours["reader"]["file_sha256"]) == 64 and ours["summary"] == {"cases": 20, "agree_with_sdk_on_state_and_code": 20})
 
 bad = [n for n, ok in results if not ok]
