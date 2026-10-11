@@ -1,24 +1,25 @@
 # Scheduled workflows
 
-Written by `tools/status/bot_watch.mjs` at 2026-10-11T11:38:06.436Z. 25 scheduled workflows, 1 need attention: jidec-stamp.yml (OVERDUE).
+Written by `tools/status/bot_watch.mjs` at 2026-10-11T12:15:35.357Z. 26 scheduled workflows, none needs attention.
 
 | Workflow | Schedule (UTC) | Expected every | Last run | Last scheduled success | Failures in a row | Status | Last bot commit to its paths |
 |---|---|---|---|---|---|---|---|
 | `adoption-weekly.yml` | `17 0 * * 1` | 7 d | 2026-10-09T22:18:49.000Z workflow_dispatch success | 2026-10-05T05:40:53.000Z | 0 | ok | 2026-10-09T22:19:37.000Z by horizon-shield-adoption-count |
+| `aps-reader-comparison.yml` | `17 4 * * 3` | 7 d | 2026-10-11T11:52:49.000Z push success | none in the last 20 | 0 | ok | not inferred |
 | `blog-post.yml` | `0 0 * * *` | 1 d | 2026-10-11T05:05:25.000Z schedule success | 2026-10-11T05:05:25.000Z | 0 | ok | 2026-08-18T01:28:27.000Z by KIRA Bot (quiet) |
-| `bot-watch.yml` | `47 5 * * *` | 1 d | 2026-10-11T11:37:43.000Z schedule in_progress | 2026-10-10T11:24:25.000Z | 0 | ok | 2026-10-10T11:25:17.000Z by horizon-shield-bot-watch |
+| `bot-watch.yml` | `47 5 * * *` | 1 d | 2026-10-11T12:15:11.000Z workflow_dispatch in_progress | 2026-10-10T11:24:25.000Z | 1 | ok | 2026-10-11T11:38:38.000Z by horizon-shield-bot-watch |
 | `conduct-witness-dogfood.yml` | `23 4 * * 1` | 7 d | 2026-10-05T11:38:06.000Z schedule success | 2026-10-05T11:38:06.000Z | 0 | ok | not inferred |
 | `ehn-card-pages.yml` | `40 15 * * *` | 1 d | 2026-10-10T19:30:17.000Z schedule success | 2026-10-10T19:30:17.000Z | 0 | ok | none in the last 30 commits by hs-ehn-card-pages (quiet) |
 | `evidence-mirror.yml` | `41 18 * * *` | 1 d | 2026-10-10T21:58:05.000Z schedule success | 2026-10-10T21:58:05.000Z | 0 | ok | 2026-10-10T21:58:56.000Z by hs-evidence-mirror |
 | `gate-register-partners.yml` | `45 3 * * 1` | 7 d | 2026-10-05T10:51:24.000Z schedule success | 2026-10-05T10:51:24.000Z | 0 | ok | not inferred |
 | `interop-matrix-watch.yml` | `23 21 * * *` | 1 d | 2026-10-11T00:16:16.000Z schedule success | 2026-10-11T00:16:16.000Z | 0 | ok | not inferred |
-| `jidec-stamp.yml` | `17 * * * *` | 1 h | 2026-10-11T05:53:15.000Z schedule success | 2026-10-11T05:53:15.000Z | 0 | OVERDUE | not inferred |
+| `jidec-stamp.yml` | `17 * * * *` | 1 h | 2026-10-11T05:53:15.000Z schedule success | 2026-10-11T05:53:15.000Z | 0 | ok | not inferred |
 | `law-watch-mirror.yml` | `23 21 * * 0` | 7 d | 2026-10-04T23:58:27.000Z schedule success | 2026-10-04T23:58:27.000Z | 0 | ok | 2026-09-27T05:29:47.000Z by hs-law-watch-mirror (quiet) |
 | `line-broadcast.yml` | `0 23 * * *` | 1 d | 2026-10-11T01:34:09.000Z schedule success | 2026-10-11T01:34:09.000Z | 0 | ok | not inferred |
 | `mcp-conduct.yml` | `30 3 * * 1` | 7 d | 2026-10-05T10:42:31.000Z schedule success | 2026-10-05T10:42:31.000Z | 0 | ok | not inferred |
 | `note-eigo.yml` | `0 21 * * 6` | 7 d | 2026-10-11T00:02:08.000Z schedule success | 2026-10-11T00:02:08.000Z | 0 | ok | not inferred |
 | `note-post.yml` | `0 0 * * *` | 1 d | 2026-10-11T03:21:34.000Z schedule success | 2026-10-11T03:21:34.000Z | 0 | ok | not inferred |
-| `pending-mirror.yml` | `23 * * * *` | 1 h | 2026-10-11T09:04:01.000Z schedule success | 2026-10-11T09:04:01.000Z | 0 | ok | 2026-10-11T02:00:02.000Z by hs-pending-mirror (quiet) |
+| `pending-mirror.yml` | `23 * * * *` | 1 h | 2026-10-11T09:04:01.000Z schedule success | 2026-10-11T09:04:01.000Z | 0 | ok | 2026-10-11T02:00:02.000Z by hs-pending-mirror |
 | `plugin-mirror-drift.yml` | `41 3 * * *` | 1 d | 2026-10-11T10:17:17.000Z schedule success | 2026-10-11T10:17:17.000Z | 0 | ok | not inferred |
 | `probity-witness-reader.yml` | `41 3 * * 2` | 7 d | 2026-10-11T09:56:02.000Z push success | none in the last 20 | 0 | ok | not inferred |
 | `registry-drift.yml` | `17 3 * * *` | 1 d | 2026-10-11T10:01:11.000Z schedule success | 2026-10-11T10:01:11.000Z | 0 | ok | not inferred |
@@ -33,7 +34,7 @@ Written by `tools/status/bot_watch.mjs` at 2026-10-11T11:38:06.436Z. 25 schedule
 ## Rules
 
 - Expected every: the longest gap between two times the cron lines name, over the last 400 days.
-- OVERDUE: the last successful scheduled run is older than 2 expected intervals plus 3 h (for a workflow with no successful scheduled run in the last 20, counted from when GitHub first saw the file).
+- OVERDUE: the last successful scheduled run is older than 2 expected intervals plus 3 h, and never less than 12 h, because GitHub runs hourly schedules hours late (for a workflow with no successful scheduled run in the last 20, counted from when GitHub first saw the file).
 - FAILING: the last 2 scheduled runs that finished both failed (failure, timed out, startup failure or waiting for approval). Cancelled and skipped runs are not counted either way.
 - UNKNOWN: the GitHub API could not be read for this workflow. DISABLED: the workflow is turned off in GitHub; listed here, not counted as a problem.
 - The job that writes this page fails (and GitHub notifies the owner) when any workflow is OVERDUE, FAILING or UNKNOWN.
