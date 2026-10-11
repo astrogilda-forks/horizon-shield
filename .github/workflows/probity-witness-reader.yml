@@ -14,9 +14,14 @@ on:
   schedule:
     - cron: "41 3 * * 2"      # Tuesdays 03:41 UTC
   workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/probity-witness-reader.yml
+      - tests/test_probity_witness_ledger.py
   push:
     paths:
       - .github/workflows/probity-witness-reader.yml
+      - tests/test_probity_witness_ledger.py
 
 permissions:
   contents: read
@@ -31,6 +36,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          path: horizon
+          sparse-checkout: |
+            .github/workflows/probity-witness-reader.yml
+            tests/test_probity_witness_ledger.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
           repository: ${{ env.PROBITY_REPO }}
           ref: ${{ env.PROBITY_COMMIT }}
           path: probity
@@ -38,6 +51,8 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+      - name: Ledger comparison refusal and exit controls (offline)
+        run: python3 -I -B horizon/tests/test_probity_witness_ledger.py
       - name: uv (the version the reader's lock was checked with here)
         run: python -m pip install --disable-pip-version-check "uv==0.12.13"
       - name: Probity's complete retained gate (lock, lint, format, tests, coverage, the four pair reads)
@@ -53,32 +68,118 @@ jobs:
               print("%-20s exit %s, expected %s" % (s["step"], s["actual_exit"], s["expected_exit"]))
           sys.exit(1 if bad or not steps else 0)
           EOF
-      - name: The fixtures are the records our ledger keeps
+      - name: Compare both fixtures with the live ledger (required)
         working-directory: probity/examples/nenrin-witness-pair
         run: |
           python3 - <<'EOF'
-          import hashlib, json, sys, urllib.request
-          pins = json.load(open("fixtures/pins.json"))
-          fail = 0
-          for name in ("a", "b"):
-              p = pins[name]
-              env = json.load(open("fixtures/" + p["envelope_file"]))
-              raw = env["record"]["record_canonical"].encode("utf-8")
-              sha = hashlib.sha256(raw).hexdigest()
-              ok = sha == p["record_sha256"] == env["sha"]
-              print("%s fixture: sha256(record_canonical) %s pinned %s" % (name, sha[:16], "ok" if ok else "MISMATCH"))
-              fail |= not ok
-              url = "https://ledger.horizonshield.dev/witness/" + sha
+          """Proposed host comparison; it does not change Probity's pinned reader gate."""
+
+          import hashlib
+          import json
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+
+
+          def canonical_bytes(envelope):
+              if not isinstance(envelope, dict):
+                  raise ValueError("envelope must be an object")
+              record = envelope.get("record")
+              if not isinstance(record, dict):
+                  raise ValueError("record must be an object")
+              canonical = record.get("record_canonical")
+              if not isinstance(canonical, str) or not canonical:
+                  raise ValueError("record_canonical must be a nonempty string")
+              return canonical.encode("utf-8")
+
+
+          def fetch_ledger(url):
+              request = urllib.request.Request(
+                  url,
+                  headers={
+                      "accept": "application/json",
+                      "user-agent": "HorizonShield-ProbityWitnessReader/1.0 (+https://github.com/ogasurfproject-jpg/horizon-shield)",
+                  },
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+
+          def check_one(name, pin, envelope, fetch):
+              result = {"witness": name}
               try:
-                  with urllib.request.urlopen(urllib.request.Request(url, headers={"accept": "application/json"}), timeout=30) as r:
-                      live = json.load(r)
-                  live_raw = (live.get("record") or {}).get("record_canonical", "").encode("utf-8")
-                  same = hashlib.sha256(live_raw).hexdigest() == sha
-                  print("%s ledger:  %s %s" % (name, url, "same bytes" if same else "DIFFERENT BYTES"))
-                  fail |= not same
-              except Exception as e:
-                  print("%s ledger:  not readable (%s); not a finding about the reader" % (name, e))
-          sys.exit(1 if fail else 0)
+                  raw = canonical_bytes(envelope)
+                  sha = hashlib.sha256(raw).hexdigest()
+                  if sha != pin["record_sha256"] or sha != envelope["sha"]:
+                      raise ValueError("fixture digest does not match both pinned digests")
+              except (KeyError, TypeError, ValueError) as error:
+                  return dict(result, status="mismatch", code="invalid_fixture", detail=str(error))
+              result.update(fixture_status="match", record_sha256=sha)
+              url = "https://ledger.horizonshield.dev/witness/" + sha
+              result["ledger_url"] = url
+              try:
+                  live = fetch(url)
+                  live_raw = canonical_bytes(live)
+              except urllib.error.HTTPError as error:
+                  return dict(result, status="unavailable", code="ledger_http_error", http_status=error.code)
+              except (urllib.error.URLError, OSError) as error:
+                  return dict(result, status="unavailable", code="ledger_unreachable", detail=str(error))
+              except (TypeError, ValueError) as error:
+                  return dict(result, status="mismatch", code="invalid_ledger_response", detail=str(error))
+              result["ledger_record_sha256"] = hashlib.sha256(live_raw).hexdigest()
+              if live_raw != raw:
+                  return dict(result, status="mismatch", code="different_canonical_bytes")
+              return dict(result, status="match", code="identical_canonical_bytes")
+
+
+          def summarize(results):
+              statuses = [result.get("status") for result in results]
+              complete = len(results) == 2 and {result.get("witness") for result in results} == {"a", "b"}
+              known = all(status in ("match", "mismatch", "unavailable") for status in statuses)
+              if not complete or not known or "mismatch" in statuses:
+                  status, exit_code = "mismatch", 1
+              elif "unavailable" in statuses:
+                  status, exit_code = "unavailable", 2
+              else:
+                  status, exit_code = "match", 0
+              return {
+                  "schema": "horizon.probity-ledger-comparison.v1",
+                  "status": status,
+                  "exit_code": exit_code,
+                  "results": results,
+              }
+
+
+          def main():
+              results = []
+              try:
+                  pins = json.loads(Path("fixtures/pins.json").read_text(encoding="utf-8"))
+                  if not isinstance(pins, dict):
+                      raise ValueError("pins must be an object")
+              except (OSError, TypeError, ValueError) as error:
+                  report = summarize([{"status": "mismatch", "code": "invalid_pins", "detail": str(error)}])
+              else:
+                  for name in ("a", "b"):
+                      try:
+                          pin = pins[name]
+                          envelope = json.loads(
+                              (Path("fixtures") / pin["envelope_file"]).read_text(encoding="utf-8")
+                          )
+                      except (KeyError, OSError, TypeError, ValueError) as error:
+                          results.append(
+                              {"witness": name, "status": "mismatch", "code": "invalid_fixture", "detail": str(error)}
+                          )
+                      else:
+                          results.append(check_one(name, pin, envelope, fetch_ledger))
+                  report = summarize(results)
+              output = Path("gate-results/ledger-comparison.json")
+              output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+              print(json.dumps(report, indent=2))
+              raise SystemExit(report["exit_code"])
+
+
+          if __name__ == "__main__":
+              main()
           EOF
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
