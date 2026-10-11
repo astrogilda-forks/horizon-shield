@@ -6,7 +6,7 @@
 //
 // Reads every workflow file with a schedule, works out from its cron lines how far apart its runs are meant to be
 // (the longest gap between two scheduled times), asks the GitHub REST API for its recent runs, and writes BOTS.md.
-//   OVERDUE  the last successful scheduled run is older than 2 expected intervals plus the grace period
+//   OVERDUE  the last successful scheduled run is older than 2 expected intervals plus the grace period, and at least 12 h
 //   FAILING  the last 2 scheduled runs that finished (cancelled and skipped runs are not counted) both failed
 //   UNKNOWN  the API could not be read for this workflow
 //   DISABLED the workflow is turned off in GitHub; listed, not counted as a problem
@@ -19,6 +19,10 @@ import { pathToFileURL } from "node:url";
 
 const MIN = 60000, HOUR = 3600000, DAY = 86400000;
 export const GRACE_HOURS = 3;
+// GitHub does not run sub-daily schedules on time: jidec-stamp.yml ("17 * * * *") had 100 successful scheduled runs from
+// 2026-09-20 to 2026-10-11 with a median gap of 5.2 h and a longest gap of 9.0 h, so "2 intervals + 3 h" (5 h) went red
+// on a healthy hourly job (bot-watch #4, 2026-10-11). No workflow is judged OVERDUE before this long without a success.
+export const MIN_OVERDUE_HOURS = 12;
 const FAILED = new Set(["failure", "timed_out", "startup_failure", "action_required"]);
 const NOT_COUNTED = new Set(["cancelled", "skipped", "neutral", "stale"]);
 
@@ -120,7 +124,7 @@ export function judge({ workflow, allRuns, schedRuns, intervalMs, nowMs, graceMs
   for (const r of done) { if (FAILED.has(r.conclusion)) consecutive++; else break; }
   const lastSchedOk = done.find((r) => r.conclusion === "success") || null;
   const lastAnyOk = all.find((r) => r.status === "completed" && r.conclusion === "success") || null;
-  const limit = 2 * intervalMs + graceMs;
+  const limit = Math.max(2 * intervalMs + graceMs, MIN_OVERDUE_HOURS * HOUR);
   const since = lastSchedOk ? when(lastSchedOk) : Date.parse(workflow && workflow.created_at);
   const flags = [];
   if (workflow && workflow.state && workflow.state !== "active") flags.push("DISABLED");
@@ -227,7 +231,7 @@ export function renderBots(rows, nowMs, graceMs = GRACE_HOURS * HOUR) {
   }
   L.push("", "## Rules", "");
   L.push("- Expected every: the longest gap between two times the cron lines name, over the last 400 days.");
-  L.push("- OVERDUE: the last successful scheduled run is older than 2 expected intervals plus " + span(graceMs) + " (for a workflow with no successful scheduled run in the last 20, counted from when GitHub first saw the file).");
+  L.push("- OVERDUE: the last successful scheduled run is older than 2 expected intervals plus " + span(graceMs) + ", and never less than " + MIN_OVERDUE_HOURS + " h, because GitHub runs hourly schedules hours late (for a workflow with no successful scheduled run in the last 20, counted from when GitHub first saw the file).");
   L.push("- FAILING: the last 2 scheduled runs that finished both failed (failure, timed out, startup failure or waiting for approval). Cancelled and skipped runs are not counted either way.");
   L.push("- UNKNOWN: the GitHub API could not be read for this workflow. DISABLED: the workflow is turned off in GitHub; listed here, not counted as a problem.");
   L.push("- The job that writes this page fails (and GitHub notifies the owner) when any workflow is OVERDUE, FAILING or UNKNOWN.");

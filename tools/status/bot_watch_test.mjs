@@ -119,6 +119,15 @@ const active = { state: "active", created_at: "2026-01-01T00:00:00Z" };
   chk("judge: never ran in 3 d on a daily schedule is OVERDUE", k.flags.join() === "OVERDUE", k);
 }
 {
+  // the jidec-stamp case (bot-watch #4, 2026-10-11): hourly, GitHub ran it 5.8 h ago; that is GitHub's lateness, not a stop
+  const j = judge({ workflow: active, allRuns: [run(5.8 * H, "success")], schedRuns: [run(5.8 * H, "success")], intervalMs: H, nowMs: NOW });
+  chk("judge: hourly job last run 5.8 h ago is ok (never OVERDUE before 12 h)", j.flags.length === 0 && j.overdue_after_ms === 12 * H, j);
+  const k = judge({ workflow: active, allRuns: [run(13 * H, "success")], schedRuns: [run(13 * H, "success")], intervalMs: H, nowMs: NOW });
+  chk("judge: hourly job with no success for 13 h is OVERDUE", k.flags.join() === "OVERDUE", k);
+  const w = judge({ workflow: active, allRuns: [], schedRuns: [run(8 * D, "success")], intervalMs: 7 * D, nowMs: NOW });
+  chk("judge: the 12 h floor does not change a weekly limit (14 d + 3 h)", w.overdue_after_ms === 14 * D + 3 * H && w.flags.length === 0, w);
+}
+{
   const j = judge({ workflow: { state: "disabled_manually", created_at: "2026-01-01T00:00:00Z" }, allRuns: [], schedRuns: [run(40 * D, "failure"), run(41 * D, "failure")], intervalMs: D, nowMs: NOW });
   chk("judge: disabled is DISABLED only", j.flags.join() === "DISABLED", j);
 }
