@@ -18,6 +18,8 @@ import { handleTracePin, anchorTracePinPool } from "../nenrin/trace-pin-v0/trace
 import { handleVouchPin, anchorVouchPinPool } from "../nenrin/vouch-pin-v0/vouch_pin_v0.mjs";
 // slot-witness-v0 (2026-10-10): NENRIN reads an issuer's one-receipt-per-request slot (invinoveritas decision receipts) as an outside witness.
 import { handleSlotWitness, watchSlots, anchorSlotWitnessPool } from "../nenrin/slot-witness-v0/slot_witness_v0.mjs";
+// slot-log copy (2026-10-11): an outside copy of the issuer's daily Bitcoin-stamped slot log, at its author's request.
+import { handleSlotLog, copySlotLog } from "../nenrin/slot-witness-v0/slot_log_copy.mjs";
 // Agreement intake v0 (2026-09-16). Records that two agents both signed the same bytes.
 // The verifier (nenrin/agreement-v0/agreement_verify.mjs) is offline and untouched; this only
 // wires it to the world. Boundary ops/AGREEMENT_INTAKE_v0_BOUNDARY.md, decisions
@@ -1434,7 +1436,7 @@ async function handle(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
     if (p === "/" || p === "/health")
-      return json({ ok: true, service: "hs-ledger", ledger: "JIDEC", anchor: "Bitcoin via OpenTimestamps", claim_schema: "jidec-claim-v1", path_schema: "jidec-path-v1", spec: "SPEC_HASH_INDEPENDENCE_v1.md (entry #2); JIDEC_PATH_SPEC_v1.md (entry #5)", routes: ["/ledger", "/ledger/head", "/ledger/export.jsonl", "/ledger/{n}", "/ledger/{n}/ots", "/verify/{n}", "/reference/{sha}", "/paths", "/paths/{sha}", "/paths/{sha}/replay", "/paths/query", "/witness", "/witness/pending", "/witness/{sha}", "/resume?endpoint={url}", "/trust-signal?endpoint={url}", "/agreement", "/agreement/pending", "/agreement/{canonical_sha256}", "/admission", "/admission/{canonical_sha256}", "/revocation", "/revocation/{canonical_sha256}", "/evidence/trace", "/evidence/vouch", "/evidence/vouch/{sha}", "/evidence/vouch/id/{credential id}", "/evidence/slot", "/evidence/slot/{sha}", "/evidence/slot/s/{request_slot}"], discovery: { api_catalog: "/.well-known/api-catalog", agent_card: "/.well-known/agent-card.json", jwks: "/.well-known/jwks.json", security_txt: "/.well-known/security.txt", llms_txt: "/llms.txt", a2a: "/a2a", cite: "/cite/{citation}", precedence: "/precedence/{citation}", mcp: MCP_ORIGIN + "/mcp" }, transparency: TRANSPARENCY, privacy: PRIVACY });
+      return json({ ok: true, service: "hs-ledger", ledger: "JIDEC", anchor: "Bitcoin via OpenTimestamps", claim_schema: "jidec-claim-v1", path_schema: "jidec-path-v1", spec: "SPEC_HASH_INDEPENDENCE_v1.md (entry #2); JIDEC_PATH_SPEC_v1.md (entry #5)", routes: ["/ledger", "/ledger/head", "/ledger/export.jsonl", "/ledger/{n}", "/ledger/{n}/ots", "/verify/{n}", "/reference/{sha}", "/paths", "/paths/{sha}", "/paths/{sha}/replay", "/paths/query", "/witness", "/witness/pending", "/witness/{sha}", "/resume?endpoint={url}", "/trust-signal?endpoint={url}", "/agreement", "/agreement/pending", "/agreement/{canonical_sha256}", "/admission", "/admission/{canonical_sha256}", "/revocation", "/revocation/{canonical_sha256}", "/evidence/trace", "/evidence/vouch", "/evidence/vouch/{sha}", "/evidence/vouch/id/{credential id}", "/evidence/slot", "/evidence/slot/{sha}", "/evidence/slot/s/{request_slot}", "/evidence/slot-log", "/evidence/slot-log/{date}", "/evidence/slot-log/{date}.ots"], discovery: { api_catalog: "/.well-known/api-catalog", agent_card: "/.well-known/agent-card.json", jwks: "/.well-known/jwks.json", security_txt: "/.well-known/security.txt", llms_txt: "/llms.txt", a2a: "/a2a", cite: "/cite/{citation}", precedence: "/precedence/{citation}", mcp: MCP_ORIGIN + "/mcp" }, transparency: TRANSPARENCY, privacy: PRIVACY });
 
     /* ---------------------- 看板 routes (additive, read-only) ---------------------- */
 
@@ -1538,6 +1540,7 @@ async function handle(request, env) {
     { const _rs = await handleResponse(p, request, url, env, responseDeps(env), origin); if (_rs) return _rs; }
     { const _tp = await handleTracePin(p, request, url, env, origin); if (_tp) return _tp; }
     { const _vp = await handleVouchPin(p, request, url, env, origin); if (_vp) return _vp; }
+    { const _sl = await handleSlotLog(p, request, url, env, origin); if (_sl) return _sl; }
     { const _sw = await handleSlotWitness(p, request, url, env, origin); if (_sw) return _sw; }
 
     if (p === "/witness" && request.method === "GET") {
@@ -2395,6 +2398,12 @@ export default {
       console.log("slot watch:", JSON.stringify(rw));
     } catch (e) {
       console.log("slot watch failed:", String(e && e.message || e));
+    }
+    try {
+      const rl = await copySlotLog(env);
+      console.log("slot log copy:", JSON.stringify(rl));
+    } catch (e) {
+      console.log("slot log copy failed:", String(e && e.message || e));
     }
     try {
       const rs = await anchorSlotWitnessPool(env, "https://ledger.horizonshield.dev", "schedule");

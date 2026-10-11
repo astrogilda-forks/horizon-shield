@@ -71,6 +71,36 @@ author keeps the slot log on his side. This intake is a witness of that record, 
 Reads: `/evidence/slot` (what this is), `/evidence/slot/{sha}` and `?format=raw` (the observation and its exact bytes),
 `/evidence/slot/s/{request_slot}` (the history), `/evidence/slot/pending`.
 
+## The outside copy of the issuer's slot log (`slot_log_copy.mjs`, 2026-10-11)
+
+The issuer's SPEC says two divergent slot logs are attributable to it through where they were served and through
+outside witnesses that keep copies. Its author asked for this copy. Once a day at 00:30 UTC, before the slot witness
+batch (and on `POST /evidence/slot-log/refresh`, at most once an hour), the ledger:
+
+1. reads the issuer's index of snapshots (`/decision-receipt/slots/log`);
+2. for a date it does not hold, fetches the day file itself and keeps its exact bytes, after checking it against the
+   index (`file_sha256`, `log_root`), on its own by the SPEC's rules (canonical lines, sorted slots, `n_slots`, Merkle
+   root, cutoff, `log_root = sha256(JCS(header))`) and against the copy of the day before (`prev_root` chains, every slot
+   stays with the same line, only new conflicts appended). Every failure is named in `problems`;
+3. writes a `nenrin-slot-log-copy-v0` record into the slot witness pool, so the copy is in that night's batch and
+   stamped to Bitcoin by this ledger;
+4. if the index later names another file or `log_root` for a date it already holds, keeps the second file too and
+   writes a record saying so (`divergent_from_earlier_copy`): two snapshots for one date is what the SPEC calls
+   provable divergence;
+5. keeps every distinct `.ots` the issuer serves for a held day (pending, then upgraded) until one is kept while the
+   index says confirmed.
+
+The copy runs only where `SLOT_LOG_COPY` is `"on"` (set in `wrangler.jsonc`). Without it, the daily run and the
+refresh fetch nothing and write nothing (the refresh answers 503 `copy_off`), so tests give the same result on a machine
+that can reach the issuer as on one that cannot.
+
+Reads: `/evidence/slot-log` (the copies), `/evidence/slot-log/{date}` (the file, byte for byte; `?file_sha256=` for a
+divergent one), `/evidence/slot-log/{date}.ots` (the confirmed `.ots` if kept, else the latest; `?sha256=` for another),
+`/evidence/slot-log/{date}.json` (the copy record). The issuer's own checker runs on the copies unchanged
+(`slot_log_check.py <date>.jsonl --prev <previous>.jsonl`, then `ots verify -d <log_root> <date>.ots`), and
+`slot_check.py --log-copy <date>` checks a copy from here. It keeps what the issuer served this ledger; it does not
+judge the slots and shows nothing about what the issuer served anyone else.
+
 ## What an observation establishes, and what it does not
 
 It establishes that the receipt verifies under the issuer key and names this slot; that at `observed_at` this ledger got

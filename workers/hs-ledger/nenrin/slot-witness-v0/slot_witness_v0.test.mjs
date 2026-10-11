@@ -278,6 +278,86 @@ const call = async (env, method, path, body, now = NOW, ip = "203.0.113.7", f = 
   t("fixtures/slot_fixtures_v02.json regenerates byte for byte", out2 === readFileSync(HERE + "fixtures/slot_fixtures_v02.json", "utf8"));
 }
 
+// ---- the outside copy of the issuer's slot log (slot_log_copy.mjs) ------------------------------------------------
+{
+  const { copySlotLog, handleSlotLog, checkDayFile, ISSUER, COPY_SCHEMA } = await import("./slot_log_copy.mjs");
+  const enc8 = (s) => new TextEncoder().encode(s);
+  const D9 = await slotLog([], { date: "2026-10-09", cutoff: Date.UTC(2026, 9, 10) / 1000 });
+  const line = { slot: "a".repeat(64), scope: "decider", event_ids: ["e".repeat(64)], taken_at: Date.UTC(2026, 9, 10, 11) / 1000, claim_sha256: "c".repeat(64), decider_sig: "d".repeat(128), conflicts: [] };
+  const D10 = await slotLog([line], { date: "2026-10-10", cutoff: Date.UTC(2026, 9, 11) / 1000, prev_root: D9.log_root });
+  const lineC = { ...line, conflicts: [{ claim_sha256: "f".repeat(64), decider_sig: "9".repeat(128), received_at: Date.UTC(2026, 9, 11, 3) / 1000 }] };
+  const D11 = await slotLog([lineC, { ...line, slot: "b".repeat(64) }], { date: "2026-10-11", cutoff: Date.UTC(2026, 9, 12) / 1000, prev_root: D10.log_root });
+  const D11gone = await slotLog([{ ...line, slot: "b".repeat(64) }], { date: "2026-10-11", cutoff: Date.UTC(2026, 9, 12) / 1000, prev_root: D10.log_root });
+  const ots = (tag) => enc8("OTS-" + tag);   // the copy keeps .ots bytes as served; reading them is the checker's
+  const site = { files: { "2026-10-09": D9.file, "2026-10-10": D10.file }, ots: { "2026-10-09": ots("9-confirmed"), "2026-10-10": ots("10-pending") }, status: { "2026-10-09": "confirmed", "2026-10-10": "pending" } };
+  const index = async () => ({ snapshots: await Promise.all(Object.keys(site.files).map(async (d) => ({ date: d, file_sha256: sha(Buffer.from(site.files[d])), log_root: (await checkDayFile(enc8(site.files[d]))).log_root, ots_status: site.status[d] }))) });
+  const otsAsked = [];
+  let lieAbout = null;
+  const fx = async (u) => {
+    if (u === ISSUER.log_url) { const ix = await index(); for (const sn of ix.snapshots) if (sn.date === lieAbout) sn.file_sha256 = "0".repeat(64); return new Response(JSON.stringify(ix), { status: 200 }); }
+    if (u.endsWith(".ots")) otsAsked.push(u.slice(-14, -4));
+    const m = /\/slots\/log\/(\d{4}-\d{2}-\d{2})(\.ots)?$/.exec(u);
+    if (m && m[2] && site.ots[m[1]]) return new Response(site.ots[m[1]], { status: 200 });
+    if (m && !m[2] && site.files[m[1]]) return new Response(site.files[m[1]], { status: 200 });
+    return new Response("no", { status: 404 });
+  };
+  const off = fakeEnv();
+  let offAsked = 0;
+  const r0 = await copySlotLog(off, NOW, async (u) => { offAsked++; return fx(u); });
+  const base0 = "https://ledger.horizonshield.dev/evidence/slot-log/refresh";
+  const rr0 = await handleSlotLog("/evidence/slot-log/refresh", new Request(base0, { method: "POST" }), new URL(base0), off, "https://ledger.horizonshield.dev", NOW, async (u) => { offAsked++; return fx(u); });
+  t("without SLOT_LOG_COPY=on the copy fetches nothing and writes nothing; refresh says 503 copy_off", r0.off === true && offAsked === 0 && off.m.size === 0 && rr0.status === 503 && (await rr0.json()).error === "copy_off", JSON.stringify(r0));
+  const env = fakeEnv();
+  env.SLOT_LOG_COPY = "on";
+  const r1 = await copySlotLog(env, NOW, fx);
+  t("slot log copy: both days copied, each .ots kept, nothing to report", JSON.stringify(r1.new_days) === JSON.stringify(["2026-10-09", "2026-10-10"]) && r1.ots_kept.length === 2 && r1.problems.length === 0 && r1.divergent.length === 0, JSON.stringify(r1));
+  const day10 = JSON.parse(env.m.get("slotlog:day:2026-10-10"));
+  t("the 10/10 copy passed every check, the chain to 10/09 included", day10.problems.length === 0 && day10.prev_root === D9.log_root && day10.log_root === D10.log_root);
+  const rec = JSON.parse(JSON.parse(env.m.get("slotw:pending:" + day10.record_sha)).record_jcs);
+  t("its copy record waits in the slot witness pool for the daily batch", rec.schema === COPY_SCHEMA && rec.checked_against_previous_copy === "2026-10-09" && rec.file_sha256 === sha(Buffer.from(D10.file)));
+  const base = "https://ledger.horizonshield.dev";
+  const get = async (path, method = "GET", now = NOW) => { const url = new URL(base + path); return handleSlotLog(url.pathname, new Request(url, { method }), url, env, base, now, fx); };
+  const f10 = await get("/evidence/slot-log/2026-10-10");
+  t("GET /evidence/slot-log/2026-10-10 serves the day file byte for byte", (await f10.text()) === D10.file && f10.headers.get("x-file-sha256") === sha(Buffer.from(D10.file)));
+  const o10 = await get("/evidence/slot-log/2026-10-10.ots");
+  t("GET .../2026-10-10.ots serves the kept .ots", Buffer.from(await o10.arrayBuffer()).toString() === "OTS-10-pending" && o10.headers.get("x-issuer-ots-status") === "pending");
+  const idx = await (await get("/evidence/slot-log")).json();
+  t("GET /evidence/slot-log lists the copies with their files, proofs and records", idx.copies.length === 2 && idx.copies[1].record.endsWith(day10.record_sha + "?format=raw"));
+  // the next day: 10/10's .ots upgrades, 10/11 appears
+  site.ots["2026-10-10"] = ots("10-confirmed"); site.status["2026-10-10"] = "confirmed"; site.files["2026-10-11"] = D11.file; site.ots["2026-10-11"] = ots("11-pending"); site.status["2026-10-11"] = "pending";
+  const r2 = await copySlotLog(env, NOW + 86400, fx);
+  const d10b = JSON.parse(env.m.get("slotlog:day:2026-10-10"));
+  t("a day later: 10/11 copied (a new conflict appended is allowed), 10/10's confirmed .ots kept beside the pending one", JSON.stringify(r2.new_days) === JSON.stringify(["2026-10-11"]) && JSON.parse(env.m.get("slotlog:day:2026-10-11")).problems.length === 0 && d10b.ots.length === 2 && d10b.ots[1].issuer_ots_status === "confirmed", JSON.stringify(r2));
+  t("the confirmed .ots is the one served by default", Buffer.from(await (await get("/evidence/slot-log/2026-10-10.ots")).arrayBuffer()).toString() === "OTS-10-confirmed");
+  otsAsked.length = 0;
+  const r3 = await copySlotLog(env, NOW + 2 * 86400, fx);
+  t("once a confirmed .ots is kept, that day's .ots is not asked for again", !otsAsked.includes("2026-10-09") && !otsAsked.includes("2026-10-10") && otsAsked.includes("2026-10-11") && r3.new_days.length === 0, JSON.stringify(otsAsked));
+  // the issuer serves another 10/11: a slot of 10/10 is gone
+  site.files["2026-10-11"] = D11gone.file;
+  const r4 = await copySlotLog(env, NOW + 3 * 86400, fx);
+  const d11 = JSON.parse(env.m.get("slotlog:day:2026-10-11"));
+  t("another file for a date already held: kept beside the first, recorded as divergent, with the chain problem named", JSON.stringify(r4.divergent) === JSON.stringify(["2026-10-11"]) && d11.divergent.length === 1 && d11.divergent[0].problems.includes("slot_of_the_previous_day_missing"), JSON.stringify(d11.divergent));
+  const both = [await (await get("/evidence/slot-log/2026-10-11")).text(), await (await get("/evidence/slot-log/2026-10-11?file_sha256=" + d11.divergent[0].file_sha256)).text()];
+  t("both 10/11 files are served by their sha256", both[0] === D11.file && both[1] === D11gone.file);
+  const r5 = await copySlotLog(env, NOW + 4 * 86400, fx);
+  t("the same divergent file is not recorded twice", r5.divergent.length === 0);
+  // an index entry whose file_sha256 is not the file's
+  site.files["2026-10-12"] = (await slotLog([lineC, { ...line, slot: "b".repeat(64) }], { date: "2026-10-12", cutoff: Date.UTC(2026, 9, 13) / 1000, prev_root: D11.log_root })).file;
+  lieAbout = "2026-10-12";
+  await copySlotLog(env, NOW + 4 * 86400 + 2000, fx);
+  t("an index whose file_sha256 is not the file served: named in the copy's problems", JSON.parse(env.m.get("slotlog:day:2026-10-12")).problems.includes("file_sha256_differs_from_index"));
+  // the day file on its own
+  const bad = async (text) => (await checkDayFile(enc8(text))).problems;
+  t("checkDayFile: a file whose index sha differs is caught by the copy, and the file rules on their own", (await bad(D10.file.replace("\n", " \n"))).length > 0 && (await bad(D10.file.slice(0, -1))).includes("not_newline_terminated"));
+  const tampered = D10.file.replace('"n_slots":1', '"n_slots":2');
+  t("checkDayFile: n_slots edited is caught (and the log_root moves)", (await bad(tampered)).includes("n_slots_differs"));
+  t("checkDayFile: the empty day (10/09) passes, its root is the SPEC's empty tree", (await bad(D9.file)).length === 0);
+  // refresh: at most once an hour
+  t("POST /evidence/slot-log/refresh within the hour: 429", (await get("/evidence/slot-log/refresh", "POST", NOW + 4 * 86400 + 60)).status === 429);
+  t("POST /evidence/slot-log/refresh after the hour runs the copy", (await get("/evidence/slot-log/refresh", "POST", NOW + 4 * 86400 + 6000)).status === 200);
+  t("an unknown day is 404, other methods 405", (await get("/evidence/slot-log/2026-01-01")).status === 404 && (await get("/evidence/slot-log", "POST")).status === 405);
+}
+
 delete ISSUERS[TEST_PUB];
 const bad = R.filter((r) => !r.ok);
 for (const r of R) console.log((r.ok ? "ok    " : "FAIL  ") + r.name + (r.ok ? "" : "  [" + r.detail + "]"));

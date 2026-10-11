@@ -92,6 +92,7 @@ export async function slotLog(lines, { date, cutoff, prev_root = "0".repeat(64) 
   const raw = sorted.map((l) => jcs(l));
   let level = await Promise.all(raw.map((r) => sha(r)));
   const leaves = [...level];
+  if (!level.length) level = [await sha(LOG_SCHEMA_ID + "|empty")];
   const levels = [level];
   while (level.length > 1) {
     const next = [];

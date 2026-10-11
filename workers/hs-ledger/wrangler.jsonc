@@ -65,6 +65,11 @@
   //   08-18 に入った 2 件が 09-05 まで pending やった。「daily batches」と公言して cron が無かった。
   //   00:30 UTC = 09:30 JST。プールが空なら何もせん。
   "triggers": { "crons": ["30 0 * * *"] },
+  // ★2026-10-11 追加: 相手(invinoveritas)の日次 slot log を写す処理を、本番だけで動かす旗。
+  //   slot_log_copy.mjs は env.SLOT_LOG_COPY === "on" のときだけ相手に取りに行く。
+  //   試験の env にはこの旗が無いので、ネットに出られる機械で試験しても何も取りに行かない。
+  //   ここから消すと、本番の写しが黙って止まる(/evidence/slot-log/refresh は 503 copy_off を返す)。
+  "vars": { "SLOT_LOG_COPY": "on" },
   // 2026-09-16 追加: 合意 intake の重複排除 DO。強整合が要る(boundary 2.3)。
   // hs-hearing の DispatchGateDO / hs-gateway の TicketLedgerDO と同じ new_sqlite_classes。
   // クラスは src/worker.js で re-export 済み。

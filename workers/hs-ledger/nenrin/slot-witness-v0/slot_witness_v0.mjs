@@ -395,7 +395,7 @@ async function handleGetOne(sha, url, env, origin) {
   if (url.searchParams.get("format") === "raw")
     return new Response(s.stored.record_jcs, { status: 200, headers: { "content-type": "application/json; charset=utf-8", "x-record-sha256": sha, "cache-control": "public, max-age=31536000, immutable", "access-control-allow-origin": "*" } });
   let obs = null; try { obs = JSON.parse(s.stored.record_jcs); } catch (_e) {}
-  return j({ sha, status: s.n !== null ? "anchored" : "pending", anchor: await anchorOf(env, origin, s.n), raw_url: origin + "/evidence/slot/" + sha + "?format=raw", by_slot: obs ? origin + "/evidence/slot/s/" + encodeURIComponent(obs.request_slot) : null, observation: obs, establishes: ESTABLISHES, does_not_establish: DOES_NOT_ESTABLISH });
+  return j({ sha, status: s.n !== null ? "anchored" : "pending", anchor: await anchorOf(env, origin, s.n), raw_url: origin + "/evidence/slot/" + sha + "?format=raw", by_slot: obs && typeof obs.request_slot === "string" ? origin + "/evidence/slot/s/" + encodeURIComponent(obs.request_slot) : null, observation: obs, establishes: ESTABLISHES, does_not_establish: DOES_NOT_ESTABLISH });
 }
 
 async function handleBySlot(slotEnc, env, origin) {

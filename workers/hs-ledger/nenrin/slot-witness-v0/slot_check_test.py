@@ -197,6 +197,36 @@ la, lp = SC.log_anchor({"status": "not_yet_in_a_snapshot"}, fetch_ots)
 t("--log-anchor: nothing to anchor before the line is in a snapshot", any("no included line" in p for p in lp))
 
 
+# ---- the outside copy of the issuer's slot log --------------------------------------------------------------------
+for c in FX2["cases"]:
+    if "snapshot_jsonl" in c:
+        h, ls, lr, fp = SC.check_day_file(c["snapshot_jsonl"].encode())
+        t("check_day_file (Python) on the day file the JS fixture built (%s): no problems, the same log_root" % c["name"], not fp and lr == json.loads(c["record_jcs"])["issuer_log"]["log_root"], fp)
+empty_header = {"schema": SC.LOG_SCHEMA, "date": "2026-10-09", "cutoff": 1791590400, "prev_root": "0" * 64, "n_slots": 0,
+                "merkle_root": hashlib.sha256((SC.LOG_SCHEMA + "|empty").encode()).hexdigest(), "rules": "r"}
+empty_file = (SC.VC.jcs(empty_header) + "\n").encode()
+t("check_day_file: an empty day whose root is the SPEC's empty tree passes", SC.check_day_file(empty_file)[3] == [])
+t("check_day_file: n_slots edited is named", "n_slots_differs" in SC.check_day_file(empty_file.replace(b'"n_slots":0', b'"n_slots":1'))[3])
+t("check_day_file: a file without the last newline is refused", SC.check_day_file(empty_file[:-1])[3] == ["not_newline_terminated"])
+day_file = FX2["cases"][[c["name"] for c in FX2["cases"]].index("included")]["snapshot_jsonl"].encode()
+h, ls, lr, fp = SC.check_day_file(day_file)
+cots = AC.OTS_MAGIC + b"\x01" + b"\x08" + bytes.fromhex(lr) + AC._ser(ltree)
+cmerkle = AC._run(ltree, bytes.fromhex(lr))
+chdrs, prev = [], "00" * 32
+for hgt in (100, 101, 102):
+    rawh = v11._mine(prev, cmerkle if hgt == 101 else hashlib.sha256(b"y%d" % hgt).digest(), t=1791700000 + (hgt - 101) * 600, salt=hgt)
+    chdrs.append({"height": hgt, "hex": rawh.hex()})
+    prev = v11.header_hash(rawh)
+LC = "https://ledger.test"
+croutes = {LC + "/evidence/slot-log/2026-10-10.json": json.dumps({"date": "2026-10-10", "file_sha256": hashlib.sha256(day_file).hexdigest(), "log_root": lr, "problems": [], "ots": [{"sha256": "x"}], "copied_at": "2026-10-11T00:30:00Z"}).encode(),
+           LC + "/evidence/slot-log/2026-10-10": day_file, LC + "/evidence/slot-log/2026-10-10.ots": cots}
+cfetch = lambda u: (200, croutes[u]) if u in croutes else (_ for _ in ()).throw(OSError("404 " + u))
+rep, prob = SC.check_log_copy(LC, "2026-10-10", cfetch, view={"headers": chdrs}, floor_bits="207fffff")
+t("--log-copy: the kept file passes the rules, its log_root is the copy record's, the kept .ots stamps it, block checked", not prob and rep["anchor"].get("log_anchored"), (rep, prob))
+croutes[LC + "/evidence/slot-log/2026-10-10"] = day_file.replace(b'"n_slots":4', b'"n_slots":5')
+t("--log-copy: a file served that is not the one the copy record names is refused", any("hashes to" in p for p in SC.check_log_copy(LC, "2026-10-10", cfetch)[1]))
+
+
 # ---- a synthetic ledger: batch, OTS path, mined header view ----------------------------------------------------------
 L = "https://ledger.test"
 

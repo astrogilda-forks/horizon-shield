@@ -73,6 +73,7 @@ const EXPECTED_ROUTES = [
   "/evidence/trace",
   "/evidence/vouch", "/evidence/vouch/{sha}", "/evidence/vouch/id/{credential id}",
   "/evidence/slot", "/evidence/slot/{sha}", "/evidence/slot/s/{request_slot}",
+  "/evidence/slot-log", "/evidence/slot-log/{date}", "/evidence/slot-log/{date}.ots",
 ];
 const routesMatch = Array.isArray(hj.routes)
   && JSON.stringify([...hj.routes].sort()) === JSON.stringify([...EXPECTED_ROUTES].sort());
@@ -276,6 +277,19 @@ chk("AE: preflight is not counted", points.length === 0, JSON.stringify(points))
 // /health が計測していることを自分で公言していること。
 chk("/health declares what it measures", !!hj.privacy && hj.privacy.access_measurement === "enabled");
 chk("/health declares that it does not record IPs", !!hj.privacy && hj.privacy.not_recorded.includes("IP address"));
+
+// 2026-10-11. 試験は相手(babyblueviper)に取りに行かない。ネットに出られる機械でも同じ結果になること。
+// SLOT_LOG_COPY の旗が無い env では、scheduled() が相手の slot log を一度も fetch しない。
+{
+  const realFetch = globalThis.fetch;
+  let issuerAsked = 0;
+  globalThis.fetch = async (u, i) => { if (String(u && u.url || u).includes("babyblueviper.com")) { issuerAsked++; return new Response("{}", { status: 200 }); } return realFetch(u, i); };
+  try {
+    const kv0 = mockKV([["seq", "40"]]);
+    await worker.scheduled({}, { LEDGER: kv0.binding }, {});
+    chk("scheduled() without SLOT_LOG_COPY=on does not fetch the issuer's slot log", issuerAsked === 0, String(issuerAsked));
+  } finally { globalThis.fetch = realFetch; }
+}
 
 // 2026-09-05. 証人プールの日次束ね。scheduled が空プールで何もせず、2 件で 1 entry を作り、pending を消すこと。
 {

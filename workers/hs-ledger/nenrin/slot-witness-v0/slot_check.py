@@ -383,6 +383,84 @@ def log_anchor(issuer_log, fetcher=VC.fetch, view=None, floor_bits="1903a30c", l
     return rep, prob
 
 
+LOG_LINE_KEYS = {"slot", "scope", "event_ids", "taken_at", "claim_sha256", "decider_sig", "conflicts"}
+
+
+def check_day_file(data):
+    """An issuer slot log day file by the SPEC's rules (written apart from slot_log_copy.mjs). Returns
+    (header, lines, log_root, problems)."""
+    try:
+        text = data.decode("utf-8")
+    except Exception:  # noqa: BLE001
+        return None, [], None, ["not_utf8"]
+    if not text.endswith("\n"):
+        return None, [], None, ["not_newline_terminated"]
+    raw = text.split("\n")[:-1]
+    if not raw:
+        return None, [], None, ["empty_file"]
+    try:
+        header = json.loads(raw[0])
+    except Exception:  # noqa: BLE001
+        return None, [], None, ["header_not_json"]
+    if not _is_obj(header) or VC.jcs(header) != raw[0]:
+        return None, [], None, ["header_not_canonical"]
+    prob = [] if header.get("schema") == LOG_SCHEMA else ["unknown_schema"]
+    lines = []
+    for r in raw[1:]:
+        try:
+            x = json.loads(r)
+        except Exception:  # noqa: BLE001
+            return header, [], None, prob + ["line_not_json"]
+        if not _is_obj(x) or VC.jcs(x) != r:
+            return header, [], None, prob + ["line_not_canonical"]
+        if set(x) != LOG_LINE_KEYS or not _hex64(x.get("slot")) or x.get("scope") not in ("account", "decider"):
+            return header, [], None, prob + ["malformed_line"]
+        lines.append(x)
+    if prob:
+        return header, lines, None, prob
+    slots = [x["slot"] for x in lines]
+    if any(not (a < b) for a, b in zip(slots, slots[1:])):
+        prob.append("slots_not_strictly_sorted")
+    if header.get("n_slots") != len(lines):
+        prob.append("n_slots_differs")
+    level = [_sha(r) for r in raw[1:]] or [_sha(LOG_SCHEMA + "|empty")]
+    while len(level) > 1:
+        level = [_sha(level[i] + (level[i + 1] if i + 1 < len(level) else level[i])) for i in range(0, len(level), 2)]
+    if level[0] != header.get("merkle_root"):
+        prob.append("merkle_root_differs")
+    if not _int(header.get("cutoff")) or any(not _int(x.get("taken_at")) or x["taken_at"] >= header["cutoff"] for x in lines):
+        prob.append("slot_taken_after_cutoff")
+    return header, lines, _sha(raw[0]), prob
+
+
+def check_log_copy(ledger, date, fetcher=VC.fetch, view=None, floor_bits="1903a30c"):
+    """This ledger's copy of the issuer's slot log for one day: the day record, the file bytes it keeps, the SPEC's
+    rules on them, and the kept .ots stamping the log_root. Returns (report, problems)."""
+    st, b = fetcher("%s/evidence/slot-log/%s.json" % (ledger, date))
+    day = json.loads(b.decode("utf-8"))
+    st, data = fetcher("%s/evidence/slot-log/%s" % (ledger, date))
+    rep, prob = {"date": date, "file_sha256": hashlib.sha256(data).hexdigest(), "copied_at": day.get("copied_at")}, []
+    if rep["file_sha256"] != day.get("file_sha256"):
+        prob.append("the served file hashes to %s, the copy record says %s" % (rep["file_sha256"], day.get("file_sha256")))
+    header, lines, log_root, fp = check_day_file(data)
+    rep.update(log_root=log_root, n_slots=len(lines), problems_at_copy=day.get("problems"))
+    prob += ["day file: %s" % x for x in fp]
+    if log_root != day.get("log_root"):
+        prob.append("log_root recomputes to %s, the copy record says %s" % (log_root, day.get("log_root")))
+    recorded = set(day.get("problems") or [])
+    file_rules = {"not_utf8", "not_newline_terminated", "empty_file", "header_not_json", "header_not_canonical", "unknown_schema", "line_not_json",
+                  "line_not_canonical", "malformed_line", "slots_not_strictly_sorted", "n_slots_differs", "merkle_root_differs", "slot_taken_after_cutoff"}
+    if set(fp) != recorded & file_rules:
+        prob.append("the copy recorded file problems %s, the file shows %s" % (sorted(recorded & file_rules), sorted(fp)))
+    if log_root and day.get("ots"):
+        la, lp = log_anchor({"status": "included", "date": date, "log_root": log_root}, fetcher, view, floor_bits, log_url=ledger + "/evidence/slot-log/")
+        rep["anchor"] = la
+        prob += ["kept .ots: %s" % x for x in lp]
+    else:
+        prob.append("no .ots kept for this day yet")
+    return rep, prob
+
+
 def check_online(ledger, sha, fetcher=VC.fetch, view=None, floor_bits="1903a30c", with_log_anchor=False):
     st, raw = fetcher("%s/evidence/slot/%s?format=raw" % (ledger, sha))
     rep, prob = check_record(raw, sha)
@@ -422,6 +500,7 @@ def main():
     g.add_argument("--sha")
     g.add_argument("--slot")
     g.add_argument("--record", help="an observation's raw bytes in a file (offline)")
+    g.add_argument("--log-copy", metavar="DATE", help="this ledger's copy of the issuer's slot log for DATE (YYYY-MM-DD): file, rules, kept .ots")
     ap.add_argument("--ledger", default="https://ledger.horizonshield.dev")
     ap.add_argument("--headers", help="a header view {\"headers\": [{\"height\", \"hex\"}]} covering the attested block")
     ap.add_argument("--max-target-bits", default="1903a30c")
@@ -429,6 +508,11 @@ def main():
     a = ap.parse_args()
     view = json.load(open(a.headers, encoding="utf-8")) if a.headers else None
     led = a.ledger.rstrip("/")
+    if a.log_copy:
+        rep, prob = check_log_copy(led, a.log_copy, view=view, floor_bits=a.max_target_bits)
+        rep["problems"] = prob
+        print(json.dumps(rep, indent=2, ensure_ascii=False))
+        return 1 if prob else 0
     if a.record:
         rep, prob = check_record(open(a.record, "rb").read())
         online_needed = False
