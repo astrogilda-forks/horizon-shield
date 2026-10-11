@@ -18,6 +18,11 @@ list (ICANN and private sections, as browsers use it: each *.trycloudflare.com t
 reading; ICANN-only (all tunnels under trycloudflare.com) is printed next to it. A templated host such as {host} has no
 suffix; its literal host is its cluster.
 
+Templated hosts (2026-10-12, zzzz0902zzzz-rgb): 59 of the 635 DNS rows have a host that is only a template variable
+such as {host} or {api_host}; by default each literal host is one cluster (34 clusters). --templates normalized replaces
+every {...} span with one placeholder first, so they collapse to the normalized hosts ({} and {}{}), and --templates one
+puts every templated host in a single cluster. Each band line prints n_clusters (all classes) and the DNS class's count.
+
   pip install publicsuffixlist==1.1.0.20261010      # the only dependency outside the standard library
   python3 tools/survey8_domain_cluster.py verify-directory/survey/data/survey1_walk_2026-08-23_run2.jsonl \
       verify-directory/survey/data/survey8_transport_recheck_2026-10-10.jsonl
@@ -26,7 +31,7 @@ With that package version the output is fixed: PSL sha256 ba7d836c..., 194 domai
 65.8%), domain-cluster band 53.32% to 54.25%, rows treated as independent 53.49% to 54.08%, published Wilson sum 53.30%
 to 54.63%.
 """
-import argparse, collections, hashlib, io, math, os, random, sys
+import argparse, collections, hashlib, io, math, os, random, re, sys
 from urllib.parse import urlsplit
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -58,10 +63,21 @@ def psl_info(path):
     return hashlib.sha256(b).hexdigest(), head
 
 
+TEMPLATES = "literal"   # literal (each templated host its own cluster) | normalized ({...} -> {}) | one
+TEMPLATE_SPAN = re.compile(r"\{[^}]*\}")
+
+
 def domain_of(endpoint, psl):
     host = (urlsplit(endpoint).hostname or "").rstrip(".")
-    d = psl.privatesuffix(host) if host else None
-    return d if d else "literal:" + (host or endpoint)
+    d = psl.privatesuffix(host) if (host and psl is not None) else None
+    if d:
+        return d
+    lit = host or endpoint
+    if TEMPLATES == "normalized":
+        lit = TEMPLATE_SPAN.sub("{}", lit)
+    elif TEMPLATES == "one" and "{" in lit:
+        lit = "{templated}"
+    return "literal:" + lit
 
 
 def percentile(sorted_vals, q):
@@ -157,7 +173,12 @@ def main():
     ap.add_argument("--tools", default=HERE, help="directory holding survey8_transport_recheck.py")
     ap.add_argument("--seed", default=SEED)
     ap.add_argument("--reps", type=int, default=REPS)
+    ap.add_argument("--templates", choices=("literal", "normalized", "one"), default="literal",
+                    help="how a host that is only a template variable is clustered (default: each literal host)")
     a = ap.parse_args()
+    global TEMPLATES
+    TEMPLATES = a.templates
+    print("templated hosts: %s" % TEMPLATES)
 
     S8 = load_survey8(a.tools)
     if a.psl is None:
@@ -198,11 +219,11 @@ def main():
         assert abs(flips_of(cl, sizes) - est["estimated_flips"]) < 1e-9, "cluster table does not reproduce the published flips"
 
         lo, hi, rates = bootstrap(cl, sizes, speaks, measured, a.seed, a.reps)
-        print("domain-cluster bootstrap, all classes by domain, %d reps, seed %r: %.2f%% to %.2f%%  (flips %.0f to %.0f)"
-              % (a.reps, a.seed, 100 * lo, 100 * hi, lo * measured - speaks, hi * measured - speaks))
+        print("domain-cluster bootstrap, all classes by domain, %d reps, seed %r: %.2f%% to %.2f%%  (flips %.0f to %.0f)  n_clusters %d (dns %d)"
+              % (a.reps, a.seed, 100 * lo, 100 * hi, lo * measured - speaks, hi * measured - speaks, sum(len(v) for v in cl.values()), len(cl["dns"])))
         cl_dns = class_clusters(rech, S8.CLASSES, psl, by_row=tuple(c for c in S8.CLASSES if c != "dns"))
         lo2, hi2, _ = bootstrap(cl_dns, sizes, speaks, measured, a.seed, a.reps)
-        print("  only dns by domain, other classes by row:                         %.2f%% to %.2f%%" % (100 * lo2, 100 * hi2))
+        print("  only dns by domain, other classes by row:                         %.2f%% to %.2f%%  n_clusters %d (dns %d)" % (100 * lo2, 100 * hi2, sum(len(v) for v in cl_dns.values()), len(cl_dns["dns"])))
         point, ncl, lo4, hi4 = population_bootstrap(run2, rech, S8, psl, a.seed, a.reps)
         print("  other reading, 1,106 rows imputed and resampled by domain (%d): point %.1f flips, %.2f%% to %.2f%% (not used)" % (ncl, point, 100 * lo4, 100 * hi4))
 
