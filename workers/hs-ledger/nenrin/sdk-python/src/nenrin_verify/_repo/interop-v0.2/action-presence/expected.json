@@ -1,0 +1,129 @@
+{
+  "schema": "nenrin-interop-expected-v0",
+  "version": "0.1.0",
+  "verifier": "independent Python implementation (verify_edge.py), written from VERIFIER.md; the reference was not read",
+  "note": "the canonical verdict signature each fixture must reproduce: verdict, sorted refusal codes, sorted finding codes.",
+  "cases": {
+    "action_null": {
+      "intent": "grant.action = receipt.executed_action = null: a degenerate value fails E1 on its own, so agreeing on null is not agreement; refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "action_zero": {
+      "intent": "the same with 0 on both sides (0 is in the section's list); refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "action_empty_string": {
+      "intent": "the same with the empty string on both sides; refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "action_false": {
+      "intent": "the same with false on both sides; refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "action_empty_object_accepted": {
+      "intent": "the boundary: {} is not in the section's list, so it is compared like any other action and {} against {} passes E1; accepted",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "accepted",
+        "refusals": [],
+        "findings": [
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "intent_action_null": {
+      "intent": "grant.action is an action, the intent's proposed_action and the receipt's executed_action are null: E1 refuses, the preflight action check refuses, and the declared-versus-executed comparison reports a divergence; refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "preflight_invalid"
+        ],
+        "findings": [
+          "declared_executed_divergence",
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "intent_action_zero": {
+      "intent": "the same with 0 for both; refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "preflight_invalid"
+        ],
+        "findings": [
+          "declared_executed_divergence",
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "action_missing": {
+      "intent": "grant.action and receipt.executed_action are both absent (the shape the section names first): both sides are missing, so equality would hold, but the key's absence fails E1 on its own; refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked"
+        ]
+      }
+    },
+    "intent_action_missing": {
+      "intent": "grant.action is an action, the intent's proposed_action and the receipt's executed_action are both absent: E1 refuses, the preflight action check refuses, and the declared-versus-executed comparison reports a divergence; refused",
+      "task_id": "task_action_presence",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "preflight_invalid"
+        ],
+        "findings": [
+          "declared_executed_divergence",
+          "evidence_bound_unchecked"
+        ]
+      }
+    }
+  }
+}

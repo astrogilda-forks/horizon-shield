@@ -94,6 +94,56 @@
     "source_sha256": "f5964de8950c82c33165e6ea739ee6760ec7f49b36d3659373c5b0b8259d559c",
     "vendored_sha256": "f5964de8950c82c33165e6ea739ee6760ec7f49b36d3659373c5b0b8259d559c"
   },
+  "_repo/interop-v0.2/action-presence/expected.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/expected.json",
+    "source_sha256": "5b56ee8cf65cc996d234d5feeee01c31e68461785bab2627fb0b753ac9c0b3f7",
+    "vendored_sha256": "5b56ee8cf65cc996d234d5feeee01c31e68461785bab2627fb0b753ac9c0b3f7"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/action_empty_object_accepted.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_empty_object_accepted.json",
+    "source_sha256": "2691b8a4ca243618649109d9ef070f868e4210f959b9177ae35e444c05c7a44c",
+    "vendored_sha256": "2691b8a4ca243618649109d9ef070f868e4210f959b9177ae35e444c05c7a44c"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/action_empty_string.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_empty_string.json",
+    "source_sha256": "1c3ecf8dd6b439788cdda0b76d532fa05a6cb84d8ba17c8a85dfc8a1347720ce",
+    "vendored_sha256": "1c3ecf8dd6b439788cdda0b76d532fa05a6cb84d8ba17c8a85dfc8a1347720ce"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/action_false.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_false.json",
+    "source_sha256": "1181f638389149d4b389275d05974e7730cee043ac6402b91a25bb63aeaea451",
+    "vendored_sha256": "1181f638389149d4b389275d05974e7730cee043ac6402b91a25bb63aeaea451"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/action_missing.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_missing.json",
+    "source_sha256": "630c7b79599978419a1f8ab495a007e8d026663d284a5b8903ee09f8a1cac9bd",
+    "vendored_sha256": "630c7b79599978419a1f8ab495a007e8d026663d284a5b8903ee09f8a1cac9bd"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/action_null.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_null.json",
+    "source_sha256": "a2c933a66a5a4228ca634d0340cea58a05933bbb4b7a40b55e4c937ced3f0b8d",
+    "vendored_sha256": "a2c933a66a5a4228ca634d0340cea58a05933bbb4b7a40b55e4c937ced3f0b8d"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/action_zero.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_zero.json",
+    "source_sha256": "d375764b24fca57b72cec1fc91c62105f8572bae30bbe2a0d3e50fd78e3f9255",
+    "vendored_sha256": "d375764b24fca57b72cec1fc91c62105f8572bae30bbe2a0d3e50fd78e3f9255"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/intent_action_missing.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/intent_action_missing.json",
+    "source_sha256": "a99e2d15113f1d053dd2de5db5c622cf952ff9517d0768acbeaf087e230c8ff7",
+    "vendored_sha256": "a99e2d15113f1d053dd2de5db5c622cf952ff9517d0768acbeaf087e230c8ff7"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/intent_action_null.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/intent_action_null.json",
+    "source_sha256": "81bd6b76d2cf43dd17de6387461d818340ff5eec390336a992a351fb93de50c6",
+    "vendored_sha256": "81bd6b76d2cf43dd17de6387461d818340ff5eec390336a992a351fb93de50c6"
+  },
+  "_repo/interop-v0.2/action-presence/fixtures/intent_action_zero.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/intent_action_zero.json",
+    "source_sha256": "4571b7f45f5983d5291e6ccde3e699627d383c0a8524675b3f145176b72a90e5",
+    "vendored_sha256": "4571b7f45f5983d5291e6ccde3e699627d383c0a8524675b3f145176b72a90e5"
+  },
   "_repo/interop-v0.2/edge/expected.json": {
     "source": "workers/hs-ledger/nenrin/interop-v0.2/edge/expected.json",
     "source_sha256": "e5741d94ff631b824e389c13fa4d042dede65f4ff4a595a73961f67527062682",

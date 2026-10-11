@@ -34,7 +34,7 @@ function pack() {
   if (!_pack) _pack = JSON.parse(readFileSync(join(HERE, "tsunagi_corpora.json"), "utf8")).corpora;
   return _pack;
 }
-export const CORPORA = ["nenrin-interop-v0", "nenrin-interop-v0.1", "nenrin-interop-v0.2-edge", "nenrin-trace-intake-v0", "nenrin-trace-bind-v0", "nenrin-trace-span-v0"];
+export const CORPORA = ["nenrin-interop-v0", "nenrin-interop-v0.1", "nenrin-interop-v0.2-edge", "nenrin-interop-v0.2-action-presence", "nenrin-trace-intake-v0", "nenrin-trace-bind-v0", "nenrin-trace-span-v0"];
 
 // Python's string order (by code point) and slicing (by code point), so the two referees print the same thing.
 const cp = (a, b) => { const x = Array.from(a), y = Array.from(b); for (let i = 0; i < Math.min(x.length, y.length); i++) { const d = x[i].codePointAt(0) - y[i].codePointAt(0); if (d) return d; } return x.length - y.length; };

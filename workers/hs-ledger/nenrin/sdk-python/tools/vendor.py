@@ -57,7 +57,7 @@ VERBATIM = [("musubi-v0/" + f) for f in MUSUBI_MODULES + MUSUBI_DATA] + ["agreem
                                                                      "agreement-v0/key_succession.mjs",
                                                                      "recovery-v0/recovery_verify.py"]
 # The frozen NENRIN corpora, so that nenrin-tsunagi scores a verifier offline exactly as the TSUNAGI board does.
-INTEROP_DIRS = ["interop-v0", "interop-v0.1", "interop-v0.2/edge", "trace-intake-v0", "trace-bind-v0", "trace-span-v0"]
+INTEROP_DIRS = ["interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "trace-intake-v0", "trace-bind-v0", "trace-span-v0"]
 for _d in INTEROP_DIRS:
     VERBATIM.append(_d + "/expected.json")
     VERBATIM += sorted(_d + "/fixtures/" + f for f in os.listdir(os.path.join(REPO, _d, "fixtures")) if f.endswith(".json"))

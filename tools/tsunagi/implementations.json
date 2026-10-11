@@ -399,6 +399,33 @@
           ],
           "parse": "batch_referee",
           "total": 36
+        },
+        {
+          "corpus": "nenrin-interop-v0.2-action-presence",
+          "cwd": "@impl",
+          "cmd": [
+            "python3",
+            "runners/run_edge.py",
+            "@hs/workers/hs-ledger/nenrin/interop-v0.2/action-presence"
+          ],
+          "parse": "count_line",
+          "total": 9
+        },
+        {
+          "corpus": "nenrin-interop-v0.2-action-presence",
+          "cwd": "@impl",
+          "env": {
+            "PYTHONPATH": "@impl/verifiers"
+          },
+          "cmd": [
+            "python3",
+            "@board/adapters/py_module_batch.py",
+            "nenrin_verify_v02_edge",
+            "@in",
+            "@out"
+          ],
+          "parse": "batch_referee",
+          "total": 9
         }
       ],
       "refereed_through": "tools/tsunagi/adapters/py_module_batch.py, which imports the author's module and calls its verify(bundle).signature(); nothing else of this project touches the result"
