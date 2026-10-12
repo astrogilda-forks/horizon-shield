@@ -665,6 +665,35 @@
           "total": 28
         }
       ]
+    },
+    {
+      "id": "agent-evidence-atlas-action-presence",
+      "ours": false,
+      "author": "Sankalp Gilda (astrogilda), Probity AI",
+      "repo": "https://github.com/probityai/agent-evidence-atlas.git",
+      "language": "Python",
+      "license": "Apache-2.0",
+      "note": "Offline supplied-byte reader from Atlas 51ccbfdcfd38c670dd068758d40bbe9e5c84a6c1. The board records the actual default-branch clone commit; source and dependency-manifest digest checks refuse changed reader bytes. This command passes the original assess(bundle).signature without renaming verdicts or codes. No live evidence lookup, runtime action, admission or whole-SDK qualification.",
+      "runs": [
+        {
+          "corpus": "nenrin-interop-v0.2-action-presence",
+          "cwd": "@impl/interop/action-presence",
+          "setup": [
+            "python3",
+            "-c",
+            "import hashlib, subprocess\nfrom pathlib import Path\nexpected = \"78d80d6f64d6d776302b4007dbcfe6c8f30e7b97cc2e89bf3fa02e7d67d196e5\"\nif hashlib.sha256(Path(\"requirements.txt\").read_bytes()).hexdigest() != expected:\n    raise SystemExit(\"reader dependency manifest differs from Atlas 51ccbfdc\")\nversion = subprocess.check_output([\"uv\", \"--version\"], text=True).split()\nif version[:2] != [\"uv\", \"0.8.22\"]:\n    raise SystemExit(\"reader setup needs the board's pinned uv==0.8.22\")\nsubprocess.run([\"uv\", \"venv\", \"--python\", \"cpython-3.13.7\", \"--python-preference\", \"only-managed\", \".tsunagi-env\"], check=True)\nsubprocess.run([\"uv\", \"pip\", \"install\", \"--python\", \".tsunagi-env/bin/python\", \"--require-hashes\", \"--only-binary\", \":all:\", \"-r\", \"requirements.txt\"], check=True)\n"
+          ],
+          "cmd": [
+            ".tsunagi-env/bin/python",
+            "-c",
+            "import hashlib, json, sys\nfrom importlib.metadata import version\nfrom pathlib import Path\nexpected = \"1734ad69bdf0e4f23b4d2f2258c0d9a565efde0d2448802c22b4a9c331711c0e\"\nif hashlib.sha256(Path(\"reader.py\").read_bytes()).hexdigest() != expected:\n    raise SystemExit(\"reader source differs from Atlas 51ccbfdc\")\nif version(\"agent-evidence-vectors\") != \"0.17.6\":\n    raise SystemExit(\"reader wheel version differs from 0.17.6\")\nfrom reader import assess, decode_json\ncases = decode_json(Path(sys.argv[1]).read_bytes())\nif not isinstance(cases, list) or not cases:\n    raise SystemExit(\"batch must be a nonempty array\")\noutput = dict()\nfor case in cases:\n    if not isinstance(case, dict) or set(case) != {\"name\", \"bundle\"}:\n        raise SystemExit(\"batch case must contain only name and bundle\")\n    name = case[\"name\"]\n    if not isinstance(name, str) or not name or name in output:\n        raise SystemExit(\"batch case name must be nonempty and unique\")\n    output[name] = assess(case[\"bundle\"])[\"signature\"]\nPath(sys.argv[2]).write_text(json.dumps(output, ensure_ascii=False) + \"\\n\", encoding=\"utf-8\")\n",
+            "@in",
+            "@out"
+          ],
+          "parse": "batch_referee",
+          "total": 9
+        }
+      ]
     }
   ],
   "pairs": [
