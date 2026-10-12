@@ -33,8 +33,16 @@ present, otherwise the first element of the receipt set. Every later step that s
 - an array as `[` + canonical elements joined by `,` + `]`;
 - an object as `{` + `"key":value` pairs joined by `,` + `}`, keys sorted by code point. Every key must be printable
   ASCII (U+0020..U+007E) or the object is refused (key_not_printable_ascii).
-No whitespace anywhere. Vectors: ../musubi-v0/canonical_vectors.json. These refusals belong to the canonical rule,
-not to the report vocabulary: a record that cannot be canonicalized fails the recompute check of its layer.
+No Unicode normalization is applied, here or in any comparison: a string is its code points as parsed. Two strings
+that differ only in normalization form (for example NFC and NFD) are different values with different canonical
+bytes and different hashes. No whitespace anywhere. Vectors: ../musubi-v0/canonical_vectors.json. These refusals
+belong to the canonical rule, not to the report vocabulary. A record (observation, grant, receipt, intent, or the
+evidence inside a receipt) that holds a number the canonical form refuses cannot be checked at all. A conforming
+verifier MUST NOT return accepted for such a bundle. The reference (JavaScript and Python) stops with an error that
+names the rule and the path (for example non_integer_number at $.hop.seq) and returns no report; a verifier that
+instead refuses in that record's step (recompute_mismatch and the step's refusal code) is equally conformant, since
+no verdict signature is defined for this input. Such numbers never reach a verdict in the ledger, whose ingress
+refuses them before parsing (section 5, Input). Unknown bundle keys are not records and are not canonicalized.
 
 **Hash.** sha256(x) is SHA-256 over canonical(x), written as 64 lowercase hex characters.
 
@@ -77,7 +85,9 @@ type "canonical_request_digest", canonicalization "musubi-canonical-v0", preimag
 check fails, with the reason decided in this order. Not an object (or an array), type not "canonical_request_digest",
 digest not an object, digest.alg not "sha-256", or digest.value not a string: action_binding_malformed.
 canonicalization or preimage_profile not the values above: action_binding_unknown_profile. The record's action field
-null or absent, or digest.value not equal to the recomputed digest: action_binding_mismatch. All three are reasons;
+null or absent, or digest.value not equal to the recomputed digest: action_binding_mismatch. The comparison is exact
+on the string: digest.value must be the recomputed digest as 64 lowercase hex characters, and uppercase or mixed
+case hex is action_binding_mismatch even when it denotes the same bytes. All three are reasons;
 the refusal code is the one the step names (execution_invalid in step 2, preflight_invalid in step 3).
 
 ## 3. The procedure
@@ -130,6 +140,10 @@ finding witness_disagreement for that seq. R4 never refuses (fail-closed is the 
      grant.provider_id, receipt_id that recomputes, and (if signatures are required) provider_sig that verifies under
      grant.provider_id. Count distinct receipt_ids among them: none, refusal execution_unreconciled; more than one,
      refusal execution_equivocation; exactly one, that receipt is the reconciled receipt.
+     A bundle whose grant has a null or absent provider_id is therefore always refused: with a receipt, by
+     execution_unreconciled here; without one, by execution_incomplete_pair. The finding open_grant from step 2a or
+     step 3 is reported alongside the refusal and never on an accepted report. Prose elsewhere that calls an open
+     grant "accepted" means that it passes the provider check, not the bundle verdict.
 
 **Step 3, preflight.** No intent: nothing. An intent with no grant: refusal preflight_without_grant. Otherwise,
 stop at the first failure: grant_ref recomputes (grant_recompute_mismatch); intent_id recomputes
@@ -142,7 +156,9 @@ canonical(intent.proposed_action) (action_diverged). Any failure adds one refusa
 signatures are required and intent_sig does not verify under intent.provider_id: refusal
 preflight_signature_invalid. Finally, if a receipt reconciled in step 2 and canonical(intent.proposed_action) differs
 from canonical(reconciled.executed_action): finding declared_executed_divergence. A degenerate action on either side
-(section 5, missing fields) counts as differing.
+(section 5, missing fields) counts as differing. Step 3 does not compare declared_at with any receipt's executed_at:
+an intent declared after the execution is not refused and adds no finding; that it came first is the producer's
+claim, not something this verifier checks.
 
 **Step 4, evidence.** The target is the reconciled receipt; if none, the primary receipt; if the receipt set is
 empty, skip this step. Let E be target.outcome.evidence. E absent, null or otherwise falsy: finding
@@ -157,7 +173,10 @@ evidence_bound_unchecked.
 neither code below is emitted. A link is an observation whose conduct.detail_ref is a string beginning with exactly
 `nenrin-exec://`. For each link, the rest of the string must equal the reconciled receipt's recomputed receipt_id;
 if any link names anything else (an id outside the presented set, or a presented receipt that did not reconcile):
-one refusal linkage_receipt_mismatch. If there are no links at all: finding no_digest_link. A wrong link is still a
+one refusal linkage_receipt_mismatch. Both comparisons are exact on the string. A detail_ref that begins with the
+prefix in any other case (for example NENRIN-EXEC://) is not a link. The rest must be the 64 lowercase hex
+characters of the recomputed receipt_id; the same id in uppercase names something else and gives
+linkage_receipt_mismatch. If there are no links at all: finding no_digest_link. A wrong link is still a
 link, so a mismatch and no_digest_link never appear together.
 
 **Step 6, verdict.** refused if the refusal list is non-empty, otherwise accepted. Findings are reported whatever
@@ -173,7 +192,12 @@ a report that lists it once is equally conformant (clarified 2026-10-09, reporte
 
 ## 5. Edge rules (outside the corpora, pinned so two implementations agree)
 These follow the reference verifier (sdk/nenrin_verify.mjs, a JavaScript runtime). Where the reference has a known
-weakness it is said so, with the fix.
+weakness it is said so, with the fix. The rules added on 2026-10-12 (open grant, missing fields in R1, action_binding
+case, window edges, intent order, observation order, outcome shape, closed evidence kinds, link case, Unicode
+normalization, R4 distinctness) each have a bundle in ../conformance-v0/pinned/, with the signature the reference
+gives in its expected.json; reproducing those is a check you can run, not part of the conformance condition at the
+top of this file. Non-canonical numbers (section 2) have no bundle there, since no verdict signature is defined for
+them.
 - **Input.** The verifier receives the bundle as a parsed JSON value (RFC 8259). Numbers are values, so the token 1.0
   is the integer 1 and -0 is 0; a duplicate key keeps the last value. Refusing duplicate keys and non-integer number
   tokens before parsing is the ledger's ingress rule (strict JSON: duplicate_key, non_integer_number, unsafe_number,
@@ -202,20 +226,44 @@ weakness it is said so, with the fix.
   declared_executed_divergence. The reference uses one equality for all three comparisons (actionsEqual).
   This holds even when both sides are the same degenerate value (null against null, 0 against 0). An empty object {}
   is not degenerate: it is an action like any other and is compared canonically, so {} against {} passes E1. An edge whose task_id or hop is
-  missing cannot be canonicalized, so edge_sig does not verify. hop.seq must be a JSON integer; any other value fails
-  R3 with seq_gap.
-- **R4 distinctness.** conduct.verdict is a string, and two verdicts are distinct when the strings differ. A missing
-  conduct.verdict counts as one distinct value of its own. Non-string verdicts are outside the corpora.
+  missing cannot be canonicalized, so edge_sig does not verify. hop.seq must be a JSON integer; any other JSON value
+  (a string such as "0", null, a boolean, an object) fails R3 with seq_gap. Since numbers are values, the token 0.0
+  is the integer 0 and passes. A non-integer number (1.5) or an integer beyond 2^53-1 cannot be canonicalized, so
+  the record cannot be checked (section 2, canonical form).
+- **Missing fields in R1.** A missing witness_id, hop.from or hop.to is a value of its own: two missing fields are
+  equal, and a missing field differs from every present value, null included. So an observation with neither
+  witness_id nor hop.from fails R1 (witness_not_independent), one with witness_id null and hop.from null fails R1,
+  and one with witness_id missing and hop.from null passes R1 and is decided by the later checks. With signatures
+  required, an observation without a resolvable witness_id never verifies; with require_signatures false, R1 is
+  all that stands between it and acceptance, which is a known weakness of v0 (a later version may require
+  witness_id to be a non-empty string).
+- **Order and repetition of observations.** The order of observations changes no code: R3, R4 and linkage are
+  computed over the set, and "in order" in step 1 only fixes the order reasons are listed in. Observations are not
+  deduplicated. An observation presented twice is checked twice; being identical, it adds nothing the first did not
+  (same evidence_id, same verdict, so no witness_disagreement).
+- **R4 distinctness.** conduct.verdict is a string, and two verdicts are distinct when the strings differ. At one
+  seq, all missing verdicts together count as one value, which differs from every present verdict, null included:
+  two witnesses that both omit conduct.verdict do not disagree, and one that omits it disagrees with one that gives
+  "pass" or null. Non-string verdicts are outside the corpora; the reference compares null, booleans and numbers by
+  value (1 and 1 agree, 1 and "1" differ) and objects and arrays by identity, so two equal object or array verdicts
+  still count as distinct and give witness_disagreement. That last point is a known weakness; the fix, comparing
+  canonical forms, would change findings and needs a new verifier_version.
 - **Empty task_id.** task_id_mismatch needs at least one record; an empty task_id with no records gives
   task_id_missing only.
 - **Evidence presence.** E is absent when it is missing, null, false, 0 or "" (no_evidence_bound). An empty object or
-  array is present and not well formed (evidence_invalid). A missing or non-object outcome means E is absent.
+  array is present and not well formed (evidence_invalid). A missing outcome, or an outcome that is not a JSON
+  object (an array, string, number, boolean or null), means E is absent; an array has no evidence member in either
+  reading. The kind list in step 4 is closed and compared exactly: any other string, including one that differs
+  only in case or surrounding spaces, makes E not well formed (evidence_invalid). A new kind needs a new version of
+  this file.
 - **Timestamps.** The pattern uses ASCII digits only and matches the whole string (no trailing newline). Instants are
   compared at millisecond precision, extra fraction digits truncated. A conforming verifier MUST reject impossible
   calendar dates (proleptic Gregorian, years 0001 to 9999), hour 24 and second 60. The reference applies this rule
   from nenrin-verify 0.4.1; earlier versions read the instant with the runtime's date parser, which accepted some
   impossible values (2026-02-30 rolled to 2026-03-02, hour 24, year 0000) and rejected second 60. No corpus vector
-  depends on it.
+  depends on it. A window with not_before equal to not_after is valid and holds exactly that instant, so t equal to
+  both is inside it. A window with not_before later than not_after is not malformed; no instant is inside it, so
+  the check fails with outside_authorization_window.
 - **Base64.** A conforming verifier MUST accept only canonical standard base64 (RFC 4648 section 4: the standard
   alphabet, padding present, no whitespace, unused trailing bits zero), so one signature has one encoding. The
   reference applies this rule from nenrin-verify 0.4.1; earlier versions decoded leniently (missing padding, - and _,

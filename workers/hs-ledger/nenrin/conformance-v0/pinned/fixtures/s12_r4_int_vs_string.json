@@ -1,0 +1,98 @@
+{
+  "task_id": "task_pinned",
+  "observations": [
+    {
+      "task_id": "task_pinned",
+      "hop": {
+        "seq": 0,
+        "from": "did:key:z6MkwUuhhhbw1HvVGHs9YKv3GyXyfM9zxAtgk8wns4cep16w",
+        "to": "did:key:z6MkrWrfgwxtEYtaQp8RQMqYgbinTDVbCy1XkAsj6m3TN5qh"
+      },
+      "prev_evidence_id": null,
+      "conduct": {
+        "verdict": 1,
+        "detail_ref": "nenrin-exec://31e83c4a4c35895d49b5ae6b5961e685c17c7ee2d65dca6ef7cb7728c99dfb0a"
+      },
+      "witness_id": "did:key:z6Mkf8t7bbcYZRJYCpnEsorVymJU94Vo8i1ZdA15dppeazc6",
+      "observed_at": "2026-10-04T00:30:00Z",
+      "evidence_id": "56fd37450ee5e030af25c250b8eef13ef7237fd66441cc2695294aeb965dcddd",
+      "witness_sig": "63X6Ha1tm5AlNB4fY1/cUycu55AnSKfuPvFG1YrES6gIjq8XoxhHFOMWES/1dicwkj94fhmzLacNRGOyIwDkDg==",
+      "edge_sig": "QaMDNUvO5ZvL6HzSlMaQJgl/jvCDEFHsbPYsrjIih62gQHjxzyQFfxCn4WFbavGytElZMb6PZ63Q2FWzJtITCw=="
+    },
+    {
+      "task_id": "task_pinned",
+      "hop": {
+        "seq": 0,
+        "from": "did:key:z6MkwUuhhhbw1HvVGHs9YKv3GyXyfM9zxAtgk8wns4cep16w",
+        "to": "did:key:z6MkrWrfgwxtEYtaQp8RQMqYgbinTDVbCy1XkAsj6m3TN5qh"
+      },
+      "prev_evidence_id": null,
+      "conduct": {
+        "verdict": "1",
+        "detail_ref": "nenrin-exec://31e83c4a4c35895d49b5ae6b5961e685c17c7ee2d65dca6ef7cb7728c99dfb0a"
+      },
+      "witness_id": "did:key:z6MkfBNyUSwtbsCRov6tHoKBxhRMNy2hw7n1qfbduTqvNxoM",
+      "observed_at": "2026-10-04T00:30:00Z",
+      "evidence_id": "2bd7b538f51e08c94774ae1e98e2a5b6c0925d28b8d7e7c97583e870b6466004",
+      "witness_sig": "BIFQjDCZao3AbPXaDWgmsXDRPqMBiOqBmLxG01Hxxkni/OCJjooKgj4Kp5uKL2MyvdHFZ85Me/n7eWiLN447Bg==",
+      "edge_sig": "QaMDNUvO5ZvL6HzSlMaQJgl/jvCDEFHsbPYsrjIih62gQHjxzyQFfxCn4WFbavGytElZMb6PZ63Q2FWzJtITCw=="
+    },
+    {
+      "task_id": "task_pinned",
+      "hop": {
+        "seq": 1,
+        "from": "did:key:z6MkrWrfgwxtEYtaQp8RQMqYgbinTDVbCy1XkAsj6m3TN5qh",
+        "to": "did:key:z6Mki1FuLKGDRqq84TtEGA69CKYauB9mcJH9LL1M2DxNrPy2"
+      },
+      "prev_evidence_id": "56fd37450ee5e030af25c250b8eef13ef7237fd66441cc2695294aeb965dcddd",
+      "conduct": {
+        "verdict": "pass",
+        "detail_ref": null
+      },
+      "witness_id": "did:key:z6MkfBNyUSwtbsCRov6tHoKBxhRMNy2hw7n1qfbduTqvNxoM",
+      "observed_at": "2026-10-04T00:30:00Z",
+      "evidence_id": "1acc00c79c7ef501b895c3ee84a4f321f31c797463527709ac1a89cd4a35a56c",
+      "witness_sig": "F4d+gAlVIWRaXSsyDbfTV6j8WbTOzmovv89XVuwBzuo2Z8GPelhvKSR7nb1K7A5iL0v2Q5JhH6Sat25lhQKkDg==",
+      "edge_sig": "pHB4rOwfzWSlhpkICA85zkD5CIG/PeWYHyrA6GxK1Bb0Y9onMmklA/iCyibR5fj0uZSv8yfsE0dJnrkmp0LgAw=="
+    }
+  ],
+  "grant": {
+    "schema": "task-execution-bind-v0/grant",
+    "task_id": "task_pinned",
+    "action": {
+      "tool": "a2a.invoke",
+      "target": "/task",
+      "args_sha256": "x"
+    },
+    "caller_id": "did:key:z6MkwUuhhhbw1HvVGHs9YKv3GyXyfM9zxAtgk8wns4cep16w",
+    "provider_id": "did:key:z6MkrWrfgwxtEYtaQp8RQMqYgbinTDVbCy1XkAsj6m3TN5qh",
+    "nonce": "n",
+    "not_before": "2026-10-04T00:00:00Z",
+    "not_after": "2026-10-04T01:00:00Z",
+    "grant_ref": "2a113085b6a1a08af89124b83c7df8d921e41cdbfe336b83190d20d5df080bd0",
+    "caller_sig": "+sHSrhxz58ByrjF464ul5Xm5JOHvsgbDjxyMNYnLd3dOpuQnPDFIvU89L64rmPBnUl2RiMB+IV6qQzpoCzIyBA=="
+  },
+  "receipt": {
+    "schema": "task-execution-bind-v0/receipt",
+    "task_id": "task_pinned",
+    "grant_ref": "2a113085b6a1a08af89124b83c7df8d921e41cdbfe336b83190d20d5df080bd0",
+    "executed_action": {
+      "tool": "a2a.invoke",
+      "target": "/task",
+      "args_sha256": "x"
+    },
+    "outcome": {
+      "status": "completed",
+      "result_sha256": "r",
+      "evidence": {
+        "kind": "ledger_record",
+        "ref": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "system": "s"
+      }
+    },
+    "provider_id": "did:key:z6MkrWrfgwxtEYtaQp8RQMqYgbinTDVbCy1XkAsj6m3TN5qh",
+    "executed_at": "2026-10-04T00:30:00Z",
+    "receipt_id": "31e83c4a4c35895d49b5ae6b5961e685c17c7ee2d65dca6ef7cb7728c99dfb0a",
+    "provider_sig": "pv2AOP2PCBuvi5SFvA7+Jq7MZQ9n2a9HP+qhW6q/DZHMHQ/OYuKj7Le0f1hX9PhK9GxCpKZKuR6bMNge6du4AQ=="
+  }
+}

@@ -7,7 +7,13 @@ blind reimplementations (one from the specs as they stood, one from provenance-v
 - gen_edge_bundles.mjs (the adversary): builds freshly signed bundles that reach the deep rules of VERIFIER.md:
   timestamp grammar and window edges, null versus absent, evidence shapes, action_binding, R3/R4 edges, linkage forms,
   preflight. Every bundle is validly signed, so a disagreement on it is a disagreement about rules, never a broken hash.
-- differential.py (the judge): runs the frozen corpora plus the generated bundles through the published JS verifier,
+- pinned/ (30 bundles, 2026-10-12): the rules the blind triage of 2026-10-12 found unwritten (S1 to S12), now
+  written into VERIFIER.md and frozen here, one validly signed bundle per rule, with pinned/expected.json holding the
+  verdict signature the npm and PyPI references both give. make_pinned.mjs built them (fresh keys, so the committed
+  bytes are the frozen ones); pin_expected.py writes expected.json and refuses to when the two references disagree.
+  Not part of the conformance condition at the top of VERIFIER.md: a check you can run, and a place to send us
+  a disagreement.
+- differential.py (the judge): runs the frozen corpora, the pinned bundles and the generated bundles through the published JS verifier,
   the PyPI port and any extra implementation (--impl path.py exposing verify(bundle)), and prints every bundle where a
   verdict signature differs from the JS reference. Exit 1 on any disagreement.
 

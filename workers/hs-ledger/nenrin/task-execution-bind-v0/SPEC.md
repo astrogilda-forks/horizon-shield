@@ -21,7 +21,8 @@ AuthorizationGrant (signed by the caller):
     { schema, task_id, action:{tool,target,args_sha256}, caller_id, provider_id, nonce,
       not_before, not_after, grant_ref, caller_sig }
 - grant_ref = SHA-256(canonical(grant without grant_ref and caller_sig)). Anyone recomputes.
-- provider_id names the executor the caller authorizes. null means an open grant (recorded as a finding).
+- provider_id names the executor the caller authorizes. null (or absent) means an open grant: recorded as the
+  finding open_grant, and never reconcilable (see Out of scope, and provenance-v0/VERIFIER.md step 2d).
 
 ExecutionReceipt (signed by the provider named in the grant):
     { schema, task_id, grant_ref, executed_action:{tool,target,args_sha256}, outcome:{status,result_sha256},
@@ -56,8 +57,11 @@ carriage in compose.test.mjs verifiable across the seam.
   NOT prove the reconciled outcome is the real-world outcome.
 - nonce single-use is enforced by a stateful gateway at runtime; the pure verifier checks presence and
   window, not global uniqueness.
-- an open grant (provider_id null) is accepted with an open_grant finding but is NOT reconcilable: name the
-  executor to get attributable reconciliation (reconcileSigned returns no_authorized_provider otherwise).
+- an open grant (provider_id null) passes the pair check with an open_grant finding, but it is NOT
+  reconcilable: no receipt can be attributed to an authorized executor (reconcileSigned returns
+  no_authorized_provider). In a provenance report this is the refusal execution_unreconciled
+  (provenance-v0/VERIFIER.md step 2d), so a bundle whose grant is open is never accepted. Name the executor to get
+  attributable reconciliation.
 - v0 is a draft, not outsider-validated. It aligns to a community convention if one emerges.
 
 ## Signature layer (sign_exec.mjs)
@@ -87,7 +91,9 @@ grant + intent, verified BEFORE execution. The provider signs, before running, w
 the caller's signed grant, from the authorized executor, in the window. It returns no allow or deny and no
 score; the caller's gateway decides. intentMatchesReceipt gives declared == executed once the receipt exists.
 Under a fixed-action grant that equality is implied when preflight and execution both pass, so the real value of
-the intent is temporal: a signed pre-execution promise, checkable before the receipt exists.
+the intent is temporal: a signed pre-execution promise, checkable before the receipt exists. The verifier does
+not check that declared_at precedes executed_at (provenance-v0/VERIFIER.md step 3); a reader who needs the order
+compares the two timestamps, or relies on an anchor outside this verifier.
 
 ## Interop: action_binding (VATE shape, optional, derived; 2026-09-26)
 Poke-nushi's VATE (a2aproject/A2A#1769, admission-receipt and post-execution-receipt) binds a request by
@@ -95,7 +101,7 @@ Poke-nushi's VATE (a2aproject/A2A#1769, admission-receipt and post-execution-rec
 A grant, receipt or intent here MAY carry the same object over its action (grant.action, receipt.executed_action,
 intent.proposed_action):
     { type: "canonical_request_digest", canonicalization: "musubi-canonical-v0",
-      preimage_profile: "task-execution-bind-v0/action", digest: { alg: "sha-256", value: <64 hex> } }
+      preimage_profile: "task-execution-bind-v0/action", digest: { alg: "sha-256", value: <64 lowercase hex> } }
 value = SHA-256(canonical(action)), the same bytes E1 compares. A VATE recipient reads digest.value as its
 effective_request_hash without reading this spec; it only needs the canonicalization name and its vectors
 (../musubi-v0/canonical_vectors.json, reproduced byte for byte in Python and Node).

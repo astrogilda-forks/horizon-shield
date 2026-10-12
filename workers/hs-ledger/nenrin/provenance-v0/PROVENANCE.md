@@ -64,8 +64,11 @@ What each finding means (defined 2026-10-04; until then four of these were liste
   the pair or preflight check reaches that point, VERIFIER.md step 2a and step 3). Declared,
   so recorded and not refused. This is the execution-layer self path; the delegation-layer one (a witness that is
   a party to its own hop) is an R1 refusal, delegation_observation_invalid with reason witness_not_independent.
-- open_grant: the grant names no provider_id, so any executor is accepted and nothing reconciles attributably
-  (same emission condition as self_authorized).
+- open_grant: the grant names no provider_id, so the provider check passes for any executor, and no receipt
+  reconciles attributably. It is emitted when the pair or preflight check reaches that point (the same condition
+  as self_authorized), and it always comes with a refusal: execution_unreconciled when a receipt is presented
+  (VERIFIER.md step 2d), execution_incomplete_pair when only an intent is. It explains that refusal; it does not
+  replace it. An accepted report never carries open_grant in v0.
 - evidence_bound_unchecked: the evidence target (the reconciled receipt, or the primary receipt when nothing
   reconciled, VERIFIER.md step 4) carries outcome.evidence, the pointer is well formed, and no
   external lookup was injected. Read it as "bound, not confirmed": it is the normal state of an offline run and

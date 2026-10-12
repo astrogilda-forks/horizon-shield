@@ -1,0 +1,122 @@
+[
+  {
+    "name": "s00_base",
+    "intent": "the clean bundle every case below changes in one place"
+  },
+  {
+    "name": "s01_open_grant_null_with_receipt",
+    "intent": "S1: grant.provider_id null with a receipt: open_grant with execution_unreconciled (step 2d)"
+  },
+  {
+    "name": "s01_open_grant_absent_with_receipt",
+    "intent": "S1: grant.provider_id absent, the same as null (section 5)"
+  },
+  {
+    "name": "s01_open_grant_intent_only",
+    "intent": "S1: open grant with an intent and no receipt: open_grant with execution_incomplete_pair"
+  },
+  {
+    "name": "s02_r1_witness_and_from_missing_nosig",
+    "intent": "S2: witness_id and hop.from both missing are equal, R1 fails"
+  },
+  {
+    "name": "s02_r1_witness_missing_from_null_nosig",
+    "intent": "S2: missing differs from null, R1 passes"
+  },
+  {
+    "name": "s02_r1_both_null_nosig",
+    "intent": "S2: witness_id null and hop.from null are equal, R1 fails"
+  },
+  {
+    "name": "s02_r1_witness_and_to_missing_nosig",
+    "intent": "S2: witness_id and hop.to both missing are equal, R1 fails"
+  },
+  {
+    "name": "s03_abind_lower_grant",
+    "intent": "S3: a correct lowercase action_binding on the grant changes nothing"
+  },
+  {
+    "name": "s03_abind_upper_grant",
+    "intent": "S3: uppercase digest on the grant is action_binding_mismatch"
+  },
+  {
+    "name": "s03_abind_upper_receipt",
+    "intent": "S3: uppercase digest on the receipt is action_binding_mismatch"
+  },
+  {
+    "name": "s03_abind_upper_intent",
+    "intent": "S3: uppercase digest on the intent is action_binding_mismatch under preflight_invalid"
+  },
+  {
+    "name": "s04_window_zero_width",
+    "intent": "S4: not_before = not_after = executed_at is inside the window"
+  },
+  {
+    "name": "s04_window_inverted",
+    "intent": "S4: not_before after not_after holds no instant (outside_authorization_window)"
+  },
+  {
+    "name": "s05_intent_declared_after_exec",
+    "intent": "S5: declared_at after executed_at is not checked"
+  },
+  {
+    "name": "s06_obs_reversed",
+    "intent": "S6: the order of observations changes no code"
+  },
+  {
+    "name": "s06_obs_duplicate_h0",
+    "intent": "S6: an observation presented twice adds nothing"
+  },
+  {
+    "name": "s07_outcome_array",
+    "intent": "S7: an array outcome means E is absent"
+  },
+  {
+    "name": "s07_outcome_string",
+    "intent": "S7: a string outcome means E is absent"
+  },
+  {
+    "name": "s08_evidence_kind_other",
+    "intent": "S8: a kind outside the closed list is evidence_invalid"
+  },
+  {
+    "name": "s09_link_upper_hex",
+    "intent": "S9: the real receipt_id in uppercase is linkage_receipt_mismatch"
+  },
+  {
+    "name": "s09_link_upper_prefix",
+    "intent": "S9: an uppercase prefix is not a link (no_digest_link)"
+  },
+  {
+    "name": "s10_raction_nfd_vs_nfc",
+    "intent": "S10: NFC against NFD is action_diverged, no normalization"
+  },
+  {
+    "name": "s12_r4_both_missing",
+    "intent": "S12: two missing verdicts at one seq are one value"
+  },
+  {
+    "name": "s12_r4_missing_vs_pass",
+    "intent": "S12: missing against pass disagrees"
+  },
+  {
+    "name": "s12_r4_missing_vs_null",
+    "intent": "S12: missing against null disagrees"
+  },
+  {
+    "name": "s12_r4_int_vs_string",
+    "intent": "S12: 1 against \"1\" disagrees"
+  },
+  {
+    "name": "s12_r4_int_vs_int",
+    "intent": "S12: 1 against 1 agrees"
+  },
+  {
+    "name": "s12_r4_null_vs_null",
+    "intent": "S12: null against null agrees"
+  },
+  {
+    "name": "s12_r4_object_vs_object",
+    "intent": "S12: equal object verdicts still disagree (identity, the known weakness in section 5)"
+  }
+]
