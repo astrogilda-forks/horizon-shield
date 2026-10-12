@@ -15,6 +15,12 @@ Env:
 status and body on failure, and one bad entry no longer aborts the whole batch; the
 job still exits non-zero (fail-closed) if the pending fetch fails or any entry errors,
 so a real problem stays red in CI and the log names the exact cause.
+
+2026-10-12: a proof can carry more than one Bitcoin attestation (one per calendar that
+got it into a block). The entry now records the earliest block, not whichever one
+`ots info` happens to print first: entry 86's .ots carries 971024 and 971047 and was
+recorded as 971047. The earliest attestation is the tightest bound on when the bytes
+existed, and it is what invinoveritas's slot-log index and our checkers name.
 """
 import os, re, sys, json, base64, subprocess, urllib.request, urllib.error, datetime
 
@@ -53,6 +59,12 @@ def api(path, method="GET", body=None):
         raise RuntimeError("%s %s -> HTTP %s %s" % (method, path, ex.code, detail))
     except urllib.error.URLError as ex:
         raise RuntimeError("%s %s -> network error: %s" % (method, path, ex.reason))
+
+
+def earliest_bitcoin_height(info):
+    """The lowest block height among the BitcoinBlockHeaderAttestation lines of `ots info`, or None."""
+    heights = [int(h) for h in re.findall(r"BitcoinBlockHeaderAttestation\((\d+)\)", info or "")]
+    return min(heights) if heights else None
 
 
 def run(cmd):
@@ -99,9 +111,8 @@ def stamp_one(e):
     up = run(["ots", "upgrade", ots])
     print(f"[{n}] upgrade rc={up.returncode} {(up.stderr or up.stdout).strip()[:160]}")
     info = run(["ots", "info", ots]).stdout
-    m = re.search(r"BitcoinBlockHeaderAttestation\((\d+)\)", info)
-    if m:
-        height = int(m.group(1))
+    height = earliest_bitcoin_height(info)
+    if height is not None:
         b64 = base64.b64encode(open(ots, "rb").read()).decode()
         api(f"/ledger/{n}/ots", "POST", {"ots_base64": b64, "status": "confirmed", "bitcoin_block": height, "block_time": block_time(height)})
         print(f"[{n}] -> CONFIRMED at Bitcoin block {height}")
