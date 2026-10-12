@@ -751,6 +751,20 @@
       "b": "kuangmi-bit-nenrin-independent-verifiers",
       "scored_by": "board",
       "what": "the action-presence vectors, read in Go and in Python by different people, compared case by case"
+    },
+    {
+      "corpus": "nenrin-interop-v0.2-action-presence",
+      "a": "hs-nenrin-reference",
+      "b": "agent-evidence-atlas-action-presence",
+      "scored_by": "board",
+      "what": "each verdict signature, as returned by each implementation and compared by the board, case by case; written by different people"
+    },
+    {
+      "corpus": "nenrin-interop-v0.2-action-presence",
+      "a": "kuangmi-bit-nenrin-independent-verifiers",
+      "b": "agent-evidence-atlas-action-presence",
+      "scored_by": "board",
+      "what": "the action-presence vectors, read by two outside implementations written by different people, compared case by case"
     }
   ],
   "differential": {
