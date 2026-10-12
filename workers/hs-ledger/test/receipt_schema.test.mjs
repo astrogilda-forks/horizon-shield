@@ -22,4 +22,18 @@ t = await page(2);
 chk("a record with no schema keeps the v0 badge and note", t.includes("schema v0 · concept-proof") && t.includes("only the estimate JSON is hashed"));
 t = await page(4);
 chk("a schema name is HTML-escaped on the page", !t.includes("<img src=x") && t.includes("&lt;img src=x onerror=alert(1)&gt;"));
+// The same rule on /cite and /verify (2026-10-13): jidec_how_to_verify still reported entry 88 as record_kind "v0"
+// because /verify/{n} kept the old classification, and /cite said it does not prove "that the estimate is fair".
+const getj = async (path) => JSON.parse(await (await worker.fetch(new Request("https://ledger.example.dev" + path), env)).text());
+let c = await getj("/cite/jidec:entry:3");
+chk("/cite names a NENRIN batch by its own schema", c.record_kind === "nenrin-agreement-batch-v1", c.record_kind);
+chk("/cite says what kind of record it is", (c.note || "").includes("This entry is a nenrin-agreement-batch-v1 record"), c.note);
+chk("/cite limits no longer mention an estimate for it", !/estimate/.test(c.limits) && /Does not prove/.test(c.limits), c.limits);
+c = await getj("/cite/jidec:entry:2");
+chk("/cite keeps the v0 kind, note and estimate limits for a record with no schema", c.record_kind === "v0" && /predates the v1 schemas/.test(c.note) && /estimate is fair/.test(c.limits));
+let v = await getj("/verify/3");
+chk("/verify names a NENRIN batch by its own schema", v.record_kind === "nenrin-agreement-batch-v1", v.record_kind);
+chk("/verify scope says what kind of record it is", /This entry is a nenrin-agreement-batch-v1 record/.test(v.scope), v.scope);
+v = await getj("/verify/2");
+chk("/verify keeps v0 for a record with no schema", v.record_kind === "v0" && /does not declare a jidec-claim-v1 audit/.test(v.scope));
 process.exit(chk.done() ? 1 : 0);

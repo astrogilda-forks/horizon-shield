@@ -578,6 +578,18 @@ function witnessSelfDescription(origin) {
 // simultaneously, not just to the estimate JSON or to a concatenation of upstream params.
 // v0 records (entries created before the fix) are still readable but flagged as v0.
 const V1_REQUIRED = ["schema","issued_at","work_id","input_sha256","reference_bundle_sha256","reference_bundle_version","algorithm_commit","algorithm_url","thresholds_sha256","result_sha256","pdf_sha256","verifier_recipe_url"];
+// 2026-10-13. The schema a record names for itself, when it is not one of the estimate-era schemas; "" otherwise.
+// /cite and /verify call a record by this name, as the receipt page and the JIDEC MCP server already do, so a
+// NENRIN batch is never described as a v0 estimate entry. parseClaimSchema stays as it is: append validation uses it.
+function namedRecordSchema(record_canonical) {
+  try {
+    const j = JSON.parse(record_canonical || "");
+    if (j && typeof j === "object" && !Array.isArray(j) && typeof j.schema === "string" && j.schema &&
+        j.schema !== "jidec-claim-v1" && j.schema !== "jidec-path-v1") return j.schema;
+  } catch {}
+  return "";
+}
+
 function parseClaimSchema(record_canonical) {
   try {
     const j = JSON.parse(record_canonical);
@@ -1273,8 +1285,9 @@ async function citationCard(env, origin, citation) {
     obj = JSON.parse(e.record_canonical);
     kind = obj && obj.schema === "jidec-path-v1" ? "jidec-path-v1"
          : obj && obj.schema === "jidec-claim-v1" ? "jidec-claim-v1"
-         : "v0";
+         : namedRecordSchema(e.record_canonical) || "v0";
   } catch { obj = null; }
+  const estimateEra = kind === "jidec-path-v1" || kind === "jidec-claim-v1" || kind === "v0" || kind === "v0-plain";
 
   const bitcoin =
     e.ots_status === "confirmed" && e.bitcoin_block
@@ -1299,8 +1312,10 @@ async function citationCard(env, origin, citation) {
   } else if (kind === "jidec-claim-v1" && obj) {
     card.claim = {};
     for (const k of ["work_id", "input_sha256", "reference_bundle_sha256", "algorithm_commit", "thresholds_sha256", "result_sha256", "pdf_sha256", "issued_at"]) card.claim[k] = obj[k];
-  } else {
+  } else if (estimateEra) {
     card.note = "This entry predates the v1 schemas. Its bytes are still anchored and hash-checkable.";
+  } else {
+    card.note = "This entry is a " + kind + " record. Its bytes are anchored and hash-checkable; what it does and does not establish is written inside the record itself.";
   }
 
   card.trust_note = match
@@ -1310,9 +1325,12 @@ async function citationCard(env, origin, citation) {
       ". Do not take our word for it, run the command in `reproduce`."
     : "INTEGRITY FAILURE: the stored bytes do NOT hash to the cited id. Do not rely on this citation.";
 
-  card.limits =
-    "Proves: these exact bytes existed at or before the anchored time and have not changed. " +
-    "Does not prove: that the estimate is fair, that the input data is true, or that HORIZON SHIELD is competent.";
+  card.limits = estimateEra
+    ? "Proves: these exact bytes existed at or before the anchored time and have not changed. " +
+      "Does not prove: that the estimate is fair, that the input data is true, or that HORIZON SHIELD is competent."
+    : "Proves: these exact bytes existed at or before the anchored time and have not changed. " +
+      "Does not prove: that any assertion inside the record is true, or that HORIZON SHIELD is competent. " +
+      "Read the record's own fields for what it claims and what it says it does not establish.";
 
   return card;
 }
@@ -1881,11 +1899,15 @@ async function handle(request, env) {
           claim_sha256: e.claim_sha256,
           bitcoin_status: e.ots_status,
           bitcoin_block: e.bitcoin_block,
-          record_kind: sch.schema,
-          scope:
-            "Byte-level integrity and timestamp only. This entry does not declare a jidec-claim-v1 audit, " +
-            "so there is no pinned reference bundle or algorithm commit to recompute. What you can establish " +
-            "here is that these exact bytes existed at or before the anchored time and have not changed.",
+          record_kind: namedRecordSchema(e.record_canonical) || sch.schema,
+          scope: namedRecordSchema(e.record_canonical)
+            ? "Byte-level integrity and timestamp only. This entry is a " + namedRecordSchema(e.record_canonical) +
+              " record, not a jidec-claim-v1 audit, so there is no pinned reference bundle or algorithm commit to " +
+              "recompute. What you can establish here is that these exact bytes existed at or before the anchored " +
+              "time and have not changed; what the record claims, and what it says it does not establish, is written inside it."
+            : "Byte-level integrity and timestamp only. This entry does not declare a jidec-claim-v1 audit, " +
+              "so there is no pinned reference bundle or algorithm commit to recompute. What you can establish " +
+              "here is that these exact bytes existed at or before the anchored time and have not changed.",
           bytes_note:
             "The raw route serves the anchored bytes verbatim as text/plain. Hash exactly what you receive. " +
             "There is no canonicalisation step to apply and none to guess. If an intermediary (a browser view, " +
