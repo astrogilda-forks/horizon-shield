@@ -8,12 +8,15 @@ const routes = {
   "/trust-signal?endpoint=https%3A%2F%2Fmcp.horizonshield.dev%2Fmcp": [200, { schema: "nenrin-trust-signal-v1", counts: { anchored: 3 } }],
   ["/witness/" + "b".repeat(64)]: [200, { status: "anchored", entry: 58 }],
   "/ledger/head": [200, { n: 64, head: "c".repeat(64) }],
-  "/ledger/64": [200, { n: 64, claim_sha256: "f6400d87" }],
-  "/ledger/999": [404, { error: "not_found" }],
-  "/ledger/65": [503, "upstream"],
+  "/ledger/64?format=json": [200, { n: 64, claim_sha256: "f6400d87" }],
+  "/ledger/999?format=json": [404, { error: "not_found" }],
+  "/ledger/65?format=json": [503, "upstream"],
 };
 const env = { LEDGER_SVC: { fetch: async (req) => {
   const u = new URL(req.url); const k = u.pathname + u.search; seen.push(k);
+  // Like the real ledger: /ledger/{n} is the HTML receipt page unless ?format=json, ?format=raw or Accept: application/json.
+  if (/^\/ledger\/\d+$/.test(u.pathname) && !["json", "raw"].includes(u.searchParams.get("format")) && !(req.headers.get("accept") || "").includes("application/json"))
+    return new Response("<!DOCTYPE html><html><body>receipt page</body></html>", { status: 200, headers: { "content-type": "text/html" } });
   const [st, body] = routes[k] || [404, { error: "not_found" }];
   return new Response(typeof body === "string" ? body : JSON.stringify(body), { status: st });
 } } };
@@ -46,12 +49,27 @@ r = await call("nenrin_ledger_head", {});
 ok(r.structuredContent.n === 64, "head");
 r = await call("nenrin_ledger_entry", { n: 64 });
 ok(r.structuredContent.claim_sha256 === "f6400d87", "entry 64");
+ok(seen.includes("/ledger/64?format=json") && r.structuredContent.source_url === "https://ledger.horizonshield.dev/ledger/64?format=json", "entry read asks the ledger for JSON, not the HTML page");
 r = await call("nenrin_ledger_entry", { n: 999 });
 ok(!r.isError && r.structuredContent.lookup === "absent", "404 is absent, not an error");
 r = await call("nenrin_ledger_entry", { n: 65 });
 ok(r.isError && /NOT a statement/.test(r.content[0].text), "503 is an error, never absent");
 r = await call("nenrin_ledger_entry", { n: 0 });
 ok(r.isError, "n=0 refused");
+// jidec_cite names a record's own schema (2026-10-13): a NENRIN batch is not a v0 estimate entry.
+const shaHex = async (t) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)))].map((b) => b.toString(16).padStart(2, "0")).join("");
+const batch = JSON.stringify({ schema: "nenrin-agreement-batch-v1", count: 1, records: [] });
+const v0rec = JSON.stringify({ estimate: { total: 1 } });
+const bSha = await shaHex(batch), vSha = await shaHex(v0rec);
+routes["/ledger/88?format=raw"] = [200, batch];
+routes["/ledger/88?format=json"] = [200, { n: 88, claim_sha256: bSha, ots_status: "confirmed", bitcoin_block: 971024 }];
+routes["/ledger/3?format=raw"] = [200, v0rec];
+routes["/ledger/3?format=json"] = [200, { n: 3, claim_sha256: vSha, ots_status: "confirmed", bitcoin_block: 900000 }];
+r = await call("jidec_cite", { citation: "jidec:entry:88" });
+ok(!r.isError && r.structuredContent.integrity.match === true && r.structuredContent.record_kind === "nenrin-agreement-batch-v1", "a NENRIN batch is reported under its own schema");
+ok(/nenrin-agreement-batch-v1 record/.test(r.structuredContent.note) && !/estimate/.test(r.structuredContent.limits), "its note names the schema and its limits do not talk about an estimate");
+r = await call("jidec_cite", { citation: "jidec:entry:3" });
+ok(r.structuredContent.record_kind === "v0" && /predates the v1 schemas/.test(r.structuredContent.note) && /estimate is fair/.test(r.structuredContent.limits), "a record with no schema stays v0 with the estimate limits");
 const card = await (await worker.fetch(new Request("https://jidec.horizonshield.dev/.well-known/agent-card.json"), env)).json();
 ok(card.version === "1.2.2", "signed card version 1.2.2");
 ok(card.provider && card.provider.legalEntity && card.provider.legalEntity.id === "7021001075279", "provider.legalEntity houjin-bango");

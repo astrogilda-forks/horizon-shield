@@ -103,6 +103,10 @@ def classify_record(text):
         return "jidec-path-v1", obj
     if isinstance(obj, dict) and obj.get("schema") == "jidec-claim-v1":
         return "jidec-claim-v1", obj
+    # 2026-10-13: a record that names its own schema (nenrin-*-batch-v1, ...) is reported under that name,
+    # not as v0. Same rule as hs-jidec-mcp classifyRecord.
+    if isinstance(obj, dict) and isinstance(obj.get("schema"), str) and obj.get("schema"):
+        return obj["schema"], obj
     return "v0", obj
 
 

@@ -162,6 +162,11 @@ function classifyRecord(text) {
   try { obj = JSON.parse(text); } catch { return { kind: "v0-plain", obj: null }; }
   if (obj && obj.schema === "jidec-path-v1") return { kind: "jidec-path-v1", obj };
   if (obj && obj.schema === "jidec-claim-v1") return { kind: "jidec-claim-v1", obj };
+  // 2026-10-13. A record that names its own schema (nenrin-*-batch-v1, nenrin-head-checkpoint-v1, ...) is not a
+  // v0 estimate entry; calling it v0 told readers of a NENRIN batch it was an old estimate proof. Same rule in
+  // path/jidec_cite.py so the two implementations still diff clean.
+  if (obj && typeof obj === "object" && !Array.isArray(obj) && typeof obj.schema === "string" && obj.schema)
+    return { kind: obj.schema, obj };
   return { kind: "v0", obj };
 }
 
@@ -216,8 +221,10 @@ async function buildCard(env, n, sha, citation) {
     for (const k of ["work_id", "input_sha256", "reference_bundle_sha256", "algorithm_commit",
                      "thresholds_sha256", "result_sha256", "pdf_sha256", "issued_at"])
       card.claim[k] = obj[k];
-  } else {
+  } else if (kind === "v0" || kind === "v0-plain") {
     card.note = "This entry predates the v1 schemas (v0). Its bytes are still anchored and hash-checkable.";
+  } else {
+    card.note = "This entry is a " + kind + " record. Its bytes are anchored and hash-checkable; what it does and does not establish is written inside the record itself.";
   }
 
   card.trust_note = match
@@ -230,10 +237,14 @@ async function buildCard(env, n, sha, citation) {
       ". No trust in HORIZON SHIELD required."
     : "INTEGRITY FAILURE: the entry's bytes do NOT hash to the cited id. Do not rely on this citation.";
 
-  card.limits =
-    "What this proves: these exact bytes existed at or before the anchored time and have not changed. " +
-    "What this does NOT prove: that the estimate is fair, that the input data is true, or that HORIZON SHIELD is competent. " +
-    "Those are judged by re-running the recipe at verify_url yourself.";
+  const estimateEra = kind === "jidec-claim-v1" || kind === "jidec-path-v1" || kind === "v0" || kind === "v0-plain";
+  card.limits = estimateEra
+    ? "What this proves: these exact bytes existed at or before the anchored time and have not changed. " +
+      "What this does NOT prove: that the estimate is fair, that the input data is true, or that HORIZON SHIELD is competent. " +
+      "Those are judged by re-running the recipe at verify_url yourself."
+    : "What this proves: these exact bytes existed at or before the anchored time and have not changed. " +
+      "What this does NOT prove: that any assertion inside the record is true, or that HORIZON SHIELD is competent. " +
+      "Read the record's own fields for what it claims and what it says it does not establish.";
 
   return card;
 }
@@ -560,7 +571,10 @@ async function callTool(name, args, env) {
   if (name === "nenrin_ledger_entry") {
     const n = Number(args.n);
     if (!Number.isInteger(n) || n < 1) throw new Error("n must be a positive integer");
-    return await nenrinRead(env, "/ledger/" + n, "entry " + n);
+    // 2026-10-13. /ledger/{n} answers HTML by default (the receipt page) and JSON only for ?format=json or
+    // Accept: application/json. Asking without either got the page, which nenrinRead cannot parse, so every
+    // entry read failed with "could not be read ... HTTP 200" (found 2026-10-13 on entries 86 to 88).
+    return await nenrinRead(env, "/ledger/" + n + "?format=json", "entry " + n);
   }
 
   throw new Error("unknown tool: " + name);

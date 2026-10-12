@@ -673,11 +673,21 @@ function receiptHtml(e, origin, env) {
     : "";
   const ots = `${origin}/ledger/${e.n}/ots`;
   const sch = e.schema || parseClaimSchema(e.record_canonical).schema;
+  // 2026-10-13. A record that names its own schema (a NENRIN batch, a head checkpoint, ...) was labelled
+  // "schema v0 · concept-proof" with a note about estimate JSON, which is wrong for it. Name the record's
+  // schema instead and point at the record's own establishes / does_not_establish.
+  let recSchema = "";
+  try { const j = JSON.parse(e.record_canonical || ""); if (j && typeof j === "object" && !Array.isArray(j) && typeof j.schema === "string" && j.schema !== "jidec-claim-v1") recSchema = j.schema; } catch {}
+  const named = sch !== "v1" && recSchema !== "";
   const schBadge = sch === "v1"
     ? `<span class="badge v1">schema v1 · independently verifiable</span>`
+    : named
+    ? `<span class="badge v1">record schema ${esc(recSchema)}</span>`
     : `<span class="badge v0">schema v0 · concept-proof (see SPEC v1)</span>`;
   const verifyLink = sch === "v1"
     ? `<div class="card"><div class="k">Machine-readable verification recipe</div><div class="v"><a href="${origin}/verify/${e.n}">${origin}/verify/${e.n}</a></div><div class="sub" style="margin-top:.4rem">Lists every artifact a third party must fetch and hash to independently reproduce this audit, no trust in HORIZON SHIELD required.</div></div>`
+    : named
+    ? `<div class="card"><div class="k">Record</div><div class="sub">This entry is a ${esc(recSchema)} record. Its bytes, shown below, are what the claim hash commits to; what the record establishes and does not establish is written inside it. The Bitcoin anchor bounds it from above in time and settles nothing else.</div></div>`
     : `<div class="card"><div class="k">Schema note</div><div class="sub">This entry uses the v0 schema (only the estimate JSON is hashed). Independent verification per SPEC v1 §3 is available on entries #2 and later. This entry remains a valid timestamp proof for its content at the recorded time.</div></div>`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>JIDEC Ledger #${e.n}: HORIZON SHIELD</title><style>

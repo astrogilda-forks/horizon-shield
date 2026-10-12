@@ -79,12 +79,19 @@ def main():
     print("5 summary lines:", len(summary.splitlines()))
     if "verdict" not in summary: fails.append("summary missing verdict")
 
+    # 6. a record that names its own schema is reported under it, not as v0 (2026-10-13, same rule as hs-jidec-mcp)
+    k6, _ = jc.classify_record('{"schema":"nenrin-agreement-batch-v1","count":1}')
+    k7, _ = jc.classify_record('{"estimate":{"total":1}}')
+    k8, _ = jc.classify_record('not json')
+    print("6 record kinds:", k6, k7, k8)
+    if (k6, k7, k8) != ("nenrin-agreement-batch-v1", "v0", "v0-plain"): fails.append("record kind by schema")
+
     print()
     if fails:
         print("FAIL:")
         for f in fails: print("  -", f)
         return 1
-    print("ALL PASS (5/5 citation scenarios)")
+    print("ALL PASS (6/6 citation scenarios)")
     print()
     print("--- sample human summary ---")
     print(summary)
