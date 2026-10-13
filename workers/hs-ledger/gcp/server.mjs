@@ -11,10 +11,14 @@ const worker = (await import("../src/worker.js")).default;
 
 const PORT = Number(process.env.PORT || 8080);
 const firestore = new Firestore(); // GOOGLE_CLOUD_PROJECT / ADC を自動使用
-const LEDGER = makeKv(firestore, process.env.KV_COLLECTION || "hs_ledger_kv");
+const KV_COLLECTION = process.env.KV_COLLECTION || "hs_ledger_kv";
+const LEDGER = makeKv(firestore, KV_COLLECTION);
+// 2026-10-13 L1r: the DO shim also sequences /ledger-append in a Firestore transaction over the KV
+// collection's seq / entry:n / hash:h docs, so it gets the same collection name as LEDGER.
 const AGREEMENT_DEDUPE_DO = makeAgreementDedupeDO(
   firestore,
-  process.env.DEDUPE_COLLECTION || "hs_ledger_agreement_dedupe"
+  process.env.DEDUPE_COLLECTION || "hs_ledger_agreement_dedupe",
+  KV_COLLECTION
 );
 
 // service binding は GCP では素の HTTPS fetch になる。Cloud Run は Cloudflare

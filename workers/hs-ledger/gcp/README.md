@@ -12,10 +12,16 @@ Bitcoin に固定済みの JIDEC 記録は旧ホストを永久に指すので�
                             1 canonical_sha256 == 1 doc == 1 transaction。read-decide-write を 1 トランザクションに包み、
                             Cloudflare の blockConcurrencyWhile と同じ強整合(boundary 2.3)を作る。
                             AgreementDedupeDO クラスも decideDedupe 純関数も無改変で使う。
+                            2026-10-13 (concurrency audit L1r): 台帳の entry 番号付け(/ledger-append)もここで受ける。
+                            KV コレクションの seq / hash:<h> を transaction で読み、entry:n / hash:h / seq を同じ
+                            transaction で書く(書く中身は src/ledger_append.mjs の appendEntryKv そのまま)。
+                            2 件が同時でも n と n+1 になる。transaction が失敗したら 503 で、呼び出し側は何も書かない。
+                            server.mjs は KV_COLLECTION をこの shim にも渡す(同じ doc を読み書きするため)。
 - `server.mjs`              Cloud Run 入口。Firestore + KV adapter + DO shim + service binding(passthrough) + worker を束ねる
 - `Dockerfile`             node:22-slim。COPY は src / nenrin / gcp
 - `package.json`           依存は @google-cloud/firestore だけ
-- `firestore_dedupe_do.test.mjs`  DO shim の契約(claim/get/dup/独立)と read-before-write を採点
+- `firestore_dedupe_do.test.mjs`  DO shim の契約(claim/get/dup/独立)と read-before-write、/ledger-append の
+                            同時 2 件(n と n+1)・保存バイト・dedup・transaction 失敗時の fail closed を採点
 
 worker.js への変更: **ゼロ**。台帳側は扉と違い card 署名を持たんので、origin/name の override も要らん。
 
