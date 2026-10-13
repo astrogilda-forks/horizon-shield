@@ -181,12 +181,34 @@ export function mergeAsked(saved, incoming) {
   return rows.slice(-50);
 }
 
+// 2026-10-13 (issue #13). Three outcomes for a JSON read from HS_HEARING_KV: { value } when found, { absent: true }
+// when KV has no such key, { failed: true } when the read threw (a KV error, or a stored value that would not parse).
+// A failed read is not "no record": the callers below write nothing on { failed }.
+export async function readJsonKey(env, key) {
+  let v;
+  try { v = await env.HS_HEARING_KV.get(key, "json"); } catch (_e) { return { failed: true }; }
+  if (v == null) return { absent: true };
+  return { value: v };
+}
+
+// The error putStore throws when it cannot read the saved store. code store_read_failed; nothing was written.
+export function storeReadFailed(key) {
+  const e = new Error("store_read_failed: " + key);
+  e.code = "store_read_failed";
+  e.key = key;
+  return e;
+}
+
 export async function putStore(env, store, by) {
   const sid = store && store.store_id;
   if (!sid) throw new Error("putStore: store_id がありません");
   const ap = (store.autopilot = store.autopilot || {});
-  let saved = null;
-  try { saved = await env.HS_HEARING_KV.get("store:" + sid, "json"); } catch (_e) { saved = null; }
+  // 2026-10-13 (issue #13). If the saved store cannot be read, do not write. Before, the merge below was skipped and
+  // the put went ahead, dropping the saved _writes, asked and pending ledger that the merge exists to keep.
+  // Now it throws store_read_failed (nothing written): request routes answer 503, the daily tick skips the store.
+  const rs = await readJsonKey(env, "store:" + sid);
+  if (rs.failed) throw storeReadFailed("store:" + sid);
+  const saved = rs.value || null;
   const sap = (saved && saved.autopilot) || null;
   if (sap) {
     // 台帳は、書きに来た写しが持っていなくても引き継ぐ。
@@ -1248,7 +1270,13 @@ export async function runDailyTick(env, deps) {
       }
     }
     store.autopilot = ap;
-    await putStore(env, store, "runDailyTick");
+    // 2026-10-13 (issue #13). A store whose saved copy could not be re-read is skipped (nothing written) and logged;
+    // the next tick reads it again. Other errors still end the tick as before.
+    try { await putStore(env, store, "runDailyTick"); } catch (e) {
+      if (!(e && e.code === "store_read_failed")) throw e;
+      console.error("[hs-hearing] store_read_failed in runDailyTick: " + e.key + " skipped, nothing written; the next run retries");
+      log.skipped.push(sid + ":store_read_failed");
+    }
   }
   // 保全エージェント弐号(ウチ回り): 内臓検診と自己修復。結果は guardian:last に記録され、壱号(Actions)が読む。
   log.guardian = await selfHeal(env, stores);

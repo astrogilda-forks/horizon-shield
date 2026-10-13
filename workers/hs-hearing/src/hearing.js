@@ -23,7 +23,7 @@ import * as VIS from "./visibility.js";
 import * as CONCIERGE from "./concierge.js";
 import * as PII from "./pii.js";
 
-const SERVER = { name: "HORIZON SHIELD YAKUMO", version: "2.3.1" };
+const SERVER = { name: "HORIZON SHIELD YAKUMO", version: "2.3.1-readfail3-20261013" };
 const PUBLIC_DATA_FALLBACK = "https://shield.the-horizons-innovation.com/data/yakumo-contractors.json";
 const MALL_URL = "https://shield.the-horizons-innovation.com/yakumo/";
 const SITE_URL = "https://shield.the-horizons-innovation.com";
@@ -291,12 +291,48 @@ async function estFileSave(env, storeId, buf, name, via) {
   const id = at.replace(/[^0-9]/g, "") + "-" + Math.random().toString(36).slice(2, 8);
   const meta = { name: safeStr(name, 120), type: type, size: size, at: at, via: safeStr(via, 20) };
   await env.HS_HEARING_KV.put("estfile:" + storeId + ":" + id, buf, { metadata: meta });
-  const idxKey = "estfiles:" + storeId;
-  const idx = (await env.HS_HEARING_KV.get(idxKey, "json")) || [];
-  idx.push({ id: id, ...meta, read: false });
-  const kept = idx.slice(-ESTFILE_KEEP);
-  await env.HS_HEARING_KV.put(idxKey, JSON.stringify(kept));
+  // 2026-10-13 (concurrency audit H1). No shared index write any more: see estFilesList.
+  const kept = await estFilesList(env, storeId, { id: id, ...meta, read: false });
   return { ok: true, id: id, size: size, type: type, count: kept.filter((x) => !x.read).length };
+}
+
+/* 2026-10-13 (concurrency audit H1). The list of a store's estimate files is built from the files themselves.
+   It used to be one KV value, estfiles:<store>, that every upload read, pushed one entry onto and put back. A LINE
+   message with several photos arrives as one webhook per photo, so two uploads overlap; KV has no compare-and-swap,
+   and the second put dropped the first photo's entry. The photo stayed in KV but left the unread list, so nobody was
+   asked to read it. Now: every file is its own key already (estfile:<store>:<id>, with its name/type/size/at/via in
+   the key's metadata), so one list() gives the files; a read mark is its own key (estfile_read:<store>:<id>).
+   Migration: the old index is still read (entries and read flags) and never written or deleted here. Same shape and
+   order as before ({ id, name, type, size, at, via, read }, oldest first, the newest ESTFILE_KEEP). own: the entry
+   just written, added in case list() does not show it yet (list is eventually consistent). */
+const ESTFILE_READ_PREFIX = "estfile_read:";
+const ESTFILE_LISTING = "per-key-20261013";   // served on GET /health; ops/prod_fix_check.sh reads it
+async function estKvListAll(env, prefix) {
+  const out = [];
+  let cursor;
+  for (let guard = 0; guard < 50; guard++) {
+    const res = await env.HS_HEARING_KV.list({ prefix, cursor });
+    for (const k of (res && res.keys) || []) out.push(k);
+    if (!res || res.list_complete || !res.cursor) break;
+    cursor = res.cursor;
+  }
+  return out;
+}
+async function estFilesList(env, storeId, own) {
+  const old = (await env.HS_HEARING_KV.get("estfiles:" + storeId, "json")) || [];
+  const byId = new Map();
+  for (const e of Array.isArray(old) ? old : []) if (e && typeof e.id === "string") byId.set(e.id, { ...e });
+  const fp = "estfile:" + storeId + ":";
+  for (const k of await estKvListAll(env, fp)) {
+    const id = k.name.slice(fp.length);
+    const m = k.metadata || {};
+    const prev = byId.get(id);
+    byId.set(id, { id: id, name: m.name, type: m.type, size: m.size, at: m.at, via: m.via, read: !!(prev && prev.read) });
+  }
+  if (own && own.id && !byId.has(own.id)) byId.set(own.id, own);
+  const rp = ESTFILE_READ_PREFIX + storeId + ":";
+  for (const k of await estKvListAll(env, rp)) { const e = byId.get(k.name.slice(rp.length)); if (e) e.read = true; }
+  return [...byId.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)).slice(-ESTFILE_KEEP);
 }
 
 /* 受け取ったことと、読めたことは別。写真の中の金額を機械が読み取ったことにはしない。
@@ -2039,6 +2075,13 @@ async function handlePartnerInbound(env, storeId, store, text, source, opts) {
   return { kind: "answer", res, reply: smart || "受け取りました。ありがとうございます。内容は運営事務局で確認します。お急ぎのご用件でしたら、その旨をお書きください。" };
 }
 
+// 2026-10-13 (issue #13). What handleKiraBridge returns when a read it depends on failed: nothing was written, and the
+// /kira-bridge route answers it as 503 with this code (hs-kira-line treats a non-ok bridge as "not handed over").
+function bridgeReadFailed(code, key) {
+  console.error("[hs-hearing] " + code + " in /kira-bridge: " + key + " could not be read; nothing written");
+  return { ok: false, error: code };
+}
+
 async function handleKiraBridge(env, userId, text, groupId, estimates, opts) {
   const t = String(text || "").trim();
   let storeId = await env.HS_HEARING_KV.get("line2store:" + userId, "text");
@@ -2093,8 +2136,13 @@ async function handleKiraBridge(env, userId, text, groupId, estimates, opts) {
   {
     const intakeKey = "intake:" + userId;
     const INTAKE_TTL = 259200; // 72時間
-    let intake = null;
-    try { intake = await env.HS_HEARING_KV.get(intakeKey, "json"); } catch (_e) { intake = null; }
+    // 2026-10-13 (issue #13). A failed read of intake:<uid> is not "no intake". Before, it restarted a conversation
+    // that was waiting for its industry or for a person (the industry question asked again, intake overwritten).
+    // Now nothing is written and the bridge answers 503 intake_read_failed; KIRA sends its neutral receipt and tells
+    // the owner. The next message reads it again.
+    const ri = await AP.readJsonKey(env, intakeKey);
+    if (ri.failed) return bridgeReadFailed("intake_read_failed", intakeKey);
+    const intake = ri.value || null;
 
     const putIntake = async (o) => {
       try { await env.HS_HEARING_KV.put(intakeKey, JSON.stringify(o), { expirationTtl: INTAKE_TTL }); } catch (_e) {}
@@ -2110,7 +2158,11 @@ async function handleKiraBridge(env, userId, text, groupId, estimates, opts) {
       let sid = existingId || null;
       let store = null;
       if (sid) {
-        try { store = await env.HS_HEARING_KV.get("store:" + sid, "json"); } catch (_e) { store = null; }
+        // 2026-10-13 (issue #13). A failed read of store:<sid> is not "no store". Before, it made a new store and token
+        // and repointed line2store / store2line, orphaning the existing store. Now nothing is written (503).
+        const rs = await AP.readJsonKey(env, "store:" + sid);
+        if (rs.failed) return bridgeReadFailed("store_read_failed", "store:" + sid);
+        store = rs.value || null;
       }
       // 既に店があったということは、業種を決める前に別の業種のヒアリングを
       // 送ってしまっている。次の文で、それを取り消す必要がある。
@@ -2450,7 +2502,7 @@ const YAKUMO_EMBED_JS = "/* HORIZON SHIELD Yakumo 案内ウィジェット (serv
 "  root.querySelector('#go').addEventListener('click',search);\n" +
 "})();\n";
 
-export default {
+const worker = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
@@ -2466,7 +2518,7 @@ export default {
     if (path === "/health") {
       // 保全: 心臓の脈(最終巡回)と内臓検診(弐号)の要約を出す。件数のみで中身は出さない(非機微)。
       const g = await AP.guardianStatus(env).catch(() => null);
-      return json({ ok: true, server: SERVER.name, version: SERVER.version, ...(g || {}) });
+      return json({ ok: true, server: SERVER.name, version: SERVER.version, estimate_files: ESTFILE_LISTING, ...(g || {}) });
     }
 
     if (path === "/.well-known/agent-card.json") return json(agentCard(url.origin));
@@ -2573,7 +2625,7 @@ export default {
         // 2026-09-11 用紙が回答欄を作れるように、設問を1問ずつ qid つきで返す。
         //   これまで連結した1本の文字列しか返しておらず、用紙は欄を作れなかった。
         pending_questions: pendingQuestionList(store),
-        estimate_files: ((await env.HS_HEARING_KV.get("estfiles:" + store.store_id, "json")) || []).length,
+        estimate_files: (await estFilesList(env, store.store_id)).length,
         referral_count: refs,
         // 紹介導線: この店専用の紹介リンク(他の工務店を誘う口)。member_noが無ければ汎用applyを返す。
         referral_link: store.member_no
@@ -2666,6 +2718,7 @@ export default {
       if (!/^U[0-9a-f]{32}$/.test(uid)) return json({ error: "bad_user" }, 400);
       const gid = /^[CR][0-9a-f]{32}$/.test(safeStr(bb.groupId || "", 64)) ? safeStr(bb.groupId || "", 64) : null;
       const out = await handleKiraBridge(env, uid, safeStr(bb.text, 6000), gid, Array.isArray(bb.estimates) ? bb.estimates : [], { kiraDecides: bb.kira_decides === true });
+      if (out && out.ok === false) return json(out, 503);   // 2026-10-13: a failed read (intake_read_failed / store_read_failed)
       return json(out);
     }
     // KIRA(hs-kira-line)から: 加盟店が送った見積を審査材料(estimates_for_audit)に積む。共有鍵必須。
@@ -2730,7 +2783,7 @@ export default {
       if (!adminOk(request, env)) return json({ error: "unauthorized" }, 401);
       const st = safeStr(url.searchParams.get("store"), 60).replace(/[^A-Za-z0-9_-]/g, "");
       if (!st) return json({ error: "store_required" }, 400);
-      const idx = (await env.HS_HEARING_KV.get("estfiles:" + st, "json")) || [];
+      const idx = await estFilesList(env, st);   // 2026-10-13 (H1)
       return json({ ok: true, store_id: st, count: idx.length,
                     unread: idx.filter((x) => !x.read).length, files: idx });
     }
@@ -2753,10 +2806,12 @@ export default {
       const st = safeStr(rb.store, 60).replace(/[^A-Za-z0-9_-]/g, "");
       const fid = safeStr(rb.id, 60).replace(/[^A-Za-z0-9_-]/g, "");
       if (!st) return json({ error: "store_required" }, 400);
-      const idx = (await env.HS_HEARING_KV.get("estfiles:" + st, "json")) || [];
+      const idx = await estFilesList(env, st);   // 2026-10-13 (H1): one read mark per file, no shared index write
       let n = 0;
-      for (const f of idx) if (!fid || f.id === fid) { if (!f.read) n++; f.read = true; }
-      await env.HS_HEARING_KV.put("estfiles:" + st, JSON.stringify(idx));
+      for (const f of idx) if (!fid || f.id === fid) {
+        if (!f.read) { n++; await env.HS_HEARING_KV.put(ESTFILE_READ_PREFIX + st + ":" + f.id, new Date().toISOString()); }
+        f.read = true;
+      }
       const unread = idx.filter((x) => !x.read).length;
       if (!unread) {
         const st2 = await env.HS_HEARING_KV.get("store:" + st, "json");
@@ -3683,6 +3738,22 @@ export default {
       await notify(env, "[Yakumo] email handler error: " + String(e).slice(0, 120));
     }
   },
+};
+
+// 2026-10-13 (issue #13). putStore throws store_read_failed when it cannot re-read the saved store (it writes
+// nothing). A request that reaches that answers 503 with the code, not a bare 500, so the caller can retry.
+export default {
+  async fetch(request, env, ctx) {
+    try { return await worker.fetch(request, env, ctx); } catch (e) {
+      if (e && e.code === "store_read_failed") {
+        console.error("[hs-hearing] store_read_failed: " + e.key + " could not be read; nothing written");
+        return json({ ok: false, error: "store_read_failed" }, 503);
+      }
+      throw e;
+    }
+  },
+  scheduled: (event, env, ctx) => worker.scheduled(event, env, ctx),
+  email: (message, env, ctx) => worker.email(message, env, ctx),
 };
 
 // Durable Object の class は entry から export しとかんと wrangler が見つけられん。
