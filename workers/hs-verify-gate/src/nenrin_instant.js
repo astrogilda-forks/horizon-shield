@@ -111,8 +111,18 @@ export async function toolSetSha256(names) {
 
 // ---- 窓ごとの salt ----------------------------------------------------------------
 // 作った時刻を残す。beacon はそれより後の block でなければならん。
+// 2026-10-13 (#13). null only when the key is absent or not JSON. A failed KV read throws: it used to read as absent,
+// and windowStateFor then made a new salt and wrote it over the committed one (beacon and rule the same way).
 async function readJson(kv, k) {
-  try { return JSON.parse((await kv.get(k)) || "null"); } catch (e) { return null; }
+  let raw;
+  try { raw = await kv.get(k); }
+  catch (e) {
+    const err = new Error("window_read_failed: " + k + " could not be read (storage error)");
+    err.readFailure = true;
+    err.body = { error: "window_read_failed", read_failed: true, note: "The NENRIN window state (" + k + ") could not be read (storage error). This is a read failure, NOT a statement that no salt, rule or beacon exists. Try again." };
+    throw err;
+  }
+  try { return JSON.parse(raw || "null"); } catch (e) { return null; }
 }
 async function putJson(kv, k, v) {
   try { await kv.put(k, JSON.stringify(v), { expirationTtl: KV_TTL }); } catch (e) {}
@@ -244,12 +254,18 @@ export async function coordinate(kv, nowMs, fetchImpl) {
   const legacy = (why, reason_code, bc, rule) => Object.assign({}, base, { derived: false, beacon: bc || null, why, reason_code: reason_code || null, rule: rule || null });
   if (!st) return legacy("window state unavailable (KV), so the legacy computable schedule is in use and the subject can predict it. Disclosed, not hidden.", "window_state_unavailable", null, null);
   let rule = null;
-  try { rule = await windowRule(kv, wid); } catch (e) { rule = null; }
+  // 2026-10-13 (#13). An unreadable rule or beacon is not a missing one: fall back for this run, pin and write nothing.
+  try { rule = await windowRule(kv, wid); }
+  catch (e) { if (e && e.readFailure) return legacy("the window rule could not be read (KV), so the legacy computable schedule is in use for this run and nothing was pinned. Disclosed, not hidden.", "window_rule_unavailable", null, null); rule = null; }
   if (rule && rule.rule === "legacy") {
     return legacy("pinned legacy for this window: the first sweep of the window could not derive (" + (rule.reason || "reason not recorded") + "); one rule per window so every row is measured exactly once. The subject can predict this schedule. Disclosed, not hidden.", "pinned_legacy", rule.beacon || null, rule);
   }
   let bc = null;
-  try { bc = await beacon(kv, wid, st.salt_created_at, fetchImpl); } catch (e) { bc = { height: null, block_hash: null, reason_code: "beacon_error", reason: String((e && e.message) || e).slice(0, 120), sources: [] }; }
+  try { bc = await beacon(kv, wid, st.salt_created_at, fetchImpl); }
+  catch (e) {
+    if (e && e.readFailure) return legacy("the cached beacon could not be read (KV), so the legacy computable schedule is in use for this run and nothing was pinned. Disclosed, not hidden.", "beacon_read_failed", null, rule);
+    bc = { height: null, block_hash: null, reason_code: "beacon_error", reason: String((e && e.message) || e).slice(0, 120), sources: [] };
+  }
   if (!bc || !bc.block_hash) {
     if (!rule) { try { rule = await pinWindowRule(kv, wid, "legacy", { reason: bc ? bc.reason : "no beacon", reason_code: bc ? bc.reason_code : null, beacon: bc || null }); } catch (e) { rule = null; } }
     return legacy("no beacon for this window (" + (bc && bc.reason ? bc.reason : "no reason recorded") + "), so the legacy computable schedule is in use and the subject can predict it. Disclosed, not hidden.", bc ? bc.reason_code : "no_beacon", bc || null, rule);

@@ -694,7 +694,9 @@ async function requesterReport(env, n) {
     const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
     if (d < USAGE_REQ_SINCE) { by_day.push({ day: d, state: "not_counted_yet" }); continue; }
     let row = null;
-    try { row = await env.HS_VERIFY_KV.get(reqUsageKey(d), "json"); } catch (_e) { row = null; }
+    // 2026-10-13 (#13). A day whose counter could not be read is unreadable, not none_recorded (as netReport does).
+    try { row = await env.HS_VERIFY_KV.get(reqUsageKey(d), "json"); }
+    catch (_e) { by_day.push({ day: d, state: "unreadable", outside_measurements_of_external_endpoints: null, counts: null }); continue; }
     const counts = (row && row.counts) || {};
     let dayOutsideExternal = 0;
     for (const [k, v] of Object.entries(counts)) {
@@ -746,10 +748,13 @@ async function usageReport(env, days) {
   const out = [];
   const totals = { external_checks: 0, own_checks: 0, testbed_hits: 0, spec_hits: 0 };
   const hosts = [];
+  const unreadable = [];
   for (let i = 0; i < n; i++) {
     const d = new Date(today.getTime() - i * 86400000).toISOString().slice(0, 10);
     let row = null;
-    try { row = await env.HS_VERIFY_KV.get(usageKey(d), "json"); } catch (_e) { row = null; }
+    // 2026-10-13 (#13). A day that could not be read was skipped like a day with no requests, and honest_status then
+    // said nobody outside had used it. The day is now listed as unreadable and the status says it cannot tell.
+    try { row = await env.HS_VERIFY_KV.get(usageKey(d), "json"); } catch (_e) { unreadable.push(d); out.push({ day: d, state: "unreadable", external_checks: null, own_checks: null, testbed_hits: null }); continue; }
     if (!row) continue;
     for (const f of Object.keys(totals)) totals[f] += Number(row[f]) || 0;
     for (const h of (row.external_hosts || [])) if (hosts.indexOf(h) < 0) hosts.push(h);
@@ -777,10 +782,13 @@ async function usageReport(env, days) {
       "A lower bound. Counters are read and written back, so simultaneous requests overwrite each other and " +
       "the loss is silently absorbed. A number here is never higher than the truth, and we would rather " +
       "under-report our own usage than publish a figure we cannot defend.",
+    ...(unreadable.length ? { unreadable_days: unreadable, totals_note: "totals leave out the unreadable_days, whose counters could not be read (storage error); they are a lower bound of a lower bound and NOT a statement that those days had no requests" } : {}),
     honest_status:
       totals.external_checks > 0
         ? "Someone outside this operator has used it. That is a fact about usage, not about usefulness."
-        : "Nobody outside this operator has used it yet. Calling it infrastructure today would be a claim with no measurement behind it, so we do not."
+        : unreadable.length
+          ? "No outside use was found in the days that could be read, but " + unreadable.length + " day(s) could not be read (storage error), so this response cannot say whether anyone outside this operator has used it."
+          : "Nobody outside this operator has used it yet. Calling it infrastructure today would be a claim with no measurement behind it, so we do not."
   };
 }
 
@@ -2635,6 +2643,23 @@ class ReadFailure extends Error {
   }
 }
 
+// 2026-10-13 (#13). The watch list for read-only public answers (/watchlist, /register and every page built on it).
+// watchlist() alone reads a failed register as {} and a failed legacy list as nothing, so the answer came back 200
+// without the rows it could not read. This throws ReadFailure instead.
+async function watchlistChecked(env) {
+  const reg = await readRegistryChecked(env);
+  if (reg === null) throw new ReadFailure("registry_read_failed", "The register");
+  const wl = await watchlist(env, reg, true);
+  if (wl === null) throw new ReadFailure("watchlist_read_failed", WATCHLIST_LEGACY_WHAT);
+  return wl;
+}
+const WATCHLIST_LEGACY_WHAT = "The operator's list of watched endpoints (watch:endpoints)";
+// A route's answer to a ReadFailure: 503 with its body. Anything else is not ours to answer and is rethrown.
+function readFailureJson(e, extra) {
+  if (e && e.readFailure) return json({ ...(extra || {}), ...e.body }, 503);
+  throw e;
+}
+
 // 0.4.10 TSUGI. 隔離中か。until が在って過ぎとったら隔離は切れとる (切れた事実は行に残る)。
 function isQuarantined(row, nowIso) {
   if (!row || !row.quarantined) return false;
@@ -3543,7 +3568,8 @@ function endpointPage(origin, row) {
 }
 
 async function publicRegister(env) {
-  const list = await watchlist(env);
+  // 2026-10-13 (#13). Throws ReadFailure when the register cannot be read; callers answer 503, never a shorter list.
+  const list = await watchlistChecked(env);
   const rows = [];
   let joined = 0;
   for (const w of list) {
@@ -3666,7 +3692,8 @@ const DEFAULT_WATCHLIST = [
 // 既定の自社分、旧来の watch:endpoints、新しい watch:registry を束ねて返す。
 // 返すのは {endpoint, tier, webhook} の配列。tier は self / free / paid。
 // 2026-10-13. regIn: a register the caller already read (with readRegistryChecked); omitted, it reads as before.
-async function watchlist(env, regIn) {
+// strict: a failed read of the legacy list returns null instead of continuing without its rows (#13).
+async function watchlist(env, regIn, strict) {
   const out = [];
   const seen = new Set();
   const push = (ep, tier, webhook, extra) => {
@@ -3679,7 +3706,7 @@ async function watchlist(env, regIn) {
     try {
       const legacy = await env.HS_VERIFY_KV.get("watch:endpoints", "json");
       if (Array.isArray(legacy)) for (const ep of legacy) push(ep, "self", null, { requested_by: "operator" });
-    } catch (_e) { /* KV が読めなければ既定値で続ける */ }
+    } catch (_e) { if (strict) return null; /* KV が読めなければ既定値で続ける */ }
   }
   const reg = regIn || await readRegistry(env);
   for (const ep of Object.keys(reg)) {
@@ -3996,7 +4023,8 @@ async function readChanges(env) {
       not_a_judgement: "The MCP specification treats tool list changes as normal operation. Nothing here says a change was wrong. It says a change happened, and on what date."
     };
   } catch (_e) {
-    return { changes: [], note: "could not read changes" };
+    // 2026-10-13 (#13). Was { changes: [] }, read by /changes and /feed.xml as "no change recorded".
+    return { changes: null, error: "changes_read_failed", read_failed: true, note: "The change feed could not be read (storage error). This is NOT a statement that nothing changed. Try again." };
   }
 }
 
@@ -4014,7 +4042,9 @@ async function fileInstantCommitment(env, wid, st, nowMs, fetchImpl) {
   if (!env || !env.HS_VERIFY_KV || !wid || !st || !st.commitment) return null;
   const key = "nenrin:commitfiled:" + wid;
   let prev = null;
-  try { prev = await env.HS_VERIFY_KV.get(key, "json"); } catch (_e) { prev = null; }
+  // 2026-10-13 (#13). A failed read used to file again and overwrite the first filing (and its before_open) with this one.
+  try { prev = await env.HS_VERIFY_KV.get(key, "json"); }
+  catch (_e) { return { window_id: wid, commitment: st.commitment, http: null, sha: null, error: "commitment_filed_read_failed", read_failed: true, note: "whether this window's commitment was already filed could not be read (storage error), so nothing was filed or written in this run" }; }
   if (prev && prev.sha) return prev;
   const bounds = nenrin.windowBounds(wid);
   const filedAt = new Date(nowMs).toISOString();
@@ -4059,7 +4089,9 @@ async function fileInstantCommitment(env, wid, st, nowMs, fetchImpl) {
 }
 async function commitmentFiled(env, wid) {
   if (!env || !env.HS_VERIFY_KV || !wid) return null;
-  try { return await env.HS_VERIFY_KV.get("nenrin:commitfiled:" + wid, "json"); } catch (_e) { return null; }
+  // 2026-10-13 (#13). null means not filed (the page says so), so a failed read throws instead.
+  try { return await env.HS_VERIFY_KV.get("nenrin:commitfiled:" + wid, "json"); }
+  catch (_e) { throw new ReadFailure("commitment_filed_read_failed", "The filing record of this window's commitment"); }
 }
 
 async function runDailySweep(env, opts) {
@@ -4686,7 +4718,8 @@ async function lookupServer(env, endpoint) {
   // "absent" or "not yet measured". Callers answer it as a failure (503, isError), never as on_register:false.
   const reg = await readRegistryChecked(env);
   if (reg === null) throw new ReadFailure("registry_read_failed", "The register");
-  const wl = await watchlist(env, reg);
+  const wl = await watchlist(env, reg, true);
+  if (wl === null) throw new ReadFailure("watchlist_read_failed", WATCHLIST_LEGACY_WHAT);
   const watched = wl.find((w) => w && w.endpoint === endpoint) || null;
   const regEntry = reg[endpoint] || null;
   const hist = await readHistory(env, endpoint);
@@ -5724,7 +5757,7 @@ export default {
       if (hist && typeof hist === "object") hist.retention = { kept_max: HISTORY_MAX, note: "The gate keeps the most recent " + HISTORY_MAX + " records per endpoint and drops the oldest beyond that (30 until 2026-09-05). Entries are never edited, but they do leave this response. A monthly ring (nenrin-ring-v1) needs the full month, so export before it is gone." };
       return json(hist);
     }
-    if (path === "/changes") return json(await readChanges(env));
+    if (path === "/changes") { const ch = await readChanges(env); return json(ch, ch && ch.read_failed ? 503 : undefined); }
     if (path === "/sweep/last") { const sl = await readSweepLast(env); return json(sl, sl && sl.read_failed ? 503 : undefined); }
 
     // 0.3.5. 窓の公開面。commitment は作った瞬間から、salt は窓が閉じてから、固定した規則と beacon はいつでも。
@@ -5739,6 +5772,8 @@ export default {
         w.commitment_filed = await commitmentFiled(env, wid);
         return w;
       };
+      // 2026-10-13 (#13). A failed read of the window state or its filing record answers 503, not 404 or null.
+      try {
       if (m) {
         const one = await withFiled(m[1]);
         return one ? json(one) : json({ error: "not_found", window_id: m[1], note: "no salt was created for this window (before 0.3.0, or more than 120 days ago)" }, 404);
@@ -5760,6 +5795,7 @@ export default {
           history: "since 0.3.5 every /history entry carries coordinate_derivation (derived, window_id, salt_commitment, beacon, day_in_window, or the fallback and its reason)"
         }
       });
+      } catch (e) { return readFailureJson(e, m ? { window_id: m[1] } : {}); }
     }
 
     // 0.4.0 (2026-09-07). 繋ぐ前に 1 本で聞ける口。点数は無い。verified / pending / declined / unknown と、
@@ -5777,12 +5813,13 @@ export default {
 
     // 公開の登録簿。加盟者の行を、人間もエージェントも一覧で読める。
     if (path === "/register" && request.method === "GET") {
-      return json(await publicRegister(env));
+      try { return json(await publicRegister(env)); } catch (e) { return readFailureJson(e); }
     }
 
     // 通過した行だけ。0件なら0件と返す。空を隠すために基準を緩めることはしない。
     if (path === "/verified.json" && request.method === "GET") {
-      const reg = await publicRegister(env);
+      let reg;
+      try { reg = await publicRegister(env); } catch (e) { return readFailureJson(e); }
       const all = Array.isArray(reg.rows) ? reg.rows : [];
       const verified = all.filter((r) => r.latest && r.latest.status === CONFIG.tier_pass);
       return json({
@@ -5875,7 +5912,9 @@ export default {
 
     // 監視の登録。誰でも自分のエンドポイントを載せられる。判定は変わらない。
     if (path === "/watch" && request.method === "GET") {
-      const reg = await readRegistry(env);
+      // 2026-10-13 (#13). A failed read used to answer registered:false or count 0.
+      const reg = await readRegistryChecked(env);
+      if (reg === null) return json({ ...(url.searchParams.get("endpoint") ? { endpoint: url.searchParams.get("endpoint") } : {}), ...new ReadFailure("registry_read_failed", "The register").body }, 503);
       const ep = url.searchParams.get("endpoint");
       if (ep) {
         const r = reg[ep];
@@ -6059,7 +6098,8 @@ export default {
       return json(await runDailySweep(env, { force: force }));
     }
     if (path === "/watchlist") {
-      const wl = await watchlist(env);
+      let wl;
+      try { wl = await watchlistChecked(env); } catch (e) { return readFailureJson(e); }
       const removedList = await readRemoved(env);
       return json({
         watched: wl.map((w) => ({
@@ -6082,7 +6122,8 @@ export default {
 
     if (path === "/badge/seal" && request.method === "GET") {
       const ep = url.searchParams.get("endpoint") || "";
-      const reg = await publicRegister(env);
+      let reg;
+      try { reg = await publicRegister(env); } catch (e) { return readFailureJson(e, { endpoint: ep }); }
       const row = (Array.isArray(reg.rows) ? reg.rows : []).find((r) => r.endpoint === ep);
       const lb = (row && row.operator_label) || {};
       const status = (row && row.latest && row.latest.status) ? String(row.latest.status) : "not listed";
@@ -6115,7 +6156,8 @@ export default {
       const ep = url.searchParams.get("endpoint") || "";
       let status = "not listed", color = "#9f9f9f";
       if (ep) {
-        const reg = await publicRegister(env);
+        let reg;
+        try { reg = await publicRegister(env); } catch (e) { return readFailureJson(e, { endpoint: ep }); }
         const row = (Array.isArray(reg.rows) ? reg.rows : []).find((r) => r.endpoint === ep);
         if (row && row.latest && row.latest.status) {
           status = String(row.latest.status);
@@ -6134,7 +6176,8 @@ export default {
     // 2026-09-07. The verification envelope as a paste-ready snippet for an operator's own site.
     if (path === "/embed" && request.method === "GET") {
       const ep = url.searchParams.get("endpoint") || "";
-      const reg = await publicRegister(env);
+      let reg;
+      try { reg = await publicRegister(env); } catch (e) { return readFailureJson(e, { endpoint: ep }); }
       const row = (Array.isArray(reg.rows) ? reg.rows : []).find((r) => r.endpoint === ep);
       if (!row) {
         return json({ error: "not on the register", endpoint: ep, note: "No envelope is minted for an endpoint nobody has measured. Ask for a measurement and this URL starts working.", register: "https://gate.horizonshield.dev/register" }, 404);
@@ -6156,7 +6199,8 @@ export default {
     if (path.startsWith("/e/") && request.method === "GET") {
       const rest = path.slice(3).replace(/\/+$/, "");
       const ep = "https://" + rest;
-      const reg = await publicRegister(env);
+      let reg;
+      try { reg = await publicRegister(env); } catch (e) { return readFailureJson(e, { endpoint: ep }); }
       const row = (Array.isArray(reg.rows) ? reg.rows : []).find((r) => r.endpoint === ep);
       if (!row) {
         return json({
@@ -6179,7 +6223,8 @@ export default {
     if (path === "/openapi.json") return json(openapiDoc(url.origin));
 
     if (path === "/sitemap.xml") {
-      const reg = await publicRegister(env);
+      let reg;
+      try { reg = await publicRegister(env); } catch (e) { return readFailureJson(e); }
       const rows = Array.isArray(reg.rows) ? reg.rows : [];
       return new Response(sitemapXml(url.origin, rows), {
         headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600", ...CORS_HEADERS }
@@ -6188,6 +6233,7 @@ export default {
 
     if (path === "/feed.xml") {
       const ch = await readChanges(env);
+      if (ch && ch.read_failed) return json(ch, 503);
       const list = Array.isArray(ch.changes) ? ch.changes : [];
       return new Response(atomFeed(url.origin, list), {
         headers: { "Content-Type": "application/atom+xml; charset=utf-8", "Cache-Control": "public, max-age=300", ...CORS_HEADERS }
@@ -6236,7 +6282,8 @@ export default {
     // to look. Same bytes as /register, plus the statement of what the rows are and are not,
     // shaped so that a crawler which reads nothing else still quotes it correctly.
     if (path === "/.well-known/mcp-register.json" && request.method === "GET") {
-      const reg = await publicRegister(env);
+      let reg;
+      try { reg = await publicRegister(env); } catch (e) { return readFailureJson(e); }
       return json({
         "@context": "https://schema.org",
         "@type": "Dataset",
