@@ -82,15 +82,15 @@ async function rateLimited(env, request, bucket, max) {
 }
 
 // 2026-10-13. Three outcomes: { order } when found, { absent: true } when KV has no such key, { failed: true } when the
-// KV read threw or the stored value would not parse. getOrder keeps its old meaning (null for both) for the callers
-// not changed here; the routes that answer an outside caller use readOrder so a failure is not reported as "not found".
+// KV read threw or the stored value would not parse. Every order read goes through readOrder, so a failure is not
+// reported as "not found". (2026-10-13: getOrder, which returned null for both, is gone; its last callers were the
+// IPN, generateDraft and the crons.)
 const readOrder = async (env, id) => {
   let raw;
   try { raw = await env.US_ORDERS.get(`order:${id}`); } catch { return { failed: true }; }
   if (raw == null) return { absent: true };
   try { return { order: JSON.parse(raw) }; } catch { return { failed: true }; }
 };
-const getOrder = async (env, id) => { const r = await readOrder(env, id); return r.order || null; };
 // The status is kept in KV metadata so the cron can list orders without reading each one.
 const putOrder = (env, o) => env.US_ORDERS.put(`order:${o.id}`, JSON.stringify(o), { metadata: { status: o.status, paid_at: o.paid_at || null, created_at: o.created_at } });
 const sha16 = (o) => (o.draft && o.draft.sha256 ? o.draft.sha256.slice(0, 16) : null);
@@ -195,7 +195,14 @@ export async function handleIpn(request, env, ctx, fetchImpl = fetch) {
   const custom = params.get("custom") || params.get("item_number") || "";
   const orderId = ORDER_RE.test(custom) ? custom : "";
   const txnId = String(params.get("txn_id") || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 32);
-  const order = orderId ? await getOrder(env, orderId) : null;
+  // 2026-10-13. A failed order read answers 503 so PayPal sends the IPN again. Before, it became "unknown order":
+  // recorded as ipn-skip and answered 200, so a paid order was never marked paid.
+  let order = null;
+  if (orderId) {
+    const rd = await readOrder(env, orderId);
+    if (rd.failed) return json({ ok: false, error: "order_read_failed" }, 503);
+    order = rd.order || null;
+  }
   const chk = checkIpnAgainstOrder(params, order, env);
   if (!chk.ok) {
     // Not ours, or not matching: record it, and tell TOshi only when it concerns a real order of ours.
@@ -204,7 +211,9 @@ export async function handleIpn(request, env, ctx, fetchImpl = fetch) {
     return json({ ok: true, skipped: chk.reason });
   }
   if (!txnId) return json({ ok: true, skipped: "no txn id" });
-  if (await env.US_ORDERS.get(`txn:${txnId}`)) return json({ ok: true, duplicate: true });
+  let seen;
+  try { seen = await env.US_ORDERS.get(`txn:${txnId}`); } catch { return json({ ok: false, error: "txn_read_failed" }, 503); }   // 2026-10-13
+  if (seen) return json({ ok: true, duplicate: true });
   if (order.status !== "awaiting_payment") {
     await env.US_ORDERS.put(`txn:${txnId}`, order.id);
     await lineToshi(env, `【US】二重払いの疑い: ${order.id}(状態 ${order.status})に txn ${txnId} でもう一度 $${chk.gross}。PayPal で返金する。`, fetchImpl);
@@ -234,7 +243,11 @@ async function loadFiles(env, order) {
 }
 
 export async function generateDraft(env, orderId, deps = {}) {
-  const order = await getOrder(env, orderId);
+  // 2026-10-13. A failed read is not "order not found": it throws code order_read_failed and writes nothing.
+  // The cron skips the order (the next run retries); the admin route answers 503.
+  const rd = await readOrder(env, orderId);
+  if (rd.failed) { const e = new Error("order_read_failed"); e.code = "order_read_failed"; throw e; }
+  const order = rd.order;
   if (!order) throw new Error("order not found");
   const pdf = deps.htmlToPdf || htmlToPdf;
   const fetchImpl = deps.fetchImpl || fetch;
@@ -324,10 +337,14 @@ export async function draftPending(env, now = Date.now()) {
     if (m.status === "paid" || m.status === "answered") cands.push({ id: k.name.slice(6), paid: m.paid_at || "" });
     else if (m.status === "awaiting_answers") {
       // Answers arrived (status goes back to "paid" in handleAnswer) or the wait is over.
-      const o = await getOrder(env, k.name.slice(6));
+      const rd = await readOrder(env, k.name.slice(6));
+      if (rd.failed) { logReadFailed("draftPending", k.name); continue; }
+      const o = rd.order;
       if (o && o.followup && o.followup.deadline && now >= new Date(o.followup.deadline).getTime()) cands.push({ id: o.id, paid: o.paid_at || "" });
     } else if (m.status === "drafting" || m.status === "draft_failed") {
-      const o = await getOrder(env, k.name.slice(6));
+      const rd = await readOrder(env, k.name.slice(6));
+      if (rd.failed) { logReadFailed("draftPending", k.name); continue; }
+      const o = rd.order;
       if (!o || (o.draft_attempts || 0) >= 3) continue;
       const since = o.drafting_since ? new Date(o.drafting_since).getTime() : 0;
       if ((o.status === "drafting" && now - since > 15 * 60000) || (o.status === "draft_failed" && now - since > 10 * 60000)) cands.push({ id: o.id, paid: o.paid_at || "" });
@@ -335,8 +352,17 @@ export async function draftPending(env, now = Date.now()) {
   }
   if (!cands.length) return [];
   cands.sort((a, b) => a.paid.localeCompare(b.paid));
-  try { await generateDraft(env, cands[0].id); } catch { /* recorded on the order and sent to LINE */ }
+  try { await generateDraft(env, cands[0].id); } catch (e) {
+    // Recorded on the order and sent to LINE, except a failed order read, which changed nothing and is retried.
+    if (e && e.code === "order_read_failed") logReadFailed("draftPending", `order:${cands[0].id}`);
+  }
   return [cands[0].id];
+}
+
+// 2026-10-13. A background job that could not read an order skips it, writes and sends nothing, and says so here
+// (Workers logs) so the skip is not silent. The next run reads it again.
+function logReadFailed(job, key) {
+  console.error(`[hs-us-report] order_read_failed in ${job}: ${key} skipped, nothing written or sent; the next run retries`);
 }
 
 // ---------------------------------------------------------------- delivery and review
@@ -435,7 +461,7 @@ async function handleAnswer(request, env, order, qs) {
 // ---------------------------------------------------------------- sweep (hourly, own cron)
 
 export async function sweep(env, now = Date.now()) {
-  const out = { uploads_deleted: 0, reports_deleted: 0, unpaid_removed: 0, scrubbed: 0, reduced: 0, late_alerts: 0 };
+  const out = { uploads_deleted: 0, reports_deleted: 0, unpaid_removed: 0, scrubbed: 0, reduced: 0, late_alerts: 0, read_failed: 0 };
   for (const prefix of ["uploads/", "reports/"]) {
     let cursor;
     do {
@@ -461,7 +487,10 @@ export async function sweep(env, now = Date.now()) {
         || (paid && now - paid > UPLOAD_TTL) || (created && now - created > REPORT_TTL)
         || (LATE_STATES.includes(m.status) && paid && now - paid > 20 * 3600000);
       if (!needs) continue;
-      const o = await getOrder(env, k.name.slice(6));
+      // 2026-10-13. A failed read is counted and logged, not passed over as a missing order.
+      const rd = await readOrder(env, k.name.slice(6));
+      if (rd.failed) { out.read_failed++; logReadFailed("sweep", k.name); continue; }
+      const o = rd.order;
       if (!o) continue;
       if (!m.created_at) { await putOrder(env, o); }   // repair missing metadata so the next run is cheap
       const oc = o.created_at ? new Date(o.created_at).getTime() : created;
@@ -571,7 +600,11 @@ async function route(request, env, ctx) {
 
   if (p.startsWith("/admin/")) {
     if (!isAdmin(request, env)) return json({ error: "unauthorized" }, 401);
-    if (p === "/admin/stats" && request.method === "GET") return json({ days: await readStats(env, Math.min(60, Math.max(1, Number(url.searchParams.get("days") || 7)))) });
+    if (p === "/admin/stats" && request.method === "GET") {
+      // 2026-10-13. A day that could not be read is not a day of zeros.
+      try { return json({ days: await readStats(env, Math.min(60, Math.max(1, Number(url.searchParams.get("days") || 7)))) }); }
+      catch { return json({ error: "stats_read_failed", note: "The counts could not be read from KV. This is a read failure, not a day with no events." }, 503); }
+    }
     if (p === "/admin/orders" && request.method === "GET") {
       const list = await env.US_ORDERS.list({ prefix: "order:", limit: 1000 });
       const rows = list.keys.map((k) => ({ id: k.name.slice(6), ...(k.metadata || {}) })).filter((r) => !url.searchParams.get("status") || r.status === url.searchParams.get("status"));
@@ -609,7 +642,14 @@ async function route(request, env, ctx) {
       return json({ ok: true, answers: order.hearing.answers, ignored: n.ignored });
     }
     // POST /draft asks the homeowner first when the quote leaves a gap; /draft?ask=0 drafts right away.
-    if (action === "/draft" && request.method === "POST") return json({ ok: true, order: await generateDraft(env, order.id, { skipFollowup: url.searchParams.get("ask") === "0" }) });
+    if (action === "/draft" && request.method === "POST") {
+      try { return json({ ok: true, order: await generateDraft(env, order.id, { skipFollowup: url.searchParams.get("ask") === "0" }) }); }
+      catch (e) {
+        // 2026-10-13. generateDraft reads the order again; a failure there used to surface as 500 "order not found".
+        if (e && e.code === "order_read_failed") return json({ error: "order_read_failed", note: "The order could not be read from KV. Nothing was written. Try again." }, 503);
+        throw e;
+      }
+    }
     if (action === "/approve" && request.method === "POST") {
       if (order.status !== "draft_ready") return json({ error: `status ${order.status}` }, 409);
       order.status = "delivering"; await putOrder(env, order);

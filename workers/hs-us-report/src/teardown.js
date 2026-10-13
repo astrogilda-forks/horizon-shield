@@ -59,8 +59,10 @@ async function bump(env, name, t = Date.now()) {
   try {
     if (!EVENTS.includes(name)) return;
     const key = `stats:${utcDay(t)}`;
-    let cur = {};
-    try { cur = JSON.parse((await env.US_ORDERS.get(key)) || "{}") || {}; } catch { cur = {}; }
+    // 2026-10-13. A failed read skips this count. It used to become {} and the put below then replaced the
+    // day's counts with this one event.
+    const cur = await readStatsRow(env, utcDay(t));
+    if (cur === null) return;
     cur[name] = (Number(cur[name]) || 0) + 1;
     await env.US_ORDERS.put(key, JSON.stringify(cur), { expirationTtl: 400 * 86400 });
   } catch { /* counting never blocks */ }
@@ -357,15 +359,23 @@ export async function handleEvent(request, env) {
   return json({ ok: true }, 200, h);
 }
 
+// 2026-10-13. Throws when a day cannot be read or parsed (it used to be shown as a day of zeros); an absent day is {}.
 export async function readStats(env, days = 7, now = Date.now()) {
   const out = [];
   for (let i = 0; i < days; i++) {
     const d = utcDay(now - i * DAY);
-    let row = {};
-    try { row = JSON.parse((await env.US_ORDERS.get(`stats:${d}`)) || "{}") || {}; } catch { row = {}; }
+    const row = await readStatsRow(env, d);
+    if (row === null) throw new Error(`stats:${d} could not be read`);
     out.push({ date: d, ...row });
   }
   return out;
+}
+
+// 2026-10-13. One day's counts: an object when read (an absent key is {}), null when the read threw or would not parse.
+async function readStatsRow(env, day) {
+  let raw;
+  try { raw = await env.US_ORDERS.get(`stats:${day}`); } catch { return null; }
+  try { return JSON.parse(raw || "{}") || {}; } catch { return null; }
 }
 
 export function statsText(day, row) {
@@ -380,8 +390,9 @@ export async function dailyStats(env, now = Date.now()) {
   const day = utcDay(now - DAY);
   const mark = `stats_sent:${day}`;
   if (await env.US_ORDERS.get(mark)) return false;
-  let row = {};
-  try { row = JSON.parse((await env.US_ORDERS.get(`stats:${day}`)) || "{}") || {}; } catch { row = {}; }
+  // 2026-10-13. A failed read sends nothing and sets no mark. It used to send a day of zeros and mark it sent.
+  const row = await readStatsRow(env, day);
+  if (row === null) { console.error(`[hs-us-report] stats_read_failed in dailyStats: stats:${day} not sent, not marked`); return false; }
   await env.US_ORDERS.put(mark, "1", { expirationTtl: 3 * 86400 });
   return await lineToshi(env, statsText(day, row));
 }
