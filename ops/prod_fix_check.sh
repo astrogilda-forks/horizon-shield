@@ -3,7 +3,8 @@
 #
 # What it does: GET requests only (curl), nothing is written anywhere, no token is sent. Each row compares one
 # public answer with the value this repo expects after the deploys of 2026-10-13 (issue #13 read failures, and the
-# concurrency audit ops/concurrency_audit_20261013.md). It prints a table and exits 1 if any row does not match.
+# concurrency audit ops/concurrency_audit_20261013.md, HIGH rows and the MEDIUM rows of the second batch). It prints a
+# table and exits 1 if any row does not match. ai-council has no /health, so its fix (AC) has no row here.
 #
 # Usage:
 #   bash ops/prod_fix_check.sh --gate-commit <short sha>
@@ -53,7 +54,7 @@ trap 'rm -rf "$TMPD"' EXIT
 #   kind status       : HTTP status equals expected
 #   kind contains     : body contains expected
 ROWS=(
-  "hs-kira-line health|https://hs-kira-line.oga-surf-project.workers.dev/health|json_eq|version|v24-readfail3-20261013"
+  "hs-kira-line health|https://hs-kira-line.oga-surf-project.workers.dev/health|json_eq|version|v25-lessons-20261013"
   "hs-kira-group health|https://hs-kira-group.oga-surf-project.workers.dev/health|json_eq|version|group-6-readfail2-20261013"
   "hs-webmcp version|https://web.horizonshield.dev/health|json_eq|version|$WEBMCP_VERSION"
   "gate gate_commit|https://gate.horizonshield.dev/health|json_prefix|gate_commit|$GATE_COMMIT"
@@ -66,7 +67,16 @@ if [ "$SKIP_NEW" -eq 0 ]; then
     "ledger sequencer (L1)|https://ledger.horizonshield.dev/health|json_eq|sequencer|do-serialized-20261013"
     "us-report payments (U1)|https://hs-us-report.oga-surf-project.workers.dev/health|json_eq|payments|pay-record-v1-20261013"
     "hearing estimate files (H1)|https://hs-hearing.oga-surf-project.workers.dev/health|json_eq|estimate_files|per-key-20261013"
-    "hearing version (readfail3)|https://hs-hearing.oga-surf-project.workers.dev/health|json_eq|version|2.3.1-readfail3-20261013"
+    "hearing version (readfail3)|https://hs-hearing.oga-surf-project.workers.dev/health|json_eq|version|2.3.2-rmw-20261013"
+    "us-report answers (U2)|https://hs-us-report.oga-surf-project.workers.dev/health|json_eq|answers|ans-per-key-20261013"
+    "us-report draft claim (U3)|https://hs-us-report.oga-surf-project.workers.dev/health|json_eq|draft_claim|claim-20261013"
+    "us-report unpaid delete (U4)|https://hs-us-report.oga-surf-project.workers.dev/health|json_eq|unpaid_delete|two-phase-20261013"
+    "us-report board (U5)|https://hs-us-report.oga-surf-project.workers.dev/health|json_eq|board_index|per-key-20261013"
+    "gate mould index (G2)|https://gate.horizonshield.dev/health|json_eq|mould_index|per-key-20261013"
+    "gate removal stones (G3)|https://gate.horizonshield.dev/health|json_eq|removed_stones|per-key-20261013"
+    "gate sweep lease (G4 G5)|https://gate.horizonshield.dev/health|json_eq|sweep|single-flight-20261013"
+    "hearing store writes (H2 H3)|https://hs-hearing.oga-surf-project.workers.dev/health|json_eq|store_writes|do-serialized-20261013"
+    "kira-line lessons (K1)|https://hs-kira-line.oga-surf-project.workers.dev/health|json_eq|lessons|per-key-20261013"
   )
 fi
 

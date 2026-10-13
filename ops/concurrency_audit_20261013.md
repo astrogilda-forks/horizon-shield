@@ -23,19 +23,19 @@ operations a day), the per-key register reads in G1 would need a short in-isolat
 | G1 | hs-verify-gate: src/worker.js POST /watch 6001, markDeclined 2741, markDeclared 2755, /register/quarantine 6074, DELETE /watch 6114 | `watch:registry` (one blob, all rows) | anonymous POST /watch (public), daily sweep 18:00Z, operator quarantine and DELETE | A registration answered ok:true vanishes; a quarantine or removal is undone by a writer holding an older copy | none (issue #13 fix only stopped writing back a FAILED read) | HIGH | fixed (one key per row) |
 | U1 | hs-us-report: src/index.js handleIpn 224, sweep 498 (metadata repair, unpaid delete) | `order:<id>` status/txn | PayPal IPN (public webhook, retried), hourly sweep, minute draft cron, customer link, operator | A second payment overwrites the first txn_id with no double payment alert; a stale writer puts "paid" back to awaiting_payment (never drafted); the sweep deletes a just paid order and its files | txn:<id> dedupe (get then put, not atomic) | HIGH | fixed (immutable pay:<order>:<txn> key, reconcile, no delete with a payment) |
 | H1 | hs-hearing: src/hearing.js estFileSave 281, /admin/estimate-file-read, estimate_files count | `estfiles:<store>` (one list) | LINE webhooks (one request per photo of a multi photo message), form uploads, operator read marks | A photo the store sent drops off the unread list; nobody is asked to read it | none | HIGH | fixed (list built from the files' own keys) |
-| U2 | hs-us-report: src/index.js handleAnswer 467 vs generateDraft 280 | `order:<id>` hearing answers | customer answer link vs draft cron (draft takes tens of seconds) | Answers the customer was told "are in" are overwritten by the draft's older copy; the report ships without them | none | MEDIUM | proposed: answers in their own key `ans:<id>:<ts>`, merged at draft time |
-| U3 | hs-us-report: src/index.js draftPending 367 | `order:<id>` status via list metadata | minute cron; list metadata lags up to 60 s | Same order drafted twice (double AI cost, two review links, the first link dead) | status set to drafting first | MEDIUM | proposed: claim per order through a Durable Object, or re-read before drafting |
-| U4 | hs-us-report: src/index.js sweep 498 unpaid delete | `order:<id>` | hourly sweep vs IPN at the 7 day boundary | Residual after U1: if the IPN lands within the KV visibility window of the delete, the order and files can still be deleted | U1 guard (no delete when a payment key is visible) and orphan alert | MEDIUM | residual, proposed: two phase delete (mark, delete an hour later) |
-| G2 | hs-verify-gate: src/worker.js mouldWrite 1122 | `mould:index` | public POST /mould/from-issue (GitHub workflow, per issue serialized), operator POST /mould | An entry drops off GET /mould (the record itself stays at mould:<id>); a stale "already_recorded" read can rewrite a record | workflow concurrency group per issue | MEDIUM | proposed: same pattern as G1 (list over mould:*) |
-| G3 | hs-verify-gate: src/worker.js DELETE /watch 6133 | `watch:removed` | operator DELETE | A removal stone is lost from the public list (the removal itself now holds, G1) | read failure guard | MEDIUM | proposed: one key per stone |
-| G4 | hs-verify-gate: src/worker.js recordHistory 3955, changes:recent 4019 | `hist:<sha16>`, `changes:recent` | daily sweep, operator POST /sweep | Two overlapping sweeps drop a history entry or a change line | sequential within one sweep | MEDIUM | proposed: sweep single flight |
-| G5 | hs-verify-gate: src/nenrin_instant.js windowStateFor 130, beacon 165, pinWindowRule 239; worker.js fileInstantCommitment 4106 | `nenrin:window:<w>`, `nenrin:beacon:<w>`, `nenrin:rule:<w>`, `nenrin:commitfiled:<w>` | daily sweep, operator POST /sweep | Two sweeps opening a window create two salts: the commitment filed for one, rows derived from the other ("inconsistent stamping state") | read failure guard; create if absent | MEDIUM | proposed: sweep single flight (a DO lease) |
-| H2 | hs-hearing: src/autopilot.js putStore 184 | `store:<sid>` | LINE and email webhooks, daily autopilot, operator | A pending question or needs_human flag is overwritten | overwrite detection `_pending_overwritten` (named, not prevented) | MEDIUM | accepted with detection; proposed: per store DO like DispatchGateDO |
-| H3 | hs-hearing: src/hearing.js 1697, 2305, 2849, 3339 | `hearing:<sid>` profile | form answer, email or LINE reply, estimate update, operator | One channel's answers overwritten by another's older copy | none | MEDIUM | proposed: same DO as H2 |
-| K1 | hs-kira-line: src/worker.js kiraLessonsAdd 1920, "おぼえて" 1754 | `kira_lessons:global` | AI auto adds from every group's webhook, owner commands | A lesson silently dropped, or a lesson the owner deleted written back | read failure guard | MEDIUM | proposed: one key per lesson |
-| AC | ai-council: src/worker.js 179 | `month_<m>` spend | authorized requests | Spend undercounted, so the $30 cap can be passed | auth | MEDIUM | proposed (or accept: the cap is a soft guard) |
-| U5 | hs-us-report: src/teardown.js handleBoardReview 346 | `board_index` | operator publish links | A published card drops off the index (card stays at board:<id>) | read failure guard | MEDIUM | proposed: list over board:* |
-| L1r | hs-ledger: gcp/firestore_dedupe_do.mjs (GCP twin) | as L1 | as L1, if the twin is ever live | as L1 | the twin builds the DO without env, so appendEntry falls back to the old sequence | MEDIUM | residual: needs a Firestore transaction on a seq doc before the twin takes traffic |
+| U2 | hs-us-report: src/index.js handleAnswer 467 vs generateDraft 280 | `order:<id>` hearing answers | customer answer link vs draft cron (draft takes tens of seconds) | Answers the customer was told "are in" are overwritten by the draft's older copy; the report ships without them | none | MEDIUM | fixed (second batch: `ans:<id>:<ts>` per set, merged at read; approve re-checks the keys) |
+| U3 | hs-us-report: src/index.js draftPending 367 | `order:<id>` status via list metadata | minute cron; list metadata lags up to 60 s | Same order drafted twice (double AI cost, two review links, the first link dead) | status set to drafting first | MEDIUM | fixed (second batch: fresh re-read, then write-once claim `draftclaim:<id>`; residual across locations, see below) |
+| U4 | hs-us-report: src/index.js sweep 498 unpaid delete | `order:<id>` | hourly sweep vs IPN at the 7 day boundary | Residual after U1: if the IPN lands within the KV visibility window of the delete, the order and files can still be deleted | U1 guard (no delete when a payment key is visible) and orphan alert | MEDIUM | fixed (second batch: `delmark:<id>`, delete an hour or more later after a fresh read; residual covered by the orphan alert) |
+| G2 | hs-verify-gate: src/worker.js mouldWrite 1122 | `mould:index` | public POST /mould/from-issue (GitHub workflow, per issue serialized), operator POST /mould | An entry drops off GET /mould (the record itself stays at mould:<id>); a stale "already_recorded" read can rewrite a record | workflow concurrency group per issue | MEDIUM | fixed (second batch: list over mould:*, record read for already_recorded) |
+| G3 | hs-verify-gate: src/worker.js DELETE /watch 6133 | `watch:removed` | operator DELETE | A removal stone is lost from the public list (the removal itself now holds, G1) | read failure guard | MEDIUM | fixed (second batch: `watch:removed:<sha256>`) |
+| G4 | hs-verify-gate: src/worker.js recordHistory 3955, changes:recent 4019 | `hist:<sha16>`, `changes:recent` | daily sweep, operator POST /sweep | Two overlapping sweeps drop a history entry or a change line | sequential within one sweep | MEDIUM | fixed (second batch: SweepLeaseDO lease) |
+| G5 | hs-verify-gate: src/nenrin_instant.js windowStateFor 130, beacon 165, pinWindowRule 239; worker.js fileInstantCommitment 4106 | `nenrin:window:<w>`, `nenrin:beacon:<w>`, `nenrin:rule:<w>`, `nenrin:commitfiled:<w>` | daily sweep, operator POST /sweep | Two sweeps opening a window create two salts: the commitment filed for one, rows derived from the other ("inconsistent stamping state") | read failure guard; create if absent | MEDIUM | fixed (second batch: SweepLeaseDO lease) |
+| H2 | hs-hearing: src/autopilot.js putStore 184 | `store:<sid>` | LINE and email webhooks, daily autopilot, operator | A pending question or needs_human flag is overwritten | overwrite detection `_pending_overwritten` (named, not prevented) | MEDIUM | fixed (second batch: DispatchGateDO /rmw, three way merge) |
+| H3 | hs-hearing: src/hearing.js 1697, 2305, 2849, 3339 | `hearing:<sid>` profile | form answer, email or LINE reply, estimate update, operator | One channel's answers overwritten by another's older copy | none | MEDIUM | fixed (second batch: same DO, named mutations) |
+| K1 | hs-kira-line: src/worker.js kiraLessonsAdd 1920, "おぼえて" 1754 | `kira_lessons:global` | AI auto adds from every group's webhook, owner commands | A lesson silently dropped, or a lesson the owner deleted written back | read failure guard | MEDIUM | fixed (second batch: `kira_lesson:<id>` per lesson, tombstones for the old list) |
+| AC | ai-council: src/worker.js 179 | `month_<m>` spend | authorized requests | Spend undercounted, so the $30 cap can be passed | auth | MEDIUM | fixed (second batch: `spend:<month>:<ts>` per charge, paged list, fail closed) |
+| U5 | hs-us-report: src/teardown.js handleBoardReview 346 | `board_index` | operator publish links | A published card drops off the index (card stays at board:<id>) | read failure guard | MEDIUM | fixed (second batch: list over board:*, only the shown cards read) |
+| L1r | hs-ledger: gcp/firestore_dedupe_do.mjs (GCP twin) | as L1 | as L1, if the twin is ever live | as L1 | the twin builds the DO without env, so appendEntry falls back to the old sequence | MEDIUM | fixed (second batch: /ledger-append in one Firestore transaction) |
 | KP | hs-kira-proxy: src/kira-proxy-v2.js | `card_index` and others | unknown | unknown | unknown | n/a | not auditable here: the source is not in this repository (only the test is) |
 | G6 | hs-verify-gate: src/worker.js bumpUsage 614, bumpRequests 672 | `usage:<day>`, `usage:req:<day>` | every check | a count | declared in code: "出す数字は常に下限" (line 603) | LOW | accepted (documented lower bound) |
 | G7 | hs-verify-gate: src/worker.js netSalt 836, netFreeze 888 | `usage:netsalt:<day>`, `usage:netcount:<day>` | first requests of a day, sweep | one network counted twice at the day boundary | declared in code (line 845) | LOW | accepted |
@@ -155,3 +155,98 @@ AgreementDedupeDO class in an in-memory state whose blockConcurrencyWhile runs o
 3. After the deploys: `bash ops/prod_fix_check.sh --gate-commit $(git log -1 --format=%h origin/main -- workers/hs-verify-gate)`.
    It only reads (curl GET), prints a table and exits 1 on any mismatch. `--skip-new` leaves out the three rows for
    these fixes; `--base URL` and `CURL=<fake>` make it testable offline.
+
+## Second batch (2026-10-13, the MEDIUM rows)
+
+Thirteen rows, six commits, one worker each. Same rules as the first batch: old data read and never rewritten or
+deleted, public shapes unchanged, fail closed on a failed read or a failed Durable Object call, a test that fails on
+the old code. Reviewed by an agent that had not seen the code being written; its findings that led to changes are
+marked (review).
+
+### U2, U3, U4, U5 hs-us-report
+
+- U2: every answer set is its own write once key `ans:<order>:<at>-<rand>` (customer link and operator PUT); the
+  draft, the review page, the answer form, the admin read and the export `hearingAnswers` merge the sets over the
+  order's own answers (oldest first). The draft records which sets it read (`draft.answer_keys`); approve (review page
+  and admin) lists the sets again and refuses with 409 when one is missing from that list (the order goes back to
+  "answered" and is redrafted), with 503 when the list fails (review: the re-check inside the draft is a KV list and
+  can be a minute stale across locations; approve is minutes to hours later). A failed re-check at the end of the
+  draft marks the draft failed instead of shipping it (the issue #13 guard caught the first version).
+- U3: each candidate is read fresh before drafting and skipped unless it still needs a draft; then a write once claim
+  `draftclaim:<id>` (get, put, read own token back, TTL 15 min, released when the draft ends). Residual: KV has no
+  compare and swap, so two cron runs in different locations within the propagation window can both claim; the cost is
+  one duplicate draft (AI spend, a second review link), not data. No Durable Object exists in this worker and none was
+  added for this.
+- U4: two phase unpaid delete. The first sweep writes `delmark:<id>`; a later sweep deletes only when the mark is
+  older than an hour, a fresh read still says awaiting_payment and no `pay:<order>:*` key is visible. The IPN and the
+  reconcile delete the mark. Residual: a payment landing inside the KV visibility window of the second pass can still
+  be deleted with its order; the U1 orphan alert (a payment whose order is gone) names it.
+- U5: a publish writes only `board:<id>` (published_at in metadata). The board lists the keys, takes the 200 newest by
+  metadata plus every card of the old `board_index` (read only), and reads only those (review: the first version read
+  every card). Same shape and order.
+- /health: answers, draft_claim, unpaid_delete, board_index. No binding, no migration.
+
+### G2, G3, G4, G5 hs-verify-gate
+
+- G2: a mould record's only write is `mould:<id>` with its list line in the metadata; GET /mould lists the prefix and
+  overlays the old `mould:index` blob read only. The already_recorded check reads the record itself; a failed read is
+  503 mould_read_failed. GET /mould and /mould/<id> answer 503 on a storage error instead of an empty ledger.
+- G3: one stone per key `watch:removed:<sha256(endpoint)>`; a re-removal keeps earlier stones under `earlier`,
+  flattened on read. The stone is written first, then the row is hidden (a stone without a hidden row is possible when
+  the second write fails; the operator repeats the DELETE).
+- G4, G5: sweep single flight. New `SweepLeaseDO` (src/sweep_lease.js), one instance "sweep", acquire (TTL 15 min)
+  and release inside blockConcurrencyWhile. POST /sweep answers 409 sweep_in_progress when busy, 503
+  sweep_lease_unavailable when the lease call fails; the cron skips and logs. `hist:<sha16>` and `changes:recent`
+  stay single values (read whole by /history, /changes, /feed.xml); with one sweep at a time their read append put is
+  safe. The test also exposed that two sweeps in one isolate shared the module level sweepBudget and the second one
+  threw at the end.
+- wrangler.jsonc: new binding SWEEP_LEASE_DO and the gate's first migration tag (v1, new_sqlite_classes). deploy_gate.sh
+  applies it; the dry run must show the binding. Rollback is safe (old code ignores the keys and the binding).
+- /health: mould_index, removed_stones, sweep. CONFIG.version untouched (signed card).
+
+### H2, H3 hs-hearing
+
+- `store:<sid>` and `hearing:<sid>` are written only through the existing DispatchGateDO (binding DISPATCH_DO), new
+  path /rmw, one instance per key (`rmw:store:<sid>`, `rmw:hearing:<sid>`, separate from the dispatch marks). Inside
+  blockConcurrencyWhile the DO reads KV, uses its own last copy as a floor when KV is older (stamp `_rmw.seq`, within
+  120 s), applies a named mutation, writes KV, keeps the last 8 versions. putStore keeps its signature (22 call sites)
+  and merges three ways against the version the writer read: untouched fields keep the saved value, pending and
+  needs_human keep the newer one, double changes are named in `autopilot._rmw_conflicts`. The five profile writers
+  (reply ingest, estimate append, form POST, set-estimates, profile-patch) recompute from the saved record inside the
+  DO. Fail closed: a DO error or a reply without the rmw marker throws rmw_failed, nothing written, 503 on routes, skip
+  in the daily tick. No new class, binding or migration; the constructor is now (state, env).
+- /health: version 2.3.2-rmw-20261013, store_writes.
+
+### K1 hs-kira-line, AC ai-council, L1r hs-ledger GCP twin
+
+- K1: a new global lesson is `kira_lesson:<14 digit ms>-<rand>`; the old `kira_lessons:global` list is read only.
+  Deleting a per key lesson deletes the key; deleting a lesson that exists only in the old list writes a tombstone
+  `kira_lesson_del:<sha256(text)[0:32]>`. The 40 cap prunes the same way. Read failure guard kept. /health
+  v25-lessons-20261013, lessons.
+- AC: every charge is `spend:<month>:<ts>-<rand>` (usd in metadata, TTL 100 days); the month total is the old
+  `month_<m>` floor plus the listed charges, read page by page with the cursor (review: the first version read one
+  page and would have answered 503 for the rest of the month after 1,000 charges). A failed list or more than 50 pages
+  is 503 budget_unknown before any AI call. No /health in this worker.
+- L1r: the twin serves /ledger-append itself inside one Firestore runTransaction (hash doc and seq doc read, entry,
+  hash and seq written in the same transaction) with the same bytes as the Cloudflare side; a failed transaction is
+  503 ledger_append_failed and the racy fallback is unreachable from the twin.
+
+### Tests of the second batch
+
+| Worker | New test | On the old code | After | Existing suites before / after |
+|---|---|---|---|---|
+| hs-us-report | test/order_concurrency.test.mjs | 23 failures of 30 (first version); the review cases 1b, 1c, 10b fail on the agent's version | 42 / 42 | 7 / 7 before, 8 / 8 after; flow and read_failure updated for the two phase delete and the per key board |
+| hs-verify-gate | test/mould_removed_perkey.test.mjs, test/sweep_lease_concurrency.test.mjs | 17 / 36 and 10 / 19 | 36 / 36 and 19 / 19 | run_all 38 / 38 before, 40 / 40 after |
+| hs-hearing | store_profile_rmw_test.mjs | 14 / 36 | 36 / 36 | run_all 23 / 23 before, 24 / 24 after |
+| hs-kira-line | lessons_perkey_test.mjs | 17 of 18 fail | 18 / 18 plus 13 guards | read_fail 40, read_fail2 28 + 7, read_fail3 8 + 5, group_reply 184 to 185 |
+| ai-council | test/spend.test.mjs | 10 of 10 fail (0.0184 counted of 0.0367); the paged case fails on the agent's version | 11 / 11 plus 6 guards | none before |
+| hs-ledger (gcp) | gcp/firestore_dedupe_do.test.mjs, new cases | 3 of 5 fail (both told n 1) | 9 / 9 | test/*.test.mjs 15 / 15 both |
+
+ops/no_swallowed_read.mjs: 0 new hits on the whole tree (it caught one in the first version of U2).
+
+### Deploy of the second batch
+
+hs-verify-gate: deploy_gate.sh (the dry run must show SWEEP_LEASE_DO and the migration v1). hs-us-report, hs-kira-line,
+ai-council: wrangler deploy from a clean checkout of origin/main. hs-hearing: Actions on push. The GCP twin is not
+deployed (not live). Then `bash ops/prod_fix_check.sh --gate-commit <sha>`: its rows now expect kira-line
+v25-lessons-20261013 and hearing 2.3.2-rmw-20261013 and include the nine new markers.
