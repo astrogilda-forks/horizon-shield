@@ -1,16 +1,164 @@
 {
-  "drill_at": "2026-10-12T10:57:20Z",
+  "anchors": {
+    "confirmed": 95,
+    "explorers": [
+      "blockstream.info",
+      "mempool.space"
+    ],
+    "failed": [],
+    "first_block": 959118,
+    "last_block": 971201,
+    "pending": []
+  },
+  "chain": {
+    "broken_at": null,
+    "head": "1fda4f126dca63e4414c894407a4e959fa5145002c82946bf9f33b4a4fc3227e",
+    "rebuilt_through": 95,
+    "stamped_heads": [
+      {
+        "carried_by": 58,
+        "head_n": 57,
+        "result": "match"
+      },
+      {
+        "carried_by": 61,
+        "head_n": 60,
+        "result": "match"
+      },
+      {
+        "carried_by": 65,
+        "head_n": 64,
+        "result": "match"
+      },
+      {
+        "carried_by": 66,
+        "head_n": 65,
+        "result": "match"
+      },
+      {
+        "carried_by": 67,
+        "head_n": 66,
+        "result": "match"
+      },
+      {
+        "carried_by": 68,
+        "head_n": 67,
+        "result": "match"
+      },
+      {
+        "carried_by": 70,
+        "head_n": 69,
+        "result": "match"
+      },
+      {
+        "carried_by": 71,
+        "head_n": 70,
+        "result": "match"
+      },
+      {
+        "carried_by": 72,
+        "head_n": 71,
+        "result": "match"
+      },
+      {
+        "carried_by": 73,
+        "head_n": 72,
+        "result": "match"
+      },
+      {
+        "carried_by": 74,
+        "head_n": 73,
+        "result": "match"
+      },
+      {
+        "carried_by": 75,
+        "head_n": 74,
+        "result": "match"
+      },
+      {
+        "carried_by": 76,
+        "head_n": 75,
+        "result": "match"
+      },
+      {
+        "carried_by": 77,
+        "head_n": 76,
+        "result": "match"
+      },
+      {
+        "carried_by": 78,
+        "head_n": 77,
+        "result": "match"
+      },
+      {
+        "carried_by": 79,
+        "head_n": 78,
+        "result": "match"
+      },
+      {
+        "carried_by": 82,
+        "head_n": 81,
+        "result": "match"
+      },
+      {
+        "carried_by": 84,
+        "head_n": 83,
+        "result": "match"
+      },
+      {
+        "carried_by": 87,
+        "head_n": 86,
+        "result": "match"
+      },
+      {
+        "carried_by": 89,
+        "head_n": 88,
+        "result": "match"
+      },
+      {
+        "carried_by": 93,
+        "head_n": 92,
+        "result": "match"
+      }
+    ],
+    "stamped_heads_matched": 21
+  },
+  "digests": {
+    "failed": [],
+    "ok": 95
+  },
+  "does_not_establish": [
+    "that any claim in the ledger is true",
+    "that the copy is complete past its highest entry; the newest entries may not have reached the custodian yet",
+    "that two explorers agreeing is Bitcoin consensus; check headers against your own node for that",
+    "anything about entries whose proofs are still pending; they are listed, not counted"
+  ],
+  "drill_at": "2026-10-13T10:41:49Z",
+  "entries": 95,
+  "establishes": [
+    "these ledger bytes were rebuilt from the named custodian without connecting to any operator host",
+    "every digest, the jidec-chain-v1 head, the stamped heads and the Bitcoin anchors were recomputed from the copy and two public explorers"
+  ],
   "fence": {
     "host": "ledger.horizonshield.dev",
     "reachable": false,
     "why": "sinkholed:0.0.0.0"
   },
-  "outcome": "custodian_unavailable",
-  "report_sha256": "16e8596132d91e2270ade2d2a1da44cb5e9b23c79e1c933a60fe2bf1d4d5fb06",
+  "outcome": "rebuilt",
+  "range": [
+    1,
+    95
+  ],
+  "report_sha256": "6f74327df3cfb690ea35c69dc6570a58913b6e3aa7dbec1cc08e873c91079c85",
   "schema": "nenrin-survive-drill-v0",
   "source": {
-    "requested": "swh"
+    "archive_sha256": "692ff2efbf1a9eafed43013b14cf930b8700a4e59fb0f26f64821b28897e65a9",
+    "custodian": "software-heritage",
+    "directory": "swh:1:dir:b75255b5c6263bc570732e134a48ba515790b623",
+    "operator_controlled": false,
+    "revision": "a13c8b1ae5fd1cb315325ea1e4e8856f1e65ff41",
+    "snapshot": "c2bce41556d7f0a079a2cbe216ea173946ea4f68",
+    "visit_date": "2026-10-13T10:41:13.950000+00:00"
   },
-  "version": "0.1.0",
-  "why": "RuntimeError: Software Heritage vault did not finish: new"
+  "version": "0.1.0"
 }
