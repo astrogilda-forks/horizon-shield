@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ops/prod_fix_check.sh: read-only checks that the 2026-10-13 fixes are live in production.
 #
-# What it does: GET requests only (curl), nothing is written anywhere, no token is sent. Each row compares one
+# What it does: GET requests only (curl, 60 s per request: GET /ledger/head walks the whole chain), nothing is written
+# anywhere, no token is sent. Each row compares one
 # public answer with the value this repo expects after the deploys of 2026-10-13 (issue #13 read failures, and the
 # concurrency audit ops/concurrency_audit_20261013.md, HIGH rows and the MEDIUM rows of the second batch). It prints a
 # table and exits 1 if any row does not match. ai-council has no /health, so its fix (AC) has no row here.
@@ -77,6 +78,7 @@ if [ "$SKIP_NEW" -eq 0 ]; then
     "gate sweep lease (G4 G5)|https://gate.horizonshield.dev/health|json_eq|sweep|single-flight-20261013"
     "hearing store writes (H2 H3)|https://hs-hearing.oga-surf-project.workers.dev/health|json_eq|store_writes|do-serialized-20261013"
     "kira-line lessons (K1)|https://hs-kira-line.oga-surf-project.workers.dev/health|json_eq|lessons|per-key-20261013"
+    "ledger chain read|https://ledger.horizonshield.dev/health|json_eq|chain_read|prefetch-parallel-20261013"
   )
 fi
 
@@ -106,7 +108,7 @@ for row in "${ROWS[@]}"; do
     target="${BASE%/}${path}"
   fi
   body="$TMPD/body.$i"
-  code="$($CURL -sS -m 20 -H 'cache-control: no-cache' -o "$body" -w '%{http_code}' "$target" 2>"$TMPD/err.$i")" || code="000"
+  code="$($CURL -sS -m 60 -H 'cache-control: no-cache' -o "$body" -w '%{http_code}' "$target" 2>"$TMPD/err.$i")" || code="000"
   [ -f "$body" ] || : >"$body"
   got=""; ok=0
   case "$kind" in

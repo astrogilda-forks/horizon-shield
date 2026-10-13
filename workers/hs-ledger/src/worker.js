@@ -235,6 +235,22 @@ function b64ToBytes(b64) {
   return out;
 }
 const getEntry = async (env, n) => { const r = await env.LEDGER.get(`entry:${n}`); return r ? JSON.parse(r) : null; };
+// 2026-10-13. The chain walk read entry:1..n one after another; at n = 95 GET /ledger/head took about 20 s in production
+// (one KV round trip per entry). The entries are now read up front, ENTRY_PREFETCH_PARALLEL at a time, and the walk reads
+// from that map. The walk itself, its order, its hashing and a missing entry breaking the chain are unchanged: an entry
+// that is absent in KV is absent in the map (null), and a failed read throws as the sequential get threw.
+const ENTRY_PREFETCH_PARALLEL = 24;
+const LEDGER_CHAIN_READ = "prefetch-parallel-20261013";
+async function entryGetter(env, upTo) {
+  const got = new Map();
+  for (let start = 1; start <= upTo; start += ENTRY_PREFETCH_PARALLEL) {
+    const ns = [];
+    for (let n = start; n < start + ENTRY_PREFETCH_PARALLEL && n <= upTo; n++) ns.push(n);
+    const rows = await Promise.all(ns.map((n) => getEntry(env, n)));
+    ns.forEach((n, i) => got.set(n, rows[i]));
+  }
+  return async (n) => (got.has(n) ? got.get(n) : getEntry(env, n));
+}
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // ---- NENRIN Phase 2: witness intake (entry #19 の実装) ----
@@ -1465,7 +1481,7 @@ async function handle(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
     if (p === "/" || p === "/health")
-      return json({ ok: true, service: "hs-ledger", ledger: "JIDEC", anchor: "Bitcoin via OpenTimestamps", claim_schema: "jidec-claim-v1", path_schema: "jidec-path-v1", spec: "SPEC_HASH_INDEPENDENCE_v1.md (entry #2); JIDEC_PATH_SPEC_v1.md (entry #5)", routes: ["/ledger", "/ledger/head", "/ledger/export.jsonl", "/ledger/{n}", "/ledger/{n}/ots", "/verify/{n}", "/reference/{sha}", "/paths", "/paths/{sha}", "/paths/{sha}/replay", "/paths/query", "/witness", "/witness/pending", "/witness/{sha}", "/resume?endpoint={url}", "/trust-signal?endpoint={url}", "/agreement", "/agreement/pending", "/agreement/{canonical_sha256}", "/admission", "/admission/{canonical_sha256}", "/revocation", "/revocation/{canonical_sha256}", "/evidence/trace", "/evidence/vouch", "/evidence/vouch/{sha}", "/evidence/vouch/id/{credential id}", "/evidence/slot", "/evidence/slot/{sha}", "/evidence/slot/s/{request_slot}", "/evidence/slot-log", "/evidence/slot-log/{date}", "/evidence/slot-log/{date}.ots"], discovery: { api_catalog: "/.well-known/api-catalog", agent_card: "/.well-known/agent-card.json", jwks: "/.well-known/jwks.json", security_txt: "/.well-known/security.txt", llms_txt: "/llms.txt", a2a: "/a2a", cite: "/cite/{citation}", precedence: "/precedence/{citation}", mcp: MCP_ORIGIN + "/mcp" }, transparency: TRANSPARENCY, privacy: PRIVACY, sequencer: LEDGER_SEQUENCER });
+      return json({ ok: true, service: "hs-ledger", ledger: "JIDEC", anchor: "Bitcoin via OpenTimestamps", claim_schema: "jidec-claim-v1", path_schema: "jidec-path-v1", spec: "SPEC_HASH_INDEPENDENCE_v1.md (entry #2); JIDEC_PATH_SPEC_v1.md (entry #5)", routes: ["/ledger", "/ledger/head", "/ledger/export.jsonl", "/ledger/{n}", "/ledger/{n}/ots", "/verify/{n}", "/reference/{sha}", "/paths", "/paths/{sha}", "/paths/{sha}/replay", "/paths/query", "/witness", "/witness/pending", "/witness/{sha}", "/resume?endpoint={url}", "/trust-signal?endpoint={url}", "/agreement", "/agreement/pending", "/agreement/{canonical_sha256}", "/admission", "/admission/{canonical_sha256}", "/revocation", "/revocation/{canonical_sha256}", "/evidence/trace", "/evidence/vouch", "/evidence/vouch/{sha}", "/evidence/vouch/id/{credential id}", "/evidence/slot", "/evidence/slot/{sha}", "/evidence/slot/s/{request_slot}", "/evidence/slot-log", "/evidence/slot-log/{date}", "/evidence/slot-log/{date}.ots"], discovery: { api_catalog: "/.well-known/api-catalog", agent_card: "/.well-known/agent-card.json", jwks: "/.well-known/jwks.json", security_txt: "/.well-known/security.txt", llms_txt: "/llms.txt", a2a: "/a2a", cite: "/cite/{citation}", precedence: "/precedence/{citation}", mcp: MCP_ORIGIN + "/mcp" }, transparency: TRANSPARENCY, privacy: PRIVACY, sequencer: LEDGER_SEQUENCER, chain_read: LEDGER_CHAIN_READ });
 
     /* ---------------------- 看板 routes (additive, read-only) ---------------------- */
 
@@ -1781,7 +1797,7 @@ async function handle(request, env) {
     // carries; nothing stored is rewritten. See src/chain_v1.mjs for why and for the recipe.
     if (p === "/ledger/head" && request.method === "GET") {
       const seq = Number((await env.LEDGER.get("seq")) || 0);
-      const w = await walkChain((n) => getEntry(env, n), seq);
+      const w = await walkChain(await entryGetter(env, seq), seq);
       if (!w.ok) return json({ schema: "jidec-head-v1", chain: CHAIN_SCHEMA, error: "chain_broken", broken_at: w.broken_at, last_linked: w.n, head_before_break: w.head }, 409, { "cache-control": "no-store" });
       return json(Object.assign(await boundHeadRecord(w.n, w.head), { recipe: CHAIN_RECIPE, fields: CHAIN_FIELDS, marker_recipe: HEAD_RECIPE, marker_fields: HEAD_FIELDS, export: origin + "/ledger/export.jsonl",
         anchored_in: "the head as it stood is written into each daily nenrin-witness-batch-v1 entry (ledger_head) and, at the end of any daily run that added entries, into a nenrin-head-checkpoint-v1 entry with the end marker hash; their claim_sha256 are stamped to Bitcoin; compare a head you hold with the one a stamped entry carries",
@@ -1790,7 +1806,7 @@ async function handle(request, env) {
     if (p === "/ledger/export.jsonl" && request.method === "GET") {
       const seq = Number((await env.LEDGER.get("seq")) || 0);
       const lines = [];
-      const w = await walkChain((n) => getEntry(env, n), seq, async (e, prev, h) => { lines.push(JSON.stringify(exportRow(e, prev, h))); });
+      const w = await walkChain(await entryGetter(env, seq), seq, async (e, prev, h) => { lines.push(JSON.stringify(exportRow(e, prev, h))); });
       if (!w.ok) lines.push(JSON.stringify({ schema: "jidec-chain-broken-v1", broken_at: w.broken_at, last_linked: w.n }));
       else lines.push(JSON.stringify(await boundHeadRecord(w.n, w.head)));
       return new Response(lines.join("\n") + "\n", { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store", ...CORS } });
@@ -2285,7 +2301,7 @@ async function anchorWitnessPool(env, origin, trigger) {
   // jidec-chain-v1 (2026-09-28): the batch carries the ledger head as it stands before the batch is appended,
   // so the head is inside bytes that get stamped to Bitcoin. A broken chain is written as such, not hidden.
   const seqNow = Number((await env.LEDGER.get("seq")) || 0);
-  const w = await walkChain((n) => getEntry(env, n), seqNow);
+  const w = await walkChain(await entryGetter(env, seqNow), seqNow);
   const batch = {
     schema: "nenrin-witness-batch-v1",
     anchored_at: new Date().toISOString(),
@@ -2332,7 +2348,7 @@ async function headCheckpoint(env, origin, trigger) {
   let lastSchema = null;
   try { lastSchema = last && last.record_canonical ? JSON.parse(last.record_canonical).schema : null; } catch (_e) { lastSchema = null; }
   if (lastSchema === HEAD_CHECKPOINT_SCHEMA) return { status: 200, body: { ok: true, written: false, note: "the last entry is already a head checkpoint" } };
-  const w = await walkChain((n) => getEntry(env, n), seq);
+  const w = await walkChain(await entryGetter(env, seq), seq);
   if (!w.ok) return { status: 200, body: { ok: false, written: false, broken_at: w.broken_at, note: "chain broken; a broken head is not stamped as whole" } };
   const rec = {
     schema: HEAD_CHECKPOINT_SCHEMA,
