@@ -1102,6 +1102,9 @@ async function loadContractors() {
 // 課金の第2経路: Stripe 決済で hs-billing がライブ有効化した店(git push 不要)。
 // fail-closed: hs-billing が落ちる/不明なら false。手動フラグ(isProvisioned)は今まで通り優先。
 const BILLING_URL = "https://hs-billing.oga-surf-project.workers.dev";
+// 2026-10-13. Three outcomes: true (entitled), false (hs-billing answered and the store is not entitled, or 404),
+// null (hs-billing threw, answered another non-2xx, or sent an unreadable body). The gate stays closed on null,
+// but verifyStore no longer reports it as "not provisioned".
 async function billingEntitled(storeId) {
   if (!storeId) return false;
   try {
@@ -1112,10 +1115,12 @@ async function billingEntitled(storeId) {
       res = await fetch(url, { cf: { cacheTtl: 60, cacheEverything: true } });
       if (res && res.ok) await cache.put(url, res.clone());
     }
-    if (!res || !res.ok) return false;
+    if (res && res.status === 404) return false;
+    if (!res || !res.ok) return null;
     const j = await res.json();
-    return !!(j && j.active === true);
-  } catch (e) { return false; }
+    if (!j || typeof j !== "object") return null;
+    return j.active === true;
+  } catch (e) { return null; }
 }
 async function verifyStore(storeId) {
   if (!storeId) return { ok: true, store: null };
@@ -1124,7 +1129,10 @@ async function verifyStore(storeId) {
   const c = (db.contractors || []).find((x) => x.store_id === storeId);
   if (!c) return { ok: false, code: -32001, message: "unknown store: " + storeId };
   if (isProvisioned(c)) return { ok: true, store: c };
-  if (await billingEntitled(storeId)) return { ok: true, store: c, via: "billing" };
+  const ent = await billingEntitled(storeId);
+  if (ent === true) return { ok: true, store: c, via: "billing" };
+  // 2026-10-13. Billing could not be checked: fail closed, but as a read failure (-32002, like the registry above).
+  if (ent === null) return { ok: false, code: -32002, message: "store billing could not be checked (fail-closed). This is a read failure, not a statement that the store is not provisioned. Retry later." };
   return { ok: false, code: -32001, message: "store not provisioned for WebMCP (paid option required)" };
 }
 

@@ -81,7 +81,16 @@ async function rateLimited(env, request, bucket, max) {
   return false;
 }
 
-const getOrder = async (env, id) => { try { return JSON.parse((await env.US_ORDERS.get(`order:${id}`)) || "null"); } catch { return null; } };
+// 2026-10-13. Three outcomes: { order } when found, { absent: true } when KV has no such key, { failed: true } when the
+// KV read threw or the stored value would not parse. getOrder keeps its old meaning (null for both) for the callers
+// not changed here; the routes that answer an outside caller use readOrder so a failure is not reported as "not found".
+const readOrder = async (env, id) => {
+  let raw;
+  try { raw = await env.US_ORDERS.get(`order:${id}`); } catch { return { failed: true }; }
+  if (raw == null) return { absent: true };
+  try { return { order: JSON.parse(raw) }; } catch { return { failed: true }; }
+};
+const getOrder = async (env, id) => { const r = await readOrder(env, id); return r.order || null; };
 // The status is kept in KV metadata so the cron can list orders without reading each one.
 const putOrder = (env, o) => env.US_ORDERS.put(`order:${o.id}`, JSON.stringify(o), { metadata: { status: o.status, paid_at: o.paid_at || null, created_at: o.created_at } });
 const sha16 = (o) => (o.draft && o.draft.sha256 ? o.draft.sha256.slice(0, 16) : null);
@@ -527,7 +536,9 @@ async function route(request, env, ctx) {
     const base = `/review/${m[1]}/${m[2]}`;
     const qs = `exp=${encodeURIComponent(url.searchParams.get("exp") || "")}&sig=${encodeURIComponent(url.searchParams.get("sig") || "")}`;
     if (!(await verifyPath(env.LINK_SECRET, base, url.searchParams.get("exp"), url.searchParams.get("sig")))) return html("<p>expired or invalid</p>", 403);
-    const order = await getOrder(env, m[1]);
+    const rd = await readOrder(env, m[1]);
+    if (rd.failed) return html("<p>注文を読めなかった(KV の読み取り失敗)。注文が無いという意味ではない。時間をおいて開き直す。</p>", 503);
+    const order = rd.order;
     if (!order) return html("<p>not found</p>", 404);
     if (sha16(order) !== m[2]) return html(`<p>この下書きは作り直されている(今の指紋 ${esc(sha16(order) || "なし")})。新しいリンクは LINE に届いている。</p>`, 409);
     if (m[3] === "/approve") {
@@ -551,7 +562,9 @@ async function route(request, env, ctx) {
   if (m && (request.method === "GET" || request.method === "POST")) {
     const qs = `exp=${encodeURIComponent(url.searchParams.get("exp") || "")}&sig=${encodeURIComponent(url.searchParams.get("sig") || "")}`;
     if (!(await verifyPath(env.LINK_SECRET, p, url.searchParams.get("exp"), url.searchParams.get("sig")))) return html("<p style=\"font:16px sans-serif;margin:24px\">This link has expired. Reply to our email and we will send a new one.</p>", 403);
-    const order = await getOrder(env, m[1]);
+    const rd = await readOrder(env, m[1]);
+    if (rd.failed) return html("<p style=\"font:16px sans-serif;margin:24px\">We could not load your order just now. This is a temporary problem on our side, not a missing order. Please try this link again in a few minutes.</p>", 503);
+    const order = rd.order;
     if (!order) return html("<p>Not found</p>", 404);
     return await handleAnswer(request, env, order, qs);
   }
@@ -567,7 +580,9 @@ async function route(request, env, ctx) {
     }
     m = p.match(/^\/admin\/orders\/(US-\d{8}-[A-Z2-9]{6})(\/[a-z]+)?$/);
     if (!m) return json({ error: "not found" }, 404);
-    const order = await getOrder(env, m[1]);
+    const rd = await readOrder(env, m[1]);
+    if (rd.failed) return json({ error: "order_read_failed", note: "The order could not be read from KV. This is a read failure, not a statement that the order does not exist." }, 503);
+    const order = rd.order;
     if (!order) return json({ error: "order not found" }, 404);
     const action = m[2] || "";
     if (!action && request.method === "GET") return json(order);

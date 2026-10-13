@@ -41,7 +41,8 @@ const json = (obj, status = 200, extra = {}) =>
 const html = (body, status = 200) =>
   new Response(body, { status, headers: { "Content-Type": "text/html; charset=utf-8", ...cors } });
 const rpc = (id, result) => json({ jsonrpc: "2.0", id, result });
-const rpcErr = (id, code, message) => json({ jsonrpc: "2.0", id, error: { code, message } });
+// 2026-10-13. Optional data, so a read failure can carry its own code. Without data the reply is byte for byte as before.
+const rpcErr = (id, code, message, data) => json({ jsonrpc: "2.0", id, error: data === undefined ? { code, message } : { code, message, data } });
 
 function safeStr(v, max = 400) { return (v == null ? "" : String(v)).slice(0, max); }
 function escHtml(v) { return (v == null ? "" : String(v)).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
@@ -963,6 +964,8 @@ function publicView(c) {
     note: verified
       ? ("検証済み(KIRA適正診断 通過。実際の見積 " + Number((c.audit_evidence || {}).estimates || 0) + " 本を監査した結果)")
       : "検証手続き中。通過するまでスコアは出しません(fail-closed)。",
+    // 2026-10-13. Present only when the hearing: profile read failed. Absent otherwise, so the shape is unchanged.
+    ...(c.profile_read_failed ? { profile_read_failed: true, profile_note: "The fuller profile (hearing:) could not be read just now, so works and areas shown here may be incomplete. This is a read failure, not a statement about what the store does." } : {}),
   };
 }
 // MCPはKVライブを一次ソースに(静的シードはフォールバック)。AIが常に最新の検証状態を引ける。
@@ -971,15 +974,20 @@ async function contractorsFromStores(env, stores) {
   const out = [];
   for (const s of stores) {
     let profile = null;
+    let profileFailed = false;
     try {
       const h = await env.HS_HEARING_KV.get("hearing:" + s.store_id, "json");
       profile = (h && h.profile) || null;
-    } catch (_e) {}
+    } catch (_e) { profileFailed = true; }
     // 2026-10-03: Yakumo は建設の業者名簿。業種が建設以外と決まっている店(訪問看護など)は、
     //   手続き中でも名簿に出さない。業種が未定の店は従来どおり残す(建設の既存店は業種を持つ)。
     const ind = s.industry || (profile && profile.industry) || null;
     if (ind && ind !== "construction") continue;
-    out.push(storeToContractor(s, profile));
+    const c = storeToContractor(s, profile);
+    // 2026-10-13. The store stays listed with its thin store: data, but marked, so a caller is not told
+    // its works and areas are only these when the fuller hearing: record simply could not be read.
+    if (profileFailed) c.profile_read_failed = true;
+    out.push(c);
   }
   return out;
 }
@@ -1100,6 +1108,11 @@ function findMatches(contractors, area, work) {
   return raw;
 }
 
+// 2026-10-13. The error data shared by resources/read and completion when liveContractors could not read the roster.
+function rosterUnavailableData(rosterRead) {
+  return { error: "roster_unavailable", roster_read: false, roster_source: rosterRead.source, failures: rosterRead.failures, retry: true, published_roster: MALL_URL };
+}
+
 async function handleMcp(request, env, id, method, params, ctx) {
   if (method === "initialize") {
     const req = params && params.protocolVersion;
@@ -1123,6 +1136,12 @@ async function handleMcp(request, env, id, method, params, ctx) {
     if (!uri) return rpcErr(id, -32602, "params.uri required");
     const rosterRead = await liveContractors(env);
     const contractors = rosterRead.contractors;
+    // 2026-10-13. A failed roster read used to give yakumo://mall zero counts and yakumo://store/X "store not found"
+    // (-32002 is the MCP code for resource not found). Report it as our own failure instead. The static
+    // yakumo://verification resource does not need the roster and is served as before.
+    if (!rosterRead.read_ok && (uri === "yakumo://mall" || uri === "yakumo://categories" || /^yakumo:\/\/store\//.test(String(uri)))) {
+      return rpcErr(id, -32603, "roster_unavailable: the contractor roster could not be read. This is a read failure, NOT a statement that the store or the listing does not exist.", rosterUnavailableData(rosterRead));
+    }
     if (uri === "yakumo://mall") return rpc(id, { contents: [{ uri, mimeType: "application/json", text: JSON.stringify(mallOverview(contractors), null, 2) }] });
     if (uri === "yakumo://verification") return rpc(id, { contents: [{ uri, mimeType: "text/markdown", text: VERIFY_MD }] });
     if (uri === "yakumo://categories") return rpc(id, { contents: [{ uri, mimeType: "application/json", text: JSON.stringify({ categories: tallyWorks(contractors), areas: tallyAreas(contractors) }, null, 2) }] });
@@ -1167,6 +1186,10 @@ async function handleMcp(request, env, id, method, params, ctx) {
     if (!argument || !argument.name) return rpcErr(id, -32602, "params.argument required");
     const rosterRead = await liveContractors(env);
     const contractors = rosterRead.contractors;
+    // 2026-10-13. work and area suggestions come from the roster. On a failed read, say so rather than offer none.
+    if (!rosterRead.read_ok && (argument.name === "work" || argument.name === "area")) {
+      return rpcErr(id, -32603, "roster_unavailable: suggestions come from the contractor roster, which could not be read. This is a read failure, NOT a statement that there are no matching values.", rosterUnavailableData(rosterRead));
+    }
     const val = safeStr(argument.value, 40);
     let pool = [];
     if (argument.name === "work") pool = Object.keys(tallyWorks(contractors));

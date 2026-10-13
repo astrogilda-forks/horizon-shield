@@ -258,11 +258,27 @@ export async function handleBoardSubmit(request, env) {
 let _boardCache = { at: 0, cards: null };
 export function boardCacheClear() { _boardCache = { at: 0, cards: null }; }
 
+// 2026-10-13. Reads board_index: an array when read (an absent key is []), null when the KV read threw or the
+// value would not parse. Before this, a failure became [], which readBoard cached for 30 s as an empty board and
+// the publish route wrote back as a one-card index.
+async function readBoardIndex(env) {
+  let raw;
+  try { raw = await env.US_ORDERS.get("board_index"); } catch { return null; }
+  if (raw == null) return [];
+  try { const ids = JSON.parse(raw); return Array.isArray(ids) ? ids : null; } catch { return null; }
+}
+
+// 2026-10-13. Throws when the index or a card cannot be read from KV; nothing is cached then. A card that reads
+// but will not parse is still skipped, as before.
 export async function readBoard(env) {
   if (_boardCache.cards && Date.now() - _boardCache.at < 30000) return _boardCache.cards;
-  let ids = [];
-  try { ids = JSON.parse((await env.US_ORDERS.get("board_index")) || "[]"); } catch { ids = []; }
-  const cards = (await Promise.all(ids.slice(0, 200).map(async (id) => { try { return JSON.parse((await env.US_ORDERS.get(`board:${id}`)) || "null"); } catch { return null; } }))).filter(Boolean);
+  const ids = await readBoardIndex(env);
+  if (ids === null) throw new Error("board_index could not be read");
+  const cards = (await Promise.all(ids.slice(0, 200).map(async (id) => {
+    let raw;
+    try { raw = await env.US_ORDERS.get(`board:${id}`); } catch { throw new Error("board card could not be read"); }
+    try { return JSON.parse(raw || "null"); } catch { return null; }
+  }))).filter(Boolean);
   _boardCache = { at: Date.now(), cards };
   return cards;
 }
@@ -271,7 +287,12 @@ export async function handleBoard(request, env) {
   const h = cors(env, request, "GET, OPTIONS");
   const url = new URL(request.url);
   const one = url.searchParams.get("id");
-  const cards = await readBoard(env);
+  let cards;
+  try { cards = await readBoard(env); }
+  catch {
+    // 2026-10-13. A failed read is not an empty board and not a missing card.
+    return json({ ok: false, error: "board_unavailable", note: "The board could not be read just now. This is a read failure, not an empty board." }, 503, { ...h, "cache-control": "no-store" });
+  }
   if (one) { const c = cards.find((x) => x.id === one); return c ? json({ ok: true, card: c }, 200, h) : json({ ok: false, error: "not found" }, 404, h); }
   return json({ ok: true, cards }, 200, { ...h, "cache-control": "public, max-age=30" });
 }
@@ -307,10 +328,12 @@ export async function handleBoardReview(request, env, id, action) {
     await env.US_ORDERS.put(`board_pending:${id}`, JSON.stringify(rec), { expirationTtl: 7 * 86400 });
     return html(`<p style="font:16px sans-serif;margin:24px">載せない: ${esc(id)}</p>`);
   }
+  // 2026-10-13. Read the index before writing anything. A failed read used to become [], and the index was then
+  // overwritten with this one card, dropping every card already published.
+  const ids = await readBoardIndex(env);
+  if (ids === null) return html("<p>board_index を読めなかった(KV の読み取り失敗)。何も書いていない。時間をおいてもう一度押す。</p>", 503);
   const card = { id, ...rec.card, published_at: new Date().toISOString() };
   await env.US_ORDERS.put(`board:${id}`, JSON.stringify(card));
-  let ids = [];
-  try { ids = JSON.parse((await env.US_ORDERS.get("board_index")) || "[]"); } catch { ids = []; }
   if (!ids.includes(id)) ids.unshift(id);
   await env.US_ORDERS.put("board_index", JSON.stringify(ids.slice(0, 1000)));
   rec.status = "published"; rec.decided_at = card.published_at;
