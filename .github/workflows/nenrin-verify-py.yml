@@ -20,6 +20,7 @@ on:
       - "workers/hs-ledger/nenrin/interop-v0/**"
       - "workers/hs-ledger/nenrin/interop-v0.1/**"
       - "workers/hs-ledger/nenrin/interop-v0.2/**"
+      - "workers/hs-ledger/nenrin/interop-v0.3/**"
       - ".github/workflows/nenrin-verify-py.yml"
   pull_request:
     paths:
@@ -31,6 +32,7 @@ on:
       - "workers/hs-ledger/nenrin/interop-v0/**"
       - "workers/hs-ledger/nenrin/interop-v0.1/**"
       - "workers/hs-ledger/nenrin/interop-v0.2/**"
+      - "workers/hs-ledger/nenrin/interop-v0.3/**"
       - ".github/workflows/nenrin-verify-py.yml"
   workflow_dispatch:
 

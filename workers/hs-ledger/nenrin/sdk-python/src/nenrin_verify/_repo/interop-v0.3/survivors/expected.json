@@ -1,0 +1,164 @@
+{
+  "schema": "nenrin-interop-expected-v0",
+  "version": "0.3.0",
+  "frozen_from": "conformance-v0/adequacy-v0/proposed_vectors at 05183b621d52b2edafc68a9eb6fc782d8d95c400: the fixtures byte for byte (SHA256SUMS), the cases and their expected signatures unchanged",
+  "verifier": "nenrin-provenance-verify-v0 (sdk/nenrin_verify.mjs; npm and PyPI nenrin-verify; Go nenrin-verify-go)",
+  "note": "the canonical verdict signature each fixture must reproduce: verdict, sorted refusal codes, sorted finding codes. targets names the declared faults in ../../conformance-v0/adequacy-v0/mutations.json the vector kills; it is not part of the signature",
+  "cases": {
+    "p00_base": {
+      "intent": "the clean pair every proposal changes in one place: accepted",
+      "targets": [],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "accepted",
+        "refusals": [],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p01_caller_sig_bit_flipped": {
+      "intent": "step 2b: the grant's caller_sig has one bit flipped (still canonical base64), so it does not verify: execution_signature_invalid (reason caller_sig_invalid). Nothing else changes and the receipt reconciles",
+      "targets": [
+        "F1"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_signature_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p02_grant_signed_by_provider_key": {
+      "intent": "step 2b: the grant is signed with the provider's key, not with the key of grant.caller_id: execution_signature_invalid (caller_sig_invalid). A verifier that tries the keys of every party accepts it",
+      "targets": [
+        "F1",
+        "F3"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_signature_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p03_grant_ref_not_recomputing": {
+      "intent": "step 2a: grant.grant_ref is not the recomputed id (it is outside the signed preimage, so caller_sig still verifies): execution_invalid (grant_recompute_mismatch). The receipt names the recomputed id, so 2d finds no receipt for the stored grant_ref: execution_unreconciled",
+      "targets": [
+        "F6a"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_unreconciled"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p04_receipt_id_not_recomputing": {
+      "intent": "step 2a: receipt.receipt_id is not the recomputed id (outside the signed preimage, provider_sig still verifies): execution_invalid (receipt_recompute_mismatch); 2d: the receipt is not authentic without a recomputing receipt_id: execution_unreconciled",
+      "targets": [
+        "F6b"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_unreconciled"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p05_receipt_names_other_grant": {
+      "intent": "step 2a: the receipt, validly signed, names a grant_ref other than this grant's: execution_invalid (receipt_unbound); 2d: no receipt for this grant: execution_unreconciled",
+      "targets": [
+        "F6c"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_unreconciled"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p06_hour_24_inside_window": {
+      "intent": "step 2a, section 5: executed_at 2026-10-03T24:00:00Z is not a strict RFC3339 instant (hour 24): execution_invalid (invalid_timestamp). Date.parse reads it as 2026-10-04T00:00:00Z, which is inside the window, so a verifier without the strict check accepts",
+      "targets": [
+        "F7"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p07_executed_after_not_after": {
+      "intent": "step 2a: executed_at is one second after not_after: execution_invalid (outside_authorization_window)",
+      "targets": [
+        "F4",
+        "F4b"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "p08_receipt_from_unauthorized_provider": {
+      "intent": "step 2a: the receipt is validly signed by a provider other than grant.provider_id: execution_invalid (provider_not_authorized); 2d: no receipt from the authorized provider: execution_unreconciled",
+      "targets": [
+        "F10"
+      ],
+      "task_id": "task_adequacy_proposal",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_unreconciled"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    }
+  }
+}

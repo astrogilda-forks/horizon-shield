@@ -8,9 +8,9 @@ import (
 	"testing"
 )
 
-// The three frozen corpora: every verdict signature must be reproduced.
+// The frozen provenance corpora: every verdict signature must be reproduced.
 func TestFrozenCorpora(t *testing.T) {
-	for _, dir := range []string{"interop-v0", "interop-v0.1", "interop-v0.2/edge"} {
+	for _, dir := range []string{"interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "interop-v0.3/survivors"} {
 		root := filepath.Join("..", "..", dir)
 		b, err := os.ReadFile(filepath.Join(root, "expected.json"))
 		if err != nil {

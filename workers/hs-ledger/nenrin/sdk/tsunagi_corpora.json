@@ -1120,6 +1120,205 @@
     }
    }
   },
+  "nenrin-interop-v0.3-survivors": {
+   "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors",
+   "expected_sha256": "3d85d6707a8295004ce766a4b5ea4728226c4f8bbfcd8467b7f50213b3701be8",
+   "cases": {
+    "p00_base": {
+     "intent": "the clean pair every proposal changes in one place: accepted",
+     "targets": [],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "accepted",
+      "refusals": [],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p01_caller_sig_bit_flipped": {
+     "intent": "step 2b: the grant's caller_sig has one bit flipped (still canonical base64), so it does not verify: execution_signature_invalid (reason caller_sig_invalid). Nothing else changes and the receipt reconciles",
+     "targets": [
+      "F1"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_signature_invalid"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p02_grant_signed_by_provider_key": {
+     "intent": "step 2b: the grant is signed with the provider's key, not with the key of grant.caller_id: execution_signature_invalid (caller_sig_invalid). A verifier that tries the keys of every party accepts it",
+     "targets": [
+      "F1",
+      "F3"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_signature_invalid"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p03_grant_ref_not_recomputing": {
+     "intent": "step 2a: grant.grant_ref is not the recomputed id (it is outside the signed preimage, so caller_sig still verifies): execution_invalid (grant_recompute_mismatch). The receipt names the recomputed id, so 2d finds no receipt for the stored grant_ref: execution_unreconciled",
+     "targets": [
+      "F6a"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_invalid",
+       "execution_unreconciled"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p04_receipt_id_not_recomputing": {
+     "intent": "step 2a: receipt.receipt_id is not the recomputed id (outside the signed preimage, provider_sig still verifies): execution_invalid (receipt_recompute_mismatch); 2d: the receipt is not authentic without a recomputing receipt_id: execution_unreconciled",
+     "targets": [
+      "F6b"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_invalid",
+       "execution_unreconciled"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p05_receipt_names_other_grant": {
+     "intent": "step 2a: the receipt, validly signed, names a grant_ref other than this grant's: execution_invalid (receipt_unbound); 2d: no receipt for this grant: execution_unreconciled",
+     "targets": [
+      "F6c"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_invalid",
+       "execution_unreconciled"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p06_hour_24_inside_window": {
+     "intent": "step 2a, section 5: executed_at 2026-10-03T24:00:00Z is not a strict RFC3339 instant (hour 24): execution_invalid (invalid_timestamp). Date.parse reads it as 2026-10-04T00:00:00Z, which is inside the window, so a verifier without the strict check accepts",
+     "targets": [
+      "F7"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_invalid"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p07_executed_after_not_after": {
+     "intent": "step 2a: executed_at is one second after not_after: execution_invalid (outside_authorization_window)",
+     "targets": [
+      "F4",
+      "F4b"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_invalid"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    },
+    "p08_receipt_from_unauthorized_provider": {
+     "intent": "step 2a: the receipt is validly signed by a provider other than grant.provider_id: execution_invalid (provider_not_authorized); 2d: no receipt from the authorized provider: execution_unreconciled",
+     "targets": [
+      "F10"
+     ],
+     "task_id": "task_adequacy_proposal",
+     "expect": {
+      "verdict": "refused",
+      "refusals": [
+       "execution_invalid",
+       "execution_unreconciled"
+      ],
+      "findings": [
+       "evidence_bound_unchecked",
+       "no_delegation_observations"
+      ]
+     }
+    }
+   },
+   "fixtures": {
+    "p00_base": {
+     "sha256": "e71cc704e85ea35f07fecef964ad1f5ae129ad800ea2c5f7a4277a9368a49d90",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"goabg2coTXW+5P2JQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-04T00:30:00Z\",\n    \"receipt_id\": \"e1db241c32374e9926bf844ff0684558217781738af783baaca2bcd27a2dfe05\",\n    \"provider_sig\": \"AMKNS98wGw4fQh/rr0JNEB3419VNeunodal6qa+xk94qHOUD0HHCLJQPzan9cPxJJ+/vsaX+TuO0dufVn6g8Bw==\"\n  }\n}\n"
+    },
+    "p01_caller_sig_bit_flipped": {
+     "sha256": "d1a2a5518a33658005bb4cd2ad9060478043963430d6932c2c7a3a83e2702a56",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"goabg2coTXW+5PyJQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-04T00:30:00Z\",\n    \"receipt_id\": \"e1db241c32374e9926bf844ff0684558217781738af783baaca2bcd27a2dfe05\",\n    \"provider_sig\": \"AMKNS98wGw4fQh/rr0JNEB3419VNeunodal6qa+xk94qHOUD0HHCLJQPzan9cPxJJ+/vsaX+TuO0dufVn6g8Bw==\"\n  }\n}\n"
+    },
+    "p02_grant_signed_by_provider_key": {
+     "sha256": "b95edcf17b4fbabd911b85a43d53f5f922e7a2af829e529fa7ccc2dc7a990a07",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"J8VdGiWOlwClU2bFx4coy+GM+2Wx0WRCPfJkIJOZieFEyiA9VO3w9i4oSROVPv8sePYfxH6OROn7yUq1syJYAQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-04T00:30:00Z\",\n    \"receipt_id\": \"e1db241c32374e9926bf844ff0684558217781738af783baaca2bcd27a2dfe05\",\n    \"provider_sig\": \"AMKNS98wGw4fQh/rr0JNEB3419VNeunodal6qa+xk94qHOUD0HHCLJQPzan9cPxJJ+/vsaX+TuO0dufVn6g8Bw==\"\n  }\n}\n"
+    },
+    "p03_grant_ref_not_recomputing": {
+     "sha256": "42c26ace16ac3e2011e5d6db762f3d19b1fbac88a645d59fb82b8f2c136805ad",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\n    \"caller_sig\": \"goabg2coTXW+5P2JQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-04T00:30:00Z\",\n    \"receipt_id\": \"e1db241c32374e9926bf844ff0684558217781738af783baaca2bcd27a2dfe05\",\n    \"provider_sig\": \"AMKNS98wGw4fQh/rr0JNEB3419VNeunodal6qa+xk94qHOUD0HHCLJQPzan9cPxJJ+/vsaX+TuO0dufVn6g8Bw==\"\n  }\n}\n"
+    },
+    "p04_receipt_id_not_recomputing": {
+     "sha256": "6723a55dda91d2b909ea861ac268b27bee699dfc327e8b3013ee9d5c29963480",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"goabg2coTXW+5P2JQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-04T00:30:00Z\",\n    \"receipt_id\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\n    \"provider_sig\": \"AMKNS98wGw4fQh/rr0JNEB3419VNeunodal6qa+xk94qHOUD0HHCLJQPzan9cPxJJ+/vsaX+TuO0dufVn6g8Bw==\"\n  }\n}\n"
+    },
+    "p05_receipt_names_other_grant": {
+     "sha256": "98568a4622a1a219af754e13182337cd9441639465d0bc9276e0d4dc03a1de96",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"goabg2coTXW+5P2JQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-04T00:30:00Z\",\n    \"receipt_id\": \"07f76945e865c24260db5643afbb91242a4c11da18a64304287aca7911419af1\",\n    \"provider_sig\": \"wb5R/+0YBrsf+XUZB6SAigNc5ZMwM3k5syQoT5snJmXW2ARgvgXsf9wTrKyqWbEBDiUrlhcWBtv8wQSMAbRbCA==\"\n  }\n}\n"
+    },
+    "p06_hour_24_inside_window": {
+     "sha256": "597666a86f9a07ca5d6cb28284505e5dfb9dec745c7fa8c2e90ffb1de455e06a",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"goabg2coTXW+5P2JQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-03T24:00:00Z\",\n    \"receipt_id\": \"26a1c85f017ed9b519c58f9068a97f288f2ab070cb19b249a2df9023bf2d65ed\",\n    \"provider_sig\": \"piXGftXTczcoSSnFW0cvqL5MSD9nVrDf0qmHAfqkS/YwEw3fHRMGh2GV93SbIB6wqCjIX7WHaNHbnEGVm3qpBw==\"\n  }\n}\n"
+    },
+    "p07_executed_after_not_after": {
+     "sha256": "4cce6e05a681d9aa274e9c0295d07eea1d4842297b61eeb36e859bd22625300a",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"goabg2coTXW+5P2JQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"executed_at\": \"2026-10-04T01:00:01Z\",\n    \"receipt_id\": \"571a93c857e30e4bd68a3731e6a641d6c8ea404fa0ac65fcf52350ac44feffbc\",\n    \"provider_sig\": \"nHibKqVpVnVYuXqiKS9Zh0bzKGnV0chuOlR6efUujp0L69SO6qF+grP9YjtNv2d6xc1gVmJApzPDYsfqSJL1AQ==\"\n  }\n}\n"
+    },
+    "p08_receipt_from_unauthorized_provider": {
+     "sha256": "b76952bf3dded1f286a773d64b54e0c43ea2edaba118a33058b8ee9fe1c8a104",
+     "text": "{\n  \"task_id\": \"task_adequacy_proposal\",\n  \"grant\": {\n    \"schema\": \"task-execution-bind-v0/grant\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"caller_id\": \"did:key:z6MkguKbUXoCw5gy3AUAJyqVkRLEW7PetQ8QuzxYCvxQbMhk\",\n    \"provider_id\": \"did:key:z6MkfktWa7nv8PCotcfCzuGGb37SPwJSBLonuNxGvqLeEHw3\",\n    \"nonce\": \"n1\",\n    \"not_before\": \"2026-10-04T00:00:00Z\",\n    \"not_after\": \"2026-10-04T01:00:00Z\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"caller_sig\": \"goabg2coTXW+5P2JQ9hcaNu/8y0cXUhOmu9pgftZPLnCqqEvLm7viZzDxgG6SlgG46jgVo++GvxIkrCdHHBXDQ==\"\n  },\n  \"receipt\": {\n    \"schema\": \"task-execution-bind-v0/receipt\",\n    \"task_id\": \"task_adequacy_proposal\",\n    \"grant_ref\": \"2547313a752f3110165d515cc22c250d4a2ea47de00756b97e459436368565ed\",\n    \"executed_action\": {\n      \"tool\": \"a2a.invoke\",\n      \"target\": \"/task\",\n      \"args_sha256\": \"sha_args_ok\"\n    },\n    \"outcome\": {\n      \"status\": \"completed\",\n      \"result_sha256\": \"sha_res_1\",\n      \"evidence\": {\n        \"kind\": \"ledger_record\",\n        \"ref\": \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\n        \"system\": \"ledger.horizonshield.dev\"\n      }\n    },\n    \"provider_id\": \"did:key:z6MktBnYDWcPXXuoC4bUDYrngEqpNJYhPwfEE4FHPJ7U8sfE\",\n    \"executed_at\": \"2026-10-04T00:30:00Z\",\n    \"receipt_id\": \"a70c936f6b9c10bab1de47573acaef9140977edd97e4222b19fc661c1b72465b\",\n    \"provider_sig\": \"GEUGsg6Qap+N3X+Bci+BKErzofxLsxe4UeZdWNl3v/aecwfLT5daP0QqqDuwqRXj85AlsfAD+eFhfh9XMJ3/BA==\"\n  }\n}\n"
+    }
+   }
+  },
   "nenrin-trace-intake-v0": {
    "source": "workers/hs-ledger/nenrin/trace-intake-v0",
    "expected_sha256": "9f0bf703e461ea7f001100e011979fb5dba3cc0e52a62732fdbaed651a1af1ef",

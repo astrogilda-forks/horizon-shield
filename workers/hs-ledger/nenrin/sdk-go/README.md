@@ -25,10 +25,10 @@ sig := rep.Signature()             // {verdict, refusals, findings}
 
 | check | result |
 |---|---|
-| interop-v0, interop-v0.1, interop-v0.2/edge (`go test ./...`, `--corpus`) | 5/5, 13/13, 36/36 |
+| interop-v0, interop-v0.1, interop-v0.2/edge, interop-v0.2/action-presence, interop-v0.3/survivors (`go test ./...`, `--corpus`) | 5/5, 13/13, 36/36, 9/9, 9/9 |
 | musubi-canonical-v0 shared vectors (`../musubi-v0/canonical_vectors.json`) | 9/9, byte for byte |
-| `parity/parity.py`: the 31 frozen parity bundles and their mutations (the same set the Python port is held to), the three corpora and 40 signed edge bundles from `../conformance-v0/gen_edge_bundles.mjs`, each parsed by JavaScript and Go from the same text | 27,156 inputs, 0 differences (2,352 on which both throw) against `../sdk/nenrin_verify.mjs` on Node 22 |
-| TSUNAGI, every night from this repository (`ops/tsunagi/BOARD.md`) | one row, three corpora |
+| `parity/parity.py`: the 31 frozen parity bundles and their mutations (the same set the Python port is held to), the five interop corpora and 40 signed edge bundles from `../conformance-v0/gen_edge_bundles.mjs`, each parsed by JavaScript and Go from the same text | 27,174 inputs, 0 differences (2,352 on which both throw) against `../sdk/nenrin_verify.mjs` on Node 22 (0.2.1; 27,156 with three corpora at 0.2.0) |
+| TSUNAGI, every night from this repository (`ops/tsunagi/BOARD.md`) | one row: the five provenance corpora above and the three TRACE corpora |
 
 The pass condition in `parity.py` is strict: both throw, or the same verdict signature and the same refusals as
 (code, reason) in the same order.
@@ -65,3 +65,10 @@ interoperability vectors and reference verifiers. Zenodo. https://doi.org/10.528
 `../sdk/trace_verify.mjs` (normative text `../trace-bind-v0/SPEC.md`): `CheckTraceRecord`, `VerifyTraceIntake`,
 `VerifyTraceBind`, `SpanAttributes`, `CheckSpanAttributes`. `nenrin-verify-go --trace-batch intake|bind|span in out`
 is the TSUNAGI batch form. `go test ./...` runs the three corpora (28, 28, 16); the board referees them nightly.
+
+## 0.2.1 (2026-10-13)
+
+`go test ./...` and the CI's `--corpus` loop now also read interop-v0.2/action-presence (9/9) and
+interop-v0.3/survivors (9/9). The second is new: nine vectors frozen from the adequacy-v0 measurement
+(`../conformance-v0/adequacy-v0/REPORT.md`), each killing a declared verifier fault the older corpora let survive.
+The verifier code is unchanged; only `PortVersion` moved.

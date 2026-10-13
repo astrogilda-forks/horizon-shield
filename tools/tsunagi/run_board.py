@@ -39,7 +39,7 @@ NENRIN = os.path.join(ROOT, "workers", "hs-ledger", "nenrin")
 HISTORY_KEEP = 60
 # What outside code must not be able to change between runs: the corpora the board scores against, the generator, and
 # the board's own tools and adapters. Snapshotted before anything outside runs, checked and restored after each run.
-GUARDED = [os.path.join(NENRIN, d) for d in ("interop-v0", "interop-v0.1", "interop-v0.2", "conformance-v0", "sdk", "sdk-python/src",
+GUARDED = [os.path.join(NENRIN, d) for d in ("interop-v0", "interop-v0.1", "interop-v0.2", "interop-v0.3", "conformance-v0", "sdk", "sdk-python/src",
                                              "musubi-v0", "trace-intake-v0", "trace-bind-v0", "trace-span-v0", "trace-pin-v0")] + [HERE]
 
 # The a2a-approval-v2 vectors (babyblueviper1, settle v1.10's approver), refereed by the board from this repository's pinned copy,

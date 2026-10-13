@@ -59,6 +59,8 @@ Notes on what the kills rest on:
 
 ## Survivors, and the smallest vector that would kill each
 
+Frozen on 2026-10-13 as `../../interop-v0.3/survivors/` (TSUNAGI `nenrin-interop-v0.3-survivors`; fixtures copied byte for byte, nothing here changed) in the commit that adds that directory; with it among the frozen corpora, `run_adequacy.py --no-tool` kills 13 of 13.
+
 These are proposals in `proposed_vectors/`, not part of any frozen corpus. Each is a validly signed grant and receipt (no observations, no intent), changed in one place from `p00_base`. Keys come from public labels at run time (`make_proposed_vectors.py`); no key material is stored. The intended signature was written from VERIFIER.md before running anything.
 
 | Survivor | Proposed vector | Intended outcome (unmutated) | Under the fault |

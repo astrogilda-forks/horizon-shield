@@ -329,6 +329,56 @@
     "source_sha256": "e1361c723a9cfd5d24d19eb3247e2420b95a57f5cc7b5753b66b54791458f2ce",
     "vendored_sha256": "e1361c723a9cfd5d24d19eb3247e2420b95a57f5cc7b5753b66b54791458f2ce"
   },
+  "_repo/interop-v0.3/survivors/expected.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/expected.json",
+    "source_sha256": "3d85d6707a8295004ce766a4b5ea4728226c4f8bbfcd8467b7f50213b3701be8",
+    "vendored_sha256": "3d85d6707a8295004ce766a4b5ea4728226c4f8bbfcd8467b7f50213b3701be8"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p00_base.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p00_base.json",
+    "source_sha256": "e71cc704e85ea35f07fecef964ad1f5ae129ad800ea2c5f7a4277a9368a49d90",
+    "vendored_sha256": "e71cc704e85ea35f07fecef964ad1f5ae129ad800ea2c5f7a4277a9368a49d90"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p01_caller_sig_bit_flipped.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p01_caller_sig_bit_flipped.json",
+    "source_sha256": "d1a2a5518a33658005bb4cd2ad9060478043963430d6932c2c7a3a83e2702a56",
+    "vendored_sha256": "d1a2a5518a33658005bb4cd2ad9060478043963430d6932c2c7a3a83e2702a56"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p02_grant_signed_by_provider_key.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p02_grant_signed_by_provider_key.json",
+    "source_sha256": "b95edcf17b4fbabd911b85a43d53f5f922e7a2af829e529fa7ccc2dc7a990a07",
+    "vendored_sha256": "b95edcf17b4fbabd911b85a43d53f5f922e7a2af829e529fa7ccc2dc7a990a07"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p03_grant_ref_not_recomputing.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p03_grant_ref_not_recomputing.json",
+    "source_sha256": "42c26ace16ac3e2011e5d6db762f3d19b1fbac88a645d59fb82b8f2c136805ad",
+    "vendored_sha256": "42c26ace16ac3e2011e5d6db762f3d19b1fbac88a645d59fb82b8f2c136805ad"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p04_receipt_id_not_recomputing.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p04_receipt_id_not_recomputing.json",
+    "source_sha256": "6723a55dda91d2b909ea861ac268b27bee699dfc327e8b3013ee9d5c29963480",
+    "vendored_sha256": "6723a55dda91d2b909ea861ac268b27bee699dfc327e8b3013ee9d5c29963480"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p05_receipt_names_other_grant.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p05_receipt_names_other_grant.json",
+    "source_sha256": "98568a4622a1a219af754e13182337cd9441639465d0bc9276e0d4dc03a1de96",
+    "vendored_sha256": "98568a4622a1a219af754e13182337cd9441639465d0bc9276e0d4dc03a1de96"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p06_hour_24_inside_window.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p06_hour_24_inside_window.json",
+    "source_sha256": "597666a86f9a07ca5d6cb28284505e5dfb9dec745c7fa8c2e90ffb1de455e06a",
+    "vendored_sha256": "597666a86f9a07ca5d6cb28284505e5dfb9dec745c7fa8c2e90ffb1de455e06a"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p07_executed_after_not_after.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p07_executed_after_not_after.json",
+    "source_sha256": "4cce6e05a681d9aa274e9c0295d07eea1d4842297b61eeb36e859bd22625300a",
+    "vendored_sha256": "4cce6e05a681d9aa274e9c0295d07eea1d4842297b61eeb36e859bd22625300a"
+  },
+  "_repo/interop-v0.3/survivors/fixtures/p08_receipt_from_unauthorized_provider.json": {
+    "source": "workers/hs-ledger/nenrin/interop-v0.3/survivors/fixtures/p08_receipt_from_unauthorized_provider.json",
+    "source_sha256": "b76952bf3dded1f286a773d64b54e0c43ea2edaba118a33058b8ee9fe1c8a104",
+    "vendored_sha256": "b76952bf3dded1f286a773d64b54e0c43ea2edaba118a33058b8ee9fe1c8a104"
+  },
   "_repo/interop-v0/expected.json": {
     "source": "workers/hs-ledger/nenrin/interop-v0/expected.json",
     "source_sha256": "0bf1c44dfaad81eaf0084014dabf10a89bc134c832cec2d2bafb0c2041d9d0c1",

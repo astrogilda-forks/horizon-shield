@@ -7,8 +7,8 @@ name: Go SDK nenrin-verify-go (test, and tag a release)
 # Without such a tag, `go install ...@latest` resolves a pseudo version of whatever commit is newest.
 #
 # On push and pull_request: go vet and go test on the Go version named in go.mod and on the current stable Go.
-# The tests read three frozen corpora and the shared canonical vectors from sibling directories, so a change
-# there runs this workflow too.
+# The tests read the five frozen provenance corpora and the shared canonical vectors from sibling directories, so a
+# change there runs this workflow too.
 #
 # On workflow_dispatch with input version (vX.Y.Z): the same tests, then a guard that the version matches
 # PortVersion in nenrinverify/verify.go (what `nenrin-verify-go --version` prints) and that the tag does not
@@ -22,6 +22,8 @@ on:
       - "workers/hs-ledger/nenrin/interop-v0/**"
       - "workers/hs-ledger/nenrin/interop-v0.1/**"
       - "workers/hs-ledger/nenrin/interop-v0.2/edge/**"
+      - "workers/hs-ledger/nenrin/interop-v0.2/action-presence/**"
+      - "workers/hs-ledger/nenrin/interop-v0.3/survivors/**"
       - "workers/hs-ledger/nenrin/musubi-v0/canonical_vectors.json"
       - ".github/workflows/go-sdk.yml"
   pull_request:
@@ -30,6 +32,8 @@ on:
       - "workers/hs-ledger/nenrin/interop-v0/**"
       - "workers/hs-ledger/nenrin/interop-v0.1/**"
       - "workers/hs-ledger/nenrin/interop-v0.2/edge/**"
+      - "workers/hs-ledger/nenrin/interop-v0.2/action-presence/**"
+      - "workers/hs-ledger/nenrin/interop-v0.3/survivors/**"
       - "workers/hs-ledger/nenrin/musubi-v0/canonical_vectors.json"
       - ".github/workflows/go-sdk.yml"
   workflow_dispatch:
@@ -89,7 +93,7 @@ jobs:
           set -o pipefail
           go build -o "$RUNNER_TEMP/nenrin-verify-go" ./cmd/nenrin-verify-go
           "$RUNNER_TEMP/nenrin-verify-go" --version
-          for c in interop-v0 interop-v0.1 interop-v0.2/edge; do
+          for c in interop-v0 interop-v0.1 interop-v0.2/edge interop-v0.2/action-presence interop-v0.3/survivors; do
             "$RUNNER_TEMP/nenrin-verify-go" --corpus "../$c" | tail -1
           done
 

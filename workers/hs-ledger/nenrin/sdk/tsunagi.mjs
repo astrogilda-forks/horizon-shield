@@ -16,7 +16,8 @@
 // Codes are compared as sets (VERIFIER.md section 4). A missing case, an extra case, an error or any difference is a
 // case not reproduced; nothing is rounded up. Exit 0 only when every case reproduces.
 //
-// The corpora (interop-v0, interop-v0.1, interop-v0.2/edge) travel in tsunagi_corpora.json, built from the repository
+// The corpora (interop-v0, interop-v0.1, interop-v0.2/edge and /action-presence, interop-v0.3/survivors, and the
+// three TRACE corpora) travel in tsunagi_corpora.json, built from the repository
 // by build_tsunagi_corpora.mjs; each fixture is the exact text of its file, and that text is what goes into {in}.
 import { readFileSync, writeFileSync, statSync, mkdtempSync, rmSync, realpathSync, openSync, closeSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -34,7 +35,7 @@ function pack() {
   if (!_pack) _pack = JSON.parse(readFileSync(join(HERE, "tsunagi_corpora.json"), "utf8")).corpora;
   return _pack;
 }
-export const CORPORA = ["nenrin-interop-v0", "nenrin-interop-v0.1", "nenrin-interop-v0.2-edge", "nenrin-interop-v0.2-action-presence", "nenrin-trace-intake-v0", "nenrin-trace-bind-v0", "nenrin-trace-span-v0"];
+export const CORPORA = ["nenrin-interop-v0", "nenrin-interop-v0.1", "nenrin-interop-v0.2-edge", "nenrin-interop-v0.2-action-presence", "nenrin-interop-v0.3-survivors", "nenrin-trace-intake-v0", "nenrin-trace-bind-v0", "nenrin-trace-span-v0"];
 
 // Python's string order (by code point) and slicing (by code point), so the two referees print the same thing.
 const cp = (a, b) => { const x = Array.from(a), y = Array.from(b); for (let i = 0; i < Math.min(x.length, y.length); i++) { const d = x[i].codePointAt(0) - y[i].codePointAt(0); if (d) return d; } return x.length - y.length; };

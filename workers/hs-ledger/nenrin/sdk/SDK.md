@@ -72,6 +72,27 @@ account, no token, no trust in HS. A mismatch exits 2 and prints the two trees t
 attestation (who built it, from which commit) and this script (what that commit builds, on your
 machine), the chain source to package is closed at both ends by the reader, not by the operator.
 
+## 0.5.2 (2026-10-13): interop-v0.3/survivors, vectors that kill the faults the older corpora let survive
+
+`npx nenrin-tsunagi` carries two more provenance corpora. `nenrin-interop-v0.3-survivors` (9 cases,
+`interop-v0.3/survivors/` in the repository) is new. A mutation-adequacy measurement
+(`conformance-v0/adequacy-v0/REPORT.md`) took 13 declared faults, each one exact substitution in a verifier, and
+asked which of them the 93 frozen provenance fixtures notice: 5 of 13. The nine vectors (one per surviving fault,
+plus the clean pair they each change in one place) pin that these are refused, with the codes the reference
+returns: a grant signature with one bit flipped, a grant signed by the provider instead of the caller, a stored
+grant_ref or receipt_id that does not recompute, a receipt naming another grant, a receipt from a provider the grant
+did not authorize, an hour-24 timestamp, and an execution one second after not_after. With them, 13 of 13 declared
+faults are killed. `nenrin-interop-v0.2-action-presence` (9 cases, kuangmi-bit) was registered in the repository after
+0.5.1 and ships on npm for the first time.
+
+    npx nenrin-tsunagi run nenrin-interop-v0.3-survivors -- "node my_verifier.mjs {in} {out}"
+
+This package's verifier reproduces 9/9 of each, as do the Python and Go ports. The verifiers are unchanged.
+tsunagi.test.mjs now holds both corpora to the same checks as the first three (sizes, batch bytes, this package's
+verifier, the Python referee's scores). What the new corpus establishes stops at the declared faults: a kill shows
+that one fixture's outcome moves under one substitution, not that a verifier is correct, and a fault nobody declared
+is not measured.
+
 ## 0.5.1 (2026-10-09): pin a TRACE record in one command
 
 `trace_pin_cli.mjs` (`npx -p nenrin-verify nenrin-trace-pin`, export `nenrin-verify/trace-pin`) puts a TRACE Trust

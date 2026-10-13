@@ -16,7 +16,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const DASH = new RegExp("[" + String.fromCharCode(0x2012, 0x2013, 0x2014, 0x2015, 0x2212, 0xFF0D) + "]");
 let fail = 0, pass = 0;
 const chk = (n, c, x = "") => { console.log((c ? "PASS  " : "FAIL  ") + n + (c ? "" : "  <<< " + String(x).slice(0, 300))); c ? pass++ : fail++; };
-const SIZES = { "nenrin-interop-v0": 5, "nenrin-interop-v0.1": 13, "nenrin-interop-v0.2-edge": 36 };
+const SIZES = { "nenrin-interop-v0": 5, "nenrin-interop-v0.1": 13, "nenrin-interop-v0.2-edge": 36, "nenrin-interop-v0.2-action-presence": 9, "nenrin-interop-v0.3-survivors": 9 };
 
 // 1. the packed corpora are what the repository builds
 const inRepo = existsSync(join(HERE, "..", "interop-v0", "expected.json"));
@@ -30,7 +30,7 @@ for (const [n, k] of Object.entries(SIZES)) {
   const parsed = JSON.parse(T.batchText(n));
   chk(n + ": batch text parses to the same batch", JSON.stringify(parsed) === JSON.stringify(batch));
   if (inRepo) {
-    const dir = { "nenrin-interop-v0": "interop-v0", "nenrin-interop-v0.1": "interop-v0.1", "nenrin-interop-v0.2-edge": "interop-v0.2/edge" }[n];
+    const dir = { "nenrin-interop-v0": "interop-v0", "nenrin-interop-v0.1": "interop-v0.1", "nenrin-interop-v0.2-edge": "interop-v0.2/edge", "nenrin-interop-v0.2-action-presence": "interop-v0.2/action-presence", "nenrin-interop-v0.3-survivors": "interop-v0.3/survivors" }[n];
     const first = Object.keys(cases)[0];
     chk(n + ": the batch holds the fixture file's text", T.batchText(n).includes(readFileSync(join(HERE, "..", dir, "fixtures", first + ".json"), "utf8").trim()));
   }

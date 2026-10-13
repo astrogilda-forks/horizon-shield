@@ -58,6 +58,18 @@
           "total": 9
         },
         {
+          "corpus": "nenrin-interop-v0.3-survivors",
+          "cwd": "@board/adapters",
+          "cmd": [
+            "node",
+            "js_reference_batch.mjs",
+            "@in",
+            "@out"
+          ],
+          "parse": "batch_referee",
+          "total": 9
+        },
+        {
           "corpus": "nenrin-trace-intake-v0",
           "cwd": "@hs/workers/hs-ledger/nenrin/sdk",
           "cmd": [
@@ -166,6 +178,20 @@
           "total": 9
         },
         {
+          "corpus": "nenrin-interop-v0.3-survivors",
+          "cwd": "@hs/workers/hs-ledger/nenrin/sdk-go",
+          "cmd": [
+            "go",
+            "run",
+            "./cmd/nenrin-verify-go",
+            "--batch",
+            "@in",
+            "@out"
+          ],
+          "parse": "batch_referee",
+          "total": 9
+        },
+        {
           "corpus": "nenrin-trace-intake-v0",
           "cwd": "@hs/workers/hs-ledger/nenrin/sdk-go",
           "cmd": [
@@ -261,6 +287,19 @@
         },
         {
           "corpus": "nenrin-interop-v0.2-action-presence",
+          "cwd": "@board/adapters",
+          "cmd": [
+            "python3",
+            "py_module_batch.py",
+            "--nenrin-verify",
+            "@in",
+            "@out"
+          ],
+          "parse": "batch_referee",
+          "total": 9
+        },
+        {
+          "corpus": "nenrin-interop-v0.3-survivors",
           "cwd": "@board/adapters",
           "cmd": [
             "python3",

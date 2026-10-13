@@ -76,8 +76,8 @@ the recorder and the policy together): [integrations/FRAMEWORKS.md](https://gith
 The TSUNAGI board (`ops/tsunagi/BOARD.md` in the repository) runs every registered NENRIN verifier every night, each
 cloned from its author's own repository. For the NENRIN corpora it no longer repeats the count an implementation
 prints: it hands the implementation the fixtures as one batch file, reads back one verdict signature per fixture and
-compares each with the frozen expected.json itself. `nenrin-tsunagi` is that referee, with the three corpora inside
-the package, so you get the board's answer on your own machine before you open a pull request.
+compares each with the frozen expected.json itself. `nenrin-tsunagi` is that referee, with the corpora inside
+the package (`nenrin-tsunagi list`), so you get the board's answer on your own machine before you open a pull request.
 
 ```sh
 pip install nenrin-verify
@@ -145,6 +145,21 @@ gives values a numeric comparator cannot order, `new URL(s).host`) goes through 
 `report_sha256(report)` is the sha256 of the report with keys sorted by UTF-16 code unit at every depth, no
 whitespace, strings and numbers as JSON.stringify writes them. The JavaScript side of the same hash is
 `tests/parity/js_canon.mjs` (twelve lines).
+
+## 0.5.4 (2026-10-13)
+
+`nenrin-tsunagi` carries two more provenance corpora. `nenrin-interop-v0.3-survivors` (9 cases,
+`interop-v0.3/survivors/` in the repository) is new: a mutation-adequacy measurement
+(`conformance-v0/adequacy-v0/REPORT.md`) found that 8 of 13 declared verifier faults survive the 93 frozen
+provenance fixtures, and these nine vectors (one per survivor, plus the clean pair they change) kill all 13. They pin
+the refusal of a tampered or wrongly signed grant, a stored grant_ref or receipt_id that does not recompute, a
+receipt naming another grant or signed by an unauthorized provider, an hour-24 timestamp and an execution after
+not_after. `nenrin-interop-v0.2-action-presence` (9 cases, kuangmi-bit) was registered after 0.5.3 and ships on PyPI
+for the first time. Both are vendored byte for byte under `_repo/`, pinned in VENDORED.json and named in the package
+data. This port reproduces 9/9 of each; the verifiers are unchanged. The claim stops at the declared faults: a kill
+shows one outcome moving under one substitution, not that a verifier is correct.
+
+    nenrin-tsunagi run nenrin-interop-v0.3-survivors -- "python3 my_verifier.py {in} {out}"
 
 ## 0.5.3 (2026-10-10)
 

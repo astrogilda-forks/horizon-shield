@@ -1,6 +1,6 @@
 {
   "schema": "nenrin-verify-py-js-reports-v0",
-  "reference": "npm nenrin-verify 0.5.1 (sdk/nenrin_verify.mjs, verifier_version 0.1.6)",
+  "reference": "npm nenrin-verify 0.5.2 (sdk/nenrin_verify.mjs, verifier_version 0.1.6)",
   "cases": [
     {
       "name": "full_accepted",

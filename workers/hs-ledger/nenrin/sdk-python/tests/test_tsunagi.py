@@ -9,7 +9,8 @@ import pytest
 import nenrin_verify as nv
 from nenrin_verify import tsunagi as T
 
-SIZES = {"nenrin-interop-v0": 5, "nenrin-interop-v0.1": 13, "nenrin-interop-v0.2-edge": 36}
+SIZES = {"nenrin-interop-v0": 5, "nenrin-interop-v0.1": 13, "nenrin-interop-v0.2-edge": 36,
+         "nenrin-interop-v0.2-action-presence": 9, "nenrin-interop-v0.3-survivors": 9}
 
 
 def port_output(name):

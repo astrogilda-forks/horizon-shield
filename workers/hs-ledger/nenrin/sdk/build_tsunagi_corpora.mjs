@@ -1,4 +1,4 @@
-// build_tsunagi_corpora.mjs : pack the three NENRIN corpora the TSUNAGI board referees into tsunagi_corpora.json,
+// build_tsunagi_corpora.mjs : pack the NENRIN corpora the TSUNAGI board referees (SOURCES below) into tsunagi_corpora.json,
 // so that `npx nenrin-tsunagi` scores a verifier offline with no clone.
 //
 //   node build_tsunagi_corpora.mjs            write tsunagi_corpora.json
@@ -18,6 +18,7 @@ export const SOURCES = {
   "nenrin-interop-v0.1": "interop-v0.1",
   "nenrin-interop-v0.2-edge": "interop-v0.2/edge",
   "nenrin-interop-v0.2-action-presence": "interop-v0.2/action-presence",
+  "nenrin-interop-v0.3-survivors": "interop-v0.3/survivors",
   "nenrin-trace-intake-v0": "trace-intake-v0",
   "nenrin-trace-bind-v0": "trace-bind-v0",
   "nenrin-trace-span-v0": "trace-span-v0",

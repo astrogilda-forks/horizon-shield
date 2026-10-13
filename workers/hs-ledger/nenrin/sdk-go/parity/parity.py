@@ -2,7 +2,7 @@
 """The Go port against the JavaScript reference, on every frozen bundle and on mutations of every path.
 
 The mutations are the ones the Python port is held to (../../sdk-python/tests/parity/mutate.py over
-../../sdk-python/tests/fixtures/bundles.json), plus the three interop corpora and, with --edge, bundles from
+../../sdk-python/tests/fixtures/bundles.json), plus the five interop corpora and, with --edge, bundles from
 ../../conformance-v0/gen_edge_bundles.mjs. Each bundle is written once as JSON text and parsed by each language from
 the same text. Pass per input: both threw, or the same verdict signature and the same refusals as (code, reason) in
 order. Exit 1 on any difference.
@@ -32,7 +32,7 @@ def corpus(edges):
         add(c["name"], "frozen", c["bundle"])
         for p, op, b in mutations(c["bundle"]):
             add(c["name"], "/".join(map(str, p)) + " " + op, b)
-    for d in ("interop-v0", "interop-v0.1", "interop-v0.2/edge"):
+    for d in ("interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "interop-v0.3/survivors"):
         for f in sorted(glob.glob(os.path.join(NENRIN, d, "fixtures", "*.json"))):
             add(d + "/" + os.path.basename(f)[:-5], "frozen", json.load(open(f, encoding="utf-8")))
     for e in edges:

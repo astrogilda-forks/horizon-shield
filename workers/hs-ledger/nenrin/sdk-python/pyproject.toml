@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nenrin-verify"
-version = "0.5.3"
+version = "0.5.4"
 description = "Recompute NENRIN evidence yourself, offline: A2A task provenance, two-party agreement records, TSUGI recovery chains and MUSUBI contracts. Record every A2A call your agent makes as a signed witness record (two lines, official A2A SDK), and apply your own rule to a resume."
 readme = "README.md"
 license = "MIT"
@@ -51,5 +51,7 @@ nenrin_verify = ["VENDORED.json", "py.typed", "selftest.json", "tsugi_selftest.j
                  "_repo/musubi-v0/fixtures/contract_door/*", "_repo/musubi-v0/fixtures/settle_admission/*", "_repo/recovery-v0/*.py",
                  "_repo/interop-v0/*.json", "_repo/interop-v0/fixtures/*.json", "_repo/interop-v0.1/*.json",
                  "_repo/interop-v0.1/fixtures/*.json", "_repo/interop-v0.2/edge/*.json", "_repo/interop-v0.2/edge/fixtures/*.json",
+                 "_repo/interop-v0.2/action-presence/*.json", "_repo/interop-v0.2/action-presence/fixtures/*.json",
+                 "_repo/interop-v0.3/survivors/*.json", "_repo/interop-v0.3/survivors/fixtures/*.json",
                  "_repo/trace-intake-v0/*.json", "_repo/trace-intake-v0/fixtures/*.json", "_repo/trace-bind-v0/*.json",
                  "_repo/trace-bind-v0/fixtures/*.json", "_repo/trace-span-v0/*.json", "_repo/trace-span-v0/fixtures/*.json"]
