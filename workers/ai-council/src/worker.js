@@ -29,6 +29,78 @@ const COST_PER_MILLION = {
 // ADMIN_PASSWORD は env.ADMIN_PASSWORD（wrangler secret）から読む。ハードコード撤去（2026-07-21 ハードニング）。
 
 // ============================================
+// Month spend: one key per charge (concurrency audit AC, 2026-10-13)
+// marker: spend-per-charge-20261013 (this worker has no /health; /status is unchanged)
+// ============================================
+// 以前は month_<m> を読んで足して書き戻していた。同時に 2 件走ると、後の書き込みが先の 1 件分を消し、
+// 月の合計が実際より少なく見えて $30 の上限を越えられた。
+// これからは 1 回の請求ごとに spend:<month>:<ts 14 桁>-<乱数> を書く(値と metadata に usd)。
+// 月の合計 = 古い month_<m>(読むだけ、床として足す) + prefix で list した請求の合計。
+// list は cursor で全ページ読む。失敗したか、ページ数の上限を越えたら、合計が分からないので 503 budget_unknown で断り、AI を呼ばない(fail closed)。
+// 古い month_<m> は書き直さない・消さない。戻し(rollback)の注意: 前のコードは spend:* を読まないので、戻すと
+// この版で記録した分が合計に入らず、month_<m> だけが見える(KV には残る)。
+const SPEND_PREFIX = 'spend:';
+const SPEND_LIST_LIMIT = 1000;
+const SPEND_LIST_PAGES = 50;            // 50,000 件まで。越えたら budget_unknown(fail closed)
+const SPEND_TTL_S = 100 * 86400;        // 月が替わって 2 か月あまりで消える(合計はその月だけ読む)
+
+function spendKey(month) {
+  const r = new Uint8Array(6); crypto.getRandomValues(r);
+  const rand = Array.from(r, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 10);
+  return `${SPEND_PREFIX}${month}:${String(Date.now()).padStart(14, '0')}-${rand}`;
+}
+
+// { known: true, total, floor, charges } or { known: false, floor, charges, why }. Throws only if the floor read fails.
+async function monthSpend(env, month) {
+  const floor = parseFloat(await env.AI_COUNCIL_COST.get(`month_${month}`) || '0') || 0;
+  // 1000 件ずつ cursor で全部読む(1 回 1〜3 セントの請求は月に 1000 件を越えうる)。ページ数の上限を越えたら合計が分からない。
+  const keys = [];
+  let cursor;
+  for (let page = 0; ; page++) {
+    if (page >= SPEND_LIST_PAGES) return { known: false, floor, charges: keys.length, why: 'list_truncated' };
+    let l;
+    try {
+      l = await env.AI_COUNCIL_COST.list({ prefix: `${SPEND_PREFIX}${month}:`, limit: SPEND_LIST_LIMIT, cursor });
+    } catch (e) {
+      return { known: false, floor, charges: keys.length, why: 'list_failed: ' + String(e && e.message || e).slice(0, 80) };
+    }
+    for (const k of (l && l.keys) || []) keys.push(k);
+    if (!l || l.list_complete !== false) break;
+    cursor = l.cursor;
+    if (!cursor) return { known: false, floor, charges: keys.length, why: 'list_truncated' };
+  }
+  let sum = 0;
+  for (const k of keys) {
+    let usd = (k.metadata && typeof k.metadata.usd === 'number') ? k.metadata.usd : null;
+    if (usd === null) {
+      let v;
+      try { v = await env.AI_COUNCIL_COST.get(k.name); } catch (e) {
+        return { known: false, floor, charges: keys.length, why: 'charge_read_failed' };
+      }
+      usd = parseFloat(v || '0');
+    }
+    if (Number.isFinite(usd)) sum += usd;
+  }
+  return { known: true, total: floor + sum, floor, charges: keys.length };
+}
+
+async function recordCharge(env, month, usd) {
+  const key = spendKey(month);
+  await env.AI_COUNCIL_COST.put(key, usd.toFixed(6), { metadata: { usd, at: new Date().toISOString() }, expirationTtl: SPEND_TTL_S });
+  return key;
+}
+
+function budgetUnknown(headers, s) {
+  return new Response(JSON.stringify({
+    error: 'budget_unknown',
+    message: 'The month total could not be computed, so nothing was spent. Try again later.',
+    why: s.why,
+    floor_usd: s.floor.toFixed(4),
+    charges_listed: s.charges
+  }), { status: 503, headers });
+}
+
+// ============================================
 // Main Handler
 // ============================================
 export default {
@@ -83,10 +155,11 @@ async function handleCouncil(request, env, headers) {
     return new Response(JSON.stringify({ error: 'Question too short' }), { status: 400, headers });
   }
 
-  // Cost check
+  // Cost check (AC 2026-10-13: the total is the old counter plus the listed per-charge keys; unknown = refuse)
   const month = new Date().toISOString().slice(0, 7).replace('-', '_');
-  const costKey = `month_${month}`;
-  const currentCost = parseFloat(await env.AI_COUNCIL_COST.get(costKey) || '0');
+  const spend = await monthSpend(env, month);
+  if (!spend.known) return budgetUnknown(headers, spend);
+  const currentCost = spend.total;
 
   if (currentCost >= COST_LIMIT_MONTHLY) {
     return new Response(JSON.stringify({
@@ -173,10 +246,10 @@ async function handleCouncil(request, env, headers) {
     finalDecision = judgeAI.text ? judgeAI.text.slice(0, 300) : 'No decision';
   }
 
-  // Update cost
+  // Record this charge as its own key (AC 2026-10-13). month_<m> is never written again.
   const requestCost = calculateCost(results);
   const newTotal = currentCost + requestCost;
-  await env.AI_COUNCIL_COST.put(costKey, newTotal.toFixed(4));
+  await recordCharge(env, month, requestCost);
 
   return new Response(JSON.stringify({
     question,
@@ -370,7 +443,9 @@ async function ctx_notifyLine(env, message) {
 
 async function handleCost(env, headers) {
   const month = new Date().toISOString().slice(0, 7).replace('-', '_');
-  const cost = parseFloat(await env.AI_COUNCIL_COST.get(`month_${month}`) || '0');
+  const spend = await monthSpend(env, month);
+  if (!spend.known) return budgetUnknown(headers, spend);
+  const cost = spend.total;
   return new Response(JSON.stringify({
     month,
     current_cost_usd: cost.toFixed(4),
