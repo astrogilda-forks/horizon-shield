@@ -1,0 +1,8 @@
+# Keep these bytes exactly as generated or captured: no end-of-line conversion on any platform.
+# The VATE capture copy includes CRLF HTTP header files (*-headers.txt) whose sha256 is pinned;
+# they are marked binary so patches carry them byte for byte.
+vate-capture-b3b6d4f/** -text
+vate-capture-b3b6d4f/*-headers.txt binary
+records/** -text
+runs/** -text
+MANIFEST.json -text

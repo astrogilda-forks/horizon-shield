@@ -1,0 +1,1 @@
+{"action":"s3.put_object","body_digest":{"alg":"sha-256","value":"6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c"},"bucket":"vate-linkage-b119eb3183","byte_length":47,"contract":"vate-local-s3-observation-v1","endpoint_profile_id":"local-seaweed-effa0477bd68","if_none_match":"*","key":"result.txt","operation_id":"operation-674feb36f4e0bc34b461"}

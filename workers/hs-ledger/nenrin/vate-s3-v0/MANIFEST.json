@@ -1,0 +1,419 @@
+{
+  "schema": "nenrin-vate-s3-v0-manifest",
+  "label": "a retrospective synthetic reconstruction; the signatures do not establish that a NENRIN grant existed before the original PUT, and they add no independent observation of it.",
+  "label_scope": "this label sits outside the signed bytes: it is not in any grant or receipt preimage, and no signature covers it",
+  "generator": {
+    "path": "gen.mjs",
+    "sha256": "13613f7c3c37b365378fbeac0bb47a47304c5a69587d6756ea04f0a2dffca627",
+    "command": "node gen.mjs vate-capture-b3b6d4f"
+  },
+  "vate": {
+    "repository": "https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope",
+    "commit": "b3b6d4f9610e159e92d3b41b66e72fc7251758dc",
+    "capture_path": "reference/s3-observation-example/inputs/seaweedfs-4.48/instance/bundles/supported",
+    "license": "Apache-2.0 (LICENSE at the repository root of that commit; a copy is vate-capture-b3b6d4f/LICENSE; the repository has no NOTICE file at that commit)",
+    "license_sha256": "a7f02d0ab1cc53abde08c95ab75725d673aa5af2d3184cfa07907d34c1f7a318",
+    "relations_source": "Poke-nushi/Verifiable-Agent-Trust-Envelope#84 (field relations, matching case)",
+    "capture_files_sha256": {
+      "admission-decision.json": "78813aabcd1e6b5d436d41bc351b22112df7b89389378370884379213292f861",
+      "admission-request.json": "9dced0af22ee3c8a461e73ebbf76cf564f17f6da2b89eabbdb0d81fd78400e08",
+      "admission.json": "cdfab8a13e33d473166a6e37e11ac4408d4e074d522737113b5ad60f0eb8963e",
+      "attempt.json": "2684017e54c7a7d54d6f290c83df226a6fc5e6b9f5270105f7393f12910c08c1",
+      "effective-request.json": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "get-body.bin": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "get-headers.txt": "6b1b7a99e8669e35b11d2918b55e4cb595d35ea10ed2879c7ddb5881a27d2b33",
+      "get-request.json": "e20f02cf8de0bbdcaf0b02d090311fe841034a751aa2c621036f3e15813ec276",
+      "get-transport.json": "f08e274f626c8139008092930e416861e827ba1cab1f9ec7937878e7370f7291",
+      "manifest.json": "455e30f846585d003c3f40a83fa5d7fa24b12bebef20ff1d374517e0b642a9fa",
+      "permit.json": "a1b80d6c5aa68c46381ed6a5a5e6e5f3ed96e2fa599a65bf9edb431b91689a52",
+      "post.json": "d7cc150c297d5d57e8e8dc8299eaf63329b16b24d4b4617beb4db87a04578c5a",
+      "put-body.bin": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "put-headers.txt": "fe2ed471202335df659ab466f1dfab5d420666fb450413359c3c63f344dbc554",
+      "put-request.json": "b22bd05ea42b9177365e484dee35e380dc56c148c3f0208263e595c64a45aad9",
+      "put-response-body.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "put-transport.json": "5c9152c0333efeb2f7e1298be5f132c99793066e2043333fa7d538a7e46b634e",
+      "sources.json": "74758ffcb2c255c27b7666b05b8a6488fccbe7514f65a4213e0415b1dfeda26d"
+    },
+    "receiver_policy": {
+      "name": "receiver-policy.json",
+      "vate_path": "reference/s3-observation-example/inputs/seaweedfs-4.48/instance/receiver-policy.json",
+      "sha256": "e828cb109fed1b02f27f188eddcbfe3763655ff25f9f65e9d8e43bdc4c2db5a4"
+    }
+  },
+  "keys": {
+    "rule": "seed = SHA-256(UTF-8 bytes of the phrase), used as the 32-byte Ed25519 private seed; did = did:key of the public key (multicodec 0xed01, base58btc). TEST-ONLY: the phrases are public, so these keys establish nothing about who signed.",
+    "caller": {
+      "phrase": "NENRIN VATE S3 example caller key v0 (public, test only)",
+      "public_key_hex": "eb0481e7cd0eb60ff17a6924df8e14f78eb8a85b6c6b57c105bf23bf0f09c770",
+      "did": "did:key:z6MkvGfqiuLzzhVKPqLc1kzPYmi6ZtSn4Avqf3LCxc5J7toR"
+    },
+    "provider": {
+      "phrase": "NENRIN VATE S3 example provider key v0 (public, test only)",
+      "public_key_hex": "0be1dfc164ed6e22d4b646ed32680f96788bff8ea59d93c7c5ef7dc13f7dda74",
+      "did": "did:key:z6MkfFeJ2J6se1SNeo5djxi57JX1WBzm7Z9nCbD1bF1DAjT1"
+    }
+  },
+  "window": {
+    "not_before": "2026-10-12T13:12:31.274653Z",
+    "not_after": "2026-10-12T13:12:33.500049Z",
+    "rule": "not_before = PUT started_at minus 1 second, not_after = PUT finished_at plus 1 second, computed in integer microseconds, six fractional digits",
+    "put_started_at": "2026-10-12T13:12:32.274653Z",
+    "put_finished_at": "2026-10-12T13:12:32.500049Z",
+    "executed_at": "2026-10-12T13:12:32.500049Z",
+    "precision": "nenrin-verify (npm and PyPI) compares the window in milliseconds: fractions beyond three digits are truncated (JavaScript Date.parse; the Python port's date_parse in _js.py takes the first three fraction digits). The 1 second margins are far above that, so these cases do not test sub-millisecond boundaries.",
+    "verifier_checks": "the verifier checks executed_at against [not_before, not_after]; it never sees started_at. The started_at containment is checked here by the generator only (window_us, window_ms)."
+  },
+  "nonce_rule": "\"vate-s3-v0:\" + task_id (the pure verifier checks presence and window only)",
+  "omitted": [
+    "preflight intent",
+    "witness observations",
+    "outcome.status (no agreed relation maps VATE result.outcome to it)"
+  ],
+  "derived": {
+    "task_id": "operation-674feb36f4e0bc34b461",
+    "action": {
+      "tool": "s3.put_object",
+      "target": "local-seaweed-effa0477bd68/vate-linkage-b119eb3183/result.txt",
+      "args_sha256": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c"
+    },
+    "action_binding_digest": "c4d5438d4413ed896a3733d7798efcfecb93afc982f4eee09e7d181fd255aa24",
+    "version_id": "6722359d3cd3b17f8cff11460862171e",
+    "result_sha256": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+    "executed_at": "2026-10-12T13:12:32.500049Z",
+    "grant_ref": "2dce9848c40ee9e5c70cf75253bf780a77b4edadd9a10e9aa8593d27e0bbcdd5",
+    "receipt_id_match": "0ba354b8a8fbe4ee66a3c573846018f71e6823e198b813d2eec9ad390a40bed7",
+    "receipt_id_target_mismatch": "58c9cafc769b4a500264484a8921715b2eee34928f41511149ce26ffa586b3ee"
+  },
+  "field_relations": [
+    {
+      "id": "capture_manifest:admission-decision.json",
+      "statement": "the capture's manifest.json digest for admission-decision.json equals sha256 of the file",
+      "left": "78813aabcd1e6b5d436d41bc351b22112df7b89389378370884379213292f861",
+      "right": "78813aabcd1e6b5d436d41bc351b22112df7b89389378370884379213292f861",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:admission-request.json",
+      "statement": "the capture's manifest.json digest for admission-request.json equals sha256 of the file",
+      "left": "9dced0af22ee3c8a461e73ebbf76cf564f17f6da2b89eabbdb0d81fd78400e08",
+      "right": "9dced0af22ee3c8a461e73ebbf76cf564f17f6da2b89eabbdb0d81fd78400e08",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:admission.json",
+      "statement": "the capture's manifest.json digest for admission.json equals sha256 of the file",
+      "left": "cdfab8a13e33d473166a6e37e11ac4408d4e074d522737113b5ad60f0eb8963e",
+      "right": "cdfab8a13e33d473166a6e37e11ac4408d4e074d522737113b5ad60f0eb8963e",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:attempt.json",
+      "statement": "the capture's manifest.json digest for attempt.json equals sha256 of the file",
+      "left": "2684017e54c7a7d54d6f290c83df226a6fc5e6b9f5270105f7393f12910c08c1",
+      "right": "2684017e54c7a7d54d6f290c83df226a6fc5e6b9f5270105f7393f12910c08c1",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:effective-request.json",
+      "statement": "the capture's manifest.json digest for effective-request.json equals sha256 of the file",
+      "left": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "right": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:get-body.bin",
+      "statement": "the capture's manifest.json digest for get-body.bin equals sha256 of the file",
+      "left": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "right": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:get-headers.txt",
+      "statement": "the capture's manifest.json digest for get-headers.txt equals sha256 of the file",
+      "left": "6b1b7a99e8669e35b11d2918b55e4cb595d35ea10ed2879c7ddb5881a27d2b33",
+      "right": "6b1b7a99e8669e35b11d2918b55e4cb595d35ea10ed2879c7ddb5881a27d2b33",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:get-request.json",
+      "statement": "the capture's manifest.json digest for get-request.json equals sha256 of the file",
+      "left": "e20f02cf8de0bbdcaf0b02d090311fe841034a751aa2c621036f3e15813ec276",
+      "right": "e20f02cf8de0bbdcaf0b02d090311fe841034a751aa2c621036f3e15813ec276",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:get-transport.json",
+      "statement": "the capture's manifest.json digest for get-transport.json equals sha256 of the file",
+      "left": "f08e274f626c8139008092930e416861e827ba1cab1f9ec7937878e7370f7291",
+      "right": "f08e274f626c8139008092930e416861e827ba1cab1f9ec7937878e7370f7291",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:permit.json",
+      "statement": "the capture's manifest.json digest for permit.json equals sha256 of the file",
+      "left": "a1b80d6c5aa68c46381ed6a5a5e6e5f3ed96e2fa599a65bf9edb431b91689a52",
+      "right": "a1b80d6c5aa68c46381ed6a5a5e6e5f3ed96e2fa599a65bf9edb431b91689a52",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:post.json",
+      "statement": "the capture's manifest.json digest for post.json equals sha256 of the file",
+      "left": "d7cc150c297d5d57e8e8dc8299eaf63329b16b24d4b4617beb4db87a04578c5a",
+      "right": "d7cc150c297d5d57e8e8dc8299eaf63329b16b24d4b4617beb4db87a04578c5a",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:put-body.bin",
+      "statement": "the capture's manifest.json digest for put-body.bin equals sha256 of the file",
+      "left": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "right": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:put-headers.txt",
+      "statement": "the capture's manifest.json digest for put-headers.txt equals sha256 of the file",
+      "left": "fe2ed471202335df659ab466f1dfab5d420666fb450413359c3c63f344dbc554",
+      "right": "fe2ed471202335df659ab466f1dfab5d420666fb450413359c3c63f344dbc554",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:put-request.json",
+      "statement": "the capture's manifest.json digest for put-request.json equals sha256 of the file",
+      "left": "b22bd05ea42b9177365e484dee35e380dc56c148c3f0208263e595c64a45aad9",
+      "right": "b22bd05ea42b9177365e484dee35e380dc56c148c3f0208263e595c64a45aad9",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:put-response-body.bin",
+      "statement": "the capture's manifest.json digest for put-response-body.bin equals sha256 of the file",
+      "left": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "right": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:put-transport.json",
+      "statement": "the capture's manifest.json digest for put-transport.json equals sha256 of the file",
+      "left": "5c9152c0333efeb2f7e1298be5f132c99793066e2043333fa7d538a7e46b634e",
+      "right": "5c9152c0333efeb2f7e1298be5f132c99793066e2043333fa7d538a7e46b634e",
+      "equal": true
+    },
+    {
+      "id": "capture_manifest:sources.json",
+      "statement": "the capture's manifest.json digest for sources.json equals sha256 of the file",
+      "left": "74758ffcb2c255c27b7666b05b8a6488fccbe7514f65a4213e0415b1dfeda26d",
+      "right": "74758ffcb2c255c27b7666b05b8a6488fccbe7514f65a4213e0415b1dfeda26d",
+      "equal": true
+    },
+    {
+      "id": "task_id",
+      "statement": "task_id = effective-request.json operation_id (also attempt.json operation_id)",
+      "left": "operation-674feb36f4e0bc34b461",
+      "right": "operation-674feb36f4e0bc34b461",
+      "equal": true
+    },
+    {
+      "id": "action.tool",
+      "statement": "action.tool = effective-request.json action, which the admission request names too",
+      "left": "s3.put_object",
+      "right": "s3.put_object",
+      "equal": true
+    },
+    {
+      "id": "action.target",
+      "statement": "action.target = endpoint_profile_id + \"/\" + bucket + \"/\" + key",
+      "left": "local-seaweed-effa0477bd68/vate-linkage-b119eb3183/result.txt",
+      "right": "local-seaweed-effa0477bd68/vate-linkage-b119eb3183/result.txt",
+      "equal": true
+    },
+    {
+      "id": "target_endpoint_profile_vs_receiver_policy",
+      "statement": "effective-request.json endpoint_profile_id = receiver-policy.json endpoint_profile_id",
+      "left": "local-seaweed-effa0477bd68",
+      "right": "local-seaweed-effa0477bd68",
+      "equal": true
+    },
+    {
+      "id": "target_bucket_vs_receiver_policy",
+      "statement": "effective-request.json bucket = receiver-policy.json bucket",
+      "left": "vate-linkage-b119eb3183",
+      "right": "vate-linkage-b119eb3183",
+      "equal": true
+    },
+    {
+      "id": "target_vs_get_request",
+      "statement": "the GET read the same endpoint profile, bucket and key",
+      "left": "local-seaweed-effa0477bd68/vate-linkage-b119eb3183/result.txt",
+      "right": "local-seaweed-effa0477bd68/vate-linkage-b119eb3183/result.txt",
+      "equal": true
+    },
+    {
+      "id": "args_basis_bytes",
+      "statement": "the effective-request.json file bytes are already the basis bytes (sorted, compact, ASCII-escaped)",
+      "left": "{\"action\":\"s3.put_object\",\"body_digest\":{\"alg\":\"sha-256\",\"value\":\"6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c\"},\"bucket\":\"vate-linkage-b119eb3183\",\"byte_length\":47,\"contract\":\"vate-local-s3-observation-v1\",\"endpoint_profile_id\":\"local-seaweed-effa0477bd68\",\"if_none_match\":\"*\",\"key\":\"result.txt\",\"operation_id\":\"operation-674feb36f4e0bc34b461\"}",
+      "right": "{\"action\":\"s3.put_object\",\"body_digest\":{\"alg\":\"sha-256\",\"value\":\"6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c\"},\"bucket\":\"vate-linkage-b119eb3183\",\"byte_length\":47,\"contract\":\"vate-local-s3-observation-v1\",\"endpoint_profile_id\":\"local-seaweed-effa0477bd68\",\"if_none_match\":\"*\",\"key\":\"result.txt\",\"operation_id\":\"operation-674feb36f4e0bc34b461\"}",
+      "equal": true
+    },
+    {
+      "id": "action.args_sha256",
+      "statement": "action.args_sha256 = SHA-256(basis bytes of effective-request.json) = admission.json request.input_hash without \"sha-256:\"",
+      "left": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "right": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "equal": true
+    },
+    {
+      "id": "args_vs_post_effective_request_hash",
+      "statement": "the same digest is post.json execution.effective_request_hash without \"sha-256:\"",
+      "left": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "right": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "equal": true
+    },
+    {
+      "id": "version_id_get_requested",
+      "statement": "outcome.version_id = put-transport.json returned_version_id = get-request.json requested_version_id",
+      "left": "6722359d3cd3b17f8cff11460862171e",
+      "right": "6722359d3cd3b17f8cff11460862171e",
+      "equal": true
+    },
+    {
+      "id": "version_id_get_returned",
+      "statement": "outcome.version_id = get-transport.json returned_version_id",
+      "left": "6722359d3cd3b17f8cff11460862171e",
+      "right": "6722359d3cd3b17f8cff11460862171e",
+      "equal": true
+    },
+    {
+      "id": "result_sha256_get_transport",
+      "statement": "outcome.result_sha256 = SHA-256(get-body.bin) = get-transport.json body_ref digest",
+      "left": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "right": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "equal": true
+    },
+    {
+      "id": "put_body_digest",
+      "statement": "effective-request.json body_digest.value = SHA-256(put-body.bin)",
+      "left": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "right": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "equal": true
+    },
+    {
+      "id": "put_body_length",
+      "statement": "effective-request.json byte_length = length of put-body.bin",
+      "left": "47",
+      "right": "47",
+      "equal": true
+    },
+    {
+      "id": "executed_at",
+      "statement": "executed_at = put-transport.json finished_at, verbatim",
+      "left": "2026-10-12T13:12:32.500049Z",
+      "right": "2026-10-12T13:12:32.500049Z",
+      "equal": true
+    },
+    {
+      "id": "started_at",
+      "statement": "PUT started_at as captured",
+      "left": "2026-10-12T13:12:32.274653Z",
+      "right": "2026-10-12T13:12:32.274653Z",
+      "equal": true
+    },
+    {
+      "id": "post_times",
+      "statement": "post.json execution started_at/finished_at equal put-transport.json",
+      "left": "2026-10-12T13:12:32.274653Z 2026-10-12T13:12:32.500049Z",
+      "right": "2026-10-12T13:12:32.274653Z 2026-10-12T13:12:32.500049Z",
+      "equal": true
+    },
+    {
+      "id": "window_us",
+      "statement": "started_at and finished_at inside [not_before, not_after] at microsecond precision",
+      "left": "true",
+      "right": "true",
+      "equal": true
+    },
+    {
+      "id": "window_ms",
+      "statement": "started_at and finished_at inside [not_before, not_after] at Date.parse millisecond precision",
+      "left": "true",
+      "right": "true",
+      "equal": true
+    }
+  ],
+  "kept_distinct": [
+    {
+      "id": "outer_action_binding_vs_args_sha256",
+      "statement": "NENRIN action_binding.digest.value (SHA-256 of musubi-canonical-v0(action)) is not args_sha256",
+      "left": "c4d5438d4413ed896a3733d7798efcfecb93afc982f4eee09e7d181fd255aa24",
+      "right": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c",
+      "distinct": true
+    },
+    {
+      "id": "vate_output_hash_vs_result_sha256",
+      "statement": "VATE result.output_hash (structured-result hash) is not outcome.result_sha256 (raw GET body)",
+      "left": "4e575f903230c3a11dd11841c41348c008a51e55c8001e7887dcd321bd3efd67",
+      "right": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "distinct": true
+    },
+    {
+      "id": "vate_output_hash_vs_outer_action_binding",
+      "statement": "VATE result.output_hash is not NENRIN action_binding.digest.value",
+      "left": "4e575f903230c3a11dd11841c41348c008a51e55c8001e7887dcd321bd3efd67",
+      "right": "c4d5438d4413ed896a3733d7798efcfecb93afc982f4eee09e7d181fd255aa24",
+      "distinct": true
+    }
+  ],
+  "cases": [
+    {
+      "name": "match",
+      "statement": "grant and receipt as derived from the capture",
+      "prediction": {
+        "verdict": "accepted",
+        "refusals": []
+      },
+      "file": "records/match/nenrin-bundle.json"
+    },
+    {
+      "name": "target_mismatch",
+      "statement": "receipt executed_action.target ends in result-other.txt instead of result.txt; receipt_id and the receipt's action_binding regenerated, receipt re-signed by the provider key; grant unchanged; args_sha256 unchanged (it digests the captured effective request)",
+      "prediction": {
+        "verdict": "refused",
+        "refusals": [
+          {
+            "code": "execution_invalid",
+            "reason": "action_diverged"
+          }
+        ]
+      },
+      "file": "records/target_mismatch/nenrin-bundle.json"
+    },
+    {
+      "name": "missing_receipt",
+      "statement": "the grant alone",
+      "prediction": {
+        "verdict": "refused",
+        "refusals": [
+          {
+            "code": "execution_incomplete_pair"
+          }
+        ]
+      },
+      "file": "records/missing_receipt/nenrin-bundle.json"
+    }
+  ],
+  "files": [
+    {
+      "path": "records/match/nenrin-bundle.json",
+      "bytes": 2826,
+      "sha256": "8cc480c66682a0393f03d8101d3afc65399963579fc6f72d30416bbdc37eadfe"
+    },
+    {
+      "path": "records/missing_receipt/nenrin-bundle.json",
+      "bytes": 1208,
+      "sha256": "25157161133671c10ffa4cd116bb19c3bf1bc185a4742f885f962ce00c5fe45b"
+    },
+    {
+      "path": "records/target_mismatch/nenrin-bundle.json",
+      "bytes": 2832,
+      "sha256": "c54228f0e43b3ec7d2bc5a83f7c38ddb3b8c990da8e11888a9aa1df6d432a52e"
+    }
+  ]
+}

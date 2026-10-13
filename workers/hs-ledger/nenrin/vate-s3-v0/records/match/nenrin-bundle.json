@@ -1,0 +1,60 @@
+{
+  "task_id": "operation-674feb36f4e0bc34b461",
+  "grant": {
+    "schema": "task-execution-bind-v0/grant",
+    "task_id": "operation-674feb36f4e0bc34b461",
+    "action": {
+      "tool": "s3.put_object",
+      "target": "local-seaweed-effa0477bd68/vate-linkage-b119eb3183/result.txt",
+      "args_sha256": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c"
+    },
+    "caller_id": "did:key:z6MkvGfqiuLzzhVKPqLc1kzPYmi6ZtSn4Avqf3LCxc5J7toR",
+    "provider_id": "did:key:z6MkfFeJ2J6se1SNeo5djxi57JX1WBzm7Z9nCbD1bF1DAjT1",
+    "nonce": "vate-s3-v0:operation-674feb36f4e0bc34b461",
+    "not_before": "2026-10-12T13:12:31.274653Z",
+    "not_after": "2026-10-12T13:12:33.500049Z",
+    "grant_ref": "2dce9848c40ee9e5c70cf75253bf780a77b4edadd9a10e9aa8593d27e0bbcdd5",
+    "caller_sig": "K9MYSVZzyUmPfu7pn90wOUd0mPEbh4B0zPalTMc3QnoPwqw+7iMVDydafdphplHpXSs10jLtwwAwLxe88ajrBA==",
+    "action_binding": {
+      "type": "canonical_request_digest",
+      "canonicalization": "musubi-canonical-v0",
+      "preimage_profile": "task-execution-bind-v0/action",
+      "digest": {
+        "alg": "sha-256",
+        "value": "c4d5438d4413ed896a3733d7798efcfecb93afc982f4eee09e7d181fd255aa24"
+      }
+    }
+  },
+  "receipt": {
+    "schema": "task-execution-bind-v0/receipt",
+    "task_id": "operation-674feb36f4e0bc34b461",
+    "grant_ref": "2dce9848c40ee9e5c70cf75253bf780a77b4edadd9a10e9aa8593d27e0bbcdd5",
+    "executed_action": {
+      "tool": "s3.put_object",
+      "target": "local-seaweed-effa0477bd68/vate-linkage-b119eb3183/result.txt",
+      "args_sha256": "2e4dce64ddc0f6b44386144ed675006e43f5e18d9214ee45de49da5d991ba98c"
+    },
+    "outcome": {
+      "version_id": "6722359d3cd3b17f8cff11460862171e",
+      "result_sha256": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+      "evidence": {
+        "kind": "document_sha256",
+        "ref": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+        "system": "VATE S3 example capture, Poke-nushi/Verifiable-Agent-Trust-Envelope@b3b6d4f9610e159e92d3b41b66e72fc7251758dc:reference/s3-observation-example/inputs/seaweedfs-4.48/instance/bundles/supported/get-body.bin"
+      }
+    },
+    "provider_id": "did:key:z6MkfFeJ2J6se1SNeo5djxi57JX1WBzm7Z9nCbD1bF1DAjT1",
+    "executed_at": "2026-10-12T13:12:32.500049Z",
+    "receipt_id": "0ba354b8a8fbe4ee66a3c573846018f71e6823e198b813d2eec9ad390a40bed7",
+    "provider_sig": "6WrXbf6r36Xv24wd6mPhGwI8L6rBwVXWgFWrdg1vzbJANFgF7U8grs7vnzKoQqJEAlgN4N/co2xr+PQJ3bASBg==",
+    "action_binding": {
+      "type": "canonical_request_digest",
+      "canonicalization": "musubi-canonical-v0",
+      "preimage_profile": "task-execution-bind-v0/action",
+      "digest": {
+        "alg": "sha-256",
+        "value": "c4d5438d4413ed896a3733d7798efcfecb93afc982f4eee09e7d181fd255aa24"
+      }
+    }
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "schema": "nenrin-provenance-verify-v0",
+  "verifier_version": "0.1.6",
+  "task_id": "operation-674feb36f4e0bc34b461",
+  "verdict": "accepted",
+  "refusals": [],
+  "findings": [
+    {
+      "code": "no_delegation_observations",
+      "why": "no third-party observation of the delegation chain was presented; the execution layer is verified on its own"
+    },
+    {
+      "code": "evidence_bound_unchecked",
+      "why": "the provider committed to an evidence pointer but no external lookup ran; a reader must check it in the named system"
+    }
+  ],
+  "layers": {
+    "identity": {
+      "records": 2,
+      "mismatched": []
+    },
+    "delegation": {
+      "present": false
+    },
+    "execution": {
+      "present": true,
+      "complete": true,
+      "pair": "action_bound",
+      "reconciliation": "reconciled",
+      "receipt_id": "0ba354b8a8fbe4ee66a3c573846018f71e6823e198b813d2eec9ad390a40bed7",
+      "outcome": {
+        "version_id": "6722359d3cd3b17f8cff11460862171e",
+        "result_sha256": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+        "evidence": {
+          "kind": "document_sha256",
+          "ref": "6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c",
+          "system": "VATE S3 example capture, Poke-nushi/Verifiable-Agent-Trust-Envelope@b3b6d4f9610e159e92d3b41b66e72fc7251758dc:reference/s3-observation-example/inputs/seaweedfs-4.48/instance/bundles/supported/get-body.bin"
+        }
+      },
+      "action_binding": {
+        "grant": "recomputed",
+        "receipt": "recomputed"
+      }
+    },
+    "preflight": {
+      "present": false
+    },
+    "evidence": {
+      "bound": true,
+      "checked_externally": false,
+      "result": "evidence_bound_unchecked",
+      "external": null
+    },
+    "linkage": {
+      "links": 0,
+      "mismatched": 0
+    }
+  },
+  "establishes": [
+    "every presented record carries task_id operation-674feb36f4e0bc34b461 (2 records)",
+    "the provider's signed executed_action equals the caller's signed authorization, byte for byte (E1)",
+    "the receipt hash-references this grant and comes from the executor the grant authorized (E3)",
+    "executed_at is a strict RFC3339 UTC instant inside the grant window",
+    "exactly one authentic outcome reconciles for this grant (E2)",
+    "caller_sig and provider_sig verify against the resolved keys",
+    "the VATE-shaped action_binding on the grant and receipt recomputes from the signed action under musubi-canonical-v0 (AB); a recipient reading digest.value as effective_request_hash reads the same bytes E1 compared",
+    "the provider committed, under its signature, to evidence pointer document_sha256:6a639f0771bfe86b9e4dd4c0ea0b020d360308a55f34d8b0064d9f2d1d3c150c in VATE S3 example capture, Poke-nushi/Verifiable-Agent-Trust-Envelope@b3b6d4f9610e159e92d3b41b66e72fc7251758dc:reference/s3-observation-example/inputs/seaweedfs-4.48/instance/bundles/supported/get-body.bin; a reader can check it there without the provider"
+  ],
+  "does_not_establish": [
+    "that any executed action occurred in the world: E1 compares the provider's signed claim to the caller's signed authorization and has no side-effect oracle",
+    "that the reconciled outcome is the real-world outcome: E2 proves recoverability and surfaces equivocation, it does not prove truth",
+    "that any witness is unaffiliated with the parties: R1 proves structural distinctness, not independence",
+    "that bound evidence exists in its system or says what the provider claims, unless layers.evidence.checked_externally is true, and even then only what the injected lookup reported",
+    "anything about time beyond the record contents: this verifier has no clock and saw no anchor; a Bitcoin anchor, if one exists, bounds the records separately",
+    "that this is the only provenance these parties produced for this task_id"
+  ],
+  "rules": [
+    {
+      "id": "ID",
+      "layer": "cross",
+      "applied": true,
+      "statement": "every presented record carries the task_id under verification"
+    },
+    {
+      "id": "R1",
+      "layer": "delegation",
+      "applied": false,
+      "statement": "witness_id differs from hop.from and hop.to (structural independence)"
+    },
+    {
+      "id": "R2",
+      "layer": "delegation",
+      "applied": false,
+      "statement": "evidence_id recomputes from the canonical preimage"
+    },
+    {
+      "id": "R3",
+      "layer": "delegation",
+      "applied": false,
+      "statement": "hops contiguous from seq 0, each prev_evidence_id resolves to a presented prior-hop observation"
+    },
+    {
+      "id": "R4",
+      "layer": "delegation",
+      "applied": false,
+      "statement": "per-hop verdicts aggregate over the full witness set; disagreement is surfaced, never collapsed"
+    },
+    {
+      "id": "E1",
+      "layer": "execution",
+      "applied": true,
+      "statement": "the provider's signed executed_action equals the caller's signed authorization, byte for byte"
+    },
+    {
+      "id": "E2",
+      "layer": "execution",
+      "applied": true,
+      "statement": "exactly one authentic outcome reconciles for the grant; conflicting outcomes are equivocation"
+    },
+    {
+      "id": "E3",
+      "layer": "execution",
+      "applied": true,
+      "statement": "the receipt hash-references the grant and comes from the executor the grant authorized"
+    },
+    {
+      "id": "AB",
+      "layer": "execution",
+      "applied": true,
+      "statement": "an action_binding, when carried, recomputes from the signed action under the named canonicalization (musubi-canonical-v0); it is derived, outside the preimage, and adds no trust; one that does not recompute refuses the record"
+    },
+    {
+      "id": "PF",
+      "layer": "preflight",
+      "applied": false,
+      "statement": "the declared pre-execution action equals the caller's grant, from the authorized executor, in the window"
+    },
+    {
+      "id": "SIG",
+      "layer": "attribution",
+      "applied": true,
+      "statement": "witness_sig, edge_sig, caller_sig and provider_sig verify against keys resolved from the signer identities"
+    }
+  ],
+  "signers": {
+    "signatures_required": true,
+    "witnesses": [],
+    "delegators": [],
+    "caller_id": "did:key:z6MkvGfqiuLzzhVKPqLc1kzPYmi6ZtSn4Avqf3LCxc5J7toR",
+    "provider_id": "did:key:z6MkfFeJ2J6se1SNeo5djxi57JX1WBzm7Z9nCbD1bF1DAjT1",
+    "resolution": "identities are did:key or key_url; keys resolve offline from the identifier itself or from the resolve function the caller supplied"
+  },
+  "recompute": {
+    "offline": "this verifier opens no socket and has no clock; run it yourself on the same records and do not take this operator's word",
+    "layers": [
+      "../task-delegation-bind-v0/bind.mjs + sign.mjs (R1..R4, witness_sig, edge_sig)",
+      "../task-execution-bind-v0/bind_exec.mjs + sign_exec.mjs (E1..E3, caller_sig, provider_sig)",
+      "../task-execution-bind-v0/outcome_evidence.mjs (evidence pointer shape and optional lookup)"
+    ],
+    "cross_layer": [
+      "every record must carry the same task_id",
+      "an observation's detail_ref nenrin-exec://<receipt_id> must equal receiptId(reconciled receipt)",
+      "if an intent is present, its proposed_action must equal the grant action (preflight) and the reconciled receipt executed_action (declared equals authorized equals executed)",
+      "if a grant, receipt or intent carries action_binding, digest.value must equal sha256(canonical(its action)) under musubi-canonical-v0; the field is outside every preimage and signature"
+    ]
+  }
+}
