@@ -2605,6 +2605,17 @@ async function readRegistry(env) {
   catch (_e) { return {}; }
 }
 
+// 2026-10-13. Every path that writes the registry back must read it with this, not readRegistry. readRegistry turns a
+// failed KV read into {}, and a writer then saved {} plus its one row: one transient failure during an anonymous
+// POST /watch would have erased every other row and answered ok:true. null here means "could not read"; an absent
+// key is still an empty registry. A writer that gets null writes nothing.
+async function readRegistryForWrite(env) {
+  if (!env || !env.HS_VERIFY_KV) return null;
+  try { return (await env.HS_VERIFY_KV.get(REGISTRY_KEY, "json")) || {}; }
+  catch (_e) { return null; }
+}
+const REGISTRY_READ_FAILED = { error: "registry_read_failed", note: "The register could not be read, so nothing was written. Try again; no row was changed." };
+
 // 0.4.10 TSUGI. 隔離中か。until が在って過ぎとったら隔離は切れとる (切れた事実は行に残る)。
 function isQuarantined(row, nowIso) {
   if (!row || !row.quarantined) return false;
@@ -2614,7 +2625,8 @@ function isQuarantined(row, nowIso) {
 
 // 0.3.1. 断った/撤回した事実を登録簿の行に書く。変わった時だけ書く(KV の書き込みは掃引ごとに 8 回で足りる)。
 async function markDeclined(env, endpoint, declined) {
-  const reg = await readRegistry(env);
+  const reg = await readRegistryForWrite(env);
+  if (!reg) return;
   const row = reg[endpoint];
   if (!row) return;
   const was = !!row.owner_declined_at;
@@ -2627,7 +2639,8 @@ async function markDeclined(env, endpoint, declined) {
 // 0.4.0. 所有者が consent file に書いた identity / witness_policy を登録簿の行に写す(宣言であって判定やない)。
 // 変わった時だけ書く。notify の URL は写さん(他人の webhook を公開する理由が無い。置いてある事実だけ)。
 async function markDeclared(env, endpoint, declared) {
-  const reg = await readRegistry(env);
+  const reg = await readRegistryForWrite(env);
+  if (!reg) return;
   const row = reg[endpoint];
   if (!row) return;
   const next = declared ? {
@@ -3820,8 +3833,11 @@ async function readRecordBytes(env, sha) {
 async function recordHistory(env, endpoint, record) {
   if (!env || !env.HS_VERIFY_KV) return null;
   const key = await histKey(endpoint);
-  let prev = null;
-  try { prev = await env.HS_VERIFY_KV.get(key, "json"); } catch (_e) {}
+  let prev = null, prevReadFailed = false;
+  // 2026-10-13. A failed read used to leave prev null, and the put below then replaced up to HISTORY_MAX entries with
+  // this one and reported no change. Now a failed read writes nothing: the verdict is still returned, the history and
+  // the change feed stay as they were.
+  try { prev = await env.HS_VERIFY_KV.get(key, "json"); } catch (_e) { prevReadFailed = true; }
   const entries = (prev && Array.isArray(prev.entries)) ? prev.entries : [];
   const last = entries.length ? entries[entries.length - 1] : null;
   const entry = summarise(record);
@@ -3848,9 +3864,11 @@ async function recordHistory(env, endpoint, record) {
   entries.push(entry);
   while (entries.length > HISTORY_MAX) entries.shift();
 
-  try {
-    await env.HS_VERIFY_KV.put(key, JSON.stringify({ endpoint, entries }));
-  } catch (_e) { /* 書けなくても判定は返す */ }
+  if (!prevReadFailed) {
+    try {
+      await env.HS_VERIFY_KV.put(key, JSON.stringify({ endpoint, entries }));
+    } catch (_e) { /* 書けなくても判定は返す */ }
+  } else entry.history_note = "the previous history could not be read, so this measurement was not appended to it";
 
   // 到達できなかった回が連続で何回続いたか。1回の回線の詰まりで赤い通知を飛ばさない。
   // **誤報を1回でも出した監視に、二度目の金は払われない。**
@@ -3875,8 +3893,8 @@ async function recordHistory(env, endpoint, record) {
       }
     }
     lastFlips = flips;
-    let changes = [];
-    try { changes = (await env.HS_VERIFY_KV.get("changes:recent", "json")) || []; } catch (_e) {}
+    let changes = [], changesReadFailed = false;
+    try { changes = (await env.HS_VERIFY_KV.get("changes:recent", "json")) || []; } catch (_e) { changesReadFailed = true; }
     // 表面の移動を、条件の反転と同じ重さで書く。読み手にとってはこちらの方が実害が早い。
     const scBits = [];
     if (sc) {
@@ -3906,7 +3924,7 @@ async function recordHistory(env, endpoint, record) {
       } : {})
     });
     while (changes.length > CHANGES_MAX) changes.shift();
-    try { await env.HS_VERIFY_KV.put("changes:recent", JSON.stringify(changes)); } catch (_e) {}
+    if (!changesReadFailed) { try { await env.HS_VERIFY_KV.put("changes:recent", JSON.stringify(changes)); } catch (_e) {} }
   }
   // 3回連続で到達不能になった時点で、ちょうど1回だけ鳴らす。
   // 指紋は2回目以降変わらないので、changed だけを見ていると永久に鳴らない。
@@ -5826,7 +5844,8 @@ export default {
         return json({ error: "webhook_must_be_https" }, 400);
       }
       if (!env || !env.HS_VERIFY_KV) return json({ error: "storage_unavailable" }, 503);
-      const reg = await readRegistry(env);
+      const reg = await readRegistryForWrite(env);
+      if (!reg) return json(REGISTRY_READ_FAILED, 503);
       const prev = reg[ep] || null;
       if (!prev && Object.keys(reg).length >= REGISTRY_MAX) {
         return json({ error: "registry_full", max: REGISTRY_MAX }, 429);
@@ -5898,7 +5917,8 @@ export default {
       if (asha !== undefined && !(typeof asha === "string" && /^[0-9a-f]{64}$/.test(asha))) return json({ error: "bad_authorization_sha256" }, 400);
       if (typeof reason !== "string" || reason.trim().length < 8) return json({ error: "reason_required" }, 400);
       if (until !== undefined && !(typeof until === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(until))) return json({ error: "bad_until", note: "until is ISO-8601 UTC ending in Z, or absent" }, 400);
-      const reg = await readRegistry(env);
+      const reg = await readRegistryForWrite(env);
+      if (!reg) return json(REGISTRY_READ_FAILED, 503);
       const row = reg[ep];
       if (!row) return json({ error: "not_on_register", note: "quarantine applies to rows on the register; an unknown endpoint has nothing to stop" }, 404);
       const at = new Date().toISOString();
@@ -5930,13 +5950,16 @@ export default {
       const reason = body && body.reason;
       if (typeof ep !== "string" || !ep) return json({ error: "endpoint_required" }, 400);
       if (typeof reason !== "string" || reason.trim().length < 8) return json({ error: "reason_required", note: "a removal without a stated reason is a silent edit; state it, it is published" }, 400);
-      const reg = await readRegistry(env);
+      const reg = await readRegistryForWrite(env);
+      if (!reg) return json(REGISTRY_READ_FAILED, 503);
+      // The removal stone is appended to the removed list; read it first, so a failed read cannot replace the list.
+      let removed;
+      try { removed = (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || []; } catch (_e) { removed = null; }
+      if (!Array.isArray(removed)) return json({ error: "removed_list_read_failed", note: "The public list of removals could not be read, so nothing was removed. Try again." }, 503);
       const row = reg[ep];
       if (!row) return json({ error: "not_a_removable_row", note: "either not on the register, or a self row fixed in the gate's source" }, 404);
       delete reg[ep];
       const ok = await writeRegistry(env, reg);
-      let removed = [];
-      try { removed = (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || []; } catch (_e) { removed = []; }
       const stone = { endpoint: ep, removed_at: new Date().toISOString(), reason: reason.trim(), requested_by: row.requested_by || "unrecorded", added_at: row.added_at || null, owner_file_at_request: row.owner_file_at_request || null, history_kept: true };
       removed.push(stone);
       try { await env.HS_VERIFY_KV.put(REMOVED_KEY, JSON.stringify(removed)); } catch (_e) {}

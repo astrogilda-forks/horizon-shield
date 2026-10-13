@@ -75,16 +75,16 @@ function adminOk(request, env) {
   const key = request.headers.get("X-Admin-Key") || "";
   return !!(env.HEARING_ADMIN_SECRET && key && ctEqSync(key, env.HEARING_ADMIN_SECRET)); // L1: 定数時間比較
 }
+// 2026-10-13. This used to return an empty roster when the fetch failed or answered non-2xx, so liveContractors'
+// own catch (the 2026-08-20 fix below) could never fire: an outage still reached homeowner AIs as
+// verified_count 0 with read_ok true. A failed read now throws, and each caller decides what to say.
 async function fetchPublished(env) {
   const url = (env.PUBLIC_DATA_URL || PUBLIC_DATA_FALLBACK);
-  try {
-    const r = await fetch(url, { cf: { cacheTtl: 600, cacheEverything: true } });
-    if (!r.ok) return { contractors: [], stats: {} };
-    const d = await r.json();
-    return { contractors: Array.isArray(d.contractors) ? d.contractors : [], stats: d.stats || {} };
-  } catch (_e) {
-    return { contractors: [], stats: {} };
-  }
+  const r = await fetch(url, { cf: { cacheTtl: 600, cacheEverything: true } });
+  if (!r.ok) throw new Error("published roster answered HTTP " + r.status);
+  const d = await r.json();
+  if (!d || typeof d !== "object" || !Array.isArray(d.contractors)) throw new Error("published roster has no contractors list");
+  return { contractors: d.contractors, stats: d.stats || {} };
 }
 
 /* ------------------------------ hearing form ------------------------------ */
@@ -2470,8 +2470,14 @@ export default {
           thick_note = "hearing: の詳細を読んだのは先頭 " + MAX_THICK + " 店。残り " + tail.length + " 店は store: の登録内容のみ。";
         }
       } catch (_e) {
-        const pub = await fetchPublished(env);
-        contractors = (pub && pub.contractors) || [];
+        let pub;
+        try { pub = await fetchPublished(env); }
+        catch (e2) {
+          // 2026-10-13. Neither the KV nor the published roster could be read. Say so; do not publish an empty roster.
+          return json({ error: "roster_unavailable", read_ok: false,
+            note: "Neither the live store list nor the published roster could be read. This is a read failure, not a statement that no contractor is listed." }, 503, { "Cache-Control": "no-store" });
+        }
+        contractors = pub.contractors;
         srcLabel = "published fallback (KV unavailable)";
         thick_limited = true;
         thick_note = "KVを読めなかったため公開済みの静的データで応答した。";
