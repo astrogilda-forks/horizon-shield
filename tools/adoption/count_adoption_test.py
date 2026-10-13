@@ -134,7 +134,25 @@ def main():
     finally:
         C.get = real_get
     check("the snapshot counts the registry rows, authors by id not by spelling", (imp["count"], imp["distinct_authors"], imp["links_answering"], imp["by_subject"]), (3, 2, 3, {"s1": 3}))
-    check("a row keeps who, subject, evidence and date", sorted(imp["items"][0]), ["date", "evidence", "link_ok", "link_status", "subject", "who"])
+    check("a row keeps who, subject, evidence and date, and gets a kind", sorted(imp["items"][0]), ["date", "evidence", "kind", "link_ok", "link_status", "subject", "who"])
+    C.get = lambda url, accept="", timeout=20: (200, b"")
+    try:
+        imp2 = C.implementations({"implementations": [
+            {"who": "A", "author": "a", "subject": "s1", "what": "own code", "evidence": "https://example.com/1", "date": "2026-10-02"},
+            {"who": "P", "author": "p", "kind": "reproduction", "subject": "s1", "what": "reran ours", "evidence": "https://example.com/2", "date": "2026-10-03"},
+            {"who": "O", "author": "o", "kind": "integration", "subject": "s2", "what": "our vectors in their tests", "evidence": "https://example.com/3", "date": "2026-10-04"}]})
+        try:
+            C.implementations({"implementations": [{"who": "X", "kind": "adoption", "subject": "s", "what": "", "evidence": "https://example.com/4", "date": "2026-10-05"}]})
+            unknown_refused = False
+        except ValueError:
+            unknown_refused = True
+    finally:
+        C.get = real_get
+    check("only implementation rows feed the implementation count and its authors", (imp2["count"], imp2["distinct_authors"], imp2["by_subject"]), (1, 1, {"s1": 1}))
+    check("reproductions and integrations are reported apart", imp2["other_kinds"], {"reproduction": {"count": 1, "distinct_authors": 1}, "integration": {"count": 1, "distinct_authors": 1}})
+    check("an unknown kind is refused, not counted", unknown_refused, True)
+    d2 = json.loads(json.dumps(d)); d2["metrics"]["independent_implementations"].update({"other_kinds": imp2["other_kinds"]})
+    check("the README block prints the other kinds on their own line", "reproduction 1 row by 1 author, integration 1 row by 1 author" in C.readme_block(d2), True)
     check("the free-text 'what' of a registry row is not copied into the snapshot", "CASE-001" in json.dumps(imp), False)
     print("\n%s" % ("all passed" if not bad else "%d failed" % bad))
     sys.exit(1 if bad else 0)

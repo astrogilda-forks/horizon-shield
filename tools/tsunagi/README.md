@@ -69,4 +69,4 @@ Your badge, for your own README:
     ![TSUNAGI](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ogasurfproject-jpg/horizon-shield/main/ops/tsunagi/badges/<your-id>.json)
 
 To change your command, rename your row or leave the board, open an issue or a pull request; it is done the same
-day. The board always runs your default branch head; it has no field for pinning a commit. The board never runs outside code with a write token or a secret.
+day. The board runs your default branch head, unless your row sets `"pin"` to a full 40-hex commit sha agreed with you: then it runs exactly that commit, a pin that cannot be fetched is reported as not run (never replaced by the head), and the commit cell is marked pinned. Moving a pin is a separate change you approve. Each run row may also set `"mode"`: `rerun` (the default, the board runs your checker) or `saved` (the board compares reports you saved); board.json records which one each cell did. The board never runs outside code with a write token or a secret.

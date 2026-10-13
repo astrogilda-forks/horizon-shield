@@ -6,6 +6,8 @@ Five numbers, each from a source a stranger can read, none typed by hand:
   independent_implementations  implementations by other authors that reproduced our bytes or verdicts.
                                Source: tools/adoption/registry.json (hand-kept rows, each with a public link);
                                this script checks every link still answers and counts rows and distinct authors.
+                               Only rows of kind "implementation" count; "reproduction" (a rerun of our code) and
+                               "integration" (our vectors or records in someone else's tests) are reported apart.
   independent_witnesses        domains outside this project that signed a walk and filed it to the ledger.
                                Source: every nenrin-witness-batch-v1 entry on https://ledger.horizonshield.dev,
                                field signed_domain. Unsigned walks are listed by name and not counted. The TSUGI
@@ -80,6 +82,9 @@ def ours(identity, our):
     return any(s == o or s.endswith("." + o) for o in our)
 
 
+KINDS = ("implementation", "reproduction", "integration")
+
+
 def implementations(reg):
     items, alive = [], 0
     for row in reg["implementations"]:
@@ -94,14 +99,29 @@ def implementations(reg):
         # The row's free-text "what" stays in registry.json and is not copied here: a dated snapshot is kept forever,
         # so wording that has to change later (a name withheld until a fix ships, say) must live in one place only.
         items.append({**{k: v for k, v in row.items() if k != "what"}, "link_status": status, "link_ok": ok})
-    by_subject = {}
+    # Only rows of kind "implementation" (code of the author's own that reproduced our bytes or verdicts) are counted
+    # here. A rerun of our own code ("reproduction") and our vectors or records taken into someone else's tests or
+    # mapping ("integration") are real and listed, but reported apart (asked for in VATE #84 on 2026-10-14: a
+    # reproduction must not feed the implementation count). A row without a kind is an implementation.
     for r in items:
+        r["kind"] = r.get("kind") or "implementation"
+        if r["kind"] not in KINDS:
+            raise ValueError("registry row %r has unknown kind %r" % (r.get("evidence"), r["kind"]))
+    impl = [r for r in items if r["kind"] == "implementation"]
+    by_subject = {}
+    for r in impl:
         by_subject[r["subject"]] = by_subject.get(r["subject"], 0) + 1
     # Authors are counted by a stable id (a GitHub account, or a domain for an author with no account), never by the
     # free-text "who": the same person written two ways was counted twice until 2026-10-09 (8 reported, 7 real).
-    authors = {str(r.get("author") or r["who"]).strip().lower() for r in items}
-    return {"count": len(items), "distinct_authors": len(authors), "authors": sorted(authors), "links_answering": alive,
-            "by_subject": dict(sorted(by_subject.items())), "open_calls": reg.get("open_calls", {}), "items": items}
+    aid = lambda r: str(r.get("author") or r["who"]).strip().lower()
+    authors = {aid(r) for r in impl}
+    other = {}
+    for k in KINDS[1:]:
+        rows_k = [r for r in items if r["kind"] == k]
+        other[k] = {"count": len(rows_k), "distinct_authors": len({aid(r) for r in rows_k})}
+    return {"count": len(impl), "distinct_authors": len(authors), "authors": sorted(authors), "links_answering": alive,
+            "by_subject": dict(sorted(by_subject.items())), "other_kinds": other, "open_calls": reg.get("open_calls", {}),
+            "items": items}
 
 
 def ledger_witnesses(our, our_names=()):
@@ -417,6 +437,9 @@ def readme_block(d):
         "|---|---|---|",
         "| Independent implementations that reproduced our bytes or verdicts | %s rows by %s authors (%s) | [`tools/adoption/registry.json`](tools/adoption/registry.json), each row with its public link |"
         % (imp["count"], imp["distinct_authors"], ", ".join("%s %d" % kv for kv in imp["by_subject"].items())),
+        ("| Reproductions of our code and integrations of our vectors or records, counted apart from the row above | %s | [`tools/adoption/registry.json`](tools/adoption/registry.json), rows with kind `reproduction` or `integration` |"
+         % ", ".join("%s %d row%s by %d author%s" % (k, v["count"], "" if v["count"] == 1 else "s", v["distinct_authors"], "" if v["distinct_authors"] == 1 else "s")
+                     for k, v in imp["other_kinds"].items())) if imp.get("other_kinds") else None,
         "| Outside domains that signed a walk and filed it to the ledger | %s | every `nenrin-witness-batch-v1` entry on the ledger |"
         % (fmt(wit["count"]) if wit["count"] is None else "%d (%s)" % (wit["count"], doms)),
         ("| Re-verification pool | %d member(s) in %s control cluster(s), %d clusters needed for a quorum | `%s`, clusters from `%s` |" % (len(pool["admitted"]), pool["control_clusters"], pool["quorum_of_independent_controls_needed"], pool["file"], pool.get("diversity_file", ""))

@@ -1,6 +1,6 @@
 {
   "schema": "hs-adoption-registry-v1",
-  "what_this_is": "The hand-kept half of the weekly adoption count: implementations written by people who do not work for this project that reproduced our bytes or verdicts. Each row names one public place where the reproduction can be read. tools/adoption/count_adoption.py checks every link still answers and counts the rows; it adds nothing by itself. Add a row only with a link a stranger can open.",
+  "what_this_is": "The hand-kept half of the weekly adoption count: implementations written by people who do not work for this project that reproduced our bytes or verdicts. Each row names one public place where the reproduction can be read. Each row has a kind: implementation (code of the author's own that reproduced our bytes or verdicts), reproduction (a rerun of our own code that matched) or integration (our vectors or records taken into someone else's tests or mapping). Only implementations feed the implementation count; the other kinds are reported apart. tools/adoption/count_adoption.py checks every link still answers and counts the rows; it adds nothing by itself. Add a row only with a link a stranger can open.",
   "our_identities": [
     "horizonshield.dev",
     "the-horizons-innovation.com",
@@ -19,6 +19,7 @@
     {
       "who": "kuangmi-bit",
       "author": "kuangmi-bit",
+      "kind": "implementation",
       "subject": "a2a-card-canonical-form",
       "what": "An independent Go implementation reproduced the @a2a-js/sdk canonical form of the pinned HORIZON SHIELD gate card byte for byte (6410 bytes), offline from the committed fixture",
       "evidence": "https://github.com/a2aproject/a2a-go/issues/445#issuecomment-5879965988",
@@ -27,6 +28,7 @@
     {
       "who": "kuangmi-bit",
       "author": "kuangmi-bit",
+      "kind": "implementation",
       "subject": "a2a-card-sign-v01",
       "what": "Scored a2a-sdk and a2a-python#1287 against the 24 signed vectors with an own harness that verifies the ES256 signatures directly against testkey_jwks.json, after reproducing MANIFEST.observed",
       "evidence": "https://github.com/a2aproject/A2A/issues/2122#issuecomment-5937659218",
@@ -35,6 +37,7 @@
     {
       "who": "Sankalp Gilda (astrogilda)",
       "author": "astrogilda",
+      "kind": "implementation",
       "subject": "a2a-card-sign-v01",
       "what": "A verifier written only from A2A section 8.4.1 and the proto markings, sharing no code with the generator or the scorer: all 24 vectors come out as labelled, no false accepts",
       "evidence": "https://github.com/a2aproject/A2A/issues/2122#issuecomment-5936546281",
@@ -43,6 +46,7 @@
     {
       "who": "aeoess",
       "author": "aeoess",
+      "kind": "implementation",
       "subject": "a2a-card-sign-v01",
       "what": "Reproduced the s3 unknown-field results with an own harness at f427e46, including an experimental retain variant that scores 11/11 and rejects S3-T-011",
       "evidence": "https://github.com/a2aproject/A2A/issues/2122#issuecomment-5940903881",
@@ -51,6 +55,7 @@
     {
       "who": "Agenstry",
       "author": "agenstry.com",
+      "kind": "implementation",
       "subject": "agent-card-signature",
       "what": "Re-verified the gate's agent card signature with their own verifier, 10/10, recording the digest our signing tool printed",
       "evidence": "https://agenstry.com/agents/gate.horizonshield.dev",
@@ -59,6 +64,7 @@
     {
       "who": "Sankalp Gilda (astrogilda), Probity AI",
       "author": "astrogilda",
+      "kind": "implementation",
       "subject": "a2a-card-sign-v01",
       "what": "A separately implemented retained-field consumer, run against all 13 s3-unknown-fields cases: every outcome matches the a2a-go column of MANIFEST.observed, S3-D-012 accepted through its retained-form signature, S3-T-011 and S3-D-013 refused",
       "evidence": "https://github.com/probityai/agent-evidence-vectors/pull/34",
@@ -67,6 +73,7 @@
     {
       "who": "aeoess",
       "author": "aeoess",
+      "kind": "implementation",
       "subject": "a2a-card-sign-v01",
       "what": "Published a served-scope verifier entry point for a2a-python that canonicalizes the received JSON and keeps members outside the schema (canonicalize_served_agent_card, create_served_card_signature_verifier, candidate/served-scope-1278 at 2491248); pinned as its own MANIFEST.observed column, all 37 vectors as labelled under rule-1-served-scope and unknown-retain, no false accepts",
       "evidence": "https://github.com/a2aproject/A2A/issues/2122#issuecomment-5946262435",
@@ -75,6 +82,7 @@
     {
       "who": "Sankalp Gilda (astrogilda), Probity AI",
       "author": "astrogilda",
+      "kind": "implementation",
       "subject": "a2a-card-sign-v01",
       "what": "A separately implemented received-JSON consumer, run against all five s4-dual-name cases under both dual-name-tolerate and dual-name-refuse: every outcome as labelled, including S4-REJECT-005 refused under both, with the corpus digests checked before execution",
       "evidence": "https://github.com/probityai/agent-evidence-vectors/pull/42",
@@ -83,6 +91,7 @@
     {
       "who": "kuangmi-bit",
       "author": "kuangmi-bit",
+      "kind": "implementation",
       "subject": "nenrin-provenance",
       "what": "A NENRIN provenance verifier in Python written from the spec alone, without reading our source: reproduced all five interop-v0 verdict signatures and the 21 digests, and reported five places where the spec was unclear or wrong",
       "evidence": "https://github.com/a2aproject/A2A/discussions/1631#discussioncomment-18738206",
@@ -91,6 +100,7 @@
     {
       "who": "kuangmi-bit",
       "author": "kuangmi-bit",
+      "kind": "implementation",
       "subject": "nenrin-provenance",
       "what": "A second, separate verifier built from the text of VERIFIER.md alone: 18 of 18 on interop-v0 and interop-v0.1 (8 of 18 for the build from the older text), then the 36 fixtures of interop-v0.2/edge (merged as PR #30), whose expectations it cut",
       "evidence": "https://github.com/a2aproject/A2A/discussions/1631#discussioncomment-18739314",
@@ -99,6 +109,7 @@
     {
       "who": "babyblueviper1",
       "author": "babyblueviper1",
+      "kind": "implementation",
       "subject": "musubi-approval-v2",
       "what": "A reference verifier of his own for pinned-approver approvals (a2a-approval-v2 with approver_key in the signed bytes) and 9 vectors; MUSUBI settle v1.10 adopted the fields and both implementations agree 9 of 9",
       "evidence": "https://github.com/ogasurfproject-jpg/horizon-shield/issues/29#issuecomment-5987427704",
@@ -107,6 +118,7 @@
     {
       "who": "a2aproject/a2a-python (reviewed and merged by Iwaniukooo11)",
       "author": "a2aproject/a2a-python",
+      "kind": "integration",
       "subject": "a2a-card-sign-v01",
       "what": "The official Python SDK merged the five s0-control vectors of a2a-card-sign-v01 into its own test suite: its canonicalizer reproduces canonical_utf8_hex byte for byte for one card signed by a2a-sdk, @a2a-js/sdk, a2a-go and a reference signer, the four signatures verify, the card edited after signing is rejected, and its CI runs them on every change",
       "evidence": "https://github.com/a2aproject/a2a-python/pull/1286",
@@ -115,6 +127,7 @@
     {
       "who": "luiksksk",
       "author": "luiksksk",
+      "kind": "implementation",
       "subject": "trace-intake",
       "what": "A clean-room TRACE intake verifier in Node.js, written from trace-bind-v0/SPEC.md section 2 without reading the JavaScript, Python or Go implementations; it reproduces all 28 cases of trace-intake-v0 and the TSUNAGI board scores it from the author's own repository every night (row luiksksk-nenrin-trace-intake-cleanroom)",
       "evidence": "https://github.com/ogasurfproject-jpg/horizon-shield/pull/38",
@@ -123,6 +136,7 @@
     {
       "who": "Sankalp Gilda (astrogilda), Probity AI",
       "author": "astrogilda",
+      "kind": "implementation",
       "subject": "nenrin-witness-reader",
       "what": "A second reader for signed NENRIN witness records, written by Probity from the record format without the producer reader: it verifies two outside walks (pipavlo82 and kuangmi-bit, ledger entry 73) under separately pinned keys, checks the signed target URL exactly and keeps true, false and null assertions apart; 62 tests, and a second operator (HORIZON SHIELD) reran it with the same answers",
       "evidence": "https://github.com/probityai/agent-evidence-atlas/blob/2bff38d8c13f7038d8d773bc77e44ab4f160751a/examples/nenrin-witness-pair/README.md",
@@ -131,10 +145,20 @@
     {
       "who": "giskard09",
       "author": "giskard09",
+      "kind": "implementation",
       "subject": "a2a-card-sign-v01",
       "what": "Ran an own RFC 8785 canonicalizer (jcs.py) blind against all 44 a2a-card-sign-v01 vectors at a2a-tck#246 8aa795b: byte-exact agreement on all 26 vectors governed by the served-as-is, unknown-retain and dual-name-tolerate readings, including the dual-signature transition case S3-D-012; the other 18 need AgentCard-aware pruning that a pure canonicalizer does not do. Shows the section 8.4.1 disagreement is about which bytes are covered, not RFC 8785",
       "evidence": "https://github.com/a2aproject/a2a-tck/pull/246#issuecomment-6133531509",
       "date": "2026-10-12"
+    },
+    {
+      "who": "Poke-nushi (Takao Sato), VATE",
+      "author": "Poke-nushi",
+      "kind": "reproduction",
+      "subject": "nenrin-provenance",
+      "what": "Reran the published NENRIN verifiers on the three VATE S3 cases at bfde94be9d80 with npm nenrin-verify 0.5.1 and PyPI nenrin-verify 0.5.3: all six complete outputs byte-identical to ours, and the generator reproduced the three bundles and the manifest byte for byte. Also implemented and checked locally a crosswalk against VATE b3b6d4f that keeps the target mismatch as separate relationships and the missing receipt as not_assessed (to be published; then refereed on the TSUNAGI board at a pinned commit)",
+      "evidence": "https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope/issues/84#issuecomment-6155572648",
+      "date": "2026-10-13"
     }
   ],
   "open_calls": {

@@ -146,11 +146,24 @@ def sh(cmd, cwd=None, env=None, timeout=TIMEOUT):
         return 127, "", str(x), 0.0
 
 
-def clone(repo, dest):
-    if os.path.isdir(os.path.join(dest, ".git")):
-        return True, ""
-    code, out, err, _ = sh(["git", "clone", "-q", "--depth", "1", repo, dest], timeout=600)
-    return code == 0, err.strip()[-300:]
+def clone(repo, dest, pin=None):
+    """Clone the default branch head, or, when the row names a pin, exactly that commit (a full 40-hex sha agreed with
+    the author). A pin that cannot be fetched, or that does not resolve to itself, is a clone error, never a quiet
+    fallback to the head."""
+    if not os.path.isdir(os.path.join(dest, ".git")):
+        code, out, err, _ = sh(["git", "clone", "-q", "--depth", "1", repo, dest], timeout=600)
+        if code != 0:
+            return False, err.strip()[-300:]
+    if pin:
+        if not re.fullmatch(r"[0-9a-f]{40}", pin):
+            return False, "pin must be a full 40-hex commit sha"
+        code, out, err, _ = sh(["git", "-C", dest, "fetch", "-q", "--depth", "1", "origin", pin], timeout=600)
+        if code != 0:
+            return False, ("pinned commit %s could not be fetched: " % pin) + err.strip()[-200:]
+        code, out, err, _ = sh(["git", "-C", dest, "checkout", "-q", "--detach", pin])
+        if code != 0 or head(dest) != pin:
+            return False, "pinned commit %s could not be checked out" % pin
+    return True, ""
 
 
 def head(dest):
@@ -276,11 +289,13 @@ def run_board(spec, ext_dir, local=None):
             info["local"] = True
         elif impl.get("repo"):
             impl_dir = os.path.join(ext_dir, impl["id"])
-            ok, err = clone(impl["repo"], impl_dir)
+            ok, err = clone(impl["repo"], impl_dir, impl.get("pin"))
             if not ok:
                 info["clone_error"] = err or "clone failed"
             else:
                 info["commit"] = head(impl_dir)
+            if impl.get("pin"):
+                info["pinned"] = impl["pin"]
         else:
             info["commit"] = head(ROOT)
         heads[impl["id"]] = info
@@ -289,6 +304,7 @@ def run_board(spec, ext_dir, local=None):
             if run.get("vectors") and impl_dir:
                 vectors[run["corpus"]] = expand(run["vectors"], impl_dir, HERE, vectors)
             row = {"implementation": impl["id"], "ours": impl["ours"], "corpus": run["corpus"], "commit": info["commit"],
+                   "pinned": bool(impl.get("pin")), "mode": run.get("mode", "rerun"),
                    "scored_by": "board" if run["parse"] in ("batch_referee", "batch_approval_referee") else "implementation",
                    "expected_total": run["total"]}
             if info["clone_error"]:
@@ -481,7 +497,8 @@ def to_md(board, hist=None):
         c = cells.get(r["implementation"] + " | " + r["corpus"] + (" | board" if r.get("scored_by") == "board" else ""), {})
         streak = str(c.get("streak", "")) + ((" (since %s)" % c["first_pass"][:10]) if c.get("first_pass") and c.get("streak") else "")
         by = {"board": "board", "implementation": "self"}.get(r.get("scored_by"), "")
-        L.append("| %s | %s | %s | %s | %s | %s | `%s` |" % (link, who, r["corpus"], res, by, streak, (r.get("commit") or "")[:8]))
+        L.append("| %s | %s | %s | %s | %s | %s | `%s`%s |" % (link, who, r["corpus"], res, by, streak, (r.get("commit") or "")[:8],
+                                                            " pinned" if r.get("pinned") else ""))
     L += ["", "## Two implementations, one corpus", "", "| corpus | a | b | scored by | agree |", "|---|---|---|---|---|"]
     for p in board["pairs"]:
         if p["agree"] is None:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline checks of how TSUNAGI reads each implementation's output. No network, no clones."""
+"""Offline checks of how TSUNAGI reads each implementation's output. No network; the pin checks clone a throwaway local repository."""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import run_board as rb
@@ -138,6 +138,24 @@ open(target, "ab").write(b"tampered")
 changed = rb.restore_if_changed(snap)
 t("integrity: a guarded file changed by a run is detected and restored", changed == [os.path.relpath(target, rb.ROOT)] and open(target, "rb").read() == keep)
 t("integrity: nothing changed reports nothing", rb.restore_if_changed(snap) == [])
+import tempfile, subprocess
+with tempfile.TemporaryDirectory(prefix="tsunagi-pin-test-") as td:
+    src = os.path.join(td, "src")
+    g = lambda *a: subprocess.run(["git", "-C", src] + list(a), capture_output=True, text=True, check=True).stdout.strip()
+    os.makedirs(src)
+    subprocess.run(["git", "init", "-q", src], check=True)
+    g("config", "user.email", "t@t"); g("config", "user.name", "t"); g("config", "uploadpack.allowAnySHA1InWant", "true")
+    open(os.path.join(src, "f"), "w").write("one"); g("add", "f"); g("commit", "-q", "-m", "one"); first = g("rev-parse", "HEAD")
+    open(os.path.join(src, "f"), "w").write("two"); g("commit", "-q", "-am", "two"); second = g("rev-parse", "HEAD")
+    url = "file://" + src
+    ok, err = rb.clone(url, os.path.join(td, "a"))
+    t("pin: without a pin the default branch head is cloned", ok and rb.head(os.path.join(td, "a")) == second)
+    ok, err = rb.clone(url, os.path.join(td, "b"), first)
+    t("pin: with a pin exactly that commit is checked out, not the head", ok and rb.head(os.path.join(td, "b")) == first)
+    ok, err = rb.clone(url, os.path.join(td, "c"), first[:12])
+    t("pin: a short sha is refused, not guessed", (not ok) and "40-hex" in err)
+    ok, err = rb.clone(url, os.path.join(td, "d"), "0" * 40)
+    t("pin: a pin that cannot be fetched is a clone error, never a fallback to the head", (not ok) and "could not" in err)
 print("")
 if fail:
     print("FAIL %d (tsunagi)" % fail); sys.exit(1)
