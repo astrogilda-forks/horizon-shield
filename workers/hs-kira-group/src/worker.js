@@ -120,8 +120,11 @@ async function handleEvent(ev, env) {
   if (inGroup) {
     const mentionees = (ev.message.mention && Array.isArray(ev.message.mention.mentionees)) ? ev.message.mention.mentionees : [];
     const mentioned = mentionees.some((m) => m.isSelf === true);
-    // 呼ばれ方: @メンション、または文中のどこかに「kira」/「キラ」がある時(先頭でなくてよい)。
-    const named = text.toLowerCase().includes("kira") || text.includes("キラ");
+    // 呼ばれ方: @メンション(誰でも) or 文中に「kira」/「キラ」かつ送信者が本人(OWNER)。
+    // 他人が「KIRA連携」のように KIRA を話題に出しただけでは反応しない(talk about ≠ talk to)。
+    // 誤爆例(2026-09-21): まどかさんの「KIRA連携や hs-estimate 用ではありません」が名指し判定されて返事してもうた。
+    const senderIsOwner = !!(env.OWNER_USER_ID && src.userId && src.userId === env.OWNER_USER_ID);
+    const named = senderIsOwner && (text.toLowerCase().includes("kira") || text.includes("キラ"));
     if (!mentioned && !named) return; // それ以外は黙る(記憶は上で済み)
     // @メンションの span を除く
     [...mentionees].sort((a, b) => b.index - a.index).forEach((m) => {
