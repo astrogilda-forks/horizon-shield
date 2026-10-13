@@ -1,0 +1,131 @@
+{
+  "schema": "nenrin-adequacy-mutations-v0",
+  "note": "Declared faults for the mutation adequacy measurement of the NENRIN provenance corpora. Each fault is one exact text substitution (anchor -> replacement) in one function of the Python port. The anchor must occur exactly once in the file. Controls are not faults: the positive control must be killed or the run has no score, the inert control must move nothing or the run is void.",
+  "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+  "faults": [
+    {
+      "id": "F1",
+      "label": "F1 grant signature check removed",
+      "function": "verify_grant_sig",
+      "rule": "VERIFIER.md step 2b: caller_sig verifies under grant.caller_id",
+      "anchor": "    return _verify_detached(prop(g, \"caller_sig\"), pub, lambda: grant_preimage(g))",
+      "replacement": "    return True"
+    },
+    {
+      "id": "F2",
+      "label": "F2 receipt signature check removed",
+      "function": "verify_receipt_sig",
+      "rule": "VERIFIER.md step 2b and 2d: provider_sig verifies under the receipt's provider_id (2b) and under grant.provider_id (2d)",
+      "anchor": "    return _verify_detached(prop(r, \"provider_sig\"), pub, lambda: receipt_preimage(r))",
+      "replacement": "    return True"
+    },
+    {
+      "id": "F3",
+      "label": "F3 wrong key accepted at step 2b",
+      "function": "verify_signed_execution",
+      "rule": "VERIFIER.md step 2b: caller_sig verifies under the key of grant.caller_id and provider_sig under the key of receipt.provider_id. NENRIN identities are did:key, so the key is resolved from the named signer; there is no separate kid. The fault is trial verification: a signature is accepted if it verifies under the key of any party of the pair, not the key of the party the record names.",
+      "anchor": "    if not verify_grant_sig(g, resolve(prop(g, \"caller_id\"))):\n        return {\"ok\": False, \"reason\": \"caller_sig_invalid\"}\n    if not verify_receipt_sig(r, resolve(prop(r, \"provider_id\"))):",
+      "replacement": "    keys = [resolve(prop(g, \"caller_id\")), resolve(prop(g, \"provider_id\")), resolve(prop(r, \"provider_id\"))]\n    if not any(verify_grant_sig(g, k) for k in keys):\n        return {\"ok\": False, \"reason\": \"caller_sig_invalid\"}\n    if not any(verify_receipt_sig(r, k) for k in keys):"
+    },
+    {
+      "id": "F4",
+      "label": "F4 validity window check removed",
+      "function": "_in_window",
+      "rule": "VERIFIER.md step 2a and step 3: executed_at (declared_at) is inside [not_before, not_after] (outside_authorization_window)",
+      "anchor": "def _in_window(g, t_str):\n    t = date_parse(t_str)",
+      "replacement": "def _in_window(g, t_str):\n    return True\n    t = date_parse(t_str)"
+    },
+    {
+      "id": "F4b",
+      "label": "F4b (refinement of F4) not_after bound ignored",
+      "function": "_in_window",
+      "rule": "VERIFIER.md step 2a and step 3: the instant is not after not_after. Added because F4 is killed by one vector only, which tests the not_before side; this asks whether the corpora test the other side.",
+      "anchor": "        if v is None or t > v:",
+      "replacement": "        if v is None:"
+    },
+    {
+      "id": "F5",
+      "label": "F5 action match removed (E1 on the receipt)",
+      "function": "verify_execution",
+      "rule": "VERIFIER.md step 2a E1: canonical(grant.action) equals canonical(receipt.executed_action) (action_diverged)",
+      "anchor": "    if not actions_equal(prop(g, \"action\"), prop(r, \"executed_action\")):",
+      "replacement": "    if False:"
+    },
+    {
+      "id": "F6a",
+      "label": "F6a grant_ref recompute check removed",
+      "function": "verify_execution",
+      "rule": "VERIFIER.md step 2a: grant_ref recomputes (grant_recompute_mismatch)",
+      "anchor": "def verify_execution(g, r):\n    findings = []\n    if not grant_recompute_ok(g):",
+      "replacement": "def verify_execution(g, r):\n    findings = []\n    if False:"
+    },
+    {
+      "id": "F6b",
+      "label": "F6b receipt_id recompute check removed",
+      "function": "verify_execution",
+      "rule": "VERIFIER.md step 2a: receipt_id recomputes (receipt_recompute_mismatch)",
+      "anchor": "    if not receipt_recompute_ok(r):",
+      "replacement": "    if False:"
+    },
+    {
+      "id": "F6c",
+      "label": "F6c receipt.grant_ref binding check removed",
+      "function": "verify_execution",
+      "rule": "VERIFIER.md step 2a: receipt.grant_ref equals the recomputed grant_ref (receipt_unbound)",
+      "anchor": "    if not receipt_binds_grant(g, r):",
+      "replacement": "    if False:"
+    },
+    {
+      "id": "F7",
+      "label": "F7 strict RFC3339 UTC check removed",
+      "function": "_timestamps_ok",
+      "rule": "VERIFIER.md step 2a and step 3, section 5: executed_at / declared_at / not_before / not_after are strict RFC3339 UTC instants on a real calendar day (invalid_timestamp)",
+      "anchor": "def _timestamps_ok(g, t):\n    if not is_rfc3339_utc(t):",
+      "replacement": "def _timestamps_ok(g, t):\n    return True\n    if not is_rfc3339_utc(t):"
+    },
+    {
+      "id": "F8",
+      "label": "F8 incomplete pair accepted",
+      "function": "verify_provenance",
+      "rule": "VERIFIER.md step 2: a grant with an empty receipt set, or receipts with no grant, is refusal execution_incomplete_pair",
+      "anchor": "        refuse(\"execution_incomplete_pair\", \"a grant and at least one receipt are both required to verify execution\")",
+      "replacement": "        pass"
+    },
+    {
+      "id": "F9",
+      "label": "F9 action_binding digest comparison removed",
+      "function": "check_action_binding",
+      "rule": "VERIFIER.md section 2 (AB): an action_binding, when carried, must recompute: digest.value equals sha256(canonical(action)) (action_binding_mismatch). args_sha256 has no comparison of its own: it is a member of the action and is compared only inside E1 (F5) and inside this digest.",
+      "anchor": "    if nullish(prop(rec, key)) or prop(d, \"value\") != action_digest(prop(rec, key)):",
+      "replacement": "    if False:"
+    },
+    {
+      "id": "F10",
+      "label": "F10 executor authorization (E3) removed",
+      "function": "provider_authorized",
+      "rule": "VERIFIER.md step 2a and step 3: grant.provider_id is null or equals receipt.provider_id / intent.provider_id (provider_not_authorized). Chosen because it is the rule that a receipt comes from the executor the caller authorized, and a validly signed receipt from a different provider is the attack it stops.",
+      "anchor": "def provider_authorized(g, r):\n    return nullish(prop(g, \"provider_id\")) or seq(prop(r, \"provider_id\"), prop(g, \"provider_id\"))",
+      "replacement": "def provider_authorized(g, r):\n    return True"
+    }
+  ],
+  "controls": [
+    {
+      "id": "CONTROL_POSITIVE",
+      "label": "CONTROL positive: verifier always accepts",
+      "polarity": "positive",
+      "function": "verify_provenance",
+      "rule": "must be killed: every refusal is dropped and the verdict is always accepted",
+      "anchor": "    verdict = \"refused\" if refusals else \"accepted\"",
+      "replacement": "    del refusals[:]\n    verdict = \"accepted\""
+    },
+    {
+      "id": "CONTROL_INERT",
+      "label": "CONTROL inert: equivalent UTF-8 encoding call in sha256hex",
+      "polarity": "inert",
+      "function": "sha256hex",
+      "rule": "must move nothing: str.encode(\"utf-8\") and bytes(s, \"utf-8\") give the same bytes, and the line runs on every vector",
+      "anchor": "    return hashlib.sha256(s.encode(\"utf-8\")).hexdigest()",
+      "replacement": "    return hashlib.sha256(bytes(s, \"utf-8\")).hexdigest()"
+    }
+  ]
+}

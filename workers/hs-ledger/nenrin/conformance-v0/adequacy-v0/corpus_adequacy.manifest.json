@@ -1,0 +1,113 @@
+{
+  "build": [],
+  "default_group": "provenance",
+  "diagnostic_from": [
+    "reasons"
+  ],
+  "entrypoint_command": [
+    "python3",
+    "-I",
+    "-B",
+    "verdict_signature.py",
+    "{vector}"
+  ],
+  "id_key": "vector_id",
+  "implementation": "src/nenrin_verify/provenance.py",
+  "implementation_sources": [
+    "src/nenrin_verify/provenance.py"
+  ],
+  "mutants": {
+    "provenance": [
+      {
+        "anchor": "    return _verify_detached(prop(g, \"caller_sig\"), pub, lambda: grant_preimage(g))",
+        "label": "F1 grant signature check removed",
+        "replacement": "    return True"
+      },
+      {
+        "anchor": "    return _verify_detached(prop(r, \"provider_sig\"), pub, lambda: receipt_preimage(r))",
+        "label": "F2 receipt signature check removed",
+        "replacement": "    return True"
+      },
+      {
+        "anchor": "    if not verify_grant_sig(g, resolve(prop(g, \"caller_id\"))):\n        return {\"ok\": False, \"reason\": \"caller_sig_invalid\"}\n    if not verify_receipt_sig(r, resolve(prop(r, \"provider_id\"))):",
+        "label": "F3 wrong key accepted at step 2b",
+        "replacement": "    keys = [resolve(prop(g, \"caller_id\")), resolve(prop(g, \"provider_id\")), resolve(prop(r, \"provider_id\"))]\n    if not any(verify_grant_sig(g, k) for k in keys):\n        return {\"ok\": False, \"reason\": \"caller_sig_invalid\"}\n    if not any(verify_receipt_sig(r, k) for k in keys):"
+      },
+      {
+        "anchor": "def _in_window(g, t_str):\n    t = date_parse(t_str)",
+        "label": "F4 validity window check removed",
+        "replacement": "def _in_window(g, t_str):\n    return True\n    t = date_parse(t_str)"
+      },
+      {
+        "anchor": "        if v is None or t > v:",
+        "label": "F4b (refinement of F4) not_after bound ignored",
+        "replacement": "        if v is None:"
+      },
+      {
+        "anchor": "    if not actions_equal(prop(g, \"action\"), prop(r, \"executed_action\")):",
+        "label": "F5 action match removed (E1 on the receipt)",
+        "replacement": "    if False:"
+      },
+      {
+        "anchor": "def verify_execution(g, r):\n    findings = []\n    if not grant_recompute_ok(g):",
+        "label": "F6a grant_ref recompute check removed",
+        "replacement": "def verify_execution(g, r):\n    findings = []\n    if False:"
+      },
+      {
+        "anchor": "    if not receipt_recompute_ok(r):",
+        "label": "F6b receipt_id recompute check removed",
+        "replacement": "    if False:"
+      },
+      {
+        "anchor": "    if not receipt_binds_grant(g, r):",
+        "label": "F6c receipt.grant_ref binding check removed",
+        "replacement": "    if False:"
+      },
+      {
+        "anchor": "def _timestamps_ok(g, t):\n    if not is_rfc3339_utc(t):",
+        "label": "F7 strict RFC3339 UTC check removed",
+        "replacement": "def _timestamps_ok(g, t):\n    return True\n    if not is_rfc3339_utc(t):"
+      },
+      {
+        "anchor": "        refuse(\"execution_incomplete_pair\", \"a grant and at least one receipt are both required to verify execution\")",
+        "label": "F8 incomplete pair accepted",
+        "replacement": "        pass"
+      },
+      {
+        "anchor": "    if nullish(prop(rec, key)) or prop(d, \"value\") != action_digest(prop(rec, key)):",
+        "label": "F9 action_binding digest comparison removed",
+        "replacement": "    if False:"
+      },
+      {
+        "anchor": "def provider_authorized(g, r):\n    return nullish(prop(g, \"provider_id\")) or seq(prop(r, \"provider_id\"), prop(g, \"provider_id\"))",
+        "label": "F10 executor authorization (E3) removed",
+        "replacement": "def provider_authorized(g, r):\n    return True"
+      },
+      {
+        "anchor": "    verdict = \"refused\" if refusals else \"accepted\"",
+        "control": true,
+        "control_polarity": "positive",
+        "label": "CONTROL positive: verifier always accepts",
+        "replacement": "    del refusals[:]\n    verdict = \"accepted\""
+      },
+      {
+        "anchor": "    return hashlib.sha256(s.encode(\"utf-8\")).hexdigest()",
+        "control": true,
+        "control_polarity": "inert",
+        "label": "CONTROL inert: equivalent UTF-8 encoding call in sha256hex",
+        "replacement": "    return hashlib.sha256(bytes(s, \"utf-8\")).hexdigest()"
+      }
+    ]
+  },
+  "outcome_from": [
+    "verdict",
+    "refusals",
+    "findings"
+  ],
+  "repo_root": ".",
+  "runner": "process",
+  "schema": "corpus-adequacy.manifest.v0",
+  "vector_path_key": "path",
+  "vector_timeout": 120,
+  "vectors": "vectors.json"
+}

@@ -1,0 +1,151 @@
+{
+  "acknowledged_digests": 0,
+  "adequate": true,
+  "control_status": "killed",
+  "corpus_digest": null,
+  "declared_total": 13,
+  "diagnostic_channel_declared": true,
+  "equivalent": 0,
+  "failures": [],
+  "hole_ratio": 0.0,
+  "killed": 13,
+  "known_holes": 0,
+  "manifest": "/tmp/nenrin-adequacy-xbav6no2/stage_with_proposals/manifest.json",
+  "manifest_sha256": "sha256:48e4a05680b830d21d9e6e5d816bf90fb651951eec18822f38a2c9563a800705",
+  "mutants": [
+    {
+      "group": "provenance",
+      "how": "harness detects a change on this path",
+      "label": "CONTROL positive: verifier always accepts",
+      "moved": 71,
+      "scope": "declared",
+      "verdict": "control-killed"
+    },
+    {
+      "group": "provenance",
+      "how": "pinned outcomes stayed unchanged under a declared inert transformation",
+      "label": "CONTROL inert: equivalent UTF-8 encoding call in sha256hex",
+      "moved": 0,
+      "scope": "declared",
+      "verdict": "control-unchanged"
+    },
+    {
+      "group": "provenance",
+      "how": "2 vector(s) moved",
+      "label": "F1 grant signature check removed",
+      "moved": 2,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "12 vector(s) moved",
+      "label": "F2 receipt signature check removed",
+      "moved": 12,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "1 vector(s) moved",
+      "label": "F3 wrong key accepted at step 2b",
+      "moved": 1,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "2 vector(s) moved",
+      "label": "F4 validity window check removed",
+      "moved": 2,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "1 vector(s) moved",
+      "label": "F4b (refinement of F4) not_after bound ignored",
+      "moved": 1,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "9 vector(s) moved",
+      "label": "F5 action match removed (E1 on the receipt)",
+      "moved": 9,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "1 vector(s) moved",
+      "label": "F6a grant_ref recompute check removed",
+      "moved": 1,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "1 vector(s) moved",
+      "label": "F6b receipt_id recompute check removed",
+      "moved": 1,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "1 vector(s) moved",
+      "label": "F6c receipt.grant_ref binding check removed",
+      "moved": 1,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "1 vector(s) moved",
+      "label": "F7 strict RFC3339 UTC check removed",
+      "moved": 1,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "4 vector(s) moved",
+      "label": "F8 incomplete pair accepted",
+      "moved": 4,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "3 vector(s) moved",
+      "label": "F9 action_binding digest comparison removed",
+      "moved": 3,
+      "scope": "declared",
+      "verdict": "killed"
+    },
+    {
+      "group": "provenance",
+      "how": "1 vector(s) moved",
+      "label": "F10 executor authorization (E3) removed",
+      "moved": 1,
+      "scope": "declared",
+      "verdict": "killed"
+    }
+  ],
+  "originals_unverified_against_head": [],
+  "out_of_scope_ratio": 0.0,
+  "runner": "process",
+  "schema": "corpus-adequacy.report.v0",
+  "score_means": "percent of author-declared in-scope rules killed; NOT percent of the rules the implementation actually has. Silent mutants count in the denominator and never the numerator. Without diagnostic_from the silent class is unreachable, so a zero there means it was not measured, not that none exist",
+  "score_percent": 100.0,
+  "silent": 0,
+  "survived": 0,
+  "tool_commit": "4c075bbe59b4f93107804d9b29fe8bef49a11b57",
+  "tool_content_sha256": "sha256:2843097d6728e86c8b9d0f57b634d97b957652a084fd942637eb970d85f9cb6d",
+  "tool_source_state": "exact",
+  "tool_version": "0.8.0",
+  "unexercised_out_of_scope": 0,
+  "unproved": 0
+}

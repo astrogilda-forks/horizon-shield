@@ -1,0 +1,1008 @@
+{
+  "baseline": {
+    "recorded_reason_mismatches": [],
+    "signature_mismatches": [],
+    "vectors": 93,
+    "vectors_with_recorded_reasons": 6
+  },
+  "controls": [
+    {
+      "anchor": "    verdict = \"refused\" if refusals else \"accepted\"",
+      "control_ok": true,
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_provenance",
+      "id": "CONTROL_POSITIVE",
+      "killing_case_ids": [
+        "interop-v0/equivocation",
+        "interop-v0/forged_signature",
+        "interop-v0/broken_chain",
+        "interop-v0.1/linkage_unpresented",
+        "interop-v0.1/linkage_unreconciled",
+        "interop-v0.1/witness_is_party",
+        "interop-v0.1/task_id_mismatch",
+        "interop-v0.1/task_id_missing",
+        "interop-v0.1/incomplete_pair",
+        "interop-v0.1/provider_sig_invalid",
+        "interop-v0.1/non_utc_timestamp",
+        "interop-v0.1/evidence_malformed",
+        "interop-v0.1/preflight_without_grant",
+        "interop-v0.1/preflight_invalid",
+        "interop-v0.1/preflight_signature_invalid",
+        "interop-v0.2-edge/ts_impossible_day",
+        "interop-v0.2-edge/ts_hour_24",
+        "interop-v0.2-edge/ts_second_60",
+        "interop-v0.2-edge/ts_year_zero",
+        "interop-v0.2-edge/ts_trailing_newline",
+        "interop-v0.2-edge/ts_lowercase_tz",
+        "interop-v0.2-edge/ts_offset",
+        "interop-v0.2-edge/prev_absent_seq0",
+        "interop-v0.2-edge/seq_not_integer",
+        "interop-v0.2-edge/evidence_empty_object",
+        "interop-v0.2-edge/evidence_empty_array",
+        "interop-v0.2-edge/require_signatures_zero",
+        "interop-v0.2-edge/sig_missing_padding",
+        "interop-v0.2-edge/sig_urlsafe_alphabet",
+        "interop-v0.2-edge/sig_whitespace",
+        "interop-v0.2-edge/sig_trailing_newline",
+        "interop-v0.2-edge/sig_noncanonical_trailing_bits",
+        "interop-v0.2-edge/obs_element_not_object",
+        "interop-v0.2-edge/obs_nonobject_with_valid",
+        "interop-v0.2-edge/receipts_element_not_object",
+        "interop-v0.2-edge/receipt_key_not_object",
+        "interop-v0.2-edge/grant_key_not_object",
+        "interop-v0.2-edge/intent_key_not_object",
+        "interop-v0.2-edge/key_identity_small_order",
+        "interop-v0.2-edge/key_identity_noncanonical_signbit",
+        "interop-v0.2-edge/key_order8_small_order",
+        "interop-v0.2-edge/key_mixed_order",
+        "interop-v0.2-action-presence/action_null",
+        "interop-v0.2-action-presence/action_zero",
+        "interop-v0.2-action-presence/action_empty_string",
+        "interop-v0.2-action-presence/action_false",
+        "interop-v0.2-action-presence/intent_action_null",
+        "interop-v0.2-action-presence/intent_action_zero",
+        "interop-v0.2-action-presence/action_missing",
+        "interop-v0.2-action-presence/intent_action_missing",
+        "conformance-v0-pinned/s01_open_grant_null_with_receipt",
+        "conformance-v0-pinned/s01_open_grant_absent_with_receipt",
+        "conformance-v0-pinned/s01_open_grant_intent_only",
+        "conformance-v0-pinned/s02_r1_witness_and_from_missing_nosig",
+        "conformance-v0-pinned/s02_r1_both_null_nosig",
+        "conformance-v0-pinned/s02_r1_witness_and_to_missing_nosig",
+        "conformance-v0-pinned/s03_abind_upper_grant",
+        "conformance-v0-pinned/s03_abind_upper_receipt",
+        "conformance-v0-pinned/s03_abind_upper_intent",
+        "conformance-v0-pinned/s04_window_inverted",
+        "conformance-v0-pinned/s08_evidence_kind_other",
+        "conformance-v0-pinned/s09_link_upper_hex",
+        "conformance-v0-pinned/s10_raction_nfd_vs_nfc"
+      ],
+      "label": "CONTROL positive: verifier always accepts",
+      "polarity": "positive",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    del refusals[:]\n    verdict = \"accepted\"",
+      "rule": "must be killed: every refusal is dropped and the verdict is always accepted",
+      "tool_agrees": true,
+      "tool_how": "harness detects a change on this path",
+      "tool_moved": 63,
+      "tool_verdict": "control-killed",
+      "verdict": "killed"
+    },
+    {
+      "anchor": "    return hashlib.sha256(s.encode(\"utf-8\")).hexdigest()",
+      "control_ok": true,
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "sha256hex",
+      "id": "CONTROL_INERT",
+      "killing_case_ids": [],
+      "label": "CONTROL inert: equivalent UTF-8 encoding call in sha256hex",
+      "polarity": "inert",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    return hashlib.sha256(bytes(s, \"utf-8\")).hexdigest()",
+      "rule": "must move nothing: str.encode(\"utf-8\") and bytes(s, \"utf-8\") give the same bytes, and the line runs on every vector",
+      "tool_agrees": true,
+      "tool_how": "pinned outcomes stayed unchanged under a declared inert transformation",
+      "tool_moved": 0,
+      "tool_verdict": "control-unchanged",
+      "verdict": "survived"
+    }
+  ],
+  "faults": [
+    {
+      "anchor": "    return _verify_detached(prop(g, \"caller_sig\"), pub, lambda: grant_preimage(g))",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_grant_sig",
+      "id": "F1",
+      "killing_case_ids": [],
+      "label": "F1 grant signature check removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    return True",
+      "rule": "VERIFIER.md step 2b: caller_sig verifies under grant.caller_id",
+      "tool_agrees": true,
+      "tool_how": "no vector distinguishes it. An implementation can delete this rule and still reproduce the digest",
+      "tool_moved": 0,
+      "tool_verdict": "survived",
+      "verdict": "survived"
+    },
+    {
+      "anchor": "    return _verify_detached(prop(r, \"provider_sig\"), pub, lambda: receipt_preimage(r))",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_receipt_sig",
+      "id": "F2",
+      "killing_case_ids": [
+        "interop-v0.1/linkage_unreconciled",
+        "interop-v0.1/provider_sig_invalid",
+        "interop-v0.2-edge/require_signatures_zero",
+        "interop-v0.2-edge/sig_missing_padding",
+        "interop-v0.2-edge/sig_urlsafe_alphabet",
+        "interop-v0.2-edge/sig_whitespace",
+        "interop-v0.2-edge/sig_trailing_newline",
+        "interop-v0.2-edge/sig_noncanonical_trailing_bits",
+        "interop-v0.2-edge/key_identity_small_order",
+        "interop-v0.2-edge/key_identity_noncanonical_signbit",
+        "interop-v0.2-edge/key_order8_small_order",
+        "interop-v0.2-edge/key_mixed_order"
+      ],
+      "label": "F2 receipt signature check removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    return True",
+      "rule": "VERIFIER.md step 2b and 2d: provider_sig verifies under the receipt's provider_id (2b) and under grant.provider_id (2d)",
+      "tool_agrees": true,
+      "tool_how": "12 vector(s) moved",
+      "tool_moved": 12,
+      "tool_verdict": "killed",
+      "verdict": "killed"
+    },
+    {
+      "anchor": "    if not verify_grant_sig(g, resolve(prop(g, \"caller_id\"))):\n        return {\"ok\": False, \"reason\": \"caller_sig_invalid\"}\n    if not verify_receipt_sig(r, resolve(prop(r, \"provider_id\"))):",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_signed_execution",
+      "id": "F3",
+      "killing_case_ids": [],
+      "label": "F3 wrong key accepted at step 2b",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    keys = [resolve(prop(g, \"caller_id\")), resolve(prop(g, \"provider_id\")), resolve(prop(r, \"provider_id\"))]\n    if not any(verify_grant_sig(g, k) for k in keys):\n        return {\"ok\": False, \"reason\": \"caller_sig_invalid\"}\n    if not any(verify_receipt_sig(r, k) for k in keys):",
+      "rule": "VERIFIER.md step 2b: caller_sig verifies under the key of grant.caller_id and provider_sig under the key of receipt.provider_id. NENRIN identities are did:key, so the key is resolved from the named signer; there is no separate kid. The fault is trial verification: a signature is accepted if it verifies under the key of any party of the pair, not the key of the party the record names.",
+      "tool_agrees": true,
+      "tool_how": "no vector distinguishes it. An implementation can delete this rule and still reproduce the digest",
+      "tool_moved": 0,
+      "tool_verdict": "survived",
+      "verdict": "survived"
+    },
+    {
+      "anchor": "def _in_window(g, t_str):\n    t = date_parse(t_str)",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "_in_window",
+      "id": "F4",
+      "killing_case_ids": [
+        "conformance-v0-pinned/s04_window_inverted"
+      ],
+      "label": "F4 validity window check removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "def _in_window(g, t_str):\n    return True\n    t = date_parse(t_str)",
+      "rule": "VERIFIER.md step 2a and step 3: executed_at (declared_at) is inside [not_before, not_after] (outside_authorization_window)",
+      "tool_agrees": true,
+      "tool_how": "1 vector(s) moved",
+      "tool_moved": 1,
+      "tool_verdict": "killed",
+      "verdict": "killed"
+    },
+    {
+      "anchor": "        if v is None or t > v:",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "_in_window",
+      "id": "F4b",
+      "killing_case_ids": [],
+      "label": "F4b (refinement of F4) not_after bound ignored",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "        if v is None:",
+      "rule": "VERIFIER.md step 2a and step 3: the instant is not after not_after. Added because F4 is killed by one vector only, which tests the not_before side; this asks whether the corpora test the other side.",
+      "tool_agrees": true,
+      "tool_how": "no vector distinguishes it. An implementation can delete this rule and still reproduce the digest",
+      "tool_moved": 0,
+      "tool_verdict": "survived",
+      "verdict": "survived"
+    },
+    {
+      "anchor": "    if not actions_equal(prop(g, \"action\"), prop(r, \"executed_action\")):",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_execution",
+      "id": "F5",
+      "killing_case_ids": [
+        "interop-v0.2-action-presence/action_null",
+        "interop-v0.2-action-presence/action_zero",
+        "interop-v0.2-action-presence/action_empty_string",
+        "interop-v0.2-action-presence/action_false",
+        "interop-v0.2-action-presence/intent_action_null",
+        "interop-v0.2-action-presence/intent_action_zero",
+        "interop-v0.2-action-presence/action_missing",
+        "interop-v0.2-action-presence/intent_action_missing",
+        "conformance-v0-pinned/s10_raction_nfd_vs_nfc"
+      ],
+      "label": "F5 action match removed (E1 on the receipt)",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    if False:",
+      "rule": "VERIFIER.md step 2a E1: canonical(grant.action) equals canonical(receipt.executed_action) (action_diverged)",
+      "tool_agrees": true,
+      "tool_how": "9 vector(s) moved",
+      "tool_moved": 9,
+      "tool_verdict": "killed",
+      "verdict": "killed"
+    },
+    {
+      "anchor": "def verify_execution(g, r):\n    findings = []\n    if not grant_recompute_ok(g):",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_execution",
+      "id": "F6a",
+      "killing_case_ids": [],
+      "label": "F6a grant_ref recompute check removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "def verify_execution(g, r):\n    findings = []\n    if False:",
+      "rule": "VERIFIER.md step 2a: grant_ref recomputes (grant_recompute_mismatch)",
+      "tool_agrees": true,
+      "tool_how": "no vector distinguishes it. An implementation can delete this rule and still reproduce the digest",
+      "tool_moved": 0,
+      "tool_verdict": "survived",
+      "verdict": "survived"
+    },
+    {
+      "anchor": "    if not receipt_recompute_ok(r):",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_execution",
+      "id": "F6b",
+      "killing_case_ids": [],
+      "label": "F6b receipt_id recompute check removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    if False:",
+      "rule": "VERIFIER.md step 2a: receipt_id recomputes (receipt_recompute_mismatch)",
+      "tool_agrees": true,
+      "tool_how": "no vector distinguishes it. An implementation can delete this rule and still reproduce the digest",
+      "tool_moved": 0,
+      "tool_verdict": "survived",
+      "verdict": "survived"
+    },
+    {
+      "anchor": "    if not receipt_binds_grant(g, r):",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_execution",
+      "id": "F6c",
+      "killing_case_ids": [],
+      "label": "F6c receipt.grant_ref binding check removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    if False:",
+      "rule": "VERIFIER.md step 2a: receipt.grant_ref equals the recomputed grant_ref (receipt_unbound)",
+      "tool_agrees": true,
+      "tool_how": "no vector distinguishes it. An implementation can delete this rule and still reproduce the digest",
+      "tool_moved": 0,
+      "tool_verdict": "survived",
+      "verdict": "survived"
+    },
+    {
+      "anchor": "def _timestamps_ok(g, t):\n    if not is_rfc3339_utc(t):",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "_timestamps_ok",
+      "id": "F7",
+      "killing_case_ids": [],
+      "label": "F7 strict RFC3339 UTC check removed",
+      "reason_only_moves": [
+        "interop-v0.1/non_utc_timestamp",
+        "interop-v0.2-edge/ts_impossible_day",
+        "interop-v0.2-edge/ts_hour_24",
+        "interop-v0.2-edge/ts_second_60",
+        "interop-v0.2-edge/ts_year_zero",
+        "interop-v0.2-edge/ts_trailing_newline",
+        "interop-v0.2-edge/ts_lowercase_tz",
+        "interop-v0.2-edge/ts_offset"
+      ],
+      "recorded_reason_moves": [
+        "interop-v0.1/non_utc_timestamp"
+      ],
+      "replacement": "def _timestamps_ok(g, t):\n    return True\n    if not is_rfc3339_utc(t):",
+      "rule": "VERIFIER.md step 2a and step 3, section 5: executed_at / declared_at / not_before / not_after are strict RFC3339 UTC instants on a real calendar day (invalid_timestamp)",
+      "tool_agrees": true,
+      "tool_how": "no vector's declared outcome distinguishes it, but 8 vector(s) moved on the declared diagnostic channel. An implementation can delete this rule and still reproduce every pinned outcome; only a consumer comparing diagnostics would notice",
+      "tool_moved": 0,
+      "tool_verdict": "silent",
+      "verdict": "silent"
+    },
+    {
+      "anchor": "        refuse(\"execution_incomplete_pair\", \"a grant and at least one receipt are both required to verify execution\")",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "verify_provenance",
+      "id": "F8",
+      "killing_case_ids": [
+        "interop-v0.1/incomplete_pair",
+        "interop-v0.2-edge/receipts_element_not_object",
+        "interop-v0.2-edge/grant_key_not_object",
+        "conformance-v0-pinned/s01_open_grant_intent_only"
+      ],
+      "label": "F8 incomplete pair accepted",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "        pass",
+      "rule": "VERIFIER.md step 2: a grant with an empty receipt set, or receipts with no grant, is refusal execution_incomplete_pair",
+      "tool_agrees": true,
+      "tool_how": "4 vector(s) moved",
+      "tool_moved": 4,
+      "tool_verdict": "killed",
+      "verdict": "killed"
+    },
+    {
+      "anchor": "    if nullish(prop(rec, key)) or prop(d, \"value\") != action_digest(prop(rec, key)):",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "check_action_binding",
+      "id": "F9",
+      "killing_case_ids": [
+        "conformance-v0-pinned/s03_abind_upper_grant",
+        "conformance-v0-pinned/s03_abind_upper_receipt",
+        "conformance-v0-pinned/s03_abind_upper_intent"
+      ],
+      "label": "F9 action_binding digest comparison removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "    if False:",
+      "rule": "VERIFIER.md section 2 (AB): an action_binding, when carried, must recompute: digest.value equals sha256(canonical(action)) (action_binding_mismatch). args_sha256 has no comparison of its own: it is a member of the action and is compared only inside E1 (F5) and inside this digest.",
+      "tool_agrees": true,
+      "tool_how": "3 vector(s) moved",
+      "tool_moved": 3,
+      "tool_verdict": "killed",
+      "verdict": "killed"
+    },
+    {
+      "anchor": "def provider_authorized(g, r):\n    return nullish(prop(g, \"provider_id\")) or seq(prop(r, \"provider_id\"), prop(g, \"provider_id\"))",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "function": "provider_authorized",
+      "id": "F10",
+      "killing_case_ids": [],
+      "label": "F10 executor authorization (E3) removed",
+      "reason_only_moves": [],
+      "recorded_reason_moves": [],
+      "replacement": "def provider_authorized(g, r):\n    return True",
+      "rule": "VERIFIER.md step 2a and step 3: grant.provider_id is null or equals receipt.provider_id / intent.provider_id (provider_not_authorized). Chosen because it is the rule that a receipt comes from the executor the caller authorized, and a validly signed receipt from a different provider is the attack it stops.",
+      "tool_agrees": true,
+      "tool_how": "no vector distinguishes it. An implementation can delete this rule and still reproduce the digest",
+      "tool_moved": 0,
+      "tool_verdict": "survived",
+      "verdict": "survived"
+    }
+  ],
+  "js_probe_F7": {
+    "anchor": "  if (!isRfc3339Utc(r.executed_at) || (g.not_before != null && !isRfc3339Utc(g.not_before)) || (g.not_after != null && !isRfc3339Utc(g.not_after)))\n    return { ok: false, reason: \"invalid_timestamp\", findings };",
+    "checker": "workers/hs-ledger/nenrin/sdk/nenrin_verify.mjs",
+    "checker_sha256": "5c64fa053ce96c12f572b09191e3fa56c4c4fde2b93efbce3745cb4cc8e3d2f9",
+    "function": "verifyExecution (step 2a)",
+    "killing_case_ids": [
+      "interop-v0.1/non_utc_timestamp",
+      "interop-v0.2-edge/ts_lowercase_tz",
+      "interop-v0.2-edge/ts_offset"
+    ],
+    "note": "applied to the execution check only; the preflight check (step 3) is left strict",
+    "replacement": "  if (false) return { ok: false, reason: \"invalid_timestamp\", findings };",
+    "verdict": "killed"
+  },
+  "measured": "mutation adequacy of the frozen NENRIN provenance corpora against the Python port",
+  "outcome_definition": {
+    "diagnostic": "sorted set of refusal reasons (and the status of execution_unreconciled); not part of the signature. interop-v0.1 records, for readers, the reason of the refusal 6 of its cases are about (checked as a subset); no corpus makes reasons normative",
+    "killed": "at least one vector's outcome differs from its expected signature",
+    "outcome": "verdict signature of VERIFIER.md section 4: verdict, sorted set of refusal codes, sorted set of finding codes",
+    "silent": "no outcome differs, but at least one refusal reason moved (corpus-adequacy's silent class): the corpora cannot see the fault in their pinned outcomes",
+    "survived": "nothing moved"
+  },
+  "pins": {
+    "checker": {
+      "adapter": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/verdict_signature.py",
+      "adapter_sha256": "f69c70c70da3cd5c353ef27590d9fec07f48534e5a1f32f2fc3f75dd8e7d2480",
+      "file": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/provenance.py",
+      "identical_to_repo_commit": true,
+      "package_tree": "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify",
+      "package_tree_files": 225,
+      "package_tree_sha256": "3020f258b4ec6382e454781a82b5fdd6ebe4a28a32b7795752a848eb16c97ff1",
+      "sha256": "9bcf6dfd0c534124c955b507eecc32ba14dbac2e59ce47a257cc2c54d473bb8b"
+    },
+    "corpus_files_sha256sum": [
+      "0000062d964fccd010f165d505ad141c2d542c7b5a692c625d02dc23c7f46705  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/evidence_zero.json",
+      "0378cdf046dbd2062f78752581f6e635ed3c8452e2d72fdf9ecd85f8d157fc25  workers/hs-ledger/nenrin/interop-v0/fixtures/disagreement.json",
+      "0971e27bdda4efb8c9baf180ba188c5353f0bb5bed0bea2675b5864bfa08c478  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_real_day_ok.json",
+      "0bf1c44dfaad81eaf0084014dabf10a89bc134c832cec2d2bafb0c2041d9d0c1  workers/hs-ledger/nenrin/interop-v0/expected.json",
+      "10167f982bfe2be8479138ce249d3ef02dd3a28d7b6559b03b0cd9051cf5bb2e  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_lowercase_tz.json",
+      "1181f638389149d4b389275d05974e7730cee043ac6402b91a25bb63aeaea451  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_false.json",
+      "13450d2d810a45acd8418ad1c29038c958bd3aa0933b7dec2a4e57efcbe009ed  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_fraction_truncation_ok.json",
+      "1962844e58e3a0800ef866a3c0fd9aed3b940f9304e7acc92bb5a48fd040aae0  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/receipts_element_not_object.json",
+      "1a6cc48994f32ff3f9099aeb57d7fd597c03744beaad84eeef5175b0539c7572  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s02_r1_witness_and_to_missing_nosig.json",
+      "1c3ecf8dd6b439788cdda0b76d532fa05a6cb84d8ba17c8a85dfc8a1347720ce  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_empty_string.json",
+      "1cdcd792a2316d8bef250b125414c0ee19a77f0ba90e2e4824f6622b5ba3f28e  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/intent_key_not_object.json",
+      "1ec11ba9a5268f2e41b3174643f191b92a951a5cacceec5a617505648d439ad4  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/receipt_key_not_object.json",
+      "1f7876d29bf24c2db3e19f3fdc86fa0ef2ab5b59b53212c9b95b5dfff0e8b3b2  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/require_signatures_zero.json",
+      "20bff0541aff14cd09c3977aed74aa9d5340e6a2c3f5f6c83212be61ba9e1762  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s07_outcome_array.json",
+      "21c4ccf76f1034aaa5b66940de52b70b85ebf24629ef0fa13ade099e2c7500e6  workers/hs-ledger/nenrin/interop-v0/fixtures/broken_chain.json",
+      "2691b8a4ca243618649109d9ef070f868e4210f959b9177ae35e444c05c7a44c  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_empty_object_accepted.json",
+      "2731024ffae2ee66819a8c06b67bbb3b32239ccb220a7d42913681c2c5468353  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/sig_whitespace.json",
+      "2f8f57797c365eb8d365c905d968fbb3d2b1a1e790882afb2d3ea4aa3ebe812e  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s03_abind_upper_receipt.json",
+      "36d3cc8df7ab1e01e2ae88afdebb1926af6cd09a6d00c5327f2fb22db28121b0  workers/hs-ledger/nenrin/interop-v0.1/fixtures/preflight_invalid.json",
+      "37ef55b32905b3c9bcaf730c4b56573dc563ef845427fc4a953931d7a82d12ea  workers/hs-ledger/nenrin/interop-v0.1/fixtures/linkage_unreconciled.json",
+      "3ae1e24df359e1fafbdf8a876214c11764612cc14e58177060cb542ab9fde88f  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s09_link_upper_prefix.json",
+      "3dc37e19af830e5d8515ff9239feddcef4309331a92a364944e3ce508ea8d311  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/key_mixed_order.json",
+      "3eccc5ce75d106bf8dbf3c10ef32e19cb5788cf3040976136cc8190bb87c8671  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s06_obs_reversed.json",
+      "3f27a1a14ce696c3e4b63923b583bafeece088b20b5a12be52923b5f056bd873  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s03_abind_lower_grant.json",
+      "4122bcff2e99684d0b2c9b5a0f7630dc858ca8c95c75f972196fc6cc2b2d4dba  workers/hs-ledger/nenrin/interop-v0.1/fixtures/task_id_missing.json",
+      "42d0703724e40709be3fa5d4444b95642cd581333a61f540fd294e499568470b  workers/hs-ledger/nenrin/conformance-v0/pinned/expected.json",
+      "44f3051cd753eae12211852c8eb6a5712d8358b56b9776b7eb72b51e5e58dab0  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/grant_key_not_object.json",
+      "4571b7f45f5983d5291e6ccde3e699627d383c0a8524675b3f145176b72a90e5  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/intent_action_zero.json",
+      "4aea366619c362a5fcc8752c2aa225e48e02b840fe3b94329dd4b00cf809f7df  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s02_r1_witness_missing_from_null_nosig.json",
+      "4b2ca2a2172c1bc91c201f9b03ed4e4b8aaf0014bb76555217351c7ea51c996b  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s01_open_grant_intent_only.json",
+      "4e66640856fa6de9dbe9d680248132af6b6aa024b5ea7018113ade1e55369eca  workers/hs-ledger/nenrin/interop-v0.1/expected.json",
+      "508a5a7dfcd723def19fea44cb0f347b2dbfb89d041df70fa7890456de5a46e2  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_hour_24.json",
+      "538895545e1fecbdbe148d850b6778b2c40458731a600fa2bce9e175453f7b78  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s12_r4_int_vs_string.json",
+      "597d3e84865e7bde1bf210a5bf8a9dbcc8cc5b44735c86f526873f8c2e293276  workers/hs-ledger/nenrin/interop-v0.1/fixtures/preflight_without_grant.json",
+      "59990a03a1557210ba1b0977aba6b867dc45aa39ff99593c1f938ce727d62a1e  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s10_raction_nfd_vs_nfc.json",
+      "5a4de1f70ee30e9c638ae3b9287ae2b75e43e86770dbe28769fc5db096748173  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s07_outcome_string.json",
+      "5b56ee8cf65cc996d234d5feeee01c31e68461785bab2627fb0b753ac9c0b3f7  workers/hs-ledger/nenrin/interop-v0.2/action-presence/expected.json",
+      "5eea2f89a228f47be32e7a1010192ded714f5375c3b8a79a53f7822a927c7434  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s12_r4_missing_vs_null.json",
+      "60f0119aaa6c6bd09b885f9a27be417ac1e5af7cf329cc0088ca93c02f704524  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s02_r1_witness_and_from_missing_nosig.json",
+      "625ede7f87585f69f5e8cdb2a249b3569be27974dcbf9f44aa542eaee108fda2  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s12_r4_both_missing.json",
+      "630c7b79599978419a1f8ab495a007e8d026663d284a5b8903ee09f8a1cac9bd  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_missing.json",
+      "678549aa141c582e38643bb6a6afe9999eb6440b5902cfc45446ca4156bb9684  workers/hs-ledger/nenrin/interop-v0.1/fixtures/non_utc_timestamp.json",
+      "7084486c457fd7e1af3807ce28924aa17ca34583f9404c2fccdfee5fb0be43cf  workers/hs-ledger/nenrin/interop-v0/fixtures/forged_signature.json",
+      "71658461cc7267e6990322386099d1b903096341b1d77b94109e50785306b782  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s12_r4_missing_vs_pass.json",
+      "7891e4bc68ddfa742b875847e040c1f6a126f307f26dbc8f28b29f98c9170102  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_second_60.json",
+      "7b1477733d273698d51b29ec5336f7fa5e0eead59520bc0befe8318690dd3a0c  workers/hs-ledger/nenrin/interop-v0.1/fixtures/evidence_malformed.json",
+      "7c0db53b5a645411ed00a5c3bb67eefb1fa6ed021011a3bd10c2953ec8e8b963  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/key_identity_noncanonical_signbit.json",
+      "81bd6b76d2cf43dd17de6387461d818340ff5eec390336a992a351fb93de50c6  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/intent_action_null.json",
+      "86ed3ce30ea8ef90aaf6f314c3905a3a8dc4dc3236855142c1cd72817eff1429  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s01_open_grant_absent_with_receipt.json",
+      "88a6765f6fea6af0183bb724b82adda71070046b56acf98d7289b7d9a061d7fa  workers/hs-ledger/nenrin/interop-v0/fixtures/pass.json",
+      "89c704067b2a883cbb84f7bf20800c2c62fe18a52e913aab8f1b2ced57485730  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/sig_urlsafe_alphabet.json",
+      "92980f80ab962e7b7eb152995cb0f3d661ffb106c748fcafd4463076a46c9598  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/unknown_bundle_keys.json",
+      "963b1ddf336285c5d8fdf468304b6e5ce693afac1159befbe16d98818fcfd5b5  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_trailing_newline.json",
+      "9837f58c998b40ce3c7422d5068990d596009a52dc78471b433abad149c07704  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s03_abind_upper_grant.json",
+      "98a192d4ed16bbc2768e6eafd2259e5975d1e57653725ddfa614775d8144a69e  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/sig_missing_padding.json",
+      "9b899975ae5514a6f83046ef4efb1c7e144600f09cacf182e61307c06a3caa0c  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/evidence_empty_object.json",
+      "9c553769a30e705ce8676b6d7bbdf875507b0c237762f3325ea949fc1b301074  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/sig_canonical_ok.json",
+      "9e747b76d352c321a63e95ea7eb72dda88b081c81fdfc8bd1aa03c203f0eeef9  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s06_obs_duplicate_h0.json",
+      "a2af81f26fd22b84761d0e988e559526553b7f036263e5882a647d9b5d2a83b9  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/obs_element_not_object.json",
+      "a2c933a66a5a4228ca634d0340cea58a05933bbb4b7a40b55e4c937ced3f0b8d  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_null.json",
+      "a829e6ab39906843d7d7963ee3c3140109fdcfac03007479a5994469395898ef  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/obs_nonobject_with_valid.json",
+      "a99e2d15113f1d053dd2de5db5c622cf952ff9517d0768acbeaf087e230c8ff7  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/intent_action_missing.json",
+      "a9de8922441ab62e8ca8abe9d6fd8b38e57c6a9506d655826a15849c8e3a7b52  workers/hs-ledger/nenrin/interop-v0.1/fixtures/provider_sig_invalid.json",
+      "ab55ba0a6fffb1745358ccef458412169604a7d2fdc170390f91b716b0879e35  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s12_r4_object_vs_object.json",
+      "ac95dd41edfb9eef703858f15ce646bd3189e2509613f4aa316de2517d9f74e7  workers/hs-ledger/nenrin/interop-v0.1/fixtures/self_authorized.json",
+      "ae1689d148a0d7a5dfd41ced391f77c2bf931a4aa75208de07ef615e7ad42981  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/outcome_not_object.json",
+      "b05dfb3016c786b2bd0787808b7ec8e2c55ce85ebd52edf10df24210a9627416  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/seq_not_integer.json",
+      "b2fea4641c8be73400aeda8b130bb42372046eaa21e6db224907200a6db58292  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/sig_trailing_newline.json",
+      "b8752b244754d7cea2604721beddc12f10852532609267a7e0f11f33e07f64d9  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/prev_absent_seq0.json",
+      "ba6a99bad021d7d70b8f6bf16d18eb742dc7e5b31182e3f0696f4ee426e39b82  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/sig_noncanonical_trailing_bits.json",
+      "bab5a50b5a1617b68dcbcb53a5adf3081cbb364e3b63acda14467aa740263844  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s12_r4_int_vs_int.json",
+      "bb5015b14a8098a8679f9265fc740c38bebfaa14c149db8ff6b9edfe098f6b9c  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s00_base.json",
+      "bd0503f80b2f51d80d36714a22fd3a23c7b2484390c53d5e6f85c92adc1b7a88  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/key_order8_small_order.json",
+      "be123b1e0adc23ac8c0933f75a7280ffc0c7dc74945785f4de0bb92825a17a5f  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s12_r4_null_vs_null.json",
+      "becee766af7a5619aecadc277056df07e5bca48877b092a0ee63feda7669ee49  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s01_open_grant_null_with_receipt.json",
+      "c049cacd44de3c6675fa67de6158937e54acb717c9c7de95e4abf535eeb4c1a6  workers/hs-ledger/nenrin/interop-v0.1/fixtures/preflight_signature_invalid.json",
+      "c541ccb7afcaa23a0a3f4eb2800c085adba97aa109073a00cc4322f3274664d4  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/evidence_empty_array.json",
+      "c602d85846c68172f7227cee39f7f70fb25e53bcbfed7ba577fe9dd0e6ca8603  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/key_identity_small_order.json",
+      "c938622b711df322060da3190e3d8adb60d87ad2df83756828d00ac3ac8ccbf9  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s04_window_inverted.json",
+      "ca7095fd071df18384f2b36978a4c2d6779a959ed31550a7e147c5015f68fcd8  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/require_signatures_false.json",
+      "ccdbe0cff1104be7b1dcc047e08e9825c65065d0294ad3c9c6665900e651bec5  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s03_abind_upper_intent.json",
+      "d2a794d9135f31065cb8a43bc2047a709e9104b01a01a81b9c5b5524a181833c  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_offset.json",
+      "d2bd625090fadec50c868dff5187b6e9a06fb6fd5398b5d0e92764359af1bc27  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_impossible_day.json",
+      "d375764b24fca57b72cec1fc91c62105f8572bae30bbe2a0d3e50fd78e3f9255  workers/hs-ledger/nenrin/interop-v0.2/action-presence/fixtures/action_zero.json",
+      "d48d868ddef57136dfba1af6394bb17f2750b9bd5852d30cc45b42d0dfd1433e  workers/hs-ledger/nenrin/interop-v0.1/fixtures/linkage_unpresented.json",
+      "d8ab8c47a292c1700c0a6832131e6006e2e267b6f5b996b68a511607bb15b7e4  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s05_intent_declared_after_exec.json",
+      "da9d44e7b0511633b9052a5e947a94a03d556a88f02c1fa29656bebac1a992dd  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s09_link_upper_hex.json",
+      "de185233380c282c1077531fb469dd8ad15cfc8173f9c60b63ec513fc312b2b5  workers/hs-ledger/nenrin/interop-v0/fixtures/equivocation.json",
+      "e1361c723a9cfd5d24d19eb3247e2420b95a57f5cc7b5753b66b54791458f2ce  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/verdict_missing_is_distinct.json",
+      "e3d6585d768b996ccf4016849e8058eca9b9184ef1b144d9794042affc02740a  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s08_evidence_kind_other.json",
+      "e5741d94ff631b824e389c13fa4d042dede65f4ff4a595a73961f67527062682  workers/hs-ledger/nenrin/interop-v0.2/edge/expected.json",
+      "ec02249c69d71ab90ff7ee907645c62848308b53dd0496813987a5358a7eb4c8  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s02_r1_both_null_nosig.json",
+      "f1934bc10148b9400c319892e730419c2e8061ede163ccda714b2b223881df95  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/seq_duplicate_same_verdict.json",
+      "f3e36a3fdd870e5edfeea6441bed61aabab2f7551247d546a14da9870d8830c6  workers/hs-ledger/nenrin/interop-v0.2/edge/fixtures/ts_year_zero.json",
+      "f5964de8950c82c33165e6ea739ee6760ec7f49b36d3659373c5b0b8259d559c  workers/hs-ledger/nenrin/interop-v0.1/fixtures/witness_is_party.json",
+      "f9f964c802bcc246b5779d9e139e8910d0427e9c132bbaa8c000c87665068b2f  workers/hs-ledger/nenrin/interop-v0.1/fixtures/incomplete_pair.json",
+      "fbf8985ddfa9dbbc7058ea4ae6c58e3003e2b1a0507e0961bb3ec83c4350b617  workers/hs-ledger/nenrin/conformance-v0/pinned/fixtures/s04_window_zero_width.json",
+      "ff037e0bb910052426116a5ff129a079886baf2c907030976bfa2b5e9d4b20aa  workers/hs-ledger/nenrin/interop-v0.1/fixtures/task_id_mismatch.json"
+    ],
+    "cryptography": "46.0.7",
+    "mutations_file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/mutations.json",
+    "mutations_sha256": "b3a37e7c01941b5931beb68f70d8d644a50309f2a587b3bb3ccb9b18df5998c5",
+    "python": "3.11.15",
+    "repo_commit": "ff59188726319b8a3c00ff8cbf3892ffa1589bdd",
+    "repository": "github.com/ogasurfproject-jpg/horizon-shield",
+    "tool_manifest": {
+      "file": "corpus_adequacy.manifest.json",
+      "sha256": "48e4a05680b830d21d9e6e5d816bf90fb651951eec18822f38a2c9563a800705"
+    },
+    "tsunagi_corpora": {
+      "corpora": {
+        "nenrin-interop-v0": {
+          "expected_sha256_matches": true,
+          "fixtures_match": true
+        },
+        "nenrin-interop-v0.1": {
+          "expected_sha256_matches": true,
+          "fixtures_match": true
+        },
+        "nenrin-interop-v0.2-action-presence": {
+          "expected_sha256_matches": true,
+          "fixtures_match": true
+        },
+        "nenrin-interop-v0.2-edge": {
+          "expected_sha256_matches": true,
+          "fixtures_match": true
+        }
+      },
+      "file": "workers/hs-ledger/nenrin/sdk/tsunagi_corpora.json",
+      "ok": true,
+      "sha256": "a7b7e2fbb2b1d70a7e14c637baca7f41fdbcc345b5243279a9593765da83363c"
+    },
+    "vectors": 93,
+    "vectors_per_corpus": {
+      "conformance-v0-pinned": 30,
+      "interop-v0": 5,
+      "interop-v0.1": 13,
+      "interop-v0.2-action-presence": 9,
+      "interop-v0.2-edge": 36
+    }
+  },
+  "proposed_vectors": {
+    "all_verified": true,
+    "expected_file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/expected.json",
+    "expected_sha256": "b5627cecf4c9034ee0dcd6001173258dfff97a65c19fda36bafa50b023940de4",
+    "status": "PROPOSAL: not part of any frozen corpus (not interop-v0*, not conformance-v0/pinned); written by the adequacy-v0 measurement to show what would kill each surviving fault",
+    "tool_run_with_frozen_corpora": {
+      "adequate": true,
+      "control_status": "killed",
+      "exit": 0,
+      "killed": 13,
+      "report_file": "tool_report_with_proposals.v0.json",
+      "report_sha256": "b09330832ef5fe2b260db2e92eecbeeeb0a24c11e34484e119dca499e69982ad",
+      "rows": {
+        "CONTROL inert: equivalent UTF-8 encoding call in sha256hex": {
+          "moved": 0,
+          "verdict": "control-unchanged"
+        },
+        "CONTROL positive: verifier always accepts": {
+          "moved": 71,
+          "verdict": "control-killed"
+        },
+        "F1 grant signature check removed": {
+          "moved": 2,
+          "verdict": "killed"
+        },
+        "F10 executor authorization (E3) removed": {
+          "moved": 1,
+          "verdict": "killed"
+        },
+        "F2 receipt signature check removed": {
+          "moved": 12,
+          "verdict": "killed"
+        },
+        "F3 wrong key accepted at step 2b": {
+          "moved": 1,
+          "verdict": "killed"
+        },
+        "F4 validity window check removed": {
+          "moved": 2,
+          "verdict": "killed"
+        },
+        "F4b (refinement of F4) not_after bound ignored": {
+          "moved": 1,
+          "verdict": "killed"
+        },
+        "F5 action match removed (E1 on the receipt)": {
+          "moved": 9,
+          "verdict": "killed"
+        },
+        "F6a grant_ref recompute check removed": {
+          "moved": 1,
+          "verdict": "killed"
+        },
+        "F6b receipt_id recompute check removed": {
+          "moved": 1,
+          "verdict": "killed"
+        },
+        "F6c receipt.grant_ref binding check removed": {
+          "moved": 1,
+          "verdict": "killed"
+        },
+        "F7 strict RFC3339 UTC check removed": {
+          "moved": 1,
+          "verdict": "killed"
+        },
+        "F8 incomplete pair accepted": {
+          "moved": 4,
+          "verdict": "killed"
+        },
+        "F9 action_binding digest comparison removed": {
+          "moved": 3,
+          "verdict": "killed"
+        }
+      },
+      "score_percent": 100.0,
+      "silent": 0,
+      "survived": 0,
+      "unproved": 0,
+      "vectors": 102
+    },
+    "vectors": {
+      "p00_base": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "",
+          "verdict": "accepted"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p00_base.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "",
+          "verdict": "accepted"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [],
+        "kills_every_target": true,
+        "outcome_under_targets": {},
+        "sha256": "e71cc704e85ea35f07fecef964ad1f5ae129ad800ea2c5f7a4277a9368a49d90",
+        "targets": [],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "",
+          "verdict": "accepted"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p01_caller_sig_bit_flipped": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_signature_invalid",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p01_caller_sig_bit_flipped.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_signature_invalid",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F1"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F1": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "",
+            "verdict": "accepted"
+          }
+        },
+        "sha256": "d1a2a5518a33658005bb4cd2ad9060478043963430d6932c2c7a3a83e2702a56",
+        "targets": [
+          "F1"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_signature_invalid",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p02_grant_signed_by_provider_key": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_signature_invalid",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p02_grant_signed_by_provider_key.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_signature_invalid",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F1",
+          "F3"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F1": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "",
+            "verdict": "accepted"
+          },
+          "F3": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "",
+            "verdict": "accepted"
+          }
+        },
+        "sha256": "b95edcf17b4fbabd911b85a43d53f5f922e7a2af829e529fa7ccc2dc7a990a07",
+        "targets": [
+          "F1",
+          "F3"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_signature_invalid",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p03_grant_ref_not_recomputing": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p03_grant_ref_not_recomputing.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F6a"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F6a": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "execution_unreconciled",
+            "verdict": "refused"
+          }
+        },
+        "sha256": "42c26ace16ac3e2011e5d6db762f3d19b1fbac88a645d59fb82b8f2c136805ad",
+        "targets": [
+          "F6a"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p04_receipt_id_not_recomputing": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p04_receipt_id_not_recomputing.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F6b"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F6b": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "execution_unreconciled",
+            "verdict": "refused"
+          }
+        },
+        "sha256": "6723a55dda91d2b909ea861ac268b27bee699dfc327e8b3013ee9d5c29963480",
+        "targets": [
+          "F6b"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p05_receipt_names_other_grant": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p05_receipt_names_other_grant.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F6c"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F6c": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "execution_unreconciled",
+            "verdict": "refused"
+          }
+        },
+        "sha256": "98568a4622a1a219af754e13182337cd9441639465d0bc9276e0d4dc03a1de96",
+        "targets": [
+          "F6c"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p06_hour_24_inside_window": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p06_hour_24_inside_window.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F7"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F7": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "",
+            "verdict": "accepted"
+          }
+        },
+        "sha256": "597666a86f9a07ca5d6cb28284505e5dfb9dec745c7fa8c2e90ffb1de455e06a",
+        "targets": [
+          "F7"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p07_executed_after_not_after": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p07_executed_after_not_after.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F4",
+          "F4b"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F4": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "",
+            "verdict": "accepted"
+          },
+          "F4b": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "",
+            "verdict": "accepted"
+          }
+        },
+        "sha256": "4cce6e05a681d9aa274e9c0295d07eea1d4842297b61eeb36e859bd22625300a",
+        "targets": [
+          "F4",
+          "F4b"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      },
+      "p08_receipt_from_unauthorized_provider": {
+        "expect": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "file": "workers/hs-ledger/nenrin/conformance-v0/adequacy-v0/proposed_vectors/fixtures/p08_receipt_from_unauthorized_provider.json",
+        "js_reference": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "js_reference_matches_expect": true,
+        "kills": [
+          "F10"
+        ],
+        "kills_every_target": true,
+        "outcome_under_targets": {
+          "F10": {
+            "findings": "evidence_bound_unchecked,no_delegation_observations",
+            "refusals": "execution_unreconciled",
+            "verdict": "refused"
+          }
+        },
+        "sha256": "b76952bf3dded1f286a773d64b54e0c43ea2edaba118a33058b8ee9fe1c8a104",
+        "targets": [
+          "F10"
+        ],
+        "unmutated_python": {
+          "findings": "evidence_bound_unchecked,no_delegation_observations",
+          "refusals": "execution_invalid,execution_unreconciled",
+          "verdict": "refused"
+        },
+        "unmutated_python_matches_expect": true
+      }
+    }
+  },
+  "schema": "nenrin-adequacy-report-v0",
+  "status": "measured",
+  "summary": {
+    "controls_ok": true,
+    "faults": 13,
+    "killed": [
+      "F2",
+      "F4",
+      "F5",
+      "F8",
+      "F9"
+    ],
+    "silent": [
+      "F7"
+    ],
+    "survived": [
+      "F1",
+      "F3",
+      "F4b",
+      "F6a",
+      "F6b",
+      "F6c",
+      "F10"
+    ],
+    "tool_and_cross_check_agree": true
+  },
+  "tool": {
+    "adequate": false,
+    "commit": "4c075bbe59b4f93107804d9b29fe8bef49a11b57",
+    "content_sha256": "sha256:2843097d6728e86c8b9d0f57b634d97b957652a084fd942637eb970d85f9cb6d",
+    "control_status": "killed",
+    "exit": 1,
+    "failures": [
+      "7 mutant(s) survived; the required score is 100% of non-equivalent mutants",
+      "1 mutant(s) were silent: no declared outcome moved, only a declared diagnostic. The rule is not forced by the outcomes this corpus pins, so it counts against the score; either write a vector that moves an outcome or declare the diagnostic channel part of the pinned surface"
+    ],
+    "killed": 5,
+    "manifest_sha256": "sha256:48e4a05680b830d21d9e6e5d816bf90fb651951eec18822f38a2c9563a800705",
+    "name": "corpus-adequacy",
+    "report_file": "tool_report.v0.json",
+    "report_sha256": "d5b687f588fb306b4e8c94201fd8322af80a29ccfb6b06cbd94374b1715d86cb",
+    "repository": "github.com/corpus-adequacy/corpus-adequacy",
+    "runner": "process",
+    "score_percent": 38.5,
+    "silent": 1,
+    "source_state": "exact",
+    "survived": 7,
+    "unproved": 0,
+    "version": "0.8.0",
+    "version_line": "corpus-adequacy 0.8.0 commit=4c075bbe59b4f93107804d9b29fe8bef49a11b57 source=exact content=sha256:2843097d6728e86c8b9d0f57b634d97b957652a084fd942637eb970d85f9cb6d"
+  }
+}
