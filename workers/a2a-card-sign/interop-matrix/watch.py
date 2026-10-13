@@ -9,7 +9,11 @@ What it reports:
   2. every matrix cell that differs from results_20261001.json, and the section 8.4.1 example per SDK
   3. for the signed corpus, which reading each SDK's verifier follows today: the set of vectors an SDK accepts is
      compared with the set each reading accepts (rule-1-as-written, prune-empty, served-as-is); "none" means the
-     SDK follows no single reading on these cards
+     SDK follows no single reading on these cards.
+     2026-10-13: the headline is measured on s0 and s1 only, the groups the 2026-10-01 baseline had. From 2026-10-02
+     the corpus also carries s2 to s4, whose vectors list readings of other axes (unknown fields, dual names), so a
+     comparison over the whole corpus matched no reading and the watch reported "none" for every SDK from then on.
+     Each group is now also classified on its own, against the readings that group's vectors list
 It decides nothing about which reading is right; that is a2aproject/A2A#2122.
 """
 import hashlib
@@ -40,14 +44,30 @@ def observe_corpus():
             "js": bool(m.run(["node", "js_tool.mjs", "verify", sp, jwksp]).get("ok")),
             "go": bool(m.run([m.GO_BIN, "verify", sp, jwksp]).get("ok")),
         }
-        rows.append({"id": doc["id"], "accept_under": doc["accept_under"], "observed": got})
+        rows.append({"id": doc["id"], "group": v["path"].split("/")[0], "accept_under": doc["accept_under"], "observed": got})
     return rows
 
 
-def reading_of(rows, sdk):
+HEADLINE_GROUPS = ("s0-control", "s1-default-valued")
+
+
+def reading_of(rows, sdk, readings=READINGS):
     accepted = {r["id"] for r in rows if r["observed"][sdk]}
-    hits = [rd for rd in READINGS if accepted == {r["id"] for r in rows if rd in r["accept_under"]}]
+    hits = [rd for rd in readings if accepted == {r["id"] for r in rows if rd in r["accept_under"]}]
     return hits[0] if hits else "none"
+
+
+def readings_by_group(rows):
+    """{group: {sdk: [every reading listed in that group whose accepted set equals the SDK's]}}; [] means none."""
+    out = {}
+    for g in sorted({r["group"] for r in rows}):
+        sub = [r for r in rows if r["group"] == g]
+        labels = sorted({l for r in sub for l in r["accept_under"]})
+        out[g] = {}
+        for s in SDKS:
+            acc = {r["id"] for r in sub if r["observed"][s]}
+            out[g][s] = [l for l in labels if acc == {r["id"] for r in sub if l in r["accept_under"]}]
+    return out
 
 
 def main():
@@ -62,7 +82,9 @@ def main():
             if old is None or mark(old) != mark(c):
                 changes.append((r["case"], k, mark(old) if old else "-", mark(c)))
     rows = observe_corpus()
-    readings = {s: reading_of(rows, s) for s in SDKS}
+    head = [r for r in rows if r["group"] in HEADLINE_GROUPS]
+    readings = {s: reading_of(head, s) for s in SDKS}
+    by_group = readings_by_group(rows)
     base_readings = {"python": "prune-empty", "js": "prune-empty", "go": "served-as-is"}
     state = {
         "schema": "hs-interop-watch-v0",
@@ -70,6 +92,8 @@ def main():
         "matrix_sha256": hashlib.sha256(json.dumps([[r["case"], {k: mark(c) for k, c in sorted(r["cells"].items())}] for r in res["rows"]], sort_keys=True).encode()).hexdigest(),
         "spec_8_4_1_example": res["spec_8_4_1_example"]["matches"],
         "corpus_readings": readings,
+        "corpus_readings_scope": "s0-control and s1-default-valued",
+        "corpus_readings_by_group": by_group,
         "frozen_production_card": {s: mark(res["frozen_production_card"][s]) for s in SDKS},
     }
     lines = ["### Interop matrix re-measured", "",
@@ -83,9 +107,12 @@ def main():
         lines.append("")
     lines += ["**Section 8.4.1 worked example reproduced:** " + ", ".join("%s %s" % (LABEL[s], "yes" if res["spec_8_4_1_example"]["matches"][s] else "no") for s in SDKS), ""]
     lines += ["**Frozen production card (JS-signed, 2026-09-28):** " + ", ".join("%s %s" % (LABEL[s], state["frozen_production_card"][s]) for s in SDKS), ""]
-    lines += ["**Which reading each verifier follows on the signed corpus (a2a-card-sign-v01, a2aproject/a2a-tck#246):**", "",
+    lines += ["**Which reading each verifier follows on the signed corpus (a2a-card-sign-v01, a2aproject/a2a-tck#246), groups s0 and s1, the groups the 2026-10-01 run had:**", "",
               "| SDK | today | 2026-10-01 |", "|---|---|---|"]
     lines += ["| %s | %s | %s |" % (LABEL[s], readings[s], base_readings[s]) for s in SDKS]
+    lines += ["", "**Each group on its own** (every reading that group's vectors list whose accepted set equals the verifier's; none means no single reading):", "",
+              "| group | " + " | ".join(LABEL[s] for s in SDKS) + " |", "|---|" + "---|" * len(SDKS)]
+    lines += ["| %s | %s |" % (g, " | ".join(", ".join("`%s`" % x for x in by_group[g][s]) or "none" for s in SDKS)) for g in by_group]
     lines += ["", "Readings: `rule-1-as-written` is section 8.4.1 rule 1 on the served card; `prune-empty` removes empty values recursively; `served-as-is` removes only `signatures`. Which one is normative is a2aproject/A2A#2122; this run decides nothing about it.",
               "", "<!-- watch-state " + json.dumps(state, sort_keys=True) + " -->"]
     open(os.path.join(HERE, "out", "watch_report.md"), "w").write("\n".join(lines) + "\n")

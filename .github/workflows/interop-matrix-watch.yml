@@ -110,7 +110,9 @@ jobs:
               echo "a2a-sdk ${{ steps.probe.outputs.pyv }}, @a2a-js/sdk ${{ steps.probe.outputs.jsv }}, a2a-go main ${GOC:0:8}."
               echo "A tool broke against the new release (the run log is linked below); nothing about the signatures is concluded."
               echo
-              echo '```'; tail -25 out_go_build.txt 2>/dev/null; tail -25 out_matrix.txt 2>/dev/null; tail -25 out_watch.txt 2>/dev/null; echo '```'
+              # 2026-10-13: a missing file (out_watch.txt when the matrix did not run) made tail fail under bash -e, so this
+              # step exited 1 without recording anything (run 38337751446). Each tail is now allowed to find nothing.
+              echo '```'; tail -25 out_go_build.txt 2>/dev/null || true; tail -25 out_matrix.txt 2>/dev/null || true; tail -25 out_watch.txt 2>/dev/null || true; echo '```'
               echo
               echo "<!-- watch-state {\"versions\": {\"a2a-python\": \"a2a-sdk ${{ steps.probe.outputs.pyv }}\", \"a2a-js\": \"@a2a-js/sdk ${{ steps.probe.outputs.jsv }}\", \"a2a-go\": \"a2a-go main ${GOC:0:8}\"}, \"measured\": false} -->"
             } > body.md
