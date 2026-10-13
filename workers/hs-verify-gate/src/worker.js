@@ -2616,6 +2616,25 @@ async function readRegistryForWrite(env) {
 }
 const REGISTRY_READ_FAILED = { error: "registry_read_failed", note: "The register could not be read, so nothing was written. Try again; no row was changed." };
 
+// 2026-10-13 (#13). For read-only users that must not mistake a failed read for an empty register: {} when storage is
+// not bound (as readRegistry), null when the read threw.
+async function readRegistryChecked(env) {
+  if (!env || !env.HS_VERIFY_KV) return {};
+  return readRegistryForWrite(env);
+}
+
+// 2026-10-13 (#13). A read that failed is not a read that found nothing. Thrown by lookupServer, registerLookup and
+// readRecordBytes when storage throws, so no caller can turn the failure into "absent"; every caller already has a
+// failure path, and the ones facing outside callers answer 503 or isError with this body.
+class ReadFailure extends Error {
+  constructor(code, what) {
+    const note = what + " could not be read (storage error). This is a read failure, NOT a statement that nothing is recorded. Try again.";
+    super(code + ": " + note);
+    this.readFailure = true;
+    this.body = { error: code, read_failed: true, note };
+  }
+}
+
 // 0.4.10 TSUGI. 隔離中か。until が在って過ぎとったら隔離は切れとる (切れた事実は行に残る)。
 function isQuarantined(row, nowIso) {
   if (!row || !row.quarantined) return false;
@@ -2655,10 +2674,12 @@ async function markDeclared(env, endpoint, declared) {
   await writeRegistry(env, reg);
 }
 
+// 2026-10-13 (#13). null means the list could not be read; [] means nothing has been removed.
 async function readRemoved(env) {
   if (!env || !env.HS_VERIFY_KV) return [];
-  try { return (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || []; } catch (_e) { return []; }
+  try { return (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || []; } catch (_e) { return null; }
 }
+const REMOVED_READ_FAILED_NOTE = "The public list of removals could not be read (storage error). This is NOT a statement that no row was ever removed.";
 
 async function writeRegistry(env, reg) {
   if (!env || !env.HS_VERIFY_KV) return false;
@@ -2673,7 +2694,10 @@ async function readSweepLast(env) {
   try {
     const v = await env.HS_VERIFY_KV.get("sweep:last", "json");
     if (v) return v;
-  } catch (_e) {}
+  } catch (_e) {
+    // 2026-10-13 (#13). A failed read used to answer "No sweep has completed yet".
+    return { ran: null, error: "sweep_last_read_failed", read_failed: true, note: "The record of the last sweep could not be read (storage error). This is NOT a statement that no sweep has run. Try again." };
+  }
   return { ran: false, note: "No sweep has completed yet. If the cron is registered, the first run happens at 18:00 UTC." };
 }
 
@@ -3544,6 +3568,8 @@ async function publicRegister(env) {
       const hist = await readHistory(env, w.endpoint);
       const entries = (hist && Array.isArray(hist.entries)) ? hist.entries : [];
       row.measurements = entries.length;
+      // 2026-10-13 (#13). A failed history read is not zero measurements.
+      if (hist && hist.read_failed) { row.measurements = null; row.history_read_failed = true; row.history_note = hist.note; }
       row.first_at = entries.length ? (entries[0].at || null) : null;
       const latest = entries.length ? entries[entries.length - 1] : null;
       if (latest) {
@@ -3581,6 +3607,7 @@ async function publicRegister(env) {
   const removed = await readRemoved(env);
   return {
     removed_rows: removed,
+    ...(removed === null ? { removed_read_failed: true, removed_note: REMOVED_READ_FAILED_NOTE } : {}),
     count: rows.length,
     max: REGISTRY_MAX,
     gate_commit: gateCommit(),
@@ -3638,7 +3665,8 @@ const DEFAULT_WATCHLIST = [
 
 // 既定の自社分、旧来の watch:endpoints、新しい watch:registry を束ねて返す。
 // 返すのは {endpoint, tier, webhook} の配列。tier は self / free / paid。
-async function watchlist(env) {
+// 2026-10-13. regIn: a register the caller already read (with readRegistryChecked); omitted, it reads as before.
+async function watchlist(env, regIn) {
   const out = [];
   const seen = new Set();
   const push = (ep, tier, webhook, extra) => {
@@ -3653,7 +3681,7 @@ async function watchlist(env) {
       if (Array.isArray(legacy)) for (const ep of legacy) push(ep, "self", null, { requested_by: "operator" });
     } catch (_e) { /* KV が読めなければ既定値で続ける */ }
   }
-  const reg = await readRegistry(env);
+  const reg = regIn || await readRegistry(env);
   for (const ep of Object.keys(reg)) {
     const r = reg[ep] || {};
     push(ep, r.tier === "paid" ? "paid" : "free", r.webhook || null, {
@@ -3827,7 +3855,9 @@ async function storeRecordBytes(env, record) {
 }
 async function readRecordBytes(env, sha) {
   if (!env || !env.HS_VERIFY_KV) return null;
-  try { return await env.HS_VERIFY_KV.get(RECORD_KEY_PREFIX + sha, "text"); } catch (_e) { return null; }
+  // 2026-10-13 (#13). null only when nothing is stored; a failed read throws instead of reading as not_stored.
+  try { return await env.HS_VERIFY_KV.get(RECORD_KEY_PREFIX + sha, "text"); }
+  catch (_e) { throw new ReadFailure("record_read_failed", "The stored bytes for this sha"); }
 }
 
 async function recordHistory(env, endpoint, record) {
@@ -3943,10 +3973,13 @@ async function readHistory(env, endpoint) {
     return { endpoint, entries: [], note: "History storage is not bound on this deployment, so nothing has been recorded yet." };
   }
   const key = await histKey(endpoint);
-  try {
-    const v = await env.HS_VERIFY_KV.get(key, "json");
-    if (v) return annotateHistory(v);
-  } catch (_e) {}
+  let v;
+  try { v = await env.HS_VERIFY_KV.get(key, "json"); }
+  catch (_e) {
+    // 2026-10-13 (#13). A failed read used to come back as "No history recorded". entries is null, not [].
+    return { endpoint, entries: null, error: "history_read_failed", read_failed: true, note: "The history for this endpoint could not be read (storage error). This is a read failure, NOT a statement that nothing is recorded. Try again." };
+  }
+  if (v) return annotateHistory(v);
   return { endpoint, entries: [], note: "No history recorded for this endpoint yet. It may not be on the watchlist." };
 }
 
@@ -4032,7 +4065,11 @@ async function commitmentFiled(env, wid) {
 async function runDailySweep(env, opts) {
   const now = Date.now();
   const force = !!(opts && opts.force);
-  const list = await watchlist(env);
+  // 2026-10-13 (#13). One register read for the whole sweep, null when it threw. It used to read as {}: outside rows
+  // dropped out silently and quarantined rows could be measured. On null nothing is measured and the record says why.
+  const sreg = await readRegistryChecked(env);
+  const registryReadFailed = sreg === null;
+  const list = await watchlist(env, sreg || {});
   // 0.4.0. subrequest の予算。掃引の間だけ数える。
   const budget = Number(env && env.SUBREQUEST_BUDGET) || SUBREQUEST_BUDGET_DEFAULT;
   sweepBudget = { used: 0 };
@@ -4058,8 +4095,10 @@ async function runDailySweep(env, opts) {
   const due = [];
   const skipped = [];
   // 0.4.10 TSUGI. 運営者が隔離した行は測らん。順番に並べる前に外す (席を食わん)。止めた事実と、何を引いて止めたか (提案の hash) を残す。
-  const qreg = await readRegistry(env);
+  const qreg = sreg || {};
   for (const w of list) {
+    // Which rows are quarantined lives in the register, so without it no row can be measured safely.
+    if (registryReadFailed) { skipped.push({ endpoint: w.endpoint, tier: w.tier, reason: "the register could not be read (storage error), so whether this row is quarantined is unknown and nothing was measured in this run. Not a finding about the endpoint." }); continue; }
     const qrow = qreg[w.endpoint];
     if (isQuarantined(qrow)) { skipped.push({ endpoint: w.endpoint, tier: w.tier, reason: "quarantined by the operator under TSUGI since " + qrow.quarantined.since + " citing proposal " + String(qrow.quarantined.proposal_sha256).slice(0, 16) + ": not measured and no verdict served while quarantined. A quarantine is a stop, not a finding." }); continue; }
     if (force || (await isDueToday(w.endpoint, w.tier, now, coord))) due.push(w);
@@ -4188,6 +4227,11 @@ async function runDailySweep(env, opts) {
     results,
     skipped
   };
+  if (registryReadFailed) {
+    out.watched_total = null;
+    out.registry_read_failed = true;
+    out.registry_note = "The register could not be read (storage error). Nothing was measured in this run; skipped lists only the rows that do not come from the register (the gate's own list), because the register's rows could not be read. This is not an empty register.";
+  }
   if (env && env.HS_VERIFY_KV) {
     try { await env.HS_VERIFY_KV.put("sweep:last", JSON.stringify(out)); } catch (_e) {}
   }
@@ -4638,11 +4682,15 @@ async function verifyVerdict(record) {
 const LOOKUP_HISTORY_MAX_RETURN = 20;
 
 async function lookupServer(env, endpoint) {
-  const wl = await watchlist(env);
+  // 2026-10-13 (#13). A failed read of the register or the history throws ReadFailure instead of reading as
+  // "absent" or "not yet measured". Callers answer it as a failure (503, isError), never as on_register:false.
+  const reg = await readRegistryChecked(env);
+  if (reg === null) throw new ReadFailure("registry_read_failed", "The register");
+  const wl = await watchlist(env, reg);
   const watched = wl.find((w) => w && w.endpoint === endpoint) || null;
-  const reg = await readRegistry(env);
   const regEntry = reg[endpoint] || null;
   const hist = await readHistory(env, endpoint);
+  if (hist && hist.read_failed) throw new ReadFailure("history_read_failed", "The history for this endpoint");
   const entries = (hist && Array.isArray(hist.entries)) ? hist.entries : [];
   const latest = entries.length ? entries[entries.length - 1] : null;
 
@@ -4840,7 +4888,8 @@ async function fetchLastRing(env, endpoint, nowMs, fetchImpl) {
 async function registerLookup(env, endpoint, nowMs, fetchImpl) {
   const now = nowMs || Date.now();
   const lu = await lookupServer(env, endpoint);
-  const reg = await readRegistry(env);
+  const reg = await readRegistryChecked(env);
+  if (reg === null) throw new ReadFailure("registry_read_failed", "The register");
   const row = reg[endpoint] || null;
   const latest = lu.on_register ? (lu.latest || null) : null;
   let status, meaning;
@@ -4984,6 +5033,7 @@ async function handleMcp(body, env) {
       try {
         return { jsonrpc: "2.0", id, result: mcpOk(await lookupServer(env, endpoint)) };
       } catch (e) {
+        if (e && e.readFailure) return { jsonrpc: "2.0", id, result: mcpFail({ endpoint: endpoint, ...e.body }) };
         return { jsonrpc: "2.0", id, result: mcpFail({ error: "lookup_failed", message: String(e && e.message || e) }) };
       }
     }
@@ -5007,6 +5057,8 @@ async function handleMcp(body, env) {
       try {
         return { jsonrpc: "2.0", id, result: mcpOk(await isVerified(env, endpoint)) };
       } catch (e) {
+        // 2026-10-13 (#13). A read failure is neither verified:false nor absent; state stays unknown and says why.
+        if (e && e.readFailure) return { jsonrpc: "2.0", id, result: mcpFail({ endpoint: endpoint, state: null, verified: null, ...e.body }) };
         return { jsonrpc: "2.0", id, result: mcpFail({ error: "lookup_failed", message: String(e && e.message || e) }) };
       }
     }
@@ -5633,7 +5685,9 @@ export default {
       const sha = path.slice("/record/".length).toLowerCase();
       if (!/^[0-9a-f]{64}$/.test(sha)) return json({ error: "bad_sha", usage: "/record/<64 hex record_sha256>", note: "The path is the SHA-256 of the body it serves." }, 400);
       if (!env || !env.HS_VERIFY_KV) return json({ error: "storage_unavailable", sha }, 503);
-      const bytes = await readRecordBytes(env, sha);
+      let bytes;
+      try { bytes = await readRecordBytes(env, sha); }
+      catch (e) { if (e && e.readFailure) return json({ ...e.body, sha }, 503); throw e; }
       if (bytes == null) {
         return json({
           error: "not_stored", sha,
@@ -5666,11 +5720,12 @@ export default {
       const ep = url.searchParams.get("endpoint");
       if (!ep) return json({ error: "endpoint_required", usage: "/history?endpoint=https://your-server/mcp" }, 400);
       const hist = await readHistory(env, ep);
+      if (hist && hist.read_failed) return json({ endpoint: ep, error: hist.error, read_failed: true, note: hist.note }, 503);
       if (hist && typeof hist === "object") hist.retention = { kept_max: HISTORY_MAX, note: "The gate keeps the most recent " + HISTORY_MAX + " records per endpoint and drops the oldest beyond that (30 until 2026-09-05). Entries are never edited, but they do leave this response. A monthly ring (nenrin-ring-v1) needs the full month, so export before it is gone." };
       return json(hist);
     }
     if (path === "/changes") return json(await readChanges(env));
-    if (path === "/sweep/last") return json(await readSweepLast(env));
+    if (path === "/sweep/last") { const sl = await readSweepLast(env); return json(sl, sl && sl.read_failed ? 503 : undefined); }
 
     // 0.3.5. 窓の公開面。commitment は作った瞬間から、salt は窓が閉じてから、固定した規則と beacon はいつでも。
     if (path === "/nenrin/window" || /^\/nenrin\/window\/w\d+$/.test(path)) {
@@ -5714,7 +5769,10 @@ export default {
       const ep = url.searchParams.get("endpoint") || "";
       if (!/^https:\/\/[^\s]+$/.test(ep)) return json({ error: "endpoint (https URL) required", example: "/register/lookup?endpoint=" + encodeURIComponent("https://mcp.horizonshield.dev/mcp") }, 400);
       try { return json(await registerLookup(env, ep), 200, { "Cache-Control": "public, max-age=86400" }); }
-      catch (e) { return json({ endpoint: ep, error: "lookup_failed", message: String((e && e.message) || e) }, 500); }
+      catch (e) {
+        if (e && e.readFailure) return json({ endpoint: ep, ...e.body }, 503);
+        return json({ endpoint: ep, error: "lookup_failed", message: String((e && e.message) || e) }, 500);
+      }
     }
 
     // 公開の登録簿。加盟者の行を、人間もエージェントも一覧で読める。
@@ -5789,7 +5847,9 @@ export default {
         const ep = String(raw == null ? "" : raw).slice(0, 300).trim();
         if (!ep || seen.has(ep)) continue;
         seen.add(ep);
-        results.push(await lookupServer(env, ep));
+        // 2026-10-13 (#13). A read failure for one endpoint is reported as such, not as on_register:false.
+        try { results.push(await lookupServer(env, ep)); }
+        catch (e) { if (e && e.readFailure) results.push({ endpoint: ep, ...e.body }); else throw e; }
       }
       return json({
         note: "A read of the public register for the endpoints you named. It does NOT measure them: it returns the latest stored verdict, or that there is none. Absence is not a negative verdict, only the lack of a measurement here. Every result carries a record_sha256 you can recompute without trusting this gate.",
@@ -5807,7 +5867,10 @@ export default {
       if (!ep) return json({ error: "endpoint_required", usage: "/is-verified?endpoint=https://your-server/mcp", note: "Reads the register. verified is true only for a full pass, null otherwise (never false). It does not measure; a fresh reading is POST /check." }, 400);
       if (!env || !env.HS_VERIFY_KV) return json({ endpoint: ep, error: "storage_unavailable", note: "Register storage is not bound here, so the gate cannot say. This is NOT 'not verified'." }, 503);
       try { return json(await isVerified(env, ep)); }
-      catch (e) { return json({ endpoint: ep, error: "lookup_failed", message: String(e && e.message || e) }, 500); }
+      catch (e) {
+        if (e && e.readFailure) return json({ endpoint: ep, state: null, verified: null, ...e.body }, 503);
+        return json({ endpoint: ep, error: "lookup_failed", message: String(e && e.message || e) }, 500);
+      }
     }
 
     // 監視の登録。誰でも自分のエンドポイントを載せられる。判定は変わらない。
@@ -5997,6 +6060,7 @@ export default {
     }
     if (path === "/watchlist") {
       const wl = await watchlist(env);
+      const removedList = await readRemoved(env);
       return json({
         watched: wl.map((w) => ({
           endpoint: w.endpoint,
@@ -6006,7 +6070,8 @@ export default {
           requested_by: w.requested_by || "unrecorded (row added before 0.3.1)",
           owner_declined: !!w.owner_declined_at
         })),
-        removed: await readRemoved(env),
+        removed: removedList,
+        ...(removedList === null ? { removed_read_failed: true, removed_note: REMOVED_READ_FAILED_NOTE } : {}),
         cadence: "daily for self and paid, weekly for free",
         verdict_is_identical_for_every_tier: true,
         note: "These endpoints are re-measured on a schedule so a verdict on this site does not silently go stale. No tool on any watched server is ever called by the sweep.",
