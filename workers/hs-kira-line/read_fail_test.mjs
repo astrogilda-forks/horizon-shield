@@ -42,6 +42,16 @@ function makeEnv(opts) {
     },
   };
 }
+// 2026-10-13 K1: the global book is the old list (minus tombstones) plus kira_lesson:* keys; read it the way the worker does.
+async function globalLessons(env) {
+  const sha32 = (s) => crypto.createHash("sha256").update(String(s)).digest("hex").slice(0, 32);
+  const blob = JSON.parse((await env.SEEN_STORE.get("kira_lessons:global")) || "[]");
+  const keys = (await env.SEEN_STORE.list({ prefix: "kira_lesson" })).keys.map((k) => k.name);
+  const dels = new Set(keys.filter((k) => k.startsWith("kira_lesson_del:")).map((k) => k.slice("kira_lesson_del:".length)));
+  const out = blob.filter((l) => !dels.has(sha32(l.t)));
+  for (const k of keys.filter((k) => k.startsWith("kira_lesson:")).sort()) out.push(JSON.parse(await env.SEEN_STORE.get(k)));
+  return out;
+}
 function sign(body) { return crypto.createHmac("sha256", SECRET).update(body).digest("base64"); }
 async function send(env, events) {
   const body = JSON.stringify({ events });
@@ -126,18 +136,18 @@ console.log("\n4) 経験帳 / おぼえて / わすれて: the lesson book canno
   env._kv.set("kira_lessons:global", JSON.stringify([{ t: "既存の覚え書き", by: "owner" }]));
   calls = [];
   await send(env, [ownerMsg("おぼえて 新しい覚え書き")]);
-  check("おぼえて failure: book not overwritten", JSON.parse(env._kv.get("kira_lessons:global")).length === 1 && !env._puts.includes("kira_lessons:global"));
+  check("おぼえて failure: book not overwritten", JSON.parse(env._kv.get("kira_lessons:global")).length === 1 && !env._puts.some((k) => k.startsWith("kira_lesson")));
   check("おぼえて failure: owner told nothing changed", replyText().includes(READ_FAIL) && replyText().includes("何も変えていません"), replyText());
   calls = [];
   await send(env, [ownerMsg("わすれて 1")]);
-  check("わすれて failure: not 'no such number', nothing removed", replyText().includes(READ_FAIL) && !replyText().includes("その番号はありません") && !env._puts.includes("kira_lessons:global"), replyText());
+  check("わすれて failure: not 'no such number', nothing removed", replyText().includes(READ_FAIL) && !replyText().includes("その番号はありません") && !env._puts.some((k) => k.startsWith("kira_lesson")), replyText());
   calls = [];
   await send(env, [ownerMsg("経験帳")]);
   check("経験帳 failure: never shows an empty book", replyText().includes(READ_FAIL) && !replyText().includes("まだ無い"), replyText());
   const env2 = makeEnv();
   calls = [];
   await send(env2, [ownerMsg("おぼえて 新しい覚え書き")]);
-  check("おぼえて normal: unchanged", replyText().includes("足しました") && JSON.parse(env2._kv.get("kira_lessons:global")).length === 1, replyText());
+  check("おぼえて normal: unchanged", replyText().includes("足しました") && (await globalLessons(env2)).length === 1, replyText());
   calls = [];
   await send(env2, [ownerMsg("経験帳")]);
   check("経験帳 normal: unchanged", replyText().startsWith("【経験帳 全体 1 件】"), replyText());

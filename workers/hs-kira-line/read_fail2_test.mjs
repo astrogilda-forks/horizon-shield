@@ -262,7 +262,7 @@ console.log("\n9) version");
 {
   const r = await W.fetch(new Request("https://x/health"), makeEnv(), { waitUntil: () => {} });
   const j = await r.json();
-  check("/health version is v24-readfail3-20261013", j.version === "v24-readfail3-20261013", j.version);
+  check("/health version is v25-lessons-20261013 (bumped by K1 2026-10-13)", j.version === "v25-lessons-20261013", j.version);
 }
 
 console.log("\nchecks: " + checks + ", guards: " + guards + ", failed: " + fail);

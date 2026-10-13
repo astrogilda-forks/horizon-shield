@@ -273,7 +273,7 @@ var worker_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
-      return json({ status: "ok", version: "v24-readfail3-20261013", service: "hs-kira-line" });
+      return json({ status: "ok", version: "v25-lessons-20261013", service: "hs-kira-line", lessons: "per-key-20261013" });
     }
     if (url.pathname === "/diagnosis" && request.method === "POST") {
       return handleDiagnosis(request, env, ctx);
@@ -1755,6 +1755,9 @@ __name(ingestPartnerSilently, "ingestPartnerSilently");
 //   KIRA の頭脳(Claude)は会話で書き換わらない。育つのは「経験帳」= KV に書き足す覚え書きで、毎回それを読んでから返す。
 //   kira_lessons:<gid>   その店だけの覚え書き(好み・約束・事情・数字)。他の店や施主さんへの答えには使わない。
 //   kira_lessons:global  どの店にも通じる話し方・進め方(数字と店名は入れない)。大賀が 1 対 1 で「おぼえて」でも足せる。
+//                        2026-10-13 (concurrency audit K1) から、この列は読むだけ。新しい覚え書きは kira_lesson:<id> に 1 件 1 キー。
+//   kira_lesson:<id>     全体の覚え書き 1 件(id は時刻 14 桁 + "-" + 乱数、本文と書いた人は metadata にも入れる)。
+//   kira_lesson_del:<h>  古い列(kira_lessons:global)にしか無い覚え書きを消した印(h は本文の sha256 の先頭 32 桁)。読むときに外す。
 //   kira_gconv:<gid>     そのグループの直近の会話(12 件)。大賀が OA Manager から手で送った文は webhook に来ないので入らない。
 //   kira_digest:<日付>    自動で返した分のまとめ。毎晩 21 時台に 1 通だけ大賀へ送る。
 const KIRA_LESSONS_MAX_GROUP = 60, KIRA_LESSONS_MAX_GLOBAL = 40, KIRA_CONV_MAX = 12;
@@ -1771,15 +1774,16 @@ function kiraGlobalOk(l) {
   return !/[0-9０-９]/.test(l.t) && !KIRA_GLOBAL_DENY_RE.test(l.t);
 }
 // 決まりに合わない覚え書きを全体の帳から一度だけ外し、外した分を kira_lessons:global_removed に残して大賀さんに知らせる(決まりが変わったら印の版を上げる)。
+//   2026-10-13 K1: 外すときは古い列を書き直さず、1 件ずつ kiraGlobalLessonRemove(墓標か per-key の削除)で外す。
 const KIRA_SWEEP_MARK = "kira_global_swept:v20";
 async function kiraGlobalSweep(env) {
   if (await env.SEEN_STORE.get(KIRA_SWEEP_MARK)) return false;
-  const all = await kiraKvJsonStrict(env, "kira_lessons:global", []);
+  const all = await kiraGlobalLessons(env);
   const keep = all.filter(kiraGlobalOk), gone = all.filter((l) => !kiraGlobalOk(l));
   if (gone.length) {
     const old = await kiraKvJsonStrict(env, "kira_lessons:global_removed", []);
-    await env.SEEN_STORE.put("kira_lessons:global_removed", JSON.stringify(old.concat(gone.map((l) => Object.assign({}, l, { removed_at: new Date().toISOString(), why: "v20 の決まりに合わない" }))).slice(-200)));
-    await env.SEEN_STORE.put("kira_lessons:global", JSON.stringify(keep));
+    await env.SEEN_STORE.put("kira_lessons:global_removed", JSON.stringify(old.concat(gone.map((l) => Object.assign({}, kiraLessonPlain(l), { removed_at: new Date().toISOString(), why: "v20 の決まりに合わない" }))).slice(-200)));
+    for (const l of gone) await kiraGlobalLessonRemove(env, l);
   }
   await env.SEEN_STORE.put(KIRA_SWEEP_MARK, String(Date.now()));
   try {
@@ -1899,7 +1903,7 @@ async function kiraPartnerDecide(env, gid, text, hearingHint, opts) {
   let own, glob, conv;
   try {
     own = await kiraKvJsonStrict(env, "kira_lessons:" + gid, []);
-    glob = (await kiraKvJsonStrict(env, "kira_lessons:global", [])).filter(kiraGlobalOk);
+    glob = (await kiraGlobalLessons(env)).filter(kiraGlobalOk);
     conv = await kiraKvJsonStrict(env, "kira_gconv:" + (o.convKey || gid), []);
   } catch (e) {
     console.log("[kira] context read failed gid=" + gid + " " + String(e && e.message || e));
@@ -1920,6 +1924,77 @@ async function kiraPartnerDecide(env, gid, text, hearingHint, opts) {
     return d || { ok: false, err: "bad_json" };
   } catch (e) { return { ok: false, err: String(e).slice(0, 60) }; } finally { clearTimeout(timer); }
 }
+// ===== 2026-10-13 concurrency audit K1: 全体の経験帳は 1 件 1 キー =====
+//   kira_lessons:global(1 つの JSON の列)は、全部のグループの webhook の自動追加と大賀さんの「おぼえて」「わすれて」が
+//   読んで書き戻していた。同時に走ると、後から書いた方が先の 1 件を黙って消したり、消したはずの覚え書きを戻したりする。
+//   これからは 1 件ごとに kira_lesson:<id> に書く(id は時刻 14 桁 + "-" + 乱数なので、prefix で list すると時刻順)。
+//   古い kira_lessons:global は読むだけで、書き直さない・消さない。消すときは
+//     kira_lesson:<id> の覚え書き   = そのキーを消す
+//     古い列にしか無い覚え書き     = kira_lesson_del:<sha256(本文) の先頭 32 桁> の墓標を置き、読むときに外す
+//   読み出しは「古い列(墓標を外す)+ kira_lesson:* を id 順」。どれか 1 つでも読めなければ throw(空とは扱わない、issue #13 と同じ)。
+//   戻し(rollback)の注意: この版より前のコードは kira_lesson:* と墓標を読まないので、戻すとこの版で足した分は見えず、
+//   消した分が戻って見える(KV には残る)。前のコードが古い列を書き直しても、この版の per-key は壊れない。
+const KIRA_LESSON_PREFIX = "kira_lesson:", KIRA_LESSON_DEL_PREFIX = "kira_lesson_del:";
+const KIRA_LESSON_META_MAX = 1000;
+async function kiraSha256Hex(s) {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(s)));
+  return Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+async function kiraLessonDelHash(t) { return (await kiraSha256Hex(t)).slice(0, 32); }
+function kiraLessonId(now) {
+  const r = new Uint8Array(6); crypto.getRandomValues(r);
+  return String(now || Date.now()).padStart(14, "0") + "-" + Array.from(r, (b) => b.toString(36).padStart(2, "0")).join("").slice(0, 10);
+}
+// list() を list_complete まで回す(覚え書きは 40 件までなので普段は 1 ページ)。
+async function kiraKvListAll(env, prefix) {
+  const keys = []; let cursor = null;
+  do {
+    const l = await env.SEEN_STORE.list(cursor ? { prefix, cursor } : { prefix });
+    for (const k of (l.keys || [])) keys.push(k);
+    cursor = l.list_complete === false && l.cursor ? l.cursor : null;
+  } while (cursor);
+  return keys;
+}
+// 読み手に見せる形(内部の印 _key / _blob を外す)。
+function kiraLessonPlain(l) { const o = Object.assign({}, l); delete o._key; delete o._blob; return o; }
+// 全体の経験帳の今の姿: 古い列(墓標の分を外す)に kira_lesson:* を id 順で続ける。各要素に _blob:true か _key:<キー名> を付けて返す。
+async function kiraGlobalLessons(env) {
+  const blob = await kiraKvJsonStrict(env, "kira_lessons:global", []);
+  const dels = new Set((await kiraKvListAll(env, KIRA_LESSON_DEL_PREFIX)).map((k) => k.name.slice(KIRA_LESSON_DEL_PREFIX.length)));
+  const out = [];
+  for (const l of (Array.isArray(blob) ? blob : [])) {
+    if (!l || typeof l.t !== "string") continue;
+    if (dels.size && dels.has(await kiraLessonDelHash(l.t))) continue;
+    out.push(Object.assign({}, l, { _blob: true }));
+  }
+  const keys = await kiraKvListAll(env, KIRA_LESSON_PREFIX);
+  keys.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  for (const k of keys) {
+    let l = (k.metadata && typeof k.metadata.t === "string") ? k.metadata : null;
+    if (!l) l = await kiraKvJsonStrict(env, k.name, null);
+    if (!l || typeof l.t !== "string") continue;
+    out.push(Object.assign({}, l, { _key: k.name }));
+  }
+  return out;
+}
+// 1 件を自分のキーに書く。本文と書いた人は metadata にも入れる(list だけで読めるように。入らない大きさなら値だけ)。
+async function kiraGlobalLessonPut(env, rec) {
+  const key = KIRA_LESSON_PREFIX + kiraLessonId();
+  const body = JSON.stringify(rec);
+  const opts = {};
+  if (new TextEncoder().encode(body).length <= KIRA_LESSON_META_MAX) opts.metadata = rec;
+  await env.SEEN_STORE.put(key, body, opts);
+  return key;
+}
+// kiraGlobalLessons が返した 1 件を消す。per-key はキーを消す。古い列の分は墓標を置く(列は書き直さない)。
+async function kiraGlobalLessonRemove(env, l) {
+  if (l._key) { await env.SEEN_STORE.delete(l._key); return; }
+  await env.SEEN_STORE.put(KIRA_LESSON_DEL_PREFIX + (await kiraLessonDelHash(l.t)), JSON.stringify({ t: l.t, at: new Date().toISOString() }));
+}
+// 上限を超えた分だけ古い方から消す(前の slice(-max) と同じ向き)。all は今の姿に、足した 1 件を末尾に加えた列。
+async function kiraGlobalLessonsPrune(env, all, max) {
+  for (let i = 0; i < all.length - max; i++) await kiraGlobalLessonRemove(env, all[i]);
+}
 async function kiraLessonsAdd(env, gid, lessons, srcText) {
   const added = [];
   if (!Array.isArray(lessons) || !lessons.length) return added;
@@ -1927,13 +2002,23 @@ async function kiraLessonsAdd(env, gid, lessons, srcText) {
   for (const l of lessons) {
     // 数字や店ごとの事情は全体に上げない(加盟店の原価などが他所に漏れないように)。
     const toGlobal = l.scope === "global" && !/[0-9０-９]/.test(l.text) && !KIRA_GLOBAL_DENY_RE.test(l.text);
-    const key = toGlobal ? "kira_lessons:global" : "kira_lessons:" + gid;
+    const key = toGlobal ? KIRA_LESSON_PREFIX + "*" : "kira_lessons:" + gid;
     const max = toGlobal ? KIRA_LESSONS_MAX_GLOBAL : KIRA_LESSONS_MAX_GROUP;
     try {
-      const a = await kiraKvJsonStrict(env, key, []);
-      if (a.some((x) => x.t === l.text)) continue;
-      a.push({ t: l.text, at, by: "kira", src: toGlobal ? "" : src });
-      await env.SEEN_STORE.put(key, JSON.stringify(a.slice(-max)));
+      if (toGlobal) {
+        // K1: 全体は 1 件 1 キー。読むのは重複を避けるためだけで、列を書き戻さない。
+        const a = await kiraGlobalLessons(env);
+        if (a.some((x) => x.t === l.text)) continue;
+        const rec = { t: l.text, at, by: "kira", src: "" };
+        await kiraGlobalLessonPut(env, rec);
+        a.push(rec);
+        await kiraGlobalLessonsPrune(env, a, max);
+      } else {
+        const a = await kiraKvJsonStrict(env, key, []);
+        if (a.some((x) => x.t === l.text)) continue;
+        a.push({ t: l.text, at, by: "kira", src });
+        await env.SEEN_STORE.put(key, JSON.stringify(a.slice(-max)));
+      }
       added.push((toGlobal ? "全体: " : "この店: ") + l.text);
     } catch (e) { console.log("[kira] lesson not added (read or write failed) key=" + key + " " + String(e && e.message || e)); }
   }
@@ -2093,9 +2178,10 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
   if (/^経験帳$/.test(t)) {
     let g, groups = 0, items = 0;
     try {
-      g = await kiraKvJsonStrict(env, "kira_lessons:global", []);
-      const l = await env.SEEN_STORE.list({ prefix: "kira_lessons:" });
-      for (const k of (l.keys || [])) { if (k.name === "kira_lessons:global") continue; groups++; items += (await kiraKvJsonStrict(env, k.name, [])).length; }
+      g = await kiraGlobalLessons(env);
+      const l = await kiraKvListAll(env, "kira_lessons:");
+      // kira_lessons:global と kira_lessons:global_removed は店ではない。
+      for (const k of l) { if (k.name.startsWith("kira_lessons:global")) continue; groups++; items += (await kiraKvJsonStrict(env, k.name, [])).length; }
     } catch (e) {
       console.log("[lessons] read failed " + String(e && e.message || e));
       await replyToLine(replyToken, KIRA_READ_FAIL_LESSONS + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
@@ -2177,28 +2263,32 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
     return true;
   }
   if ((m = t.match(/^おぼえて[\s　:：]*([\s\S]+)$/))) {
+    // K1 (2026-10-13): 1 件を自分のキーに書く。古い列は読むだけ(重複の数え方と上限のため)で、書き戻さない。
     let a;
-    try { a = await kiraKvJsonStrict(env, "kira_lessons:global", []); } catch (e) {
+    try { a = await kiraGlobalLessons(env); } catch (e) {
       console.log("[lessons] read failed " + String(e && e.message || e));
       await replyToLine(replyToken, KIRA_READ_FAIL_LESSONS + "何も変えていません。" + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
       return true;
     }
-    a.push({ t: m[1].trim().slice(0, 200), at: new Date().toISOString(), by: "owner" });
-    await env.SEEN_STORE.put("kira_lessons:global", JSON.stringify(a.slice(-KIRA_LESSONS_MAX_GLOBAL)));
+    const rec = { t: m[1].trim().slice(0, 200), at: new Date().toISOString(), by: "owner" };
+    await kiraGlobalLessonPut(env, rec);
+    a.push(rec);
+    await kiraGlobalLessonsPrune(env, a, KIRA_LESSONS_MAX_GLOBAL);
     await replyToLine(replyToken, "経験帳に足しました(全体 " + Math.min(a.length, KIRA_LESSONS_MAX_GLOBAL) + " 件)。", env.LINE_CHANNEL_TOKEN);
     return true;
   }
   if ((m = t.match(/^わすれて[\s　]*([0-9０-９]+)$/))) {
     const n = parseInt(m[1].replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)), 10);
     let a;
-    try { a = await kiraKvJsonStrict(env, "kira_lessons:global", []); } catch (e) {
+    try { a = await kiraGlobalLessons(env); } catch (e) {
       console.log("[lessons] read failed " + String(e && e.message || e));
       await replyToLine(replyToken, KIRA_READ_FAIL_LESSONS + "何も変えていません。" + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
       return true;
     }
     if (n >= 1 && n <= a.length) {
-      const [gone] = a.splice(n - 1, 1);
-      await env.SEEN_STORE.put("kira_lessons:global", JSON.stringify(a));
+      // K1: per-key はそのキーを消す。古い列の分は墓標を置く(列は書き直さない)。
+      const gone = a[n - 1];
+      await kiraGlobalLessonRemove(env, gone);
       await replyToLine(replyToken, "消しました: " + gone.t, env.LINE_CHANNEL_TOKEN);
     } else {
       await replyToLine(replyToken, "その番号はありません(全体 " + a.length + " 件)。", env.LINE_CHANNEL_TOKEN);
