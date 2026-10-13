@@ -35,6 +35,7 @@ const SRC = path.join(TMP, "hearing.mjs");
 console.log("試す対象: " + path.join(SRCDIR, "hearing.js") +
             " (" + fs.readFileSync(path.join(SRCDIR, "hearing.js"), "utf8").split("\n").length + " 行)");
 const H = await import(SRC + "?v=" + Math.random());
+const DG = await import(path.join(TMP, "dispatch_do.mjs"));
 
 globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({}), text: async () => "" });
 
@@ -42,14 +43,35 @@ globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({}),
 // おらん env では、合図は出んようになった (fail-closed。設定の抜けは黙って穴になるより
 // 止まって見える方がええ)。この試験は業種の載り方を見る物で、関所を見る物やない。
 // せやから偽の関所を置く。関所そのものは dispatch_debounce_test.mjs が測る。
-function fakeDispatchGate() {
+// 2026-10-13 (concurrency audit H2 / H3): store:<sid> と hearing:<sid> の書き込みも同じ関所の /rmw を通る。
+//   関所が繋がっとる env で /rmw を知らん返事が返ると、何も書かずに止まる(fail-closed)。せやから /rmw だけは
+//   本物の DispatchGateDO を、直列化する偽の state の上で動かす。env を渡すんは、DO が KV を読み書く為。
+function fakeDoState() {
+  const map = new Map();
+  let chain = Promise.resolve();
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  return {
+    storage: {
+      get: async (k) => { await tick(); return map.has(k) ? map.get(k) : undefined; },
+      put: async (k, v) => { await tick(); map.set(k, v); },
+      delete: async (k) => { await tick(); map.delete(k); },
+    },
+    blockConcurrencyWhile: (fn) => { const next = chain.then(() => fn()); chain = next.then(() => {}, () => {}); return next; },
+  };
+}
+function fakeDispatchGate(envRef) {
   const marks = new Map();
+  const rmwDos = new Map();
   return {
     idFromName: (n) => n,
     get: (id) => ({
       fetch: async (u, init) => {
         const body = JSON.parse(init.body);
         const p = new URL(u).pathname;
+        if (p === "/rmw") {
+          if (!rmwDos.has(id)) rmwDos.set(id, new DG.DispatchGateDO(fakeDoState(), envRef.env));
+          return rmwDos.get(id).fetch(new Request(u, init));
+        }
         if (p === "/release") { marks.delete(id); return new Response(JSON.stringify({ released: true })); }
         const prev = marks.get(id);
         const now = body.now, w = body.window_ms;
@@ -65,9 +87,10 @@ function fakeDispatchGate() {
 
 function makeEnv(ai) {
   const kv = new Map();
-  return {
+  const ref = {};
+  ref.env = {
     _kv: kv,
-    DISPATCH_DO: fakeDispatchGate(),
+    DISPATCH_DO: fakeDispatchGate(ref),
     // 2026-08-24: 取り込みの経路は LLM を通る。模擬を置かないと llm-not-configured で
     //   静かに戻り、「ヒアリング記録が作られていない」という結果だけが残る。
     //   何も設定していないことと、取り込みに失敗したことは違う。
@@ -83,6 +106,7 @@ function makeEnv(ai) {
       list: async () => ({ keys: [] }),
     },
   };
+  return ref.env;
 }
 
 const U = "U" + "0".repeat(32);

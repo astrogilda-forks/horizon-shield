@@ -178,7 +178,7 @@ console.log("\n8) version");
 {
   const r = await worker.fetch(new Request("https://hearing.example.dev/health"), makeEnv(), { waitUntil() {} });
   const j = await r.json();
-  check("/health version is 2.3.1-readfail3-20261013", j.version === "2.3.1-readfail3-20261013", j.version);
+  check("/health version is 2.3.2-rmw-20261013", j.version === "2.3.2-rmw-20261013", j.version);
 }
 
 fs.rmSync(TMP, { recursive: true, force: true });

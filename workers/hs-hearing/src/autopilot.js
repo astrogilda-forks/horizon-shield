@@ -20,6 +20,7 @@ const days = (ms) => ms / 86400000;
 import * as IND from "./industry.js";
 import * as VIS from "./visibility.js";
 import * as PII from "./pii.js";
+import * as RMW from "./rmw.js";
 
 // 2026-08-19 patch51. 「検証済み」と言うために、実際に監査する見積の最低本数。
 // 1本は業者を測ったことにならない。1本の書類を測っただけになる。
@@ -202,52 +203,13 @@ export function storeReadFailed(key) {
 export async function putStore(env, store, by) {
   const sid = store && store.store_id;
   if (!sid) throw new Error("putStore: store_id がありません");
-  const ap = (store.autopilot = store.autopilot || {});
-  // 2026-10-13 (issue #13). If the saved store cannot be read, do not write. Before, the merge below was skipped and
-  // the put went ahead, dropping the saved _writes, asked and pending ledger that the merge exists to keep.
-  // Now it throws store_read_failed (nothing written): request routes answer 503, the daily tick skips the store.
-  const rs = await readJsonKey(env, "store:" + sid);
-  if (rs.failed) throw storeReadFailed("store:" + sid);
-  const saved = rs.value || null;
-  const sap = (saved && saved.autopilot) || null;
-  if (sap) {
-    // 台帳は、書きに来た写しが持っていなくても引き継ぐ。
-    // 2026-08-24: ここを引き継がずに書いたら、「誰が書いたか」の履歴が
-    // 書くたびに1件に戻った。履歴を持たない写しが書きに来るのが、まさにこの問題だからである。
-    // 消えないようにした当のものと同じ扱いをしないと、記録のほうが先に消える。
-    for (const k of ["_writes", "_asked_recovered", "_pending_overwritten"]) {
-      const merged = [...(sap[k] || []), ...(ap[k] || [])];
-      // 同じ (時刻, 書き手) は二重に積まない。
-      const seen = new Set(), out = [];
-      for (const e of merged) {
-        const key = String(e && e.at) + "|" + String(e && e.by) + "|" + JSON.stringify(e || {});
-        if (seen.has(key)) continue;
-        seen.add(key); out.push(e);
-      }
-      if (out.length) ap[k] = out.slice(-20);
-    }
-    const before = (ap.asked || []).length;
-    ap.asked = mergeAsked(sap.asked, ap.asked);
-    const kept = ap.asked.length - before;
-    if (kept > 0) {
-      ap._asked_recovered = [...(ap._asked_recovered || []),
-                             { at: now(), by: String(by || "?"), kept }].slice(-10);
-    }
-    // 保存側の返事待ちのほうが新しいのに、こちらがそれを持っていない。
-    // 直さない。起きたことを名前で残す。
-    const mine = ap.pending && ap.pending.sent_at ? String(ap.pending.sent_at) : "";
-    const theirs = sap.pending && sap.pending.sent_at ? String(sap.pending.sent_at) : "";
-    if (theirs && theirs > mine) {
-      ap._pending_overwritten = [...(ap._pending_overwritten || []), {
-        at: now(), by: String(by || "?"),
-        lost_qids: (sap.pending.qids || []).slice(0, 8),
-        lost_sent_at: theirs,
-        mine_sent_at: mine || null,
-      }].slice(-10);
-    }
-  }
-  ap._writes = [...(ap._writes || []), { at: now(), by: String(by || "?") }].slice(-20);
-  await env.HS_HEARING_KV.put("store:" + sid, JSON.stringify(store));
+  store.autopilot = store.autopilot || {};
+  // 2026-10-13 (concurrency audit H2). 読む・合併する・書く を rmw.js の store.put に出し、店ごとの Durable Object
+  // の中で順番に動かす。合併の規則(台帳の引き継ぎ、pending / needs_human の三方合併)は rmw.js の mergeStoreWrite。
+  // 保存側が読めん時は、これまで通り store_read_failed を投げて何も書かん(request は 503、日次の巡回はその店を飛ばす)。
+  // 関所が答えん時は rmw_failed を投げて何も書かん。KV に直接書く逃げ道は無い(関所が無い単体試験だけ、直接)。
+  const r = await RMW.updateStore(env, sid, "store.put", { store, by: String(by || "?") });
+  if (r && r.record) RMW.syncInto(store, r.record);
   return store;
 }
 
@@ -1272,10 +1234,12 @@ export async function runDailyTick(env, deps) {
     store.autopilot = ap;
     // 2026-10-13 (issue #13). A store whose saved copy could not be re-read is skipped (nothing written) and logged;
     // the next tick reads it again. Other errors still end the tick as before.
+    // 2026-10-13 (concurrency audit H2). rmw_failed (the per store Durable Object did not answer) is skipped the same
+    // way: nothing was written, the next tick retries.
     try { await putStore(env, store, "runDailyTick"); } catch (e) {
-      if (!(e && e.code === "store_read_failed")) throw e;
-      console.error("[hs-hearing] store_read_failed in runDailyTick: " + e.key + " skipped, nothing written; the next run retries");
-      log.skipped.push(sid + ":store_read_failed");
+      if (!(e && (e.code === "store_read_failed" || e.code === "rmw_failed"))) throw e;
+      console.error("[hs-hearing] " + e.code + " in runDailyTick: " + e.key + " skipped, nothing written; the next run retries");
+      log.skipped.push(sid + ":" + e.code);
     }
   }
   // 保全エージェント弐号(ウチ回り): 内臓検診と自己修復。結果は guardian:last に記録され、壱号(Actions)が読む。

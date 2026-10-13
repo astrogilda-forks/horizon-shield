@@ -22,8 +22,9 @@ import * as DG from "./dispatch_do.js";
 import * as VIS from "./visibility.js";
 import * as CONCIERGE from "./concierge.js";
 import * as PII from "./pii.js";
+import * as RMW from "./rmw.js";
 
-const SERVER = { name: "HORIZON SHIELD YAKUMO", version: "2.3.1-readfail3-20261013" };
+const SERVER = { name: "HORIZON SHIELD YAKUMO", version: "2.3.2-rmw-20261013" };
 const PUBLIC_DATA_FALLBACK = "https://shield.the-horizons-innovation.com/data/yakumo-contractors.json";
 const MALL_URL = "https://shield.the-horizons-innovation.com/yakumo/";
 const SITE_URL = "https://shield.the-horizons-innovation.com";
@@ -1685,16 +1686,17 @@ async function ingestHearingAnswer(env, store_id, store, text, source, rawForLog
   const tz = await groundHearing(env, text, structured.raw, store);
   const tzRec = { decision: tz.decision, hold: tz.hold, dropped: tz.dropped.map((d) => String(d.field || "") + ":" + String(d.why || "")).slice(0, 30), flagged: tz.flagged.map((d) => String(d.field || "") + ":" + String(d.why || "")).slice(0, 30), sha256: tz.sha256 };
   const incoming = normalizeProfile(store || { store_id }, tz.raw);
-  const prev = await env.HS_HEARING_KV.get("hearing:" + store_id, "json");
   // pending質問の消込(回答の生文を extra[qid] に紐づけ、ペナルティ即回復)
   const extraPatch = store ? AP.settlePendingOnAnswer(store, text) : {};
   incoming.extra = { ...(incoming.extra || {}), ...extraPatch };
-  const profile = AP.mergeProfiles(prev && prev.profile, incoming);
-  if (!profile.company || !profile.area || !(profile.works && profile.works.length)) {
-    return { ok: false, reason: "missing-required" };
-  }
   const now = new Date().toISOString();
-  await env.HS_HEARING_KV.put("hearing:" + store_id, JSON.stringify({ store_id, profile, answered_at: now, completed: true, source, ground: tzRec }));
+  // 2026-10-13 (concurrency audit H3). 保存側の profile との合併(mergeProfiles)と書き込みを、店ごとの Durable Object の
+  // 中で順番に行う(rmw.js の hearing.merge_answer)。ここで読んだ写しに合併して書き戻すと、用紙や別の返事が
+  // 同じ間に書いた答えを、こちらの古い写しで潰す。必須欄の検査も合併の後の形で行うので、中で行う。
+  const hw = await RMW.updateProfile(env, store_id, "hearing.merge_answer",
+    { incoming, fields: { source, ground: tzRec }, now, require_core: true });
+  if (!hw.written) return { ok: false, reason: (hw.result && hw.result.reason) || "missing-required" };
+  const profile = hw.record.profile;
   if (store) {
     store.status = store.status === "published" ? "published" : "hearing_done";
     store.hearing_done_at = now;
@@ -2309,16 +2311,12 @@ async function appendEstimatesForAudit(env, storeId, estimates) {
     return o;
   }).filter((e) => e.work || e.amount);
   if (!norm.length) return { ok: false, reason: "empty" };
-  const rec = await env.HS_HEARING_KV.get("hearing:" + storeId, "json");
-  const profile = (rec && rec.profile) || { store_id: storeId };
-  const eKey = (e) => safeStr(e.work, 80) + "|" + safeStr(e.amount, 20);
-  const ests = Array.isArray(profile.estimates_for_audit) ? profile.estimates_for_audit.slice() : [];
-  const seen = new Set(ests.map(eKey));
-  let added = 0;
-  for (const e of norm) { const k = eKey(e); if (!seen.has(k)) { seen.add(k); ests.push(e); added++; } }
-  profile.estimates_for_audit = ests.slice(0, 12);
   const now = new Date().toISOString();
-  await env.HS_HEARING_KV.put("hearing:" + storeId, JSON.stringify({ ...(rec || {}), store_id: storeId, profile, estimate_updated_at: now }));
+  // 2026-10-13 (concurrency audit H3). 保存側の「今」に足す。足す・重複を除く・書く は rmw.js の hearing.append_estimates
+  // が店ごとの Durable Object の中で行う。二枚の見積が同時に届いても、片方が消えん。
+  const hw = await RMW.updateProfile(env, storeId, "hearing.append_estimates", { norm, now });
+  const profile = hw.record.profile;
+  const added = (hw.result && hw.result.added) || 0;
   const store = await env.HS_HEARING_KV.get("store:" + storeId, "json");
   try { await AP.activityAdd(env, { type: "estimate", member_no: store && store.member_no, text: ((store && store.company) || "\u52A0\u76DF\u5E97") + " \u304C\u5BE9\u67FB\u7528\u306E\u898B\u7A4D\u3092\u9001\u4ED8(\u84C4\u7A4D " + profile.estimates_for_audit.length + "\u4EF6)" }); } catch (_e) {}
   try { await notify(env, "[Yakumo] \u52A0\u76DF\u5E97\u304B\u3089\u5BE9\u67FB\u7528\u306E\u898B\u7A4D\u3092\u53D7\u9818\u3002store=" + storeId + " \u4F1A\u793E=" + ((store && store.company) || "") + " \u8FFD\u52A0" + added + "\u4EF6/\u8A08" + profile.estimates_for_audit.length + "\u4EF6\u3002KIRA\u9069\u6B63\u8A3A\u65AD\u306E\u6750\u6599\u3002"); } catch (_e) {}
@@ -2518,7 +2516,7 @@ const worker = {
     if (path === "/health") {
       // 保全: 心臓の脈(最終巡回)と内臓検診(弐号)の要約を出す。件数のみで中身は出さない(非機微)。
       const g = await AP.guardianStatus(env).catch(() => null);
-      return json({ ok: true, server: SERVER.name, version: SERVER.version, estimate_files: ESTFILE_LISTING, ...(g || {}) });
+      return json({ ok: true, server: SERVER.name, version: SERVER.version, estimate_files: ESTFILE_LISTING, store_writes: RMW.STORE_WRITES_MARK, ...(g || {}) });
     }
 
     if (path === "/.well-known/agent-card.json") return json(agentCard(url.origin));
@@ -2849,7 +2847,6 @@ const worker = {
         // 2026-09-25 用紙の自由記述からも施主の名前を伏せてから取り込む(社名・代表者・連絡先の欄は触らない)。
         PII.scrubFormRaw(raw);
         const incoming = normalizeProfile(store || tokRec, raw);
-        const prev = await env.HS_HEARING_KV.get("hearing:" + tokRec.store_id, "json");
         /* 2026-09-11 用紙が qid つきで答えを返すようになった。
            どの設問への答えかが判っているものを、判らないもの扱いで丸ごと当てない。
            answers の無い古い送信は、これまで通り一括で締める(後方互換)。 */
@@ -2859,11 +2856,12 @@ const worker = {
           if (formAnswers.length) qidPatch = AP.settleByQid(store, formAnswers) || {};
           else AP.settlePendingOnAnswer(store, JSON.stringify(raw).slice(0, 3000)); // フォーム再送=pending消込+ペナルティ回復
         }
-        const profile = AP.mergeProfiles(prev && prev.profile, incoming);
-        if (Object.keys(qidPatch).length) profile.extra = { ...(profile.extra || {}), ...qidPatch };
         const now = new Date().toISOString();
-        const record = { token, store_id: tokRec.store_id, profile, answered_at: now, completed: true, source: "form" };
-        await env.HS_HEARING_KV.put("hearing:" + tokRec.store_id, JSON.stringify(record));
+        // 2026-10-13 (concurrency audit H3). 保存側の profile との合併と書き込みは、店ごとの Durable Object の中で
+        // (rmw.js の hearing.merge_answer)。ここで読んだ写しに合併すると、LINE やメールの返事が同じ間に書いた答えを潰す。
+        const hw = await RMW.updateProfile(env, tokRec.store_id, "hearing.merge_answer",
+          { incoming, extra_patch: qidPatch, fields: { token, source: "form" }, now });
+        const profile = hw.record.profile;
         if (store) {
           store.status = store.status === "published" ? "published" : "hearing_done";
           store.hearing_done_at = now;
@@ -3034,19 +3032,14 @@ const worker = {
         if (!Array.isArray(b.estimates)) return json({ error: "estimates(配列)が必要" }, 400);
         const s = await env.HS_HEARING_KV.get("store:" + sid, "json");
         if (!s) return json({ error: "not_found" }, 404);
-        const rec = await env.HS_HEARING_KV.get("hearing:" + sid, "json");
-        const profile = (rec && rec.profile) || { store_id: sid };
-        const before = Array.isArray(profile.estimates_for_audit) ? profile.estimates_for_audit : [];
-        const beforeKeys = before.map((e) => safeStr(e && e.work, 80) + "|" + safeStr(e && e.amount, 20));
-        // 何を分母から外したかを痕跡に残す(監査可能性: いつ誰がどの見積で測ると決めたか)
-        profile.edits = [...(profile.edits || []),
-          { at: new Date().toISOString(), by: "admin", op: "set-estimates",
-            from_count: before.length, to_count: b.estimates.length,
-            from_keys: beforeKeys.slice(0, 20) }].slice(-20);
-        profile.estimates_for_audit = [];   // 空にしてから、通す本数だけを足し直す
-        await env.HS_HEARING_KV.put("hearing:" + sid, JSON.stringify({ ...(rec || {}), store_id: sid, profile }));
+        // 何を分母から外したかを痕跡に残す(監査可能性: いつ誰がどの見積で測ると決めたか)。
+        // 2026-10-13 (concurrency audit H3). 空にする・痕跡を残す・書く は rmw.js の hearing.set_estimates_clear が
+        // 店ごとの Durable Object の中で、保存側の「今」に対して行う。
+        const hw = await RMW.updateProfile(env, sid, "hearing.set_estimates_clear",
+          { to_count: b.estimates.length, now: new Date().toISOString() });
+        const beforeCount = (hw.result && hw.result.before_count) || 0;
         const out = await appendEstimatesForAudit(env, sid, b.estimates);
-        return json({ ...out, replaced: true, removed_from_audit: before.length });
+        return json({ ...out, replaced: true, removed_from_audit: beforeCount });
       }
 
       // 2026-09-15: 人の番の名簿を、翌朝の cron を待たずに読む口。読むだけで何も書かない。
@@ -3246,114 +3239,22 @@ const worker = {
       if (path === "/admin/profile-patch" && request.method === "POST") {
         let b; try { b = await request.json(); } catch (_e) { return json({ error: "bad_json" }, 400); }
         const sid = safeStr(b.store_id, 40);
-        const rec = await env.HS_HEARING_KV.get("hearing:" + sid, "json");
-        if (!rec || !rec.profile) return json({ error: "not_found" }, 404);
-        // 2026-08-23: 直せる項目が文字列8つしかなく、エリアも業種も直せなかった。
-        // こちらが取り違えたものを、こちらで直せないのは筋が通らない。
-        // 実際に「二宮町要相談」から条件が落ちた件を、この口から戻した。
-        const ALLOW = ["rep", "license", "contact", "hours", "ng", "story", "strengths", "trust",
-                       "company", "area", "industry"];
-        const ALLOW_ARR = ["areas_served", "works", "cases"];
-        const fields = (b.fields && typeof b.fields === "object") ? b.fields : {};
-        const applied = {};
-        for (const k of ALLOW) {
-          if (!Object.prototype.hasOwnProperty.call(fields, k)) continue;
-          const to = safeStr(fields[k], 2000);
-          applied[k] = { from: safeStr(rec.profile[k], 2000), to };
-          rec.profile[k] = to;
+        /* 2026-08-23: 直せる項目が文字列8つしかなく、エリアも業種も直せなかった。
+           こちらが取り違えたものを、こちらで直せないのは筋が通らない。
+           実際に「二宮町要相談」から条件が落ちた件を、この口から戻した。
+           2026-08-25: extra(設問への答え)も、ここから直せるようにした。空文字を渡せばその qid を消す。知らない qid は受け取らない。
+           2026-09-10: 値に {text, at} を渡せる。at を渡したときは legacy_confirmed の印(いつ答えたかを潰さない)。
+           2026-09-11: _unsorted は消すことだけ許す。
+           2026-10-13 (concurrency audit H3): 検査と直しと書き込みの本体は rmw.js の hearing.profile_patch に移り、店ごとの
+           Durable Object の中で、保存側の「今」に対して行う。ここで読んだ写しを直して書き戻すと、同じ間に届いた
+           返事の答えを、こちらの古い写しで潰す。検査の結果(400 の理由)と applied の形はこれまでと同じ。 */
+        const hw = await RMW.updateProfile(env, sid, "hearing.profile_patch",
+          { fields: b.fields, extra: b.extra, now: new Date().toISOString(), now_ms: Date.now() });
+        if (!hw.written) {
+          const r = (hw.result && typeof hw.result === "object") ? hw.result : { error: "not_found" };
+          return json(r, r.error === "not_found" ? 404 : 400);
         }
-        for (const k of ALLOW_ARR) {
-          if (!Object.prototype.hasOwnProperty.call(fields, k)) continue;
-          if (!Array.isArray(fields[k])) return json({ error: "must_be_array", field: k }, 400);
-          const to = fields[k].map((x) => safeStr(x, 120)).filter(Boolean).slice(0, 40);
-          applied[k] = { from: (rec.profile[k] || []).slice(0, 40), to };
-          rec.profile[k] = to;
-        }
-        // 2026-08-25: extra(設問への答え)も、ここから直せるようにした。
-        //   峰尾様の記録で、5件のうち3件が別の設問の答えを保持していた。
-        //     q_story  … 中身は建築業許可番号
-        //     q_trust  … 中身は連絡先と営業時間
-        //     q_estimates … 中身は施工事例
-        //   2問まとめて送って1通で返ってきたものを、両方の答えとして同じまま入れた結果である。
-        //   波の仕組み(8/24)より前の記録なので、attributed の印すら無い。
-        //
-        //   これが効くのは採点である。computeCompleteness は extra[qid] が
-        //   「在る」だけで答え済みと数えるので、在るかぎり機械は二度と聞かない。
-        //   つまり許可番号が、創業の経緯の代わりに永久に居座る。
-        //
-        //   直せないまま残すのは筋が通らない。この口の上の但し書きと同じ理由である。
-        //   空文字を渡せばその qid を消す。知らない qid は受け取らない。
-        const extraIn = (b.extra && typeof b.extra === "object" && !Array.isArray(b.extra)) ? b.extra : null;
-        if (extraIn) {
-          rec.profile.extra = rec.profile.extra || {};
-          const known = new Set();
-          for (const k of Object.keys(AP.QUESTION_BANK)) {
-            const v = AP.QUESTION_BANK[k];
-            if (v && typeof v === "object" && !v.text) for (const q of Object.keys(v)) known.add(q);
-            else known.add(k);
-          }
-          for (const q of Object.keys(IND.industryBank(rec.profile.industry) || {})) known.add(q);
-          for (const q of VIS.visibilityQids()) known.add(q);
-          // 2026-09-30 継続エンリッチの設問(q_en_*)も当て直せるようにする。知らない qid として弾いていた。
-          for (const q of Object.keys(AP.ENRICH_BANK || {})) known.add(q);
-          /* 2026-09-11 _unsorted(当て先の決まっていない返事の置き場)を、消せるようにする。
-             settlePendingOnAnswer は切り分け不能の1通を profile.extra._unsorted に1本だけ置く。
-             人が中身を見て正しい qid に当て直したあと、この置き場は用済みになる。
-             ところがこれまで profile-patch の extra は _unsorted を「知らない qid」として弾いていたので、
-             当て直しても _unsorted が残り、E9(no_unsorted_reply)が永久に鳴り続けた。
-             _unsorted は新しく手で書く物ではない(機械しか置かない)。だから消すことだけ許す。 */
-          known.add("_unsorted");
-          const bad = Object.keys(extraIn).filter((q) => !known.has(q));
-          if (bad.length) return json({ error: "unknown_qid", unknown: bad }, 400);
-          if (Object.prototype.hasOwnProperty.call(extraIn, "_unsorted")) {
-            const u = extraIn._unsorted;
-            const uStr = safeStr(u && typeof u === "object" ? u.text : u, 3000).trim();
-            if (uStr) return json({ error: "unsorted_is_delete_only",
-              note: "_unsorted は当て先の決まっていない返事の置き場。手で書く物ではない。正しい qid に当て直してから、空文字で消すこと。" }, 400);
-          }
-          /* 2026-09-10 いつ答えたかを、印を押すときに潰さないこと。
-             印の無い古い記録(2026-08-24 より前)を人が見て「これは本物の回答だ」と
-             確かめたとき、これまでは同じ本文を入れ直すしか手が無かった。
-             すると at が今の時刻で上書きされる。実際に潰した:
-               hs-partner-001 q_fr_support 「進めて下さい」 8/20 01:39 → 9/10 10:56
-               hs-partner-002 q_license    建築業許可番号   8/19 10:00 → 9/10 10:56
-             中身が同じでも「いつ答えたか」は別の事実である。検査を緑にするために
-             事実を潰したら、検査は緑を作る道具になる。
-             だから値に {text, at} を渡せるようにする。at を渡したときは、
-             人が中身を確かめた古い記録として legacy_confirmed の印にする。
-             admin(今この場で人が書いた) と legacy_confirmed(昔の回答を人が確認した)は
-             別の事実なので、印も分ける。 */
-          const ea = {};
-          for (const q of Object.keys(extraIn)) {
-            const before = rec.profile.extra[q];
-            const raw = extraIn[q];
-            const isObj = raw && typeof raw === "object" && !Array.isArray(raw);
-            const to = safeStr(isObj ? raw.text : raw, 3000).trim();
-            if (!to) {
-              delete rec.profile.extra[q];
-              ea[q] = { from: before || null, to: null, note: "消した" };
-              continue;
-            }
-            let at = new Date().toISOString(), mark = "admin";
-            if (isObj && raw.at) {
-              const t = Date.parse(raw.at);
-              if (!Number.isFinite(t)) return json({ error: "bad_at", qid: q, at: raw.at }, 400);
-              if (t > Date.now() + 60000) return json({ error: "at_in_future", qid: q, at: raw.at }, 400);
-              at = new Date(t).toISOString();
-              mark = "legacy_confirmed";
-            }
-            rec.profile.extra[q] = { text: to, at, attributed: mark, with: [] };
-            ea[q] = { from: before || null, to: rec.profile.extra[q] };
-          }
-          applied.extra = ea;
-        }
-        if (!Object.keys(applied).length) {
-          return json({ error: "no_allowed_field", allow: ALLOW, allow_array: ALLOW_ARR,
-                        allow_extra: "b.extra に {qid: 文字列} を渡す。空文字でその qid を消す。" }, 400);
-        }
-        rec.profile.edits = [...(rec.profile.edits || []),
-          { at: new Date().toISOString(), by: "admin", fields: Object.keys(applied) }].slice(-20);
-        await env.HS_HEARING_KV.put("hearing:" + sid, JSON.stringify(rec));
+        const applied = hw.result.applied;
         await notify(env, "[Yakumo] profile-patch: " + sid + " " + Object.keys(applied).join(","));
         return json({ ok: true, store_id: sid, applied });
       }
@@ -3748,6 +3649,12 @@ export default {
       if (e && e.code === "store_read_failed") {
         console.error("[hs-hearing] store_read_failed: " + e.key + " could not be read; nothing written");
         return json({ ok: false, error: "store_read_failed" }, 503);
+      }
+      // 2026-10-13 (concurrency audit H2 / H3). The per store Durable Object did not answer or refused: nothing was
+      // written to store:<sid> or hearing:<sid>. 503 so the caller can retry; never a plain KV put instead.
+      if (e && e.code === "rmw_failed") {
+        console.error("[hs-hearing] rmw_failed: " + e.key + " " + e.why + "; nothing written");
+        return json({ ok: false, error: "rmw_failed", key: e.key }, 503);
       }
       throw e;
     }

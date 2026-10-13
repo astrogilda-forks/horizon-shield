@@ -28,6 +28,8 @@
 // 判断そのものは decideClaim という純関数に出してある。DO の runtime を持ち出さんと
 // 試験でけへん規則は、試験されん規則になる。
 
+import * as RMW from "./rmw.js";
+
 export const DEFAULT_WINDOW_MS = 600000;   // 10 分。hearing.js の既定と同じ
 
 // 窓の幅を読む。0 を渡したら仕掛けごと切れる。数にならん値は既定に戻す。
@@ -70,9 +72,15 @@ export function decideClaim(prev, now, fpNow, windowMs) {
 // 二つとも立てる。claim で先に印を置いて札 (token) を返す。合図が失敗したら
 // release にその札を渡して印を消す。消すんは、置いた印が自分の札の物やった時だけや。
 // 間に別の本物が印を置き直しとったら、消したらあかん。
+//
+// 2026-10-13 (concurrency audit H2 と H3)。同じ class に /rmw の口を足した。store:<sid> と hearing:<sid> の
+// 「読む・直す・書く」を、鍵ごとに別の id(rmw:<key>)で順番に動かす。中身は rmw.js の rmwApply。
+// 関所の印(mark)と鍵の床(seq / v:<n> / last_at)は別の id に住むから、混ざらん。env を受けるんは KV を読み書く為。
+// class も binding も migration も増えとらん(wrangler.jsonc の v1 のまま)。
 export class DispatchGateDO {
-  constructor(state) {
+  constructor(state, env) {
     this.state = state;
+    this.env = env;
   }
 
   async fetch(request) {
@@ -100,6 +108,13 @@ export class DispatchGateDO {
         await this.state.storage.put("mark", { ts: now, fp: fpNow, token });
         return { ...d, token };
       }));
+    }
+
+    if (url.pathname === "/rmw") {
+      // 読む・直す・書く を 1 つの塊にする。この間、この id の DO は他の要求を受け取らん。
+      const now = Number.isFinite(Number(body.now)) ? Number(body.now) : Date.now();
+      return this._json(await this.state.blockConcurrencyWhile(() =>
+        RMW.rmwApply(this.state.storage, this.env && this.env.HS_HEARING_KV, body, now)));
     }
 
     if (url.pathname === "/release") {
