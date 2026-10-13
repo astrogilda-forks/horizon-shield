@@ -217,12 +217,32 @@ defectsが空配列の場合はseverityを「低」にしてください。`;
           })
         });
 
-        const data = await res.json();
-        const raw = data.content?.[0]?.text || '{}';
+        // 2026-10-13 issue #13: a failed model call is not "0 defects". On non-2xx or no text,
+        // answer with an error code and tell the owner the inspection was not completed.
+        const data = await res.json().catch(() => null);
+        const rawText = data && data.content && data.content[0] && data.content[0].text;
+        if (!res.ok || !rawText) {
+          const code = res.ok ? 'inspect_no_result' : 'inspect_upstream_failed';
+          console.log('[inspect] ' + code + ' status=' + res.status + ' ' + JSON.stringify(data).slice(0, 300));
+          ctx.waitUntil(pushLine(
+            env.LINE_CHANNEL_TOKEN,
+            env.LINE_USER_ID,
+            `🔔 施工不良診断来ました！
+種別: ${category || '一般'}
+写真: ${images.length}枚
+診断できませんでした(${res.ok ? 'AI の返答が空' : 'AI の呼び出しに失敗、status ' + res.status})。検出 0 件ではありません。`
+          ));
+          return new Response(JSON.stringify({ error: code }), {
+            status: 502, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+          });
+        }
+        const raw = rawText;
         let result;
+        let parsed = true;
         try {
           result = JSON.parse(raw.replace(/```json|```/g, '').trim());
         } catch {
+          parsed = false;
           result = { severity: '不明', defects: [], report: raw };
         }
 
@@ -233,7 +253,7 @@ defectsが空配列の場合はseverityを「低」にしてください。`;
           `🔔 施工不良診断来ました！
 種別: ${category || '一般'}
 写真: ${images.length}枚
-検出: ${result.defects?.length || 0}件
+検出: ${parsed ? (result.defects?.length || 0) + '件' : '判定できず(AI の返答を読み取れませんでした)'}
 深刻度: ${result.severity}`
         ));
 

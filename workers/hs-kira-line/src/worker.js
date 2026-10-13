@@ -267,7 +267,7 @@ var worker_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
-      return json({ status: "ok", version: "v22-catchup-20261005", service: "hs-kira-line" });
+      return json({ status: "ok", version: "v23-readfail-20261013", service: "hs-kira-line" });
     }
     if (url.pathname === "/diagnosis" && request.method === "POST") {
       return handleDiagnosis(request, env, ctx);
@@ -378,15 +378,15 @@ async function processEvents(events, env) {
             // 大賀さん本人がグループに書いた発言は、加盟店の答えとして hearing に流さない(自分の文が加盟店の回答に化けた 9/7 の件)。
             //   KIRA も返さない。加盟店グループなら会話には大賀さんの文として残す(KIRA の手本)。
             if (userId === env.LINE_USER_ID) {
-              let _pgo = false;
-              try { _pgo = !!(await env.SEEN_STORE.get("groupPartner:" + gid)); } catch (_e) {}
-              if (_pgo) await kiraConvAppend(env, gid, "owner", gt);
+              if ((await kvFlag(env, "groupPartner:" + gid)) === "yes") await kiraConvAppend(env, gid, "owner", gt);
               continue;
             }
-            let _pg0 = false;
-            try { _pg0 = !!(await env.SEEN_STORE.get("groupPartner:" + gid)); } catch (_e) {}
+            // 2026-10-13 issue #13: read the partner-group flag once, as yes / no / failed. A failed read is not "not a partner group".
+            const _pgState = await kvFlag(env, "groupPartner:" + gid);
+            const _pg = _pgState === "yes", _pgUnknown = _pgState === "failed";
             // 加盟店グループでは返事を KIRA が決めるので、hearing には返事を作らせない(作られていない返事の知らせが大賀に飛ぶのを止める)。
-            const _hr = await ingestPartnerSilently(gt, userId, gid, env, _pg0);
+            //   2026-10-13: when the flag could not be read, hearing also makes no reply (nothing extra is sent).
+            const _hr = await ingestPartnerSilently(gt, userId, gid, env, _pg || _pgUnknown);
             const _reply = _hr.reply;
             // HS-KIRA-PARTNER-AUTO-20261005(v15 で見直し): 加盟店グループでは KIRA が自分で読んで返す(TOshi の指示「全部自動で」)。
             //   ・加盟店グループ(groupPartner の印)では、@ でも引用でも普通の発言でも KIRA が決める。hearing の定型文は参考として渡す
@@ -394,8 +394,6 @@ async function processEvents(events, env) {
             //   ・加盟店グループでない所では KIRA は考えない: @ で hearing の返事があればそれを、引用なら受け取りの一言を返し、本文は大賀へ。
             //   ・返事は replyToken(LINE の送信数を使わない)。大賀への即時の知らせは escalate とお金・契約などの語があるときだけ、残りは夜のまとめ。
             const _addressed = isAddressedToBot(event), _quoted = isQuoteReply(event), _aside = isAsideToOther(event);
-            let _pg = false;
-            try { _pg = !!(await env.SEEN_STORE.get("groupPartner:" + gid)); } catch (_e) {}
             const _forUs = !_aside && (_addressed || _quoted || _pg);
             if (_pg) await kiraConvAppend(env, gid, "member", gt);
             if (_pg && _aside) await kiraConvAppend(env, gid, "silent", "(社内の人への一言なので返さなかった)");
@@ -425,6 +423,17 @@ async function processEvents(events, env) {
                 }
                 try {
                   await pushToLine(env.LINE_USER_ID, "【加盟店グループ 要確認】" + (_quoted ? "(引用で返信)" : (_addressed ? "(@で呼びかけ)" : "(グループでの発言)")) + "(KIRA が返事を作れなかった: " + ((r && r.err) || "?") + ")\n" + gt.slice(0, 400) + (gt.length > 400 ? "…" : ""), env.LINE_CHANNEL_TOKEN);
+                } catch (_e) {}
+              }
+            } else if (_pgUnknown) {
+              // 2026-10-13 issue #13: the flag could not be read, so neither the partner path (KIRA) nor the non-partner
+              //   path (hearing's reply) is safe. Only the neutral receipt for @ or quote, and the text goes to the owner.
+              if (!_aside && (_quoted || _addressed) && event.replyToken) {
+                await replyToLine(event.replyToken, QUOTE_ACK_TEXT, env.LINE_CHANNEL_TOKEN);
+              }
+              if (!_aside) {
+                try {
+                  await pushToLine(env.LINE_USER_ID, "【グループ 要確認】(加盟店グループかどうかを今は読み込めなかったため、KIRA は返していません)\n" + gt.slice(0, 400) + (gt.length > 400 ? "…" : ""), env.LINE_CHANNEL_TOKEN);
                 } catch (_e) {}
               }
             } else if (_forUs) {
@@ -1461,20 +1470,21 @@ async function handleGyoshaCheck(companyName, replyToken, userId, env) {
     const response = await fetch(`https://hs-gyosha-check.oga-surf-project.workers.dev/check`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ company_name: companyName })
+      // 2026-10-13: /check reads { company } and answers { result: "<report text>" } (the risk level is inside the text).
+      body: JSON.stringify({ company: companyName })
     });
     const data = await response.json();
-    const risk = data.risk_level || "\u8ABF\u67FB\u4E2D";
-    const summary = data.summary || "\u73FE\u5728\u60C5\u5831\u3092\u53D6\u5F97\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002";
+    const report = data && typeof data.result === "string" ? data.result.trim() : "";
+    if (!response.ok || !report) throw new Error("gyosha-check status=" + response.status + " " + JSON.stringify(data).slice(0, 200));
     resultText = `\u{1F50D} \u696D\u8005\u8ABF\u67FB\u7D50\u679C
 \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
 \u4F1A\u793E\u540D: ${companyName}
-\u30EA\u30B9\u30AF\u5224\u5B9A: ${risk}
 
-${summary}
+${report}
 
 \u6C17\u306B\u306A\u308B\u70B9\u304C\u3042\u308C\u3070\u3001\u898B\u7A4D\u66F8\u306E\u67FB\u5B9A\u3082\u304A\u3059\u3059\u3081\u3067\u3059\u{1F4A1}`;
-  } catch {
+  } catch (e) {
+    console.log("[gyosha] check failed " + String(e && e.message || e));
     resultText = `\u{1F50D}\u300C${companyName}\u300D\u3092\u8ABF\u67FB\u4E2D\u3067\u3059\u3002
 
 \u3088\u308A\u8A73\u3057\u3044\u8ABF\u67FB\u304C\u5FC5\u8981\u306A\u5834\u5408\u306F\u3001\u898B\u7A4D\u66F8\u306E\u67FB\u5B9A\u30B5\u30FC\u30D3\u30B9\u3092\u3054\u5229\u7528\u304F\u3060\u3055\u3044\u3002
@@ -1615,9 +1625,9 @@ async function runFollowups(env) {
       const userId = name.replace("chat:", "");
       if (userId === env.LINE_USER_ID) continue;
       // a member store is not a lead: never drip consumer copy at one
-      let isP = false;
-      try { isP = !!(await env.SEEN_STORE.get(`partner:${userId}`)); } catch (_e) {}
-      if (isP) continue;
+      // 2026-10-13 issue #13: if the flag cannot be read, skip this user this hour (never drip on a failed read).
+      const isP = await kvFlag(env, `partner:${userId}`);
+      if (isP !== "no") continue;
       const data = await env.SEEN_STORE.get(name);
       if (!data) continue;
       let history;
@@ -1735,10 +1745,10 @@ function kiraGlobalOk(l) {
 const KIRA_SWEEP_MARK = "kira_global_swept:v20";
 async function kiraGlobalSweep(env) {
   if (await env.SEEN_STORE.get(KIRA_SWEEP_MARK)) return false;
-  const all = await kiraKvJson(env, "kira_lessons:global", []);
+  const all = await kiraKvJsonStrict(env, "kira_lessons:global", []);
   const keep = all.filter(kiraGlobalOk), gone = all.filter((l) => !kiraGlobalOk(l));
   if (gone.length) {
-    const old = await kiraKvJson(env, "kira_lessons:global_removed", []);
+    const old = await kiraKvJsonStrict(env, "kira_lessons:global_removed", []);
     await env.SEEN_STORE.put("kira_lessons:global_removed", JSON.stringify(old.concat(gone.map((l) => Object.assign({}, l, { removed_at: new Date().toISOString(), why: "v20 の決まりに合わない" }))).slice(-200)));
     await env.SEEN_STORE.put("kira_lessons:global", JSON.stringify(keep));
   }
@@ -1767,10 +1777,29 @@ function kiraJstDay(d) { const t = new Date((d || Date.now()) + 9 * 3600 * 1000)
 async function kiraKvJson(env, key, dflt) {
   try { const v = await env.SEEN_STORE.get(key); return v ? JSON.parse(v) : dflt; } catch (_e) { return dflt; }
 }
+// 2026-10-13 issue #13: a KV read has three outcomes: found, absent, failed. A failed read is never "nothing stored".
+// kiraKvJsonStrict throws when the get fails, so a read-modify-write never puts a fresh list over data it could not read.
+async function kiraKvJsonStrict(env, key, dflt) {
+  const v = await env.SEEN_STORE.get(key);
+  if (!v) return dflt;
+  try { return JSON.parse(v); } catch (_e) { return dflt; }
+}
+// "yes" | "no" | "failed" for a presence flag such as partner:<uid> or groupPartner:<gid>.
+async function kvFlag(env, key) {
+  try { return (await env.SEEN_STORE.get(key)) ? "yes" : "no"; } catch (e) {
+    console.log("[kv] read failed key=" + key + " " + String(e && e.message || e));
+    return "failed";
+  }
+}
+// Owner-facing replies when a list could not be read (2026-10-13). Never "none found" on a failed read.
+const KIRA_READ_FAIL_GROUPS = "加盟店グループの一覧を今は読み込めませんでした。";
+const KIRA_READ_FAIL_DMS = "加盟店さんとの 1 対 1 の一覧を今は読み込めませんでした。";
+const KIRA_READ_FAIL_LESSONS = "経験帳を今は読み込めませんでした。";
+const KIRA_READ_FAIL_RETRY = "少し時間をおいて、もう一度お試しください。";
 async function kiraConvAppend(env, gid, who, text) {
   if (!gid || !text) return;
   try {
-    const a = await kiraKvJson(env, "kira_gconv:" + gid, []);
+    const a = await kiraKvJsonStrict(env, "kira_gconv:" + gid, []);
     a.push({ who, text: String(text).slice(0, 600), at: new Date().toISOString() });
     await env.SEEN_STORE.put("kira_gconv:" + gid, JSON.stringify(a.slice(-KIRA_CONV_MAX)), { expirationTtl: 60 * 60 * 24 * 30 });
   } catch (_e) {}
@@ -1842,7 +1871,7 @@ async function kiraLessonsAdd(env, gid, lessons, srcText) {
     const key = toGlobal ? "kira_lessons:global" : "kira_lessons:" + gid;
     const max = toGlobal ? KIRA_LESSONS_MAX_GLOBAL : KIRA_LESSONS_MAX_GROUP;
     try {
-      const a = await kiraKvJson(env, key, []);
+      const a = await kiraKvJsonStrict(env, key, []);
       if (a.some((x) => x.t === l.text)) continue;
       a.push({ t: l.text, at, by: "kira", src: toGlobal ? "" : src });
       await env.SEEN_STORE.put(key, JSON.stringify(a.slice(-max)));
@@ -1859,7 +1888,7 @@ function kiraEscalateText(inText, r, forced, where) {
 async function kiraDigestAdd(env, item) {
   try {
     const key = "kira_digest:" + kiraJstDay();
-    const a = await kiraKvJson(env, key, []);
+    const a = await kiraKvJsonStrict(env, key, []);
     a.push(Object.assign({ at: new Date().toISOString() }, item, { in: String(item.in || "").slice(0, 200), out: String(item.out || "").slice(0, 300), lessons: Array.isArray(item.lessons) ? item.lessons.slice(0, 3) : [] }));
     await env.SEEN_STORE.put(key, JSON.stringify(a.slice(-50)), { expirationTtl: 60 * 60 * 24 * 7 });
   } catch (_e) {}
@@ -1870,19 +1899,20 @@ async function sendKiraDigest(env, nowMs) {
   if (jstHour !== 21) return false;
   const day = kiraJstDay(now);
   if (await env.SEEN_STORE.get("kira_digest_sent:" + day)) return false;
-  const a = await kiraKvJson(env, "kira_digest:" + day, []);
+  const a = await kiraKvJsonStrict(env, "kira_digest:" + day, []);
   await env.SEEN_STORE.put("kira_digest_sent:" + day, "1", { expirationTtl: 60 * 60 * 24 * 3 });
   if (!a.length) return false;
   const lines = a.map((x, i) => (i + 1) + ". [" + (x.where ? x.where + " " : "") + x.kind + "] " + x.in.replace(/\n/g, " ").slice(0, 80) + (x.out ? "\n   → " + x.out.replace(/\n/g, " ").slice(0, 120) : "") + ((x.lessons && x.lessons.length) ? "\n   覚えた: " + x.lessons.join(" / ").slice(0, 200) : ""));
   await pushToLine(env.LINE_USER_ID, "【KIRA 今日の加盟店とのやりとり " + a.length + " 件】\n" + lines.join("\n"), env.LINE_CHANNEL_TOKEN);
   return true;
 }
+// 2026-10-13: returns null when the list could not be read (callers must not say "none found").
 async function kiraPartnerGroups(env) {
   let ks = [];
   try {
     const l = await env.SEEN_STORE.list({ prefix: "groupPartner:" });
     ks = (l.keys || []).map((k) => k.name.slice("groupPartner:".length)).filter((g) => /^[CR][0-9a-f]{32}$/.test(g));
-  } catch (_e) {}
+  } catch (e) { console.log("[kv] list failed groupPartner: " + String(e && e.message || e)); return null; }
   let last = null;
   try { last = await env.SEEN_STORE.get("kira_last_gid"); } catch (_e) {}
   const out = [];
@@ -1903,7 +1933,11 @@ async function kiraRelayDo(env, replyToken, g, body, send) {
 async function kiraCatchUp(env, nowMs) {
   const now = nowMs || Date.now();
   let keys = [];
-  try { keys = ((await env.SEEN_STORE.list({ prefix: "kira_gconv:" })).keys || []).map((k) => k.name); } catch (_e) {}
+  // 2026-10-13 issue #13: a failed list is not "nothing to catch up". Log it and return null (0 means none were due).
+  try { keys = ((await env.SEEN_STORE.list({ prefix: "kira_gconv:" })).keys || []).map((k) => k.name); } catch (e) {
+    console.log("[catchup] list failed, retry next hour " + String(e && e.message || e));
+    return null;
+  }
   let sent = 0;
   for (const name of keys) {
     if (sent >= 5) break;
@@ -1919,9 +1953,9 @@ async function kiraCatchUp(env, nowMs) {
     const age = now - Date.parse(last.at);
     if (!(age >= 10 * 60 * 1000 && age <= 3 * 24 * 3600 * 1000)) continue;
     const doneKey = "kira_catchup:" + convKey + ":" + last.at;
-    let done = null;
-    try { done = await env.SEEN_STORE.get(doneKey); } catch (_e) {}
-    if (done) continue;
+    // 2026-10-13: if the sent mark cannot be read, skip (a duplicate late reply to a store is worse than one hour more).
+    const done = await kvFlag(env, doneKey);
+    if (done !== "no") continue;
     try { await env.SEEN_STORE.put(doneKey, "1", { expirationTtl: 60 * 60 * 24 * 7 }); } catch (_e) {}
     let i = conv.length - 1;
     while (i > 0 && conv[i - 1].who === "member") i--;
@@ -1950,12 +1984,13 @@ async function kiraCatchUp(env, nowMs) {
   return sent;
 }
 // 2026-10-05 v21: 加盟店さんとの 1 対 1 の相手(KIRA が会話を持っている相手)を、直近の発言が新しい順に返す。名前は LINE のプロフィールから。
+// 2026-10-13: returns null when the list could not be read (callers must not say "none found").
 async function kiraPartnerDms(env) {
   let ids = [];
   try {
     const l = await env.SEEN_STORE.list({ prefix: "kira_gconv:dm:" });
     ids = (l.keys || []).map((k) => k.name.slice("kira_gconv:dm:".length)).filter((u) => /^U[0-9a-f]{32}$/.test(u));
-  } catch (_e) {}
+  } catch (e) { console.log("[kv] list failed kira_gconv:dm: " + String(e && e.message || e)); return null; }
   const out = [];
   for (const uid of ids) {
     if (uid === env.LINE_USER_ID) continue;
@@ -1989,12 +2024,16 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
   const t = String(text || "").trim();
   let m;
   if (/^経験帳$/.test(t)) {
-    const g = await kiraKvJson(env, "kira_lessons:global", []);
-    let groups = 0, items = 0;
+    let g, groups = 0, items = 0;
     try {
+      g = await kiraKvJsonStrict(env, "kira_lessons:global", []);
       const l = await env.SEEN_STORE.list({ prefix: "kira_lessons:" });
-      for (const k of (l.keys || [])) { if (k.name === "kira_lessons:global") continue; groups++; items += (await kiraKvJson(env, k.name, [])).length; }
-    } catch (_e) {}
+      for (const k of (l.keys || [])) { if (k.name === "kira_lessons:global") continue; groups++; items += (await kiraKvJsonStrict(env, k.name, [])).length; }
+    } catch (e) {
+      console.log("[lessons] read failed " + String(e && e.message || e));
+      await replyToLine(replyToken, KIRA_READ_FAIL_LESSONS + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
+      return true;
+    }
     const body = g.length ? g.map((x, i) => (i + 1) + ". " + x.t + (x.by === "owner" ? "(大賀)" : "")).join("\n") : "(まだ無い)";
     await replyToLine(replyToken, "【経験帳 全体 " + g.length + " 件】\n" + body + "\n\n店ごと: " + groups + " 店、" + items + " 件(店の中だけで使う)", env.LINE_CHANNEL_TOKEN);
     return true;
@@ -2007,6 +2046,10 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
   if ((m = t.match(/^(グループへ|記録)[\s\u3000:：]*([\s\S]+)$/))) {
     const send = m[1] === "グループへ", body = m[2].trim().slice(0, 4000);
     const groups = await kiraPartnerGroups(env);
+    if (groups === null) {
+      await replyToLine(replyToken, KIRA_READ_FAIL_GROUPS + "何も送っていません。" + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
+      return true;
+    }
     if (!groups.length) {
       await replyToLine(replyToken, "送り先の加盟店グループが見つかりませんでした。何も送っていません。", env.LINE_CHANNEL_TOKEN);
       return true;
@@ -2021,6 +2064,10 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
   if ((m = t.match(/^(1対1へ|１対１へ|1対1記録|１対１記録)[\s\u3000:：]*([\s\S]+)$/))) {
     const send = /へ$/.test(m[1]), body = m[2].trim().slice(0, 4000);
     const dms = await kiraPartnerDms(env);
+    if (dms === null) {
+      await replyToLine(replyToken, KIRA_READ_FAIL_DMS + "何も送っていません。" + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
+      return true;
+    }
     if (!dms.length) {
       await replyToLine(replyToken, "KIRA が会話を持っている加盟店さんの 1 対 1 が見つかりませんでした。何も送っていません。", env.LINE_CHANNEL_TOKEN);
       return true;
@@ -2031,6 +2078,7 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
   }
   if (/^(1対1一覧|１対１一覧)$/.test(t)) {
     const dms = await kiraPartnerDms(env);
+    if (dms === null) { await replyToLine(replyToken, KIRA_READ_FAIL_DMS + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN); return true; }
     await replyToLine(replyToken, dms.length ? "加盟店さんとの 1 対 1(新しい順):\n" + dms.map((d, i) => (i + 1) + ". " + d.name + (d.last ? "(直近: " + d.last + ")" : "")).join("\n") : "まだありません。", env.LINE_CHANNEL_TOKEN);
     return true;
   }
@@ -2050,11 +2098,17 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
   }
   if (/^グループ一覧$/.test(t)) {
     const groups = await kiraPartnerGroups(env);
+    if (groups === null) { await replyToLine(replyToken, KIRA_READ_FAIL_GROUPS + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN); return true; }
     await replyToLine(replyToken, groups.length ? "加盟店グループ " + groups.length + " つ:\n" + groups.map((g, i) => (i + 1) + ". " + g.name + (g.last ? "(直近に発言あり)" : "")).join("\n") : "加盟店グループはまだ見つかっていません。", env.LINE_CHANNEL_TOKEN);
     return true;
   }
   if ((m = t.match(/^おぼえて[\s　:：]*([\s\S]+)$/))) {
-    const a = await kiraKvJson(env, "kira_lessons:global", []);
+    let a;
+    try { a = await kiraKvJsonStrict(env, "kira_lessons:global", []); } catch (e) {
+      console.log("[lessons] read failed " + String(e && e.message || e));
+      await replyToLine(replyToken, KIRA_READ_FAIL_LESSONS + "何も変えていません。" + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
+      return true;
+    }
     a.push({ t: m[1].trim().slice(0, 200), at: new Date().toISOString(), by: "owner" });
     await env.SEEN_STORE.put("kira_lessons:global", JSON.stringify(a.slice(-KIRA_LESSONS_MAX_GLOBAL)));
     await replyToLine(replyToken, "経験帳に足しました(全体 " + Math.min(a.length, KIRA_LESSONS_MAX_GLOBAL) + " 件)。", env.LINE_CHANNEL_TOKEN);
@@ -2062,7 +2116,12 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
   }
   if ((m = t.match(/^わすれて[\s　]*([0-9０-９]+)$/))) {
     const n = parseInt(m[1].replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)), 10);
-    const a = await kiraKvJson(env, "kira_lessons:global", []);
+    let a;
+    try { a = await kiraKvJsonStrict(env, "kira_lessons:global", []); } catch (e) {
+      console.log("[lessons] read failed " + String(e && e.message || e));
+      await replyToLine(replyToken, KIRA_READ_FAIL_LESSONS + "何も変えていません。" + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
+      return true;
+    }
     if (n >= 1 && n <= a.length) {
       const [gone] = a.splice(n - 1, 1);
       await env.SEEN_STORE.put("kira_lessons:global", JSON.stringify(a));

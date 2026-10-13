@@ -62,7 +62,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
-      return json({ status: "ok", service: "hs-kira-group", version: "group-4-files" });
+      return json({ status: "ok", service: "hs-kira-group", version: "group-5-readfail-20261013" });
     }
     if (url.pathname === "/webhook" && request.method === "POST") {
       const raw = await request.text();
@@ -160,10 +160,9 @@ async function handleEvent(ev, env) {
 async function rememberMessage(env, sourceId, text) {
   const key = `grp:${sourceId}`;
   let list = [];
-  try {
-    const cur = await env.HS_KIRA_GROUP_KV.get(key);
-    if (cur) list = JSON.parse(cur);
-  } catch { list = []; }
+  // 2026-10-13 issue #13: if the get fails, throw (the caller logs it) instead of writing a fresh list over unread history.
+  const cur = await env.HS_KIRA_GROUP_KV.get(key);
+  try { if (cur) list = JSON.parse(cur); } catch { list = []; }
   if (!Array.isArray(list)) list = [];
   list.push({ t: String(text).slice(0, 500), ts: Date.now() });
   if (list.length > 8) list = list.slice(list.length - 8);
@@ -184,10 +183,15 @@ async function rememberImage(env, sourceId, messageId) {
   await env.HS_KIRA_GROUP_KV.put(`img:${sourceId}`, JSON.stringify({ id: messageId, ts: Date.now() }), { expirationTtl: 86400 });
 }
 
+// 2026-10-13 issue #13: returns { failed: true } when the KV read throws, so a failed read is not "no image posted".
 async function getRecentImage(env, sourceId) {
   if (!env.HS_KIRA_GROUP_KV || !sourceId) return null;
+  let cur;
+  try { cur = await env.HS_KIRA_GROUP_KV.get(`img:${sourceId}`); } catch (e) {
+    console.log("[group] recent image read failed", String(e));
+    return { failed: true };
+  }
   try {
-    const cur = await env.HS_KIRA_GROUP_KV.get(`img:${sourceId}`);
     if (cur) { const o = JSON.parse(cur); if (o && o.id) return o; }
   } catch { return null; }
   return null;
@@ -198,10 +202,15 @@ async function rememberFile(env, sourceId, messageId, fileName) {
   await env.HS_KIRA_GROUP_KV.put(`file:${sourceId}`, JSON.stringify({ id: messageId, name: String(fileName || "").slice(0, 200), ts: Date.now() }), { expirationTtl: 86400 });
 }
 
+// 2026-10-13 issue #13: returns { failed: true } when the KV read throws, so a failed read is not "no file posted".
 async function getRecentFile(env, sourceId) {
   if (!env.HS_KIRA_GROUP_KV || !sourceId) return null;
+  let cur;
+  try { cur = await env.HS_KIRA_GROUP_KV.get(`file:${sourceId}`); } catch (e) {
+    console.log("[group] recent file read failed", String(e));
+    return { failed: true };
+  }
   try {
-    const cur = await env.HS_KIRA_GROUP_KV.get(`file:${sourceId}`);
     if (cur) { const o = JSON.parse(cur); if (o && o.id) return o; }
   } catch { return null; }
   return null;
@@ -468,8 +477,15 @@ async function answerKira(userText, env, sourceId, inGroup, isOwner) {
 
   // 直近の画像(最近のもので、見てほしそうな時)を取得して Claude に見せる
   let imageBlock = null;
+  // 2026-10-13: when the record of a posted image or file could not be read, the model is told so (never "nothing was posted").
+  let attachFailContext = "";
+  const asksAttachment = !userText || looksLikeImageRequest(userText);
   try {
-    const recentImg = await getRecentImage(env, sourceId);
+    let recentImg = await getRecentImage(env, sourceId);
+    if (recentImg && recentImg.failed) {
+      recentImg = null;
+      if (asksAttachment) attachFailContext += `\n\n【添付画像】直近に貼られた画像があるかどうかを今は読み込めなかった。画像が無いとは言わない。今は画像を確認できないと正直に伝え、少し時間をおいてもう一度呼ぶか、画像を貼り直してもらうよう促す。中身は作らない。`;
+    }
     const age = recentImg ? (Date.now() - (recentImg.ts || 0)) : Infinity;
     if (recentImg && age < 30 * 60 * 1000 && (age < 3 * 60 * 1000 || looksLikeImageRequest(userText))) {
       imageBlock = await fetchLineImage(recentImg.id, env.LINE_CHANNEL_TOKEN);
@@ -480,7 +496,11 @@ async function answerKira(userText, env, sourceId, inGroup, isOwner) {
   let fileBlock = null;
   let fileTextContext = "";
   try {
-    const recentFile = await getRecentFile(env, sourceId);
+    let recentFile = await getRecentFile(env, sourceId);
+    if (recentFile && recentFile.failed) {
+      recentFile = null;
+      if (asksAttachment) attachFailContext += `\n\n【添付ファイル】直近に貼られたファイルがあるかどうかを今は読み込めなかった。ファイルが無いとは言わない。今はファイルを確認できないと正直に伝え、少し時間をおいてもう一度呼ぶか、ファイルを貼り直してもらうよう促す。中身は作らない。`;
+    }
     const fage = recentFile ? (Date.now() - (recentFile.ts || 0)) : Infinity;
     if (recentFile && fage < 30 * 60 * 1000 && (fage < 3 * 60 * 1000 || looksLikeImageRequest(userText))) {
       const f = await fetchLineFile(recentFile.id, recentFile.name || "", env.LINE_CHANNEL_TOKEN);
@@ -502,7 +522,7 @@ async function answerKira(userText, env, sourceId, inGroup, isOwner) {
         model: "claude-haiku-4-5-20251001",
         temperature: 0.3,
         max_tokens: 900,
-        system: KIRA_GROUP_SYSTEM + mcpContext + recentContext + linkContext + venueDirective + profileContext + fileTextContext,
+        system: KIRA_GROUP_SYSTEM + mcpContext + recentContext + linkContext + venueDirective + profileContext + fileTextContext + attachFailContext,
         messages: [{ role: "user", content: (imageBlock || fileBlock)
           ? [
               ...(imageBlock ? [{ type: "image", source: { type: "base64", media_type: imageBlock.mediaType, data: imageBlock.data } }] : []),
