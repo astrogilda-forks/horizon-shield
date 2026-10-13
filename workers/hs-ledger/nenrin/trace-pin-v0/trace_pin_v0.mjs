@@ -18,6 +18,7 @@
 // The module is additive and self contained: Web Crypto only (no node: imports, the Worker has no nodejs_compat),
 // its own KV prefix tpin:, and one dispatcher that returns null for any path that is not its own.
 
+import { appendEntry } from "../../src/ledger_append.mjs";
 export const PIN_SCHEMA = "nenrin-trace-pin-v0";
 export const BATCH_SCHEMA = "nenrin-trace-pin-batch-v0";
 export const TRACE_PROFILE_V0_2 = "tag:agentrust-io.com,2026:trace-v0.2";
@@ -353,11 +354,10 @@ export async function anchorTracePinPool(env, origin, trigger, nowIso = new Date
   const h = (await sha256hex(canonical)).toLowerCase();
   const dup = await env.LEDGER.get("hash:" + h);
   if (dup) return { status: 200, body: { n: Number(dup), url: origin + "/ledger/" + dup, dedup: true } };
-  const n = Number((await env.LEDGER.get("seq")) || 0) + 1;
-  const entry = { n, work: "NENRIN TRACE pin batch (" + items.length + " records)", claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: nowIso, ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null, anchored_by: trigger };
-  await env.LEDGER.put("entry:" + n, JSON.stringify(entry));
-  await env.LEDGER.put("hash:" + h, String(n));
-  await env.LEDGER.put("seq", String(n));
+  const entry = { n: 0, work: "NENRIN TRACE pin batch (" + items.length + " records)", claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: nowIso, ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null, anchored_by: trigger };
+  const ap = await appendEntry(env, h, entry);   // 2026-10-13 (concurrency audit L1): the sequencer assigns n
+  if (ap.dedup) return { status: 200, body: { n: ap.n, url: origin + "/ledger/" + ap.n, dedup: true } };
+  const n = ap.n;
   for (const s of items) {
     await env.LEDGER.put(ANCHORED(s.sha), JSON.stringify({ n, stored: s }));
     await env.LEDGER.delete(PENDING(s.sha));

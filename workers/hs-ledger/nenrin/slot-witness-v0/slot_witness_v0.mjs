@@ -16,6 +16,7 @@
 // It reads the issuer; it does not hold the slot log and makes no uniqueness claim of its own.
 import { jcs, Refusal } from "../trace-pin-v0/trace_pin_v0.mjs";
 import { nostrEventCheck, schnorrVerify, hexToBytes } from "./bip340.mjs";
+import { appendEntry } from "../../src/ledger_append.mjs";
 
 // v0.1 (2026-10-11): an observation also reads the slot's decider claim and its conflicts (decider-scoped slots,
 // decision-receipt SPEC v0.4) and keeps up to 64 KiB of the response. v0 observations stay as written and are checked
@@ -490,11 +491,10 @@ export async function anchorSlotWitnessPool(env, origin, trigger, nowIso = new D
   const h = (await sha256hex(canonical)).toLowerCase();
   const dup = await env.LEDGER.get("hash:" + h);
   if (dup) return { status: 200, body: { n: Number(dup), url: origin + "/ledger/" + dup, dedup: true } };
-  const n = Number((await env.LEDGER.get("seq")) || 0) + 1;
-  const entry = { n, work: "NENRIN slot witness batch (" + items.length + " observations)", claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: nowIso, ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null, anchored_by: trigger };
-  await env.LEDGER.put("entry:" + n, JSON.stringify(entry));
-  await env.LEDGER.put("hash:" + h, String(n));
-  await env.LEDGER.put("seq", String(n));
+  const entry = { n: 0, work: "NENRIN slot witness batch (" + items.length + " observations)", claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: nowIso, ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null, anchored_by: trigger };
+  const ap = await appendEntry(env, h, entry);   // 2026-10-13 (concurrency audit L1): the sequencer assigns n
+  if (ap.dedup) return { status: 200, body: { n: ap.n, url: origin + "/ledger/" + ap.n, dedup: true } };
+  const n = ap.n;
   for (const s of items) {
     await env.LEDGER.put(ANCHORED(s.sha), JSON.stringify({ n, stored: s }));
     await env.LEDGER.delete(PENDING(s.sha));

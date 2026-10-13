@@ -39,6 +39,7 @@
 const enc = new TextEncoder();
 
 import { parseStrict, checkCanonicalInput } from "./strict_json.mjs";
+import { appendEntry } from "../../src/ledger_append.mjs";
 
 export async function sha256hex(s) {
   const buf = await crypto.subtle.digest("SHA-256", enc.encode(s));
@@ -499,11 +500,10 @@ export async function anchorTaskWitnessPool(env, origin, trigger) {
   const h = (await sha256hex(batchCanonical)).toLowerCase();
   const dup = await env.LEDGER.get("hash:" + h);
   if (dup) return { status: 200, body: { n: Number(dup), url: origin + "/ledger/" + dup, dedup: true } };
-  const n = Number((await env.LEDGER.get("seq")) || 0) + 1;
-  const entry = { n, work: "NENRIN task-witness batch (" + items.length + " records)", claim_sha256: h, record_canonical: batchCanonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null, anchored_by: trigger };
-  await env.LEDGER.put("entry:" + n, JSON.stringify(entry));
-  await env.LEDGER.put("hash:" + h, String(n));
-  await env.LEDGER.put("seq", String(n));
+  const entry = { n: 0, work: "NENRIN task-witness batch (" + items.length + " records)", claim_sha256: h, record_canonical: batchCanonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null, anchored_by: trigger };
+  const ap = await appendEntry(env, h, entry);   // 2026-10-13 (concurrency audit L1): the sequencer assigns n
+  if (ap.dedup) return { status: 200, body: { n: ap.n, url: origin + "/ledger/" + ap.n, dedup: true } };
+  const n = ap.n;
   for (const o of items) {
     await env.LEDGER.put(ANCHORED_KEY(o.evidence_id), JSON.stringify(o.commitment === true ? { n, obs: null, commitment: true } : { n, obs: o }));
     await env.LEDGER.delete(PENDING_KEY(o.evidence_id));

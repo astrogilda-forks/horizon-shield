@@ -9,6 +9,7 @@
 // injects its own Web Crypto hasher. No node imports in the core, so this bundles as is.
 import { ed25519PointOk } from "./ed25519_point.mjs";
 import { walkChain, exportRow, boundHeadRecord, markerSha, CHAIN_SCHEMA, CHAIN_ROOT, CHAIN_FIELDS, CHAIN_RECIPE, HEAD_FIELDS, HEAD_RECIPE } from "./chain_v1.mjs";
+import { appendEntry, LEDGER_SEQUENCER } from "./ledger_append.mjs";
 import { assembleResume as assembleResumeV1, Reject as ResumeReject, checkMeasurement as resumeCheckMeasurement } from "../nenrin/resume-v1/resume_v1.mjs";
 import { resumeToTrustSignal, toA2ATrustSignal } from "../nenrin/trust-signal-v1/trust_signal_v1.mjs";
 import { handleTaskWitness, handleTaskTrustSignal, anchorTaskWitnessPool, handleTaskEvidence } from "../nenrin/task-delegation-bind-v0/task_ledger_v0.mjs";
@@ -1464,7 +1465,7 @@ async function handle(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
     if (p === "/" || p === "/health")
-      return json({ ok: true, service: "hs-ledger", ledger: "JIDEC", anchor: "Bitcoin via OpenTimestamps", claim_schema: "jidec-claim-v1", path_schema: "jidec-path-v1", spec: "SPEC_HASH_INDEPENDENCE_v1.md (entry #2); JIDEC_PATH_SPEC_v1.md (entry #5)", routes: ["/ledger", "/ledger/head", "/ledger/export.jsonl", "/ledger/{n}", "/ledger/{n}/ots", "/verify/{n}", "/reference/{sha}", "/paths", "/paths/{sha}", "/paths/{sha}/replay", "/paths/query", "/witness", "/witness/pending", "/witness/{sha}", "/resume?endpoint={url}", "/trust-signal?endpoint={url}", "/agreement", "/agreement/pending", "/agreement/{canonical_sha256}", "/admission", "/admission/{canonical_sha256}", "/revocation", "/revocation/{canonical_sha256}", "/evidence/trace", "/evidence/vouch", "/evidence/vouch/{sha}", "/evidence/vouch/id/{credential id}", "/evidence/slot", "/evidence/slot/{sha}", "/evidence/slot/s/{request_slot}", "/evidence/slot-log", "/evidence/slot-log/{date}", "/evidence/slot-log/{date}.ots"], discovery: { api_catalog: "/.well-known/api-catalog", agent_card: "/.well-known/agent-card.json", jwks: "/.well-known/jwks.json", security_txt: "/.well-known/security.txt", llms_txt: "/llms.txt", a2a: "/a2a", cite: "/cite/{citation}", precedence: "/precedence/{citation}", mcp: MCP_ORIGIN + "/mcp" }, transparency: TRANSPARENCY, privacy: PRIVACY });
+      return json({ ok: true, service: "hs-ledger", ledger: "JIDEC", anchor: "Bitcoin via OpenTimestamps", claim_schema: "jidec-claim-v1", path_schema: "jidec-path-v1", spec: "SPEC_HASH_INDEPENDENCE_v1.md (entry #2); JIDEC_PATH_SPEC_v1.md (entry #5)", routes: ["/ledger", "/ledger/head", "/ledger/export.jsonl", "/ledger/{n}", "/ledger/{n}/ots", "/verify/{n}", "/reference/{sha}", "/paths", "/paths/{sha}", "/paths/{sha}/replay", "/paths/query", "/witness", "/witness/pending", "/witness/{sha}", "/resume?endpoint={url}", "/trust-signal?endpoint={url}", "/agreement", "/agreement/pending", "/agreement/{canonical_sha256}", "/admission", "/admission/{canonical_sha256}", "/revocation", "/revocation/{canonical_sha256}", "/evidence/trace", "/evidence/vouch", "/evidence/vouch/{sha}", "/evidence/vouch/id/{credential id}", "/evidence/slot", "/evidence/slot/{sha}", "/evidence/slot/s/{request_slot}", "/evidence/slot-log", "/evidence/slot-log/{date}", "/evidence/slot-log/{date}.ots"], discovery: { api_catalog: "/.well-known/api-catalog", agent_card: "/.well-known/agent-card.json", jwks: "/.well-known/jwks.json", security_txt: "/.well-known/security.txt", llms_txt: "/llms.txt", a2a: "/a2a", cite: "/cite/{citation}", precedence: "/precedence/{citation}", mcp: MCP_ORIGIN + "/mcp" }, transparency: TRANSPARENCY, privacy: PRIVACY, sequencer: LEDGER_SEQUENCER });
 
     /* ---------------------- 看板 routes (additive, read-only) ---------------------- */
 
@@ -1826,11 +1827,14 @@ async function handle(request, env) {
       }
       const dup = await env.LEDGER.get(`hash:${h}`);
       if (dup) return json({ n: Number(dup), url: `${origin}/ledger/${dup}`, dedup: true });
-      const n = Number((await env.LEDGER.get("seq")) || 0) + 1;
-      const entry = { n, work: b.work || null, claim_sha256: h, record_canonical: b.record_canonical, schema: sch.schema, created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
-      await env.LEDGER.put(`entry:${n}`, JSON.stringify(entry));
-      await env.LEDGER.put(`hash:${h}`, String(n));
-      await env.LEDGER.put("seq", String(n));
+      // 2026-10-13 (concurrency audit L1). The number is assigned by the sequencer (src/ledger_append.mjs), never by
+      // reading seq here: two overlapping appends used to get the same n and the second overwrote the first.
+      const entry = { n: 0, work: b.work || null, claim_sha256: h, record_canonical: b.record_canonical, schema: sch.schema, created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
+      let ap;
+      try { ap = await appendEntry(env, h, entry); }
+      catch (e) { return json({ error: "ledger_append_unavailable", note: "the sequencer did not confirm an entry number, so no number is given here. Try again: if the entry did land, the retry is answered as its dedup.", detail: String(e && e.message || e).slice(0, 200) }, 503); }
+      if (ap.dedup) return json({ n: ap.n, url: `${origin}/ledger/${ap.n}`, dedup: true });
+      const n = ap.n;
       return json({ n, url: `${origin}/ledger/${n}`, schema: sch.schema }, 201);
     }
 
@@ -2301,12 +2305,12 @@ async function anchorWitnessPool(env, origin, trigger) {
   const h = (await sha256hex(canonical)).toLowerCase();
   const dup = await env.LEDGER.get(`hash:${h}`);
   if (dup) return { status: 200, body: { n: Number(dup), url: `${origin}/ledger/${dup}`, dedup: true } };
-  const n = Number((await env.LEDGER.get("seq")) || 0) + 1;
-  const entry = { n, work: `NENRIN witness batch (${items.length} records)`, claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
+  const entry = { n: 0, work: `NENRIN witness batch (${items.length} records)`, claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
   entry.anchored_by = trigger; // "schedule" (daily cron) or "operator" (manual POST). Outside record_canonical, so the hash is unaffected.
-  await env.LEDGER.put(`entry:${n}`, JSON.stringify(entry));
-  await env.LEDGER.put(`hash:${h}`, String(n));
-  await env.LEDGER.put("seq", String(n));
+  // 2026-10-13 (concurrency audit L1): the sequencer assigns n; a batch that loses the race to an identical batch is a dedup.
+  const ap = await appendEntry(env, h, entry);
+  if (ap.dedup) return { status: 200, body: { n: ap.n, url: `${origin}/ledger/${ap.n}`, dedup: true } };
+  const n = ap.n;
   for (const s of items) {
     await env.LEDGER.put(`wit:anchored:${s.sha}`, JSON.stringify({ n, stored: s }));
     await env.LEDGER.delete(`wit:pending:${s.sha}`);
@@ -2340,12 +2344,13 @@ async function headCheckpoint(env, origin, trigger) {
   const h = (await sha256hex(canonical)).toLowerCase();
   const dup = await env.LEDGER.get(`hash:${h}`);
   if (dup) return { status: 200, body: { ok: true, written: false, n: Number(dup), dedup: true } };
-  const n = seq + 1;
-  const entry = { n, work: `NENRIN head checkpoint (entries 1..${w.n})`, claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
+  // 2026-10-13 (concurrency audit L1): n comes from the sequencer. It is seq + 1 unless another append landed after the
+  // walk above; the checkpoint still states the head of 1..w.n, which is true, and its work line says which entries.
+  const entry = { n: 0, work: `NENRIN head checkpoint (entries 1..${w.n})`, claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
   entry.anchored_by = trigger;
-  await env.LEDGER.put(`entry:${n}`, JSON.stringify(entry));
-  await env.LEDGER.put(`hash:${h}`, String(n));
-  await env.LEDGER.put("seq", String(n));
+  const ap = await appendEntry(env, h, entry);
+  if (ap.dedup) return { status: 200, body: { ok: true, written: false, n: ap.n, dedup: true } };
+  const n = ap.n;
   return { status: 201, body: { ok: true, written: true, n, url: `${origin}/ledger/${n}`, head_of: w.n } };
 }
 
@@ -2366,12 +2371,11 @@ async function anchorAgreementPool(env, origin, trigger) {
   const h = (await sha256hex(canonical)).toLowerCase();
   const dup = await env.LEDGER.get(`hash:${h}`);
   if (dup) return { status: 200, body: { n: Number(dup), url: `${origin}/ledger/${dup}`, dedup: true } };
-  const n = Number((await env.LEDGER.get("seq")) || 0) + 1;
-  const entry = { n, work: `NENRIN agreement batch (${items.length} records)`, claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
+  const entry = { n: 0, work: `NENRIN agreement batch (${items.length} records)`, claim_sha256: h, record_canonical: canonical, schema: "v0-plain", created_at: new Date().toISOString(), ots_status: "unstamped", bitcoin_block: null, block_time: null, stamped_at: null };
   entry.anchored_by = trigger;
-  await env.LEDGER.put(`entry:${n}`, JSON.stringify(entry));
-  await env.LEDGER.put(`hash:${h}`, String(n));
-  await env.LEDGER.put("seq", String(n));
+  const ap = await appendEntry(env, h, entry);   // 2026-10-13 (concurrency audit L1)
+  if (ap.dedup) return { status: 200, body: { n: ap.n, url: `${origin}/ledger/${ap.n}`, dedup: true } };
+  const n = ap.n;
   for (const s of items) {
     await env.LEDGER.put(`agr:anchored:${s.canonical_sha256}`, JSON.stringify({ n, stored: s }));
     await env.LEDGER.delete(`agr:pending:${s.canonical_sha256}`);

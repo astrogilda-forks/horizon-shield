@@ -29,6 +29,7 @@
 
 import { parseStrict, CanonicalError } from "./agreement_canonical.mjs";
 import { verify as defaultVerify, VERIFIER_VERSION, SCHEMAS } from "./agreement_verify.mjs";
+import { appendEntrySerialized, LEDGER_APPEND_PATH } from "../../src/ledger_append.mjs";
 
 export const INTAKE_VERSION = "0.2.0";
 // 0.2.0 (2026-09-28, record-privacy-v1). Publication needs both parties' consent, inside the signed bytes.
@@ -74,13 +75,26 @@ export function decideDedupe(prev, payload) {
 }
 
 export class AgreementDedupeDO {
-  constructor(state) { this.state = state; }
+  // env is the second constructor argument in the Workers runtime; the ledger sequencer below needs env.LEDGER.
+  constructor(state, env) { this.state = state; this.env = env; }
 
   async fetch(request) {
     const url = new URL(request.url);
     if (request.method !== "POST") return doJson({ error: "not_found" }, 404);
     let body;
     try { body = await request.json(); } catch { return doJson({ error: "bad_json" }, 400); }
+
+    // 2026-10-13 (concurrency audit L1). The ledger's entry numbers are assigned here, on the one instance named
+    // LEDGER_SEQ_DO_NAME, so two appends can never read the same seq. Same class, so no new migration. See
+    // src/ledger_append.mjs. Nothing about agreements changes: this path is only ever called on that instance.
+    if (url.pathname === LEDGER_APPEND_PATH) {
+      const kv = this.env && this.env.LEDGER;
+      if (!kv) return doJson({ error: "ledger_not_bound" }, 503);
+      const h = typeof body.h === "string" && /^[0-9a-f]{64}$/.test(body.h) ? body.h : null;
+      const entry = body.entry && typeof body.entry === "object" && !Array.isArray(body.entry) ? body.entry : null;
+      if (!h || !entry) return doJson({ error: "h_and_entry_required" }, 400);
+      return doJson(await this.state.blockConcurrencyWhile(() => appendEntrySerialized(this.state.storage, kv, h, entry)));
+    }
 
     if (url.pathname === "/claim") {
       const sha = typeof body.sha === "string" ? body.sha : null;
