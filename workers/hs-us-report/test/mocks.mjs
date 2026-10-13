@@ -1,13 +1,22 @@
 // In-memory stand-ins for KV, R2, the hs-jccdb-obs service binding and outside HTTP calls.
-export function kv() {
+// 2026-10-13 (concurrency audit U3). kv({ lagList: true }) makes list() answer from a snapshot of the keys and their
+// metadata taken by freezeList(), the way real KV list metadata can lag a put by up to 60 s. get() is never lagged.
+// thawList() goes back to listing the live store. Without the option nothing changes.
+export function kv({ lagList = false } = {}) {
   const m = new Map();
+  let snap = null;
   return {
     m,
     async get(k) { return m.has(k) ? m.get(k) : null; },
     meta: new Map(),
     async put(k, v, opts = {}) { m.set(k, String(v)); if (opts.metadata) this.meta.set(k, opts.metadata); else this.meta.delete(k); },
     async delete(k) { m.delete(k); this.meta.delete(k); },
-    async list({ prefix = "", limit = 1000 } = {}) { return { keys: [...m.keys()].filter((k) => k.startsWith(prefix)).slice(0, limit).map((name) => ({ name, metadata: this.meta.get(name) })), list_complete: true }; },
+    freezeList() { snap = [...m.keys()].map((name) => ({ name, metadata: this.meta.get(name) })); },
+    thawList() { snap = null; },
+    async list({ prefix = "", limit = 1000 } = {}) {
+      const keys = lagList && snap ? snap : [...m.keys()].map((name) => ({ name, metadata: this.meta.get(name) }));
+      return { keys: keys.filter((k) => k.name.startsWith(prefix)).slice(0, limit), list_complete: true };
+    },
   };
 }
 export function r2() {

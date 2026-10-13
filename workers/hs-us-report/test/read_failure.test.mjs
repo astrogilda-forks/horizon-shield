@@ -88,24 +88,33 @@ boardCacheClear();
 r = await board("?id=td_bbbbbbbbbbbb");
 chk("board genuinely absent card: still 404", () => assert.equal(r.status, 404));
 
-// ---- publish must not write back a failed index read
+// ---- publish never writes the shared index
+// 2026-10-13 (concurrency audit U5). A publish writes its own board:<id> key only; the old board_index value is read
+// by the board and never written. So a publish no longer depends on reading the index, and a board read with the
+// index unreadable is still a 503, not a board missing its older cards.
 const NEW = "td_cccccccccccc";
 const pend = { id: NEW, card: { ...CARD, id: undefined }, status: "pending", submitted_at: new Date().toISOString() };
 await store.put(`board_pending:${NEW}`, JSON.stringify(pend));
 const publishUrl = async () => { const s = await signPath(SECRET, `/board/review/${NEW}`, 3600000); return s.replace(`/board/review/${NEW}?`, `/board/review/${NEW}/publish?`); };
 broken.add("board_index");
 r = await get(await publishUrl(), { method: "POST" });
-chk("publish with board_index unreadable: 503 and nothing written", () => {
-  assert.equal(r.status, 503);
-  assert.equal(store.m.get("board_index"), JSON.stringify([CARD.id]));
-  assert.ok(!store.m.has(`board:${NEW}`));
-  assert.equal(JSON.parse(store.m.get(`board_pending:${NEW}`)).status, "pending");
-});
-broken.delete("board_index");
-r = await get(await publishUrl(), { method: "POST" });
-chk("publish with board_index readable: the new card goes in front of the old one", () => {
+chk("publish with board_index unreadable: the card is published to its own key, the index is not touched", () => {
   assert.equal(r.status, 200);
-  assert.deepEqual(JSON.parse(store.m.get("board_index")), [NEW, CARD.id]);
+  assert.equal(store.m.get("board_index"), JSON.stringify([CARD.id]));
+  assert.ok(store.m.has(`board:${NEW}`));
+  assert.equal(JSON.parse(store.m.get(`board_pending:${NEW}`)).status, "published");
+});
+boardCacheClear();
+r = await board();
+chk("board with board_index unreadable after a publish: still 503, not a board without the older cards", () => assert.equal(r.status, 503));
+broken.delete("board_index");
+boardCacheClear();
+r = await board();
+body = await r.json();
+chk("board with board_index readable: the new card goes in front of the old one, the index value unchanged", () => {
+  assert.equal(r.status, 200);
+  assert.deepEqual(body.cards.map((c) => c.id), [NEW, CARD.id]);
+  assert.deepEqual(JSON.parse(store.m.get("board_index")), [CARD.id]);
 });
 
 if (fail) { console.log(`read_failure: ${fail} FAILURES of ${n}`); process.exit(1); }

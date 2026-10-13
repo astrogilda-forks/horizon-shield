@@ -208,7 +208,12 @@ const fd2 = new FormData(); fd2.set("plan", "detailed_estimate"); fd2.set("zip",
 res = await handleIntake(new Request(W + "/intake", { method: "POST", body: fd2, headers: site }), env);
 const unpaid = (await res.json()).order_id;
 const s = await sweep(env, Date.now() + 31 * 86400000);
-assert.equal(s.uploads_deleted, 2); assert.equal(s.unpaid_removed, 1); assert.equal(s.reports_deleted, 0); assert.equal(s.scrubbed, 1);
+assert.equal(s.uploads_deleted, 2); assert.equal(s.reports_deleted, 0); assert.equal(s.scrubbed, 1);
+// 2026-10-13 (concurrency audit U4): the unpaid delete is two sweeps apart. The first marks, the next one an hour or more later deletes.
+assert.equal(s.unpaid_marked, 1); assert.equal(s.unpaid_removed, 0);
+assert.ok(await env.US_ORDERS.get(`order:${unpaid}`), "marked, not yet deleted");
+const s1b = await sweep(env, Date.now() + 31 * 86400000 + 61 * 60000);
+assert.equal(s1b.unpaid_removed, 1);
 assert.equal(await env.US_ORDERS.get(`order:${unpaid}`), null);
 o = JSON.parse(await env.US_ORDERS.get(`order:${id}`));
 assert.equal(o.extracted, undefined); assert.equal(o.name, undefined); assert.deepEqual(o.files, []); assert.ok(o.email, "email kept for 12 months of support");

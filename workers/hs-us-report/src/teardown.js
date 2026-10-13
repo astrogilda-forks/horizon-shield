@@ -276,19 +276,51 @@ async function readBoardIndex(env) {
   try { const ids = JSON.parse(raw); return Array.isArray(ids) ? ids : null; } catch { return null; }
 }
 
-// 2026-10-13. Throws when the index or a card cannot be read from KV; nothing is cached then. A card that reads
-// but will not parse is still skipped, as before.
+// 2026-10-13 (concurrency audit U5). The board is the set of board:<id> keys, found by list(), not a shared index.
+// Two publishes at the same moment both read board_index, each wrote it back with its own card in front, and one card
+// dropped off the index (its board:<id> value stayed, unreachable). A publish now writes only its own key, with
+// published_at in the metadata. The old board_index value is still read and laid under the listed keys (cards published
+// before this change, and a card the old race dropped, both show); it is never rewritten.
+export const BOARD_INDEX = "per-key-20261013";
+const BOARD_PREFIX = "board:";   // board_pending:* and board_index do not share this prefix
+// [{ id, published_at }] from the key metadata (published_at "" when a key has none).
+async function listBoardIds(env) {
+  const ids = [];
+  let cursor;
+  do {
+    const page = await env.US_ORDERS.list({ prefix: BOARD_PREFIX, cursor, limit: 1000 });
+    for (const k of page.keys) ids.push({ id: k.name.slice(BOARD_PREFIX.length), published_at: String((k.metadata && k.metadata.published_at) || "") });
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  return ids;
+}
+
+// 2026-10-13. Throws when the index, the key list or a card cannot be read from KV; nothing is cached then. A card
+// that reads but will not parse is still skipped, as before. Same shape and order as before: newest first (published_at,
+// which every published card carries), the old index's own order breaking ties, 200 cards at most.
 export async function readBoard(env) {
   if (_boardCache.cards && Date.now() - _boardCache.at < 30000) return _boardCache.cards;
-  const ids = await readBoardIndex(env);
-  if (ids === null) throw new Error("board_index could not be read");
-  const cards = (await Promise.all(ids.slice(0, 200).map(async (id) => {
+  const indexIds = await readBoardIndex(env);
+  if (indexIds === null) throw new Error("board_index could not be read");
+  let keyed;
+  try { keyed = await listBoardIds(env); } catch { throw new Error("board keys could not be read"); }
+  const pos = new Map(indexIds.map((id, i) => [id, i]));
+  // Read only what can be shown: the 200 newest keyed cards by their metadata, plus every card of the old index (that
+  // list is fixed since 2026-10-13 and was itself the whole board). Not every board:* key (that grows without bound).
+  const newestKeyed = keyed.filter((k) => k.published_at).sort((a, b) => (a.published_at < b.published_at ? 1 : a.published_at > b.published_at ? -1 : 0)).slice(0, 200).map((k) => k.id);
+  const unstamped = keyed.filter((k) => !k.published_at).map((k) => k.id);
+  const ids = [...new Set([...newestKeyed, ...unstamped, ...indexIds])];
+  const cards = (await Promise.all(ids.map(async (id) => {
     let raw;
-    try { raw = await env.US_ORDERS.get(`board:${id}`); } catch { throw new Error("board card could not be read"); }
-    try { return JSON.parse(raw || "null"); } catch { return null; }
+    try { raw = await env.US_ORDERS.get(`${BOARD_PREFIX}${id}`); } catch { throw new Error("board card could not be read"); }
+    try { const c = JSON.parse(raw || "null"); return c && typeof c === "object" ? (c.id ? c : { id, ...c }) : null; } catch { return null; }
   }))).filter(Boolean);
-  _boardCache = { at: Date.now(), cards };
-  return cards;
+  const at = (c) => String(c.published_at || "");
+  const where = (c) => (pos.has(c.id) ? pos.get(c.id) : Number.MAX_SAFE_INTEGER);
+  cards.sort((a, b) => (at(a) < at(b) ? 1 : at(a) > at(b) ? -1 : where(a) - where(b)));
+  const shown = cards.slice(0, 200);
+  _boardCache = { at: Date.now(), cards: shown };
+  return shown;
 }
 
 export async function handleBoard(request, env) {
@@ -336,14 +368,11 @@ export async function handleBoardReview(request, env, id, action) {
     await env.US_ORDERS.put(`board_pending:${id}`, JSON.stringify(rec), { expirationTtl: 7 * 86400 });
     return html(`<p style="font:16px sans-serif;margin:24px">載せない: ${esc(id)}</p>`);
   }
-  // 2026-10-13. Read the index before writing anything. A failed read used to become [], and the index was then
-  // overwritten with this one card, dropping every card already published.
-  const ids = await readBoardIndex(env);
-  if (ids === null) return html("<p>board_index を読めなかった(KV の読み取り失敗)。何も書いていない。時間をおいてもう一度押す。</p>", 503);
+  // 2026-10-13 (U5). The card is its own key, with published_at in the metadata; the board lists board:* and no longer
+  // keeps a shared index, so a publish reads and writes nothing shared. (The guard of the same day that read
+  // board_index before writing it is gone with the write; the old value is only read, by readBoard.)
   const card = { id, ...rec.card, published_at: new Date().toISOString() };
-  await env.US_ORDERS.put(`board:${id}`, JSON.stringify(card));
-  if (!ids.includes(id)) ids.unshift(id);
-  await env.US_ORDERS.put("board_index", JSON.stringify(ids.slice(0, 1000)));
+  await env.US_ORDERS.put(`${BOARD_PREFIX}${id}`, JSON.stringify(card), { metadata: { published_at: card.published_at } });
   rec.status = "published"; rec.decided_at = card.published_at;
   await env.US_ORDERS.put(`board_pending:${id}`, JSON.stringify(rec), { expirationTtl: 7 * 86400 });
   boardCacheClear();

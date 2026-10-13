@@ -38,7 +38,7 @@ import { sourceTitles, sourceUrls } from "./sources.js";
 import { FONTS } from "./fonts.js";
 import { ENGINE_VERSION } from "./engine.js";
 import { normalizeHearing, hearingText, followUpQuestions, followUpFieldIds, HEARING_VERSION } from "./hearing.js";
-import { handleTeardown, handleBoardSubmit, handleBoard, handleBoardReview, handleEvent, readStats, dailyStats } from "./teardown.js";
+import { handleTeardown, handleBoardSubmit, handleBoard, handleBoardReview, handleEvent, readStats, dailyStats, BOARD_INDEX } from "./teardown.js";
 
 const DAY = 86400000;
 const FOLLOWUP_WAIT = 8 * 3600000;     // how long a draft waits for follow-up answers
@@ -132,6 +132,101 @@ async function listPayments(env, orderId) {
   } while (cursor);
   return out;
 }
+
+// 2026-10-13 (concurrency audit U2). Each set of hearing answers that arrives after the order was created is its own
+// write-once key, ans:<order id>:<at>-<rand> (value: order_id, answers, at, via, fields; metadata: at, via). The order
+// value is still written by the answer link, but the draft cron holds its copy of the order for tens of seconds and
+// writes it last, so answers written only into the order could be overwritten by the draft's older copy and the report
+// shipped without them. Every reader of the answers for a report (generateDraft, the review page, the admin GET, the
+// answer form) merges the order's own answers (orders from before this change, and the intake answers) with all
+// ans:<id>:* sets in order of arrival. A set is never read-modified-written, so it cannot be lost that way.
+// The keys are deleted with the order's other customer content (the scrub at paid + 29 days, the unpaid delete) and
+// carry a TTL as a backstop.
+export const ANSWER_RECORDS = "ans-per-key-20261013";
+const ANS_PREFIX = "ans:";
+const ANS_TTL_S = 60 * 86400;
+async function recordAnswers(env, orderId, answers, via) {
+  const at = new Date().toISOString();
+  const key = `${ANS_PREFIX}${orderId}:${at}-${crypto.randomUUID().slice(0, 8)}`;
+  await env.US_ORDERS.put(key, JSON.stringify({ order_id: orderId, answers, at, via, fields: Object.keys(answers) }), { metadata: { at, via }, expirationTtl: ANS_TTL_S });
+  return { key, at };
+}
+// Every answer set of one order, oldest first (the key carries the time). Throws when KV throws; a set that will not
+// parse is skipped (the order value may still carry those answers).
+async function listAnswerSets(env, orderId) {
+  const names = [];
+  let cursor;
+  do {
+    const page = await env.US_ORDERS.list({ prefix: `${ANS_PREFIX}${orderId}:`, cursor, limit: 1000 });
+    for (const k of page.keys) names.push(k.name);
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  names.sort();
+  const sets = [];
+  for (const name of names) {
+    const raw = await env.US_ORDERS.get(name);
+    if (raw == null) continue;
+    try { const s = JSON.parse(raw); if (s && s.answers && typeof s.answers === "object") sets.push({ key: name, at: String(s.at || ""), via: s.via || "customer", answers: s.answers }); } catch { /* skipped */ }
+  }
+  return sets;
+}
+// Lays the per-key sets over the order's own answers, in place. The same fields the answer link and the admin route
+// set on the order (hearing.answered_at, followup.answered_at, followup.answered_fields) are derived from the sets.
+function applyAnswerSets(order, sets) {
+  if (!sets.length) return order;
+  order.hearing = order.hearing || { version: HEARING_VERSION, answers: {} };
+  const merged = { ...(order.hearing.answers || {}) };
+  for (const s of sets) Object.assign(merged, s.answers);
+  order.hearing.answers = merged;
+  const last = sets[sets.length - 1].at;
+  if (!order.hearing.answered_at || order.hearing.answered_at < last) order.hearing.answered_at = last;
+  if (order.followup) {
+    const fromCustomer = sets.filter((s) => s.via === "customer");
+    if (fromCustomer.length) {
+      const lastC = fromCustomer[fromCustomer.length - 1].at;
+      if (!order.followup.answered_at || order.followup.answered_at < lastC) order.followup.answered_at = lastC;
+      order.followup.answered_fields = [...new Set([...(order.followup.answered_fields || []), ...fromCustomer.flatMap((s) => Object.keys(s.answers))])];
+    } else if (!order.followup.answered_at) order.followup.answered_at = last;
+  }
+  return order;
+}
+// The merged answers of one order, for anything that reports them. Throws when KV throws.
+export async function hearingAnswers(env, orderId) {
+  const rd = await readOrder(env, orderId);
+  if (rd.failed) throw new Error("order_read_failed");
+  if (!rd.order) return null;
+  const o = applyAnswerSets(rd.order, await listAnswerSets(env, orderId));
+  return (o.hearing && o.hearing.answers) || {};
+}
+async function deleteAnswerSets(env, orderId) {
+  let cursor;
+  do {
+    const page = await env.US_ORDERS.list({ prefix: `${ANS_PREFIX}${orderId}:`, cursor, limit: 1000 });
+    for (const k of page.keys) await env.US_ORDERS.delete(k.name);
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+}
+
+// 2026-10-13 (concurrency audit U3). The minute cron picks its order from KV list metadata, which can lag a put by up
+// to 60 s, so the run at minute 1 could draft the order minute 0 had just drafted (double AI cost, two review links,
+// the first one dead). Before drafting, draftPending reads the order itself and skips it unless it still needs a
+// draft, then claims it with a write-once key draftclaim:<id> (get, put, read back: the token read back must be its
+// own). This worker has no Durable Object, so the claim is a KV key; its residual is KV's own propagation between
+// locations (a put is visible in the location that made it at once and everywhere within about 60 s), which is also
+// the window of the fresh read. The claim is deleted when the draft ends and expires after CLAIM_TTL_S if the run died.
+export const DRAFT_CLAIMS = "claim-20261013";
+const CLAIM_PREFIX = "draftclaim:";
+const CLAIM_TTL_S = 15 * 60;   // the same 15 minutes after which a "drafting" order is retried
+
+// 2026-10-13 (concurrency audit U4). The unpaid delete at the 7 day line is two sweeps apart: the first writes
+// delmark:<id> (at), the delete happens on a later sweep only when the mark is older than DELMARK_AGE, no
+// pay:<order>:* key exists and a fresh read of the order still says awaiting_payment. A payment landing between the
+// mark and the delete clears the mark (the IPN and the reconcile delete it; the second pass also sees the pay key).
+export const UNPAID_DELETE = "two-phase-20261013";
+const DELMARK_PREFIX = "delmark:";
+const DELMARK_AGE = 3600000;
+const DELMARK_TTL_S = 3 * 86400;
+const delmarkKey = (orderId) => `${DELMARK_PREFIX}${orderId}`;
 
 // ---------------------------------------------------------------- intake
 
@@ -265,6 +360,8 @@ export async function handleIpn(request, env, ctx, fetchImpl = fetch) {
   order.payer_email = chk.payerEmail;
   await putOrder(env, order);           // the order first, then the deduplication key
   await env.US_ORDERS.put(`txn:${txnId}`, order.id);
+  // 2026-10-13 (U4). A delete mark from the hourly sweep is cleared by the payment; the pay key above guards the rest.
+  try { await env.US_ORDERS.delete(delmarkKey(order.id)); } catch { /* the second pass sees the pay key */ }
   const m = emailReceived(order);
   await sendEmail(env, order.email, m.subject, m.html, fetchImpl);
   await lineToshi(env, `【US】入金 ${order.plan_name} $${order.price} / ${order.id}\n1 分以内に下書きを作り始める。できたら確認の連絡を送る。`, fetchImpl);
@@ -289,6 +386,12 @@ export async function generateDraft(env, orderId, deps = {}) {
   if (rd.failed) { const e = new Error("order_read_failed"); e.code = "order_read_failed"; throw e; }
   const order = rd.order;
   if (!order) throw new Error("order not found");
+  // 2026-10-13 (U2). The answers the report must see: the order's own plus every ans:<id>:* set. A failed list is
+  // handled like a failed order read: nothing written, the cron retries, the admin route answers 503.
+  let answerSets;
+  try { answerSets = await listAnswerSets(env, order.id); } catch { const e = new Error("answers_read_failed"); e.code = "order_read_failed"; throw e; }
+  applyAnswerSets(order, answerSets);
+  const seenAnswerKeys = new Set(answerSets.map((s) => s.key));
   const pdf = deps.htmlToPdf || htmlToPdf;
   const fetchImpl = deps.fetchImpl || fetch;
   try {
@@ -352,7 +455,25 @@ export async function generateDraft(env, orderId, deps = {}) {
     await env.US_FILES.put(`${dir}/report.json`, built.bytes, { httpMetadata: { contentType: "application/json" }, customMetadata: { order: order.id, report_sha256: built.sha256 } });
     stored.push({ name: "report.json", label: "Report file (JSON) to recompute the receipt" });
     order.extracted = extracted;
-    order.draft = { sha256: built.sha256, engine: built.engine, docs: stored, gate_notes: g.notes, notes, created_at: new Date().toISOString() };
+    order.draft = { sha256: built.sha256, engine: built.engine, docs: stored, gate_notes: g.notes, notes, created_at: new Date().toISOString(),
+      answer_keys: [...seenAnswerKeys] };   // 2026-10-13 (U2): which answer sets this draft read; approve re-checks against it
+    // 2026-10-13 (U2). Answers that arrived while this draft was being made are not in it. The answer link set the
+    // order to "answered", and the write below would put this older copy over that; so the order is written as
+    // "answered" here too, with the draft kept, and the cron makes the next draft from the merged answers. A failed
+    // list is not "no late answers": the draft is not marked ready over an order that may say "answered"; it is
+    // marked draft_failed (the catch below) and remade on the next round from the answer keys, which are safe.
+    let late;
+    try { late = (await listAnswerSets(env, order.id)).filter((s) => !seenAnswerKeys.has(s.key)); }
+    catch (e) { throw new Error(`answers_read_failed: ans:${order.id}:* could not be re-checked after the draft (${String((e && e.message) || e).slice(0, 80)})`); }
+    if (late.length) {
+      applyAnswerSets(order, late);
+      order.status = "answered";
+      order.draft_attempts = 0;
+      delete order.error;
+      await putOrder(env, order);
+      await lineToshi(env, `【US】下書き中にお客様の返答が届いた ${order.plan_name} / ${order.id}: ${[...new Set(late.flatMap((s) => Object.keys(s.answers)))].join(", ") || "空の返答"}。この下書きは送らず、次の巡回で作り直す。`);
+      return order;
+    }
     order.status = "draft_ready";
     delete order.error;
     await putOrder(env, order);
@@ -368,8 +489,36 @@ export async function generateDraft(env, orderId, deps = {}) {
   }
 }
 
+// Whether an order, as read now, still needs a draft: the same rule draftPending applies to the list metadata.
+function needsDraft(o, now) {
+  if (!o) return false;
+  if (o.status === "paid" || o.status === "answered") return true;
+  if (o.status === "awaiting_answers") return !!(o.followup && o.followup.deadline && now >= new Date(o.followup.deadline).getTime());
+  if (o.status === "drafting" || o.status === "draft_failed") {
+    if ((o.draft_attempts || 0) >= 3) return false;
+    const since = o.drafting_since ? new Date(o.drafting_since).getTime() : 0;
+    return (o.status === "drafting" && now - since > 15 * 60000) || (o.status === "draft_failed" && now - since > 10 * 60000);
+  }
+  return false;
+}
+
+// 2026-10-13 (U3). Write-once claim: returns the token when this run holds draftclaim:<id>, null when another run
+// does. Throws when KV throws (the caller then drafts nothing).
+async function claimDraft(env, orderId, now) {
+  const key = `${CLAIM_PREFIX}${orderId}`;
+  if (await env.US_ORDERS.get(key)) return null;
+  const token = crypto.randomUUID();
+  await env.US_ORDERS.put(key, JSON.stringify({ token, at: new Date(now).toISOString() }), { expirationTtl: CLAIM_TTL_S });
+  const again = await env.US_ORDERS.get(key);
+  let held = null;
+  try { held = JSON.parse(again).token; } catch { held = null; }
+  return held === token ? token : null;
+}
+
 // One order per run, oldest paid first. Stuck and failed drafts are retried at most 3 times.
-export async function draftPending(env, now = Date.now()) {
+// 2026-10-13 (U3). The candidates come from list metadata, which can lag; each is read again before it is drafted and
+// skipped unless it still needs a draft, then claimed (claimDraft). deps is passed to generateDraft (tests).
+export async function draftPending(env, now = Date.now(), deps = {}) {
   const page = await env.US_ORDERS.list({ prefix: "order:", limit: 1000 });
   const cands = [];
   for (const k of page.keys) {
@@ -392,11 +541,24 @@ export async function draftPending(env, now = Date.now()) {
   }
   if (!cands.length) return [];
   cands.sort((a, b) => a.paid.localeCompare(b.paid));
-  try { await generateDraft(env, cands[0].id); } catch (e) {
-    // Recorded on the order and sent to LINE, except a failed order read, which changed nothing and is retried.
-    if (e && e.code === "order_read_failed") logReadFailed("draftPending", `order:${cands[0].id}`);
+  for (const c of cands) {
+    // Fresh read: the list said "needs a draft", the order itself decides.
+    const rd = await readOrder(env, c.id);
+    if (rd.failed) { logReadFailed("draftPending", `order:${c.id}`); continue; }
+    if (!needsDraft(rd.order, now)) continue;
+    let token;
+    try { token = await claimDraft(env, c.id, now); }
+    catch { console.error(`[hs-us-report] draft claim failed in draftPending: ${CLAIM_PREFIX}${c.id} could not be read or written; nothing drafted this run`); return []; }
+    if (!token) continue;   // another run holds it
+    try { await generateDraft(env, c.id, deps); } catch (e) {
+      // Recorded on the order and sent to LINE, except a failed order read, which changed nothing and is retried.
+      if (e && e.code === "order_read_failed") logReadFailed("draftPending", `order:${c.id}`);
+    } finally {
+      try { await env.US_ORDERS.delete(`${CLAIM_PREFIX}${c.id}`); } catch { /* expires after CLAIM_TTL_S */ }
+    }
+    return [c.id];
   }
-  return [cands[0].id];
+  return [];
 }
 
 // 2026-10-13. A background job that could not read an order skips it, writes and sends nothing, and says so here
@@ -487,21 +649,51 @@ async function handleAnswer(request, env, order, qs) {
     if (f.type === "number") { const v = Number(String(raw).replace(/[,\s]/g, "")); if (Number.isFinite(v) && (f.min == null || v >= f.min) && (f.max == null || v <= f.max)) n.answers[f.id] = v; }
     else if (f.type === "select" && f.options.some((o) => o[0] === String(raw))) n.answers[f.id] = String(raw);
   }
+  // 2026-10-13 (U2). The answer set is written once to its own key before the order is touched; the order value is
+  // still updated (status, and the merged answers for code that reads only the order), but losing that write to the
+  // draft cron's older copy no longer loses the answers: every reader merges ans:<id>:* over the order.
+  const rec = await recordAnswers(env, order.id, n.answers, "customer");
   order.hearing = order.hearing || { version: HEARING_VERSION, answers: {} };
   order.hearing.answers = { ...(order.hearing.answers || {}), ...n.answers };
-  order.hearing.answered_at = new Date().toISOString();
+  order.hearing.answered_at = rec.at;
   order.followup.answered_at = order.hearing.answered_at;
-  order.followup.answered_fields = Object.keys(n.answers);
+  order.followup.answered_fields = [...new Set([...(order.followup.answered_fields || []), ...Object.keys(n.answers)])];
   if (["awaiting_answers", "draft_ready", "draft_failed"].includes(order.status)) { order.status = "answered"; order.draft_attempts = 0; }
   await putOrder(env, order);
   await lineToshi(env, `【US】お客様から返答 ${order.plan_name} / ${order.id}: ${Object.keys(n.answers).join(", ") || "空の返答"}。下書きを作り直す。`);
   return html(answerPage(order, qs, "saved"));
 }
 
+// 2026-10-13 (U2). Lays the per-key answer sets over an order a route has just read, for display and for the merge
+// the route writes back. Best effort: a failed list leaves the order's own answers (the draft reads fail closed).
+// 2026-10-13 (U2). Answer sets the draft did not read. The re-check inside generateDraft is a KV list and can be up to
+// a minute stale across locations; approve happens minutes to hours later, so this is where a late set is caught.
+// Throws when the list fails (the caller must not deliver then). An old draft without answer_keys is checked against
+// every set: it was made before answers had their own keys, so any set is later than it.
+async function lateAnswerKeys(env, order) {
+  const seen = new Set((order.draft && Array.isArray(order.draft.answer_keys)) ? order.draft.answer_keys : []);
+  return (await listAnswerSets(env, order.id)).map((s) => s.key).filter((k) => !seen.has(k));
+}
+// Before delivering: refuse when answers arrived after the draft (the order goes back to "answered" so the cron redrafts),
+// and refuse when that cannot be known. Returns null when delivery may go ahead, else { status, message }.
+async function approveGuard(env, order) {
+  let late;
+  try { late = await lateAnswerKeys(env, order); } catch { return { status: 503, message: "answers could not be re-checked (KV list failed); not sent, try again" }; }
+  if (!late.length) return null;
+  order.status = "answered"; order.draft_attempts = 0; delete order.error;
+  await putOrder(env, order);
+  return { status: 409, message: `answers arrived after this draft (${late.length} set${late.length === 1 ? "" : "s"}); not sent, the next round redrafts with them` };
+}
+
+async function overlayAnswers(env, order) {
+  try { applyAnswerSets(order, await listAnswerSets(env, order.id)); } catch { /* shown from the order value */ }
+  return order;
+}
+
 // ---------------------------------------------------------------- sweep (hourly, own cron)
 
 export async function sweep(env, now = Date.now()) {
-  const out = { uploads_deleted: 0, reports_deleted: 0, unpaid_removed: 0, scrubbed: 0, reduced: 0, late_alerts: 0, read_failed: 0 };
+  const out = { uploads_deleted: 0, reports_deleted: 0, unpaid_removed: 0, unpaid_marked: 0, scrubbed: 0, reduced: 0, late_alerts: 0, read_failed: 0 };
   for (const prefix of ["uploads/", "reports/"]) {
     let cursor;
     do {
@@ -538,11 +730,32 @@ export async function sweep(env, now = Date.now()) {
       if (o.status === "awaiting_payment" && now - oc > UNPAID_TTL) {
         // 2026-10-13 (U1). A payment key means the order was paid and its "paid" was lost or is not visible yet here:
         // never delete it. reconcilePayments below marks it paid.
+        const mk = delmarkKey(o.id);
         let pays;
         try { pays = await listPayments(env, o.id); } catch { out.read_failed++; logReadFailed("sweep", `${PAY_PREFIX}${o.id}:`); continue; }
-        if (pays.length) continue;
-        for (const f of o.files || []) await env.US_FILES.delete(f.key);
+        if (pays.length) { await env.US_ORDERS.delete(mk); continue; }
+        // 2026-10-13 (U4). Two phase: mark now, delete on a later sweep when the mark is an hour old and the order
+        // is still unpaid on a fresh read with no payment key. An IPN that lands in the KV visibility window of this
+        // read (up to 60 s) therefore has the whole hour to become visible before anything is deleted.
+        let mark;
+        try { mark = await env.US_ORDERS.get(mk); } catch { out.read_failed++; logReadFailed("sweep", mk); continue; }
+        let markedAt = 0;
+        if (mark) { try { markedAt = new Date(JSON.parse(mark).at).getTime(); } catch { markedAt = 0; } }
+        if (!(markedAt > 0)) {
+          await env.US_ORDERS.put(mk, JSON.stringify({ at: new Date(now).toISOString() }), { expirationTtl: DELMARK_TTL_S });
+          out.unpaid_marked++;
+          continue;
+        }
+        if (now - markedAt < DELMARK_AGE) continue;
+        const rd2 = await readOrder(env, o.id);
+        if (rd2.failed) { out.read_failed++; logReadFailed("sweep", k.name); continue; }
+        if (!rd2.order || rd2.order.status !== "awaiting_payment") { await env.US_ORDERS.delete(mk); continue; }
+        try { pays = await listPayments(env, o.id); } catch { out.read_failed++; logReadFailed("sweep", `${PAY_PREFIX}${o.id}:`); continue; }
+        if (pays.length) { await env.US_ORDERS.delete(mk); continue; }
+        for (const f of rd2.order.files || []) await env.US_FILES.delete(f.key);
+        await deleteAnswerSets(env, o.id);
         await env.US_ORDERS.delete(k.name);
+        await env.US_ORDERS.delete(mk);
         out.unpaid_removed++;
         continue;
       }
@@ -551,6 +764,7 @@ export async function sweep(env, now = Date.now()) {
         // the customer's own content leaves the record with the uploads
         for (const key of ["text", "description", "extracted", "extracted_override", "extracted_cache", "name", "contractor", "hearing", "followup"]) delete o[key];
         for (const f of o.files || []) await env.US_FILES.delete(f.key);
+        await deleteAnswerSets(env, o.id);   // 2026-10-13 (U2): the answers leave with the rest of the customer's content
         o.files = [];
         o.scrubbed_at = new Date(now).toISOString();
         changed = true; out.scrubbed++;
@@ -608,6 +822,7 @@ async function reconcilePayments(env, now, out) {
     if (o.status === "awaiting_payment" && settled) {
       o.status = "paid"; o.paid_at = list[0].at; o.txn_id = list[0].txn;
       await putOrder(env, o);
+      try { await env.US_ORDERS.delete(delmarkKey(id)); } catch { /* 2026-10-13 (U4): the second pass also sees the pay key */ }
       out.pay_repaired++;
       await lineToshi(env, `【US】入金の反映漏れを直した: ${id} を paid にした(txn ${list[0].txn})。下書きは次の巡回で作る。`);
     }
@@ -633,7 +848,7 @@ async function route(request, env, ctx) {
   const url = new URL(request.url);
   const p = url.pathname;
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(env, request) });
-  if (p === "/health") return json({ ok: true, service: "hs-us-report", engine: ENGINE_VERSION, payments: PAYMENT_RECORDS, bindings: { files: !!env.US_FILES, orders: !!env.US_ORDERS, browser: !!env.BROWSER, jccdb: !!env.JCCDB }, secrets: { paypal_business: !!env.PAYPAL_BUSINESS, anthropic: !!env.ANTHROPIC_API_KEY, resend: !!env.RESEND_API_KEY, line: !!env.LINE_CHANNEL_TOKEN && !!env.LINE_USER_ID, link: !!env.LINK_SECRET, admin: !!env.US_ADMIN_TOKEN } });
+  if (p === "/health") return json({ ok: true, service: "hs-us-report", engine: ENGINE_VERSION, payments: PAYMENT_RECORDS, answers: ANSWER_RECORDS, draft_claim: DRAFT_CLAIMS, unpaid_delete: UNPAID_DELETE, board_index: BOARD_INDEX, bindings: { files: !!env.US_FILES, orders: !!env.US_ORDERS, browser: !!env.BROWSER, jccdb: !!env.JCCDB }, secrets: { paypal_business: !!env.PAYPAL_BUSINESS, anthropic: !!env.ANTHROPIC_API_KEY, resend: !!env.RESEND_API_KEY, line: !!env.LINE_CHANNEL_TOKEN && !!env.LINE_USER_ID, link: !!env.LINK_SECRET, admin: !!env.US_ADMIN_TOKEN } });
   if (p === "/intake" && request.method === "POST") return await handleIntake(request, env);
   if (p === "/quick" && request.method === "POST") return await handleQuick(request, env);
   if (p === "/webhook/paypal" && request.method === "POST") return await handleIpn(request, env, ctx);
@@ -665,9 +880,12 @@ async function route(request, env, ctx) {
     const order = rd.order;
     if (!order) return html("<p>not found</p>", 404);
     if (sha16(order) !== m[2]) return html(`<p>この下書きは作り直されている(今の指紋 ${esc(sha16(order) || "なし")})。新しいリンクは LINE に届いている。</p>`, 409);
+    await overlayAnswers(env, order);   // 2026-10-13 (U2): the answer count on the page is the merged one
     if (m[3] === "/approve") {
       if (request.method !== "POST") return html("<p>POST only</p>", 405);
       if (order.status !== "draft_ready") return html(`<p>状態が ${esc(order.status)} なので送らない</p>`, 409);
+      const g = await approveGuard(env, order);
+      if (g) return html(`<p>${esc(g.message)}</p>`, g.status);
       order.status = "delivering";
       await putOrder(env, order);
       try { await deliver(env, order); } catch (e) { order.status = "draft_ready"; await putOrder(env, order); return html(`<p>送れなかった: ${esc(String(e.message || e))}</p>`, 500); }
@@ -690,6 +908,7 @@ async function route(request, env, ctx) {
     if (rd.failed) return html("<p style=\"font:16px sans-serif;margin:24px\">We could not load your order just now. This is a temporary problem on our side, not a missing order. Please try this link again in a few minutes.</p>", 503);
     const order = rd.order;
     if (!order) return html("<p>Not found</p>", 404);
+    await overlayAnswers(env, order);   // 2026-10-13 (U2): the form shows, and the merge keeps, every set so far
     return await handleAnswer(request, env, order, qs);
   }
 
@@ -713,7 +932,7 @@ async function route(request, env, ctx) {
     const order = rd.order;
     if (!order) return json({ error: "order not found" }, 404);
     const action = m[2] || "";
-    if (!action && request.method === "GET") return json(order);
+    if (!action && request.method === "GET") return json(await overlayAnswers(env, order));   // 2026-10-13 (U2)
     if (action === "/extraction" && request.method === "PUT") {
       const ex = await request.json();
       const g = gates(ex, order.plan);
@@ -728,9 +947,12 @@ async function route(request, env, ctx) {
       const body = await request.json().catch(() => ({}));
       const src = (body && body.answers) || {};
       const n = normalizeHearing((name) => { const v = src[name.slice(2)]; return v == null ? null : (Array.isArray(v) ? v.map(String) : String(v)); }, order.trade || "other");
+      // 2026-10-13 (U2). The operator's set is its own key too, and the order gets the merge of every set so far.
+      const rec = await recordAnswers(env, order.id, n.answers, "operator");
+      await overlayAnswers(env, order);
       order.hearing = order.hearing || { version: HEARING_VERSION, answers: {} };
       order.hearing.answers = { ...(order.hearing.answers || {}), ...n.answers };
-      order.hearing.answered_at = new Date().toISOString();
+      order.hearing.answered_at = rec.at;
       if (order.followup && !order.followup.answered_at) order.followup.answered_at = order.hearing.answered_at;
       order.draft_attempts = 0;
       await putOrder(env, order);
@@ -747,6 +969,8 @@ async function route(request, env, ctx) {
     }
     if (action === "/approve" && request.method === "POST") {
       if (order.status !== "draft_ready") return json({ error: `status ${order.status}` }, 409);
+      const g = await approveGuard(env, order);
+      if (g) return json({ error: g.message }, g.status);
       order.status = "delivering"; await putOrder(env, order);
       try { return json({ ok: true, links: await deliver(env, order) }); } catch (e) { order.status = "draft_ready"; await putOrder(env, order); return json({ error: String(e.message || e) }, 500); }
     }
