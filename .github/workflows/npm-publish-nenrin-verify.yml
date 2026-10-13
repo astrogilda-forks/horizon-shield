@@ -90,10 +90,16 @@ jobs:
         env:
           WANT: ${{ github.event.inputs.version }}
         run: |
-          for i in $(seq 1 36); do
-            if npm view "nenrin-verify@$WANT" version >/dev/null 2>&1; then break; fi
-            echo "registry does not show $WANT yet (try $i of 36), waiting 5s"; sleep 5
+          # 2026-10-13: 0.5.2 was published, but the registry's version list showed it only after more than
+          # 3 minutes, so the old 36 x 5 s wait gave up and marked a good publish red. The version document
+          # (registry.npmjs.org/<name>/<version>) appears earlier than the list; check it first, then the list,
+          # for up to 10 minutes.
+          seen=""
+          for i in $(seq 1 60); do
+            if curl -fsS -H "Cache-Control: no-cache" "https://registry.npmjs.org/nenrin-verify/$WANT" >/dev/null 2>&1 && npm view "nenrin-verify@$WANT" version >/dev/null 2>&1; then seen=1; break; fi
+            echo "registry does not show $WANT yet (try $i of 60), waiting 10s"; sleep 10
           done
+          if [ -z "$seen" ]; then echo "refuse: nenrin-verify@$WANT did not appear in the registry within 10 minutes (the publish step itself succeeded; check npmjs.com before publishing again)"; exit 1; fi
           echo "published:"; npm view "nenrin-verify@$WANT" version dist.integrity dist.tarball
           echo "attestation:"; npm view "nenrin-verify@$WANT" dist.attestations
           T=$(mktemp -d); cd "$T"; npm init -y >/dev/null 2>&1
