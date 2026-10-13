@@ -1,0 +1,2687 @@
+{
+  "schema": "hs-nenrin.priorseal-reader.report.v0",
+  "reader": "hs-nenrin/priorseal-reader-v0",
+  "independence": {
+    "statement": "Implemented from the published contract, fixture and docs only. No PriorSeal verifier, reader, runner, generator or SDK source was opened, imported or copied; the producer files listed as hashed-only were digested as bytes for the manifest check.",
+    "openedByThisProgram": [
+      "examples/open-evidence-lab-exact-call-matrix-v1/INPUT-CONTRACT.md",
+      "examples/open-evidence-lab-exact-call-matrix-v1/README.md",
+      "examples/open-evidence-lab-exact-call-matrix-v1/MANIFEST.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/expected.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/report.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/signed-authorization.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/public-test-keys.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-00-exact-call-observed-match.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-01-call-target-mismatch.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-02-calldata-mismatch.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-03-transaction-value-mismatch.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-04-execution-evidence-unavailable.json",
+      "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-05-time-window-expired.json"
+    ],
+    "hashedOnlyByThisProgram": [
+      "examples/open-evidence-lab-exact-call-matrix-v1/reader.mjs",
+      "examples/open-evidence-lab-exact-call-matrix-v1/reader.mts",
+      "examples/open-evidence-lab-exact-call-matrix-v1/verify.mjs",
+      "examples/open-evidence-lab-exact-call-matrix-v1/verify.mts",
+      "examples/open-evidence-lab-exact-call-matrix-v1/generate-fixture.mjs",
+      "examples/open-evidence-lab-exact-call-matrix-v1/generate-fixture.mts"
+    ]
+  },
+  "pins": {
+    "repository": "https://github.com/imokokok/PriorSeal",
+    "commit": "2ff89d86611257b4440232e5c2793926b3d52043",
+    "expectedCommit": "2ff89d86611257b4440232e5c2793926b3d52043",
+    "contractVersion": "1.0.1",
+    "profile": "priorseal.execution-profile.exact-call.v1",
+    "coldRunTemplateCommit": "d90e5d3aaccc7e83e19ca39d2e785290a480801a",
+    "files": [
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/INPUT-CONTRACT.md",
+        "sha256": "7454ab478cd8bac6108dbf6376acc8df30582102de4dfdbd00347165bc1861d8",
+        "bytes": 11309,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/README.md",
+        "sha256": "fbb0ce992db55ef5a4887db9955f30ea879cfc47ad8b1c3b2ccbd307bf7f2b16",
+        "bytes": 5756,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/MANIFEST.json",
+        "sha256": "fee89fccd85e2b27100b0d77da6f8155ba7a9e167a34b7fb69f0e807cd9f6e75",
+        "bytes": 5671,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/expected.json",
+        "sha256": "34560ef158d94e2b2108ffdf15c70b1b78da1cc32c230ecb75f44e93cfbe9113",
+        "bytes": 7111,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/report.json",
+        "sha256": "223db1554639f242eae559b1f010dcabe3e9466e610cfa95aefe2e1ce564a363",
+        "bytes": 11511,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/signed-authorization.json",
+        "sha256": "38cebf301c47a63fd3f308b6b7e7e6b6bd0fd166c81857276059650f828fdccb",
+        "bytes": 2752,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/public-test-keys.json",
+        "sha256": "dfb6ab09050194eda9ef1acab11265dcb549040bad19a1228f86a9d84706a986",
+        "bytes": 1099,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-00-exact-call-observed-match.json",
+        "sha256": "960ebbe8ea7a1c756732da379a93778f67d1d830fa56533de00e2d088e58ac19",
+        "bytes": 994,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-01-call-target-mismatch.json",
+        "sha256": "bde22269d62f6a56c0284e17696f5b2521d55cce0d2e43a4c2ed86e12d87d711",
+        "bytes": 994,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-02-calldata-mismatch.json",
+        "sha256": "d2b1f9cd27c9a0529360d8c30f2fa69be76ae8979d19608303c7e5f5fe70a7f7",
+        "bytes": 994,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-03-transaction-value-mismatch.json",
+        "sha256": "773b3051f32c2bf85a4e02d6ba99a778128a71b6ac2f3198cef01f7e9e57492d",
+        "bytes": 994,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-04-execution-evidence-unavailable.json",
+        "sha256": "c99fb1b10fc711b890a7eec5abddf00ab4a5675bff1944ba2f80bc42fe85f005",
+        "bytes": 992,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/fixture/observed/case-05-time-window-expired.json",
+        "sha256": "b94856739a21399ce26ee4b38d384a46c52b6249b7c45c5b2f39c0f4df78e377",
+        "bytes": 994,
+        "use": "opened"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/reader.mjs",
+        "sha256": "b741bae1f2e977a475e5387056ece77f283d754c1a32e128328ea9d80a8822bc",
+        "bytes": 4192,
+        "use": "hashed-only (bytes digested for the manifest check; never decoded or executed)"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/reader.mts",
+        "sha256": "12f03cdd493fc81418eb8906536b6e72c2fa761521410e9bb3222c3d736f6ac0",
+        "bytes": 6661,
+        "use": "hashed-only (bytes digested for the manifest check; never decoded or executed)"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/verify.mjs",
+        "sha256": "f88c75c459e54c80a5a21865536e3ac86fb869c3b3fc339fdcff92e33d5fe62e",
+        "bytes": 6096,
+        "use": "hashed-only (bytes digested for the manifest check; never decoded or executed)"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/verify.mts",
+        "sha256": "c9a84423a33bf0fc05910409569da1893ac992c8d3c9f761ac9e81a7f3bb518c",
+        "bytes": 8037,
+        "use": "hashed-only (bytes digested for the manifest check; never decoded or executed)"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/generate-fixture.mjs",
+        "sha256": "f5ba11445aac296bde82ccbf0cf28c483bcbd08856b83a4a04055aa1dc84f06a",
+        "bytes": 7273,
+        "use": "hashed-only (bytes digested for the manifest check; never decoded or executed)"
+      },
+      {
+        "path": "examples/open-evidence-lab-exact-call-matrix-v1/generate-fixture.mts",
+        "sha256": "64867f234f9c4b42185a051346aef9ef524fdd41b519461441eebd7812605507",
+        "bytes": 8307,
+        "use": "hashed-only (bytes digested for the manifest check; never decoded or executed)"
+      }
+    ],
+    "tools": {
+      "python": "3.11.15",
+      "implementation": "CPython",
+      "pycryptodome": "3.21.0",
+      "eth-keys": "0.6.0",
+      "eth-account": "0.13.4",
+      "cryptography": "43.0.3",
+      "eth-hash": "0.8.0",
+      "eth-utils": "6.0.0"
+    },
+    "self": {
+      "reader.py": "7b7fe7d3cd1bc69643bb10df832d4d68b383b3bfc0f8919c7719038274db9448",
+      "requirements.txt": "ad8b1aacae438ff2886a9f9082c3221b27ccbae42903016e235d7eda5dd32e02"
+    }
+  },
+  "matrixClaims": [
+    {
+      "id": "M1.commit",
+      "status": "ESTABLISHED",
+      "statement": "checkout HEAD is the pinned commit",
+      "ruleSource": "task pin",
+      "ours": "2ff89d86611257b4440232e5c2793926b3d52043",
+      "published": "2ff89d86611257b4440232e5c2793926b3d52043"
+    },
+    {
+      "id": "M2.manifest-digests",
+      "status": "ESTABLISHED",
+      "statement": "every MANIFEST.json artifact digest and byte length matches the checkout",
+      "ruleSource": "MANIFEST.json",
+      "ours": {
+        "artifacts": 18,
+        "mismatched": []
+      }
+    },
+    {
+      "id": "M3.contract-version",
+      "status": "ESTABLISHED",
+      "statement": "MANIFEST, expected.json and report.json all carry contract 1.0.1",
+      "ruleSource": "MANIFEST.json"
+    },
+    {
+      "id": "M4.report-sha256",
+      "status": "ESTABLISHED",
+      "statement": "committed report.json sha256 equals the value in the d90e5d3 cold-run packet",
+      "ruleSource": "docs/runs/priorseal-exact-call-matrix-v1.0.1-cold-run/README.md at d90e5d3 (authorization check at notBefore)",
+      "ours": "223db1554639f242eae559b1f010dcabe3e9466e610cfa95aefe2e1ce564a363"
+    },
+    {
+      "id": "M5.report-embeds-expected",
+      "status": "ESTABLISHED",
+      "statement": "every expected block in report.json equals expected.json",
+      "ruleSource": "expected.json"
+    },
+    {
+      "id": "M6.readme-table-consistent",
+      "status": "CONTRADICTED",
+      "statement": "the matrix README case table states the same outcome as expected.json for every case",
+      "ruleSource": "README.md vs expected.json",
+      "ours": [
+        {
+          "case": "case-05-time-window-expired",
+          "readmeOutcome": [
+            "UNDETERMINED"
+          ],
+          "expectedOutcome": "COMPLETED"
+        }
+      ],
+      "note": "documentation consistency only; does not affect any computed result"
+    }
+  ],
+  "authorizationClaims": [
+    {
+      "id": "A1.intentHash",
+      "status": "ESTABLISHED",
+      "statement": "intentHash = H(intent without intentHash), and the intent, authorization and acceptance copies agree",
+      "ruleSource": "docs/architecture/aps-priorseal-signing-bytes-v0.4.0.md (written for a different fixture; applied here)",
+      "ours": "a18ebfbff16f32d37962e23f8fce74a5cc56396a60499cae9b482de4b08c0ae6",
+      "published": "a18ebfbff16f32d37962e23f8fce74a5cc56396a60499cae9b482de4b08c0ae6"
+    },
+    {
+      "id": "A2.authorizationId",
+      "status": "ESTABLISHED",
+      "statement": "authorizationId = auth_ + first 32 hex of H(authorization without authorizationId, signature); acceptance carries the same id",
+      "ruleSource": "docs/architecture/aps-priorseal-signing-bytes-v0.4.0.md (written for a different fixture; applied here)",
+      "ours": "auth_50e3515504303b8afc0b0be3064eb25b",
+      "published": "auth_50e3515504303b8afc0b0be3064eb25b"
+    },
+    {
+      "id": "A3.authorizationHash",
+      "status": "ESTABLISHED",
+      "statement": "acceptance.authorizationHash = H(full authorization)",
+      "ruleSource": "docs/architecture/aps-priorseal-signing-bytes-v0.4.0.md (written for a different fixture; applied here)",
+      "ours": "bf2d6bcbc8ed812c40db559cec9ca4ef2b95b7ec96650c976b4461824b6e688b",
+      "published": "bf2d6bcbc8ed812c40db559cec9ca4ef2b95b7ec96650c976b4461824b6e688b"
+    },
+    {
+      "id": "A4.entryHash",
+      "status": "ESTABLISHED",
+      "statement": "acceptance.entryHash = H({sequence, authorizationHash, acceptedAt, previousEntryHash})",
+      "ruleSource": "docs/architecture/aps-priorseal-signing-bytes-v0.4.0.md (written for a different fixture; applied here)",
+      "ours": "da8f13103c3d67f1693eeb3947d314cd1c24fc7c9a7e0c30fab475244d032fa4",
+      "published": "da8f13103c3d67f1693eeb3947d314cd1c24fc7c9a7e0c30fab475244d032fa4"
+    },
+    {
+      "id": "A5.eip712-digest",
+      "status": "ESTABLISHED",
+      "statement": "EIP-712 digest recomputed by hand from the 2.1 field list, 2.3 path map and domain {PriorSeal, 2, intent.chainId}",
+      "ruleSource": "EIP-712 (standard), with the field list of INPUT-CONTRACT.md 2.1 and 2.3",
+      "ours": "0x9e404bfc63c56cda555b71c4e59237178edc7a428de7f50738804a1f092cf5b1",
+      "published": "0x9e404bfc63c56cda555b71c4e59237178edc7a428de7f50738804a1f092cf5b1",
+      "note": "typeString=PriorSealAuthorization(bytes32 intentHash,string principalType,string principalId,address principalAccount,string authorizerType,address authorizer,string agentId,address executor,uint256 issuedAt,uint256 notBefore,uint256 expiresAt,bytes32 authorizationNonce,uint256 maxUses,string audience,bytes32 policyHash); domainType=EIP712Domain(string name,string version,uint256 chainId); domainSeparator=0x9ed60ffc78d5f51ee92451b9443adf92acd3513347808e4b1a824222a802c9e1; structHash=0xf5cafd21b6c6e911544a06361fbb5b7b8511e33b051a7c7d05a6931d8d187461"
+    },
+    {
+      "id": "A6.signer-recovery",
+      "status": "ESTABLISHED",
+      "statement": "signer recovered from (digest, authorization.signature) equals authorization.authorizer.address and the published test address",
+      "ruleSource": "INPUT-CONTRACT.md (1.0.1) 2.1",
+      "ours": "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A",
+      "published": "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A",
+      "note": "v=27 lowS=True"
+    },
+    {
+      "id": "A7.library-crosscheck",
+      "status": "ESTABLISHED",
+      "statement": "a second path (eth-account encode_typed_data + recover_message) yields the same digest and signer",
+      "ruleSource": "eth-account (not PriorSeal code)",
+      "ours": {
+        "digest": "0x9e404bfc63c56cda555b71c4e59237178edc7a428de7f50738804a1f092cf5b1",
+        "signer": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a"
+      }
+    },
+    {
+      "id": "A8.acceptance-signature",
+      "status": "ESTABLISHED",
+      "statement": "Ed25519 signature over UTF-8(canonical JSON of acceptance without signature) verifies under the published issuer key",
+      "ruleSource": "INPUT-CONTRACT.md (1.0.1) 2.2 + docs/architecture/aps-priorseal-signing-bytes-v0.4.0.md (written for a different fixture; applied here) (canonical form)",
+      "ours": true,
+      "published": true
+    },
+    {
+      "id": "A9.acceptance-identity",
+      "status": "ESTABLISHED",
+      "statement": "acceptance issuer, keyId and algorithm match fixture/public-test-keys.json",
+      "ruleSource": "INPUT-CONTRACT.md (1.0.1) 2.2",
+      "ours": {
+        "issuer": "oel-exact-call-fixture-issuer",
+        "keyId": "oel-exact-call-fixture-key-1"
+      }
+    },
+    {
+      "id": "A10.acceptance-status",
+      "status": "ESTABLISHED",
+      "statement": "acceptance is an ACCEPTED priorseal.authorization-receipt.v1, first log entry (sequence 1, previousEntryHash null)",
+      "ruleSource": "docs/architecture/aps-priorseal-signing-bytes-v0.4.0.md (written for a different fixture; applied here); docs/architecture/lifecycle.md"
+    },
+    {
+      "id": "A11.authorization-window-at-reference-time",
+      "status": "ESTABLISHED",
+      "statement": "at reference time tRef = notBefore the authorization is inside [notBefore, expiresAt], was issued no later than notBefore, accepted inside its window, and is a single-use eip712 v2 authorization for this profile",
+      "ruleSource": "docs/runs/priorseal-exact-call-matrix-v1.0.1-cold-run/README.md at d90e5d3 (authorization check at notBefore); INPUT-CONTRACT.md (1.0.1) 2",
+      "ours": {
+        "tRef": 1000,
+        "checks": {
+          "issuedAt<=notBefore": true,
+          "notBefore<=tRef<=expiresAt": true,
+          "issuedAt<=acceptedAt<=expiresAt": true,
+          "maxUses>=1": true,
+          "principal.account==authorizer.address (eip712 EOA)": true,
+          "authorizer.type==eip712": true,
+          "schema/domain": true,
+          "intent.executionProfile": true
+        }
+      },
+      "published": true,
+      "note": "the reference time is not stated in INPUT-CONTRACT.md at 2ff89d8 (spec gap G2); policyHash is the zero hash and no policy document is published, so policy admission is not checked"
+    },
+    {
+      "id": "A12.test-material-consistency",
+      "status": "ESTABLISHED",
+      "statement": "the published TEST seed and TEST secp256k1 value derive the published Ed25519 key and authorizer address",
+      "ruleSource": "fixture/public-test-keys.json",
+      "note": "informational; shows the key file is self-consistent, adds nothing to signature validity"
+    },
+    {
+      "id": "A13.checksum-form",
+      "status": "ESTABLISHED",
+      "statement": "EIP-55 checksum form of the recovered signer equals the published form",
+      "ruleSource": "EIP-55",
+      "ours": "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A"
+    }
+  ],
+  "cases": [
+    {
+      "id": "case-00-exact-call-observed-match",
+      "observed": "fixture/observed/case-00-exact-call-observed-match.json",
+      "observedSha256": "960ebbe8ea7a1c756732da379a93778f67d1d830fa56533de00e2d088e58ac19",
+      "derived": {
+        "fieldMap": [
+          {
+            "code": "CHAIN_MISMATCH",
+            "signed": "intent.chainId",
+            "observed": "chainId",
+            "rule": "strict equality of the integer values",
+            "applies": true,
+            "signedValue": 8453,
+            "observedValue": 8453,
+            "mismatch": false
+          },
+          {
+            "code": "ACTION_MISMATCH",
+            "signed": "intent.action",
+            "observed": "action",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "CONTRACT_CALL",
+            "observedValue": "CONTRACT_CALL",
+            "mismatch": false
+          },
+          {
+            "code": "SENDER_MISMATCH",
+            "signed": "intent.sender",
+            "observed": "sender",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "0x2222222222222222222222222222222222222222",
+            "observedValue": "0x2222222222222222222222222222222222222222",
+            "mismatch": false
+          },
+          {
+            "code": "NONCE_MISMATCH",
+            "signed": "intent.nonce",
+            "observed": "nonce",
+            "rule": "equality of decimal-string forms, default \"0\"",
+            "applies": true,
+            "signedValue": "7",
+            "observedValue": "7",
+            "mismatch": false
+          },
+          {
+            "code": "CALL_TARGET_MISMATCH",
+            "signed": "intent.callTarget",
+            "observed": "target",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x3333333333333333333333333333333333333333",
+            "observedValue": "0x3333333333333333333333333333333333333333",
+            "mismatch": false
+          },
+          {
+            "code": "CALLDATA_MISMATCH",
+            "signed": "intent.calldataHash",
+            "observed": "calldataHash",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "observedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "mismatch": false
+          },
+          {
+            "code": "TRANSACTION_VALUE_MISMATCH",
+            "signed": "intent.transactionValue",
+            "observed": "nativeValue",
+            "rule": "equality of decimal-string forms, when signed present",
+            "applies": true,
+            "signedValue": "1000000000000000",
+            "observedValue": "1000000000000000",
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_TIME_WINDOW",
+            "signed": "intent.validUntil",
+            "observed": "executedAt",
+            "rule": "observed time greater than validUntil",
+            "applies": true,
+            "signedValue": 2000,
+            "observedValue": 1100,
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_AUTHORIZATION_WINDOW",
+            "signed": "authorization.notBefore / authorization.expiresAt",
+            "observed": "executedAt",
+            "rule": "observed time earlier than notBefore or greater than expiresAt",
+            "applies": true,
+            "signedValue": [
+              1000,
+              2000
+            ],
+            "observedValue": 1100,
+            "mismatch": false
+          }
+        ],
+        "mismatchCodes": [],
+        "availabilityCodes": [],
+        "bound": true,
+        "rawBinding": {
+          "bound": true,
+          "reasonCodes": []
+        },
+        "correlation": {
+          "chain": true,
+          "delegatedExecutor": true,
+          "nonce": true
+        },
+        "complianceStatus": "COMPLIANT",
+        "complianceReasonCodes": [],
+        "outcome": "COMPLETED",
+        "className": "envelope-binding"
+      },
+      "claims": [
+        {
+          "id": "C1.schema",
+          "status": "ESTABLISHED",
+          "statement": "observation is a priorseal.execution-observation.v1 envelope",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 3"
+        },
+        {
+          "id": "C2.binding-authorization-to-observation",
+          "status": "ESTABLISHED",
+          "statement": "observation correlates to the authorization by chain, delegated executor (authorization.delegate.executor vs observed sender) and nonce",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "chain": true,
+            "delegatedExecutor": true,
+            "nonce": true
+          },
+          "note": "the observation carries no authorizationId or intentHash; the pairing itself is by fixture layout (spec gap G5)"
+        },
+        {
+          "id": "C3.acceptance-before-execution",
+          "status": "ESTABLISHED",
+          "statement": "acceptance.acceptedAt is not later than the observed execution time (else AUTHORIZATION_AFTER_EXECUTION)",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "acceptedAt": 1000,
+            "executedAt": 1100
+          }
+        },
+        {
+          "id": "C4.decision-evidence-binding",
+          "status": "NOT_ESTABLISHED",
+          "statement": "binding to separate decision evidence",
+          "ruleSource": "n/a",
+          "note": "the matrix contains no decision-evidence object and the intent carries no contextCommitments; the only pre-execution evidence is the issuer acceptance (A1 to A10)"
+        },
+        {
+          "id": "C5.mismatch-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 4 mismatch set recomputed from the field map",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": [],
+          "published": []
+        },
+        {
+          "id": "C6.availability-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 5 availability set recomputed",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": [],
+          "published": []
+        },
+        {
+          "id": "C7.bound",
+          "status": "ESTABLISHED",
+          "statement": "bound = (mismatch set is empty)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": true,
+          "published": true
+        },
+        {
+          "id": "C8.compliance",
+          "status": "ESTABLISHED",
+          "statement": "compliance status and reason codes from an inferred rule (availability -> NOT_ASSESSABLE with those codes; correlated final mismatch -> NON_COMPLIANT with the mismatch codes; else COMPLIANT)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; not stated in the contract, spec gap G3/G4)",
+          "ours": {
+            "status": "COMPLIANT",
+            "codes": []
+          },
+          "published": {
+            "status": "COMPLIANT",
+            "codes": []
+          }
+        },
+        {
+          "id": "C9.outcome",
+          "status": "ESTABLISHED",
+          "statement": "outcome from observation state (CONFIRMED -> COMPLETED; NOT_FOUND/PENDING/RPC_* or unavailable evidence -> UNDETERMINED)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; spec gap G3)",
+          "ours": "COMPLETED",
+          "published": "COMPLETED"
+        },
+        {
+          "id": "C10.raw-profile-binding",
+          "status": "ESTABLISHED",
+          "statement": "the shipped profile's raw binding equals mismatch set UNION availability set (as the contract changelog note describes)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 0 (note on the shipped profile)",
+          "ours": {
+            "bound": true,
+            "codes": []
+          },
+          "published": {
+            "bound": true,
+            "reasonCodes": []
+          }
+        },
+        {
+          "id": "C11.receiptClaimsValid",
+          "status": "NOT_ESTABLISHED",
+          "statement": "profile.receiptClaimsValid",
+          "ruleSource": "not specified",
+          "note": "no receipt object is published in the matrix and the contract does not define this field; not independently derivable"
+        },
+        {
+          "id": "C12.className",
+          "status": "ESTABLISHED",
+          "statement": "case class derived from the result (availability code present -> evidence-availability)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": "envelope-binding",
+          "published": "envelope-binding"
+        }
+      ],
+      "comparison": [
+        {
+          "field": "reader.bound",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "reader.mismatchCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "reader.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.bound",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.partitionedBinding.mismatchCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.rawBinding.bound",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.rawBinding.reasonCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.complianceStatus",
+          "ours": "COMPLIANT",
+          "published": "COMPLIANT",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.complianceReasonCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.outcome",
+          "ours": "COMPLETED",
+          "published": "COMPLETED",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "className",
+          "ours": "envelope-binding",
+          "published": "envelope-binding",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "pass",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        }
+      ],
+      "notComparable": [
+        {
+          "field": "profile.receiptClaimsValid",
+          "published": true,
+          "reason": "not specified by the contract; no receipt object in the matrix"
+        },
+        {
+          "field": "agreement.*",
+          "published": {
+            "readerMatchesProfileBinding": true,
+            "profileMatchesExpectedBinding": true,
+            "profileMatchesExpectedCompliance": true,
+            "profileMatchesExpectedOutcome": true
+          },
+          "reason": "their internal cross-implementation agreement flags; replaced here by our own comparison rows"
+        }
+      ]
+    },
+    {
+      "id": "case-01-call-target-mismatch",
+      "observed": "fixture/observed/case-01-call-target-mismatch.json",
+      "observedSha256": "bde22269d62f6a56c0284e17696f5b2521d55cce0d2e43a4c2ed86e12d87d711",
+      "derived": {
+        "fieldMap": [
+          {
+            "code": "CHAIN_MISMATCH",
+            "signed": "intent.chainId",
+            "observed": "chainId",
+            "rule": "strict equality of the integer values",
+            "applies": true,
+            "signedValue": 8453,
+            "observedValue": 8453,
+            "mismatch": false
+          },
+          {
+            "code": "ACTION_MISMATCH",
+            "signed": "intent.action",
+            "observed": "action",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "CONTRACT_CALL",
+            "observedValue": "CONTRACT_CALL",
+            "mismatch": false
+          },
+          {
+            "code": "SENDER_MISMATCH",
+            "signed": "intent.sender",
+            "observed": "sender",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "0x2222222222222222222222222222222222222222",
+            "observedValue": "0x2222222222222222222222222222222222222222",
+            "mismatch": false
+          },
+          {
+            "code": "NONCE_MISMATCH",
+            "signed": "intent.nonce",
+            "observed": "nonce",
+            "rule": "equality of decimal-string forms, default \"0\"",
+            "applies": true,
+            "signedValue": "7",
+            "observedValue": "7",
+            "mismatch": false
+          },
+          {
+            "code": "CALL_TARGET_MISMATCH",
+            "signed": "intent.callTarget",
+            "observed": "target",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x3333333333333333333333333333333333333333",
+            "observedValue": "0x5555555555555555555555555555555555555555",
+            "mismatch": true
+          },
+          {
+            "code": "CALLDATA_MISMATCH",
+            "signed": "intent.calldataHash",
+            "observed": "calldataHash",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "observedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "mismatch": false
+          },
+          {
+            "code": "TRANSACTION_VALUE_MISMATCH",
+            "signed": "intent.transactionValue",
+            "observed": "nativeValue",
+            "rule": "equality of decimal-string forms, when signed present",
+            "applies": true,
+            "signedValue": "1000000000000000",
+            "observedValue": "1000000000000000",
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_TIME_WINDOW",
+            "signed": "intent.validUntil",
+            "observed": "executedAt",
+            "rule": "observed time greater than validUntil",
+            "applies": true,
+            "signedValue": 2000,
+            "observedValue": 1101,
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_AUTHORIZATION_WINDOW",
+            "signed": "authorization.notBefore / authorization.expiresAt",
+            "observed": "executedAt",
+            "rule": "observed time earlier than notBefore or greater than expiresAt",
+            "applies": true,
+            "signedValue": [
+              1000,
+              2000
+            ],
+            "observedValue": 1101,
+            "mismatch": false
+          }
+        ],
+        "mismatchCodes": [
+          "CALL_TARGET_MISMATCH"
+        ],
+        "availabilityCodes": [],
+        "bound": false,
+        "rawBinding": {
+          "bound": false,
+          "reasonCodes": [
+            "CALL_TARGET_MISMATCH"
+          ]
+        },
+        "correlation": {
+          "chain": true,
+          "delegatedExecutor": true,
+          "nonce": true
+        },
+        "complianceStatus": "NON_COMPLIANT",
+        "complianceReasonCodes": [
+          "CALL_TARGET_MISMATCH"
+        ],
+        "outcome": "COMPLETED",
+        "className": "envelope-binding"
+      },
+      "claims": [
+        {
+          "id": "C1.schema",
+          "status": "ESTABLISHED",
+          "statement": "observation is a priorseal.execution-observation.v1 envelope",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 3"
+        },
+        {
+          "id": "C2.binding-authorization-to-observation",
+          "status": "ESTABLISHED",
+          "statement": "observation correlates to the authorization by chain, delegated executor (authorization.delegate.executor vs observed sender) and nonce",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "chain": true,
+            "delegatedExecutor": true,
+            "nonce": true
+          },
+          "note": "the observation carries no authorizationId or intentHash; the pairing itself is by fixture layout (spec gap G5)"
+        },
+        {
+          "id": "C3.acceptance-before-execution",
+          "status": "ESTABLISHED",
+          "statement": "acceptance.acceptedAt is not later than the observed execution time (else AUTHORIZATION_AFTER_EXECUTION)",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "acceptedAt": 1000,
+            "executedAt": 1101
+          }
+        },
+        {
+          "id": "C4.decision-evidence-binding",
+          "status": "NOT_ESTABLISHED",
+          "statement": "binding to separate decision evidence",
+          "ruleSource": "n/a",
+          "note": "the matrix contains no decision-evidence object and the intent carries no contextCommitments; the only pre-execution evidence is the issuer acceptance (A1 to A10)"
+        },
+        {
+          "id": "C5.mismatch-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 4 mismatch set recomputed from the field map",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "published": [
+            "CALL_TARGET_MISMATCH"
+          ]
+        },
+        {
+          "id": "C6.availability-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 5 availability set recomputed",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": [],
+          "published": []
+        },
+        {
+          "id": "C7.bound",
+          "status": "ESTABLISHED",
+          "statement": "bound = (mismatch set is empty)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": false,
+          "published": false
+        },
+        {
+          "id": "C8.compliance",
+          "status": "ESTABLISHED",
+          "statement": "compliance status and reason codes from an inferred rule (availability -> NOT_ASSESSABLE with those codes; correlated final mismatch -> NON_COMPLIANT with the mismatch codes; else COMPLIANT)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; not stated in the contract, spec gap G3/G4)",
+          "ours": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "CALL_TARGET_MISMATCH"
+            ]
+          },
+          "published": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "CALL_TARGET_MISMATCH"
+            ]
+          }
+        },
+        {
+          "id": "C9.outcome",
+          "status": "ESTABLISHED",
+          "statement": "outcome from observation state (CONFIRMED -> COMPLETED; NOT_FOUND/PENDING/RPC_* or unavailable evidence -> UNDETERMINED)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; spec gap G3)",
+          "ours": "COMPLETED",
+          "published": "COMPLETED"
+        },
+        {
+          "id": "C10.raw-profile-binding",
+          "status": "ESTABLISHED",
+          "statement": "the shipped profile's raw binding equals mismatch set UNION availability set (as the contract changelog note describes)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 0 (note on the shipped profile)",
+          "ours": {
+            "bound": false,
+            "codes": [
+              "CALL_TARGET_MISMATCH"
+            ]
+          },
+          "published": {
+            "bound": false,
+            "reasonCodes": [
+              "CALL_TARGET_MISMATCH"
+            ]
+          }
+        },
+        {
+          "id": "C11.receiptClaimsValid",
+          "status": "NOT_ESTABLISHED",
+          "statement": "profile.receiptClaimsValid",
+          "ruleSource": "not specified",
+          "note": "no receipt object is published in the matrix and the contract does not define this field; not independently derivable"
+        },
+        {
+          "id": "C12.className",
+          "status": "ESTABLISHED",
+          "statement": "case class derived from the result (availability code present -> evidence-availability)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": "envelope-binding",
+          "published": "envelope-binding"
+        }
+      ],
+      "comparison": [
+        {
+          "field": "reader.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "reader.mismatchCodes",
+          "ours": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "published": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "reader.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.partitionedBinding.mismatchCodes",
+          "ours": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "published": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.rawBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.rawBinding.reasonCodes",
+          "ours": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "published": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.complianceStatus",
+          "ours": "NON_COMPLIANT",
+          "published": "NON_COMPLIANT",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.complianceReasonCodes",
+          "ours": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "published": [
+            "CALL_TARGET_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.outcome",
+          "ours": "COMPLETED",
+          "published": "COMPLETED",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "className",
+          "ours": "envelope-binding",
+          "published": "envelope-binding",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "pass",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        }
+      ],
+      "notComparable": [
+        {
+          "field": "profile.receiptClaimsValid",
+          "published": true,
+          "reason": "not specified by the contract; no receipt object in the matrix"
+        },
+        {
+          "field": "agreement.*",
+          "published": {
+            "readerMatchesProfileBinding": true,
+            "profileMatchesExpectedBinding": true,
+            "profileMatchesExpectedCompliance": true,
+            "profileMatchesExpectedOutcome": true
+          },
+          "reason": "their internal cross-implementation agreement flags; replaced here by our own comparison rows"
+        }
+      ]
+    },
+    {
+      "id": "case-02-calldata-mismatch",
+      "observed": "fixture/observed/case-02-calldata-mismatch.json",
+      "observedSha256": "d2b1f9cd27c9a0529360d8c30f2fa69be76ae8979d19608303c7e5f5fe70a7f7",
+      "derived": {
+        "fieldMap": [
+          {
+            "code": "CHAIN_MISMATCH",
+            "signed": "intent.chainId",
+            "observed": "chainId",
+            "rule": "strict equality of the integer values",
+            "applies": true,
+            "signedValue": 8453,
+            "observedValue": 8453,
+            "mismatch": false
+          },
+          {
+            "code": "ACTION_MISMATCH",
+            "signed": "intent.action",
+            "observed": "action",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "CONTRACT_CALL",
+            "observedValue": "CONTRACT_CALL",
+            "mismatch": false
+          },
+          {
+            "code": "SENDER_MISMATCH",
+            "signed": "intent.sender",
+            "observed": "sender",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "0x2222222222222222222222222222222222222222",
+            "observedValue": "0x2222222222222222222222222222222222222222",
+            "mismatch": false
+          },
+          {
+            "code": "NONCE_MISMATCH",
+            "signed": "intent.nonce",
+            "observed": "nonce",
+            "rule": "equality of decimal-string forms, default \"0\"",
+            "applies": true,
+            "signedValue": "7",
+            "observedValue": "7",
+            "mismatch": false
+          },
+          {
+            "code": "CALL_TARGET_MISMATCH",
+            "signed": "intent.callTarget",
+            "observed": "target",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x3333333333333333333333333333333333333333",
+            "observedValue": "0x3333333333333333333333333333333333333333",
+            "mismatch": false
+          },
+          {
+            "code": "CALLDATA_MISMATCH",
+            "signed": "intent.calldataHash",
+            "observed": "calldataHash",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "observedValue": "0x5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b",
+            "mismatch": true
+          },
+          {
+            "code": "TRANSACTION_VALUE_MISMATCH",
+            "signed": "intent.transactionValue",
+            "observed": "nativeValue",
+            "rule": "equality of decimal-string forms, when signed present",
+            "applies": true,
+            "signedValue": "1000000000000000",
+            "observedValue": "1000000000000000",
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_TIME_WINDOW",
+            "signed": "intent.validUntil",
+            "observed": "executedAt",
+            "rule": "observed time greater than validUntil",
+            "applies": true,
+            "signedValue": 2000,
+            "observedValue": 1102,
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_AUTHORIZATION_WINDOW",
+            "signed": "authorization.notBefore / authorization.expiresAt",
+            "observed": "executedAt",
+            "rule": "observed time earlier than notBefore or greater than expiresAt",
+            "applies": true,
+            "signedValue": [
+              1000,
+              2000
+            ],
+            "observedValue": 1102,
+            "mismatch": false
+          }
+        ],
+        "mismatchCodes": [
+          "CALLDATA_MISMATCH"
+        ],
+        "availabilityCodes": [],
+        "bound": false,
+        "rawBinding": {
+          "bound": false,
+          "reasonCodes": [
+            "CALLDATA_MISMATCH"
+          ]
+        },
+        "correlation": {
+          "chain": true,
+          "delegatedExecutor": true,
+          "nonce": true
+        },
+        "complianceStatus": "NON_COMPLIANT",
+        "complianceReasonCodes": [
+          "CALLDATA_MISMATCH"
+        ],
+        "outcome": "COMPLETED",
+        "className": "envelope-binding"
+      },
+      "claims": [
+        {
+          "id": "C1.schema",
+          "status": "ESTABLISHED",
+          "statement": "observation is a priorseal.execution-observation.v1 envelope",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 3"
+        },
+        {
+          "id": "C2.binding-authorization-to-observation",
+          "status": "ESTABLISHED",
+          "statement": "observation correlates to the authorization by chain, delegated executor (authorization.delegate.executor vs observed sender) and nonce",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "chain": true,
+            "delegatedExecutor": true,
+            "nonce": true
+          },
+          "note": "the observation carries no authorizationId or intentHash; the pairing itself is by fixture layout (spec gap G5)"
+        },
+        {
+          "id": "C3.acceptance-before-execution",
+          "status": "ESTABLISHED",
+          "statement": "acceptance.acceptedAt is not later than the observed execution time (else AUTHORIZATION_AFTER_EXECUTION)",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "acceptedAt": 1000,
+            "executedAt": 1102
+          }
+        },
+        {
+          "id": "C4.decision-evidence-binding",
+          "status": "NOT_ESTABLISHED",
+          "statement": "binding to separate decision evidence",
+          "ruleSource": "n/a",
+          "note": "the matrix contains no decision-evidence object and the intent carries no contextCommitments; the only pre-execution evidence is the issuer acceptance (A1 to A10)"
+        },
+        {
+          "id": "C5.mismatch-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 4 mismatch set recomputed from the field map",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": [
+            "CALLDATA_MISMATCH"
+          ],
+          "published": [
+            "CALLDATA_MISMATCH"
+          ]
+        },
+        {
+          "id": "C6.availability-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 5 availability set recomputed",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": [],
+          "published": []
+        },
+        {
+          "id": "C7.bound",
+          "status": "ESTABLISHED",
+          "statement": "bound = (mismatch set is empty)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": false,
+          "published": false
+        },
+        {
+          "id": "C8.compliance",
+          "status": "ESTABLISHED",
+          "statement": "compliance status and reason codes from an inferred rule (availability -> NOT_ASSESSABLE with those codes; correlated final mismatch -> NON_COMPLIANT with the mismatch codes; else COMPLIANT)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; not stated in the contract, spec gap G3/G4)",
+          "ours": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "CALLDATA_MISMATCH"
+            ]
+          },
+          "published": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "CALLDATA_MISMATCH"
+            ]
+          }
+        },
+        {
+          "id": "C9.outcome",
+          "status": "ESTABLISHED",
+          "statement": "outcome from observation state (CONFIRMED -> COMPLETED; NOT_FOUND/PENDING/RPC_* or unavailable evidence -> UNDETERMINED)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; spec gap G3)",
+          "ours": "COMPLETED",
+          "published": "COMPLETED"
+        },
+        {
+          "id": "C10.raw-profile-binding",
+          "status": "ESTABLISHED",
+          "statement": "the shipped profile's raw binding equals mismatch set UNION availability set (as the contract changelog note describes)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 0 (note on the shipped profile)",
+          "ours": {
+            "bound": false,
+            "codes": [
+              "CALLDATA_MISMATCH"
+            ]
+          },
+          "published": {
+            "bound": false,
+            "reasonCodes": [
+              "CALLDATA_MISMATCH"
+            ]
+          }
+        },
+        {
+          "id": "C11.receiptClaimsValid",
+          "status": "NOT_ESTABLISHED",
+          "statement": "profile.receiptClaimsValid",
+          "ruleSource": "not specified",
+          "note": "no receipt object is published in the matrix and the contract does not define this field; not independently derivable"
+        },
+        {
+          "id": "C12.className",
+          "status": "ESTABLISHED",
+          "statement": "case class derived from the result (availability code present -> evidence-availability)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": "envelope-binding",
+          "published": "envelope-binding"
+        }
+      ],
+      "comparison": [
+        {
+          "field": "reader.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "reader.mismatchCodes",
+          "ours": [
+            "CALLDATA_MISMATCH"
+          ],
+          "published": [
+            "CALLDATA_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "reader.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.partitionedBinding.mismatchCodes",
+          "ours": [
+            "CALLDATA_MISMATCH"
+          ],
+          "published": [
+            "CALLDATA_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.rawBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.rawBinding.reasonCodes",
+          "ours": [
+            "CALLDATA_MISMATCH"
+          ],
+          "published": [
+            "CALLDATA_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.complianceStatus",
+          "ours": "NON_COMPLIANT",
+          "published": "NON_COMPLIANT",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.complianceReasonCodes",
+          "ours": [
+            "CALLDATA_MISMATCH"
+          ],
+          "published": [
+            "CALLDATA_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.outcome",
+          "ours": "COMPLETED",
+          "published": "COMPLETED",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "className",
+          "ours": "envelope-binding",
+          "published": "envelope-binding",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "pass",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        }
+      ],
+      "notComparable": [
+        {
+          "field": "profile.receiptClaimsValid",
+          "published": true,
+          "reason": "not specified by the contract; no receipt object in the matrix"
+        },
+        {
+          "field": "agreement.*",
+          "published": {
+            "readerMatchesProfileBinding": true,
+            "profileMatchesExpectedBinding": true,
+            "profileMatchesExpectedCompliance": true,
+            "profileMatchesExpectedOutcome": true
+          },
+          "reason": "their internal cross-implementation agreement flags; replaced here by our own comparison rows"
+        }
+      ]
+    },
+    {
+      "id": "case-03-transaction-value-mismatch",
+      "observed": "fixture/observed/case-03-transaction-value-mismatch.json",
+      "observedSha256": "773b3051f32c2bf85a4e02d6ba99a778128a71b6ac2f3198cef01f7e9e57492d",
+      "derived": {
+        "fieldMap": [
+          {
+            "code": "CHAIN_MISMATCH",
+            "signed": "intent.chainId",
+            "observed": "chainId",
+            "rule": "strict equality of the integer values",
+            "applies": true,
+            "signedValue": 8453,
+            "observedValue": 8453,
+            "mismatch": false
+          },
+          {
+            "code": "ACTION_MISMATCH",
+            "signed": "intent.action",
+            "observed": "action",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "CONTRACT_CALL",
+            "observedValue": "CONTRACT_CALL",
+            "mismatch": false
+          },
+          {
+            "code": "SENDER_MISMATCH",
+            "signed": "intent.sender",
+            "observed": "sender",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "0x2222222222222222222222222222222222222222",
+            "observedValue": "0x2222222222222222222222222222222222222222",
+            "mismatch": false
+          },
+          {
+            "code": "NONCE_MISMATCH",
+            "signed": "intent.nonce",
+            "observed": "nonce",
+            "rule": "equality of decimal-string forms, default \"0\"",
+            "applies": true,
+            "signedValue": "7",
+            "observedValue": "7",
+            "mismatch": false
+          },
+          {
+            "code": "CALL_TARGET_MISMATCH",
+            "signed": "intent.callTarget",
+            "observed": "target",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x3333333333333333333333333333333333333333",
+            "observedValue": "0x3333333333333333333333333333333333333333",
+            "mismatch": false
+          },
+          {
+            "code": "CALLDATA_MISMATCH",
+            "signed": "intent.calldataHash",
+            "observed": "calldataHash",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "observedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "mismatch": false
+          },
+          {
+            "code": "TRANSACTION_VALUE_MISMATCH",
+            "signed": "intent.transactionValue",
+            "observed": "nativeValue",
+            "rule": "equality of decimal-string forms, when signed present",
+            "applies": true,
+            "signedValue": "1000000000000000",
+            "observedValue": "2000000000000000",
+            "mismatch": true
+          },
+          {
+            "code": "OUTSIDE_TIME_WINDOW",
+            "signed": "intent.validUntil",
+            "observed": "executedAt",
+            "rule": "observed time greater than validUntil",
+            "applies": true,
+            "signedValue": 2000,
+            "observedValue": 1103,
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_AUTHORIZATION_WINDOW",
+            "signed": "authorization.notBefore / authorization.expiresAt",
+            "observed": "executedAt",
+            "rule": "observed time earlier than notBefore or greater than expiresAt",
+            "applies": true,
+            "signedValue": [
+              1000,
+              2000
+            ],
+            "observedValue": 1103,
+            "mismatch": false
+          }
+        ],
+        "mismatchCodes": [
+          "TRANSACTION_VALUE_MISMATCH"
+        ],
+        "availabilityCodes": [],
+        "bound": false,
+        "rawBinding": {
+          "bound": false,
+          "reasonCodes": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ]
+        },
+        "correlation": {
+          "chain": true,
+          "delegatedExecutor": true,
+          "nonce": true
+        },
+        "complianceStatus": "NON_COMPLIANT",
+        "complianceReasonCodes": [
+          "TRANSACTION_VALUE_MISMATCH"
+        ],
+        "outcome": "COMPLETED",
+        "className": "envelope-binding"
+      },
+      "claims": [
+        {
+          "id": "C1.schema",
+          "status": "ESTABLISHED",
+          "statement": "observation is a priorseal.execution-observation.v1 envelope",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 3"
+        },
+        {
+          "id": "C2.binding-authorization-to-observation",
+          "status": "ESTABLISHED",
+          "statement": "observation correlates to the authorization by chain, delegated executor (authorization.delegate.executor vs observed sender) and nonce",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "chain": true,
+            "delegatedExecutor": true,
+            "nonce": true
+          },
+          "note": "the observation carries no authorizationId or intentHash; the pairing itself is by fixture layout (spec gap G5)"
+        },
+        {
+          "id": "C3.acceptance-before-execution",
+          "status": "ESTABLISHED",
+          "statement": "acceptance.acceptedAt is not later than the observed execution time (else AUTHORIZATION_AFTER_EXECUTION)",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "acceptedAt": 1000,
+            "executedAt": 1103
+          }
+        },
+        {
+          "id": "C4.decision-evidence-binding",
+          "status": "NOT_ESTABLISHED",
+          "statement": "binding to separate decision evidence",
+          "ruleSource": "n/a",
+          "note": "the matrix contains no decision-evidence object and the intent carries no contextCommitments; the only pre-execution evidence is the issuer acceptance (A1 to A10)"
+        },
+        {
+          "id": "C5.mismatch-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 4 mismatch set recomputed from the field map",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "published": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ]
+        },
+        {
+          "id": "C6.availability-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 5 availability set recomputed",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": [],
+          "published": []
+        },
+        {
+          "id": "C7.bound",
+          "status": "ESTABLISHED",
+          "statement": "bound = (mismatch set is empty)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": false,
+          "published": false
+        },
+        {
+          "id": "C8.compliance",
+          "status": "ESTABLISHED",
+          "statement": "compliance status and reason codes from an inferred rule (availability -> NOT_ASSESSABLE with those codes; correlated final mismatch -> NON_COMPLIANT with the mismatch codes; else COMPLIANT)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; not stated in the contract, spec gap G3/G4)",
+          "ours": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "TRANSACTION_VALUE_MISMATCH"
+            ]
+          },
+          "published": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "TRANSACTION_VALUE_MISMATCH"
+            ]
+          }
+        },
+        {
+          "id": "C9.outcome",
+          "status": "ESTABLISHED",
+          "statement": "outcome from observation state (CONFIRMED -> COMPLETED; NOT_FOUND/PENDING/RPC_* or unavailable evidence -> UNDETERMINED)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; spec gap G3)",
+          "ours": "COMPLETED",
+          "published": "COMPLETED"
+        },
+        {
+          "id": "C10.raw-profile-binding",
+          "status": "ESTABLISHED",
+          "statement": "the shipped profile's raw binding equals mismatch set UNION availability set (as the contract changelog note describes)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 0 (note on the shipped profile)",
+          "ours": {
+            "bound": false,
+            "codes": [
+              "TRANSACTION_VALUE_MISMATCH"
+            ]
+          },
+          "published": {
+            "bound": false,
+            "reasonCodes": [
+              "TRANSACTION_VALUE_MISMATCH"
+            ]
+          }
+        },
+        {
+          "id": "C11.receiptClaimsValid",
+          "status": "NOT_ESTABLISHED",
+          "statement": "profile.receiptClaimsValid",
+          "ruleSource": "not specified",
+          "note": "no receipt object is published in the matrix and the contract does not define this field; not independently derivable"
+        },
+        {
+          "id": "C12.className",
+          "status": "ESTABLISHED",
+          "statement": "case class derived from the result (availability code present -> evidence-availability)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": "envelope-binding",
+          "published": "envelope-binding"
+        }
+      ],
+      "comparison": [
+        {
+          "field": "reader.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "reader.mismatchCodes",
+          "ours": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "published": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "reader.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.partitionedBinding.mismatchCodes",
+          "ours": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "published": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.rawBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.rawBinding.reasonCodes",
+          "ours": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "published": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.complianceStatus",
+          "ours": "NON_COMPLIANT",
+          "published": "NON_COMPLIANT",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.complianceReasonCodes",
+          "ours": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "published": [
+            "TRANSACTION_VALUE_MISMATCH"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.outcome",
+          "ours": "COMPLETED",
+          "published": "COMPLETED",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "className",
+          "ours": "envelope-binding",
+          "published": "envelope-binding",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "pass",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        }
+      ],
+      "notComparable": [
+        {
+          "field": "profile.receiptClaimsValid",
+          "published": true,
+          "reason": "not specified by the contract; no receipt object in the matrix"
+        },
+        {
+          "field": "agreement.*",
+          "published": {
+            "readerMatchesProfileBinding": true,
+            "profileMatchesExpectedBinding": true,
+            "profileMatchesExpectedCompliance": true,
+            "profileMatchesExpectedOutcome": true
+          },
+          "reason": "their internal cross-implementation agreement flags; replaced here by our own comparison rows"
+        }
+      ]
+    },
+    {
+      "id": "case-04-execution-evidence-unavailable",
+      "observed": "fixture/observed/case-04-execution-evidence-unavailable.json",
+      "observedSha256": "c99fb1b10fc711b890a7eec5abddf00ab4a5675bff1944ba2f80bc42fe85f005",
+      "derived": {
+        "fieldMap": [
+          {
+            "code": "CHAIN_MISMATCH",
+            "signed": "intent.chainId",
+            "observed": "chainId",
+            "rule": "strict equality of the integer values",
+            "applies": true,
+            "signedValue": 8453,
+            "observedValue": 8453,
+            "mismatch": false
+          },
+          {
+            "code": "ACTION_MISMATCH",
+            "signed": "intent.action",
+            "observed": "action",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "CONTRACT_CALL",
+            "observedValue": "CONTRACT_CALL",
+            "mismatch": false
+          },
+          {
+            "code": "SENDER_MISMATCH",
+            "signed": "intent.sender",
+            "observed": "sender",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "0x2222222222222222222222222222222222222222",
+            "observedValue": "0x2222222222222222222222222222222222222222",
+            "mismatch": false
+          },
+          {
+            "code": "NONCE_MISMATCH",
+            "signed": "intent.nonce",
+            "observed": "nonce",
+            "rule": "equality of decimal-string forms, default \"0\"",
+            "applies": true,
+            "signedValue": "7",
+            "observedValue": "7",
+            "mismatch": false
+          },
+          {
+            "code": "CALL_TARGET_MISMATCH",
+            "signed": "intent.callTarget",
+            "observed": "target",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x3333333333333333333333333333333333333333",
+            "observedValue": "0x3333333333333333333333333333333333333333",
+            "mismatch": false
+          },
+          {
+            "code": "CALLDATA_MISMATCH",
+            "signed": "intent.calldataHash",
+            "observed": "calldataHash",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "observedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "mismatch": false
+          },
+          {
+            "code": "TRANSACTION_VALUE_MISMATCH",
+            "signed": "intent.transactionValue",
+            "observed": "nativeValue",
+            "rule": "equality of decimal-string forms, when signed present",
+            "applies": true,
+            "signedValue": "1000000000000000",
+            "observedValue": "1000000000000000",
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_TIME_WINDOW",
+            "signed": "intent.validUntil",
+            "observed": "executedAt",
+            "rule": "observed time greater than validUntil",
+            "applies": true,
+            "signedValue": 2000,
+            "observedValue": 1104,
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_AUTHORIZATION_WINDOW",
+            "signed": "authorization.notBefore / authorization.expiresAt",
+            "observed": "executedAt",
+            "rule": "observed time earlier than notBefore or greater than expiresAt",
+            "applies": true,
+            "signedValue": [
+              1000,
+              2000
+            ],
+            "observedValue": 1104,
+            "mismatch": false
+          }
+        ],
+        "mismatchCodes": [],
+        "availabilityCodes": [
+          "EXECUTION_UNAVAILABLE"
+        ],
+        "bound": true,
+        "rawBinding": {
+          "bound": false,
+          "reasonCodes": [
+            "EXECUTION_UNAVAILABLE"
+          ]
+        },
+        "correlation": {
+          "chain": true,
+          "delegatedExecutor": true,
+          "nonce": true
+        },
+        "complianceStatus": "NOT_ASSESSABLE",
+        "complianceReasonCodes": [
+          "EXECUTION_UNAVAILABLE"
+        ],
+        "outcome": "UNDETERMINED",
+        "className": "evidence-availability"
+      },
+      "claims": [
+        {
+          "id": "C1.schema",
+          "status": "ESTABLISHED",
+          "statement": "observation is a priorseal.execution-observation.v1 envelope",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 3"
+        },
+        {
+          "id": "C2.binding-authorization-to-observation",
+          "status": "ESTABLISHED",
+          "statement": "observation correlates to the authorization by chain, delegated executor (authorization.delegate.executor vs observed sender) and nonce",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "chain": true,
+            "delegatedExecutor": true,
+            "nonce": true
+          },
+          "note": "the observation carries no authorizationId or intentHash; the pairing itself is by fixture layout (spec gap G5)"
+        },
+        {
+          "id": "C3.acceptance-before-execution",
+          "status": "ESTABLISHED",
+          "statement": "acceptance.acceptedAt is not later than the observed execution time (else AUTHORIZATION_AFTER_EXECUTION)",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "acceptedAt": 1000,
+            "executedAt": 1104
+          }
+        },
+        {
+          "id": "C4.decision-evidence-binding",
+          "status": "NOT_ESTABLISHED",
+          "statement": "binding to separate decision evidence",
+          "ruleSource": "n/a",
+          "note": "the matrix contains no decision-evidence object and the intent carries no contextCommitments; the only pre-execution evidence is the issuer acceptance (A1 to A10)"
+        },
+        {
+          "id": "C5.mismatch-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 4 mismatch set recomputed from the field map",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": [],
+          "published": []
+        },
+        {
+          "id": "C6.availability-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 5 availability set recomputed",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "published": [
+            "EXECUTION_UNAVAILABLE"
+          ]
+        },
+        {
+          "id": "C7.bound",
+          "status": "ESTABLISHED",
+          "statement": "bound = (mismatch set is empty)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": true,
+          "published": true
+        },
+        {
+          "id": "C8.compliance",
+          "status": "ESTABLISHED",
+          "statement": "compliance status and reason codes from an inferred rule (availability -> NOT_ASSESSABLE with those codes; correlated final mismatch -> NON_COMPLIANT with the mismatch codes; else COMPLIANT)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; not stated in the contract, spec gap G3/G4)",
+          "ours": {
+            "status": "NOT_ASSESSABLE",
+            "codes": [
+              "EXECUTION_UNAVAILABLE"
+            ]
+          },
+          "published": {
+            "status": "NOT_ASSESSABLE",
+            "codes": [
+              "EXECUTION_UNAVAILABLE"
+            ]
+          }
+        },
+        {
+          "id": "C9.outcome",
+          "status": "ESTABLISHED",
+          "statement": "outcome from observation state (CONFIRMED -> COMPLETED; NOT_FOUND/PENDING/RPC_* or unavailable evidence -> UNDETERMINED)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; spec gap G3)",
+          "ours": "UNDETERMINED",
+          "published": "UNDETERMINED"
+        },
+        {
+          "id": "C10.raw-profile-binding",
+          "status": "ESTABLISHED",
+          "statement": "the shipped profile's raw binding equals mismatch set UNION availability set (as the contract changelog note describes)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 0 (note on the shipped profile)",
+          "ours": {
+            "bound": false,
+            "codes": [
+              "EXECUTION_UNAVAILABLE"
+            ]
+          },
+          "published": {
+            "bound": false,
+            "reasonCodes": [
+              "EXECUTION_UNAVAILABLE"
+            ]
+          }
+        },
+        {
+          "id": "C11.receiptClaimsValid",
+          "status": "NOT_ESTABLISHED",
+          "statement": "profile.receiptClaimsValid",
+          "ruleSource": "not specified",
+          "note": "no receipt object is published in the matrix and the contract does not define this field; not independently derivable"
+        },
+        {
+          "id": "C12.className",
+          "status": "ESTABLISHED",
+          "statement": "case class derived from the result (availability code present -> evidence-availability)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": "evidence-availability",
+          "published": "evidence-availability"
+        }
+      ],
+      "comparison": [
+        {
+          "field": "reader.bound",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "reader.mismatchCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "reader.availabilityCodes",
+          "ours": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "published": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.bound",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.partitionedBinding.mismatchCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.availabilityCodes",
+          "ours": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "published": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.rawBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.rawBinding.reasonCodes",
+          "ours": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "published": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.complianceStatus",
+          "ours": "NOT_ASSESSABLE",
+          "published": "NOT_ASSESSABLE",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.complianceReasonCodes",
+          "ours": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "published": [
+            "EXECUTION_UNAVAILABLE"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.outcome",
+          "ours": "UNDETERMINED",
+          "published": "UNDETERMINED",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "className",
+          "ours": "evidence-availability",
+          "published": "evidence-availability",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "pass",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        }
+      ],
+      "notComparable": [
+        {
+          "field": "profile.receiptClaimsValid",
+          "published": true,
+          "reason": "not specified by the contract; no receipt object in the matrix"
+        },
+        {
+          "field": "agreement.*",
+          "published": {
+            "readerMatchesProfileBinding": true,
+            "profileMatchesExpectedBinding": true,
+            "profileMatchesExpectedCompliance": true,
+            "profileMatchesExpectedOutcome": true
+          },
+          "reason": "their internal cross-implementation agreement flags; replaced here by our own comparison rows"
+        }
+      ]
+    },
+    {
+      "id": "case-05-time-window-expired",
+      "observed": "fixture/observed/case-05-time-window-expired.json",
+      "observedSha256": "b94856739a21399ce26ee4b38d384a46c52b6249b7c45c5b2f39c0f4df78e377",
+      "derived": {
+        "fieldMap": [
+          {
+            "code": "CHAIN_MISMATCH",
+            "signed": "intent.chainId",
+            "observed": "chainId",
+            "rule": "strict equality of the integer values",
+            "applies": true,
+            "signedValue": 8453,
+            "observedValue": 8453,
+            "mismatch": false
+          },
+          {
+            "code": "ACTION_MISMATCH",
+            "signed": "intent.action",
+            "observed": "action",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "CONTRACT_CALL",
+            "observedValue": "CONTRACT_CALL",
+            "mismatch": false
+          },
+          {
+            "code": "SENDER_MISMATCH",
+            "signed": "intent.sender",
+            "observed": "sender",
+            "rule": "case-insensitive equality",
+            "applies": true,
+            "signedValue": "0x2222222222222222222222222222222222222222",
+            "observedValue": "0x2222222222222222222222222222222222222222",
+            "mismatch": false
+          },
+          {
+            "code": "NONCE_MISMATCH",
+            "signed": "intent.nonce",
+            "observed": "nonce",
+            "rule": "equality of decimal-string forms, default \"0\"",
+            "applies": true,
+            "signedValue": "7",
+            "observedValue": "7",
+            "mismatch": false
+          },
+          {
+            "code": "CALL_TARGET_MISMATCH",
+            "signed": "intent.callTarget",
+            "observed": "target",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x3333333333333333333333333333333333333333",
+            "observedValue": "0x3333333333333333333333333333333333333333",
+            "mismatch": false
+          },
+          {
+            "code": "CALLDATA_MISMATCH",
+            "signed": "intent.calldataHash",
+            "observed": "calldataHash",
+            "rule": "case-insensitive equality, when signed present",
+            "applies": true,
+            "signedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "observedValue": "0x5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+            "mismatch": false
+          },
+          {
+            "code": "TRANSACTION_VALUE_MISMATCH",
+            "signed": "intent.transactionValue",
+            "observed": "nativeValue",
+            "rule": "equality of decimal-string forms, when signed present",
+            "applies": true,
+            "signedValue": "1000000000000000",
+            "observedValue": "1000000000000000",
+            "mismatch": false
+          },
+          {
+            "code": "OUTSIDE_TIME_WINDOW",
+            "signed": "intent.validUntil",
+            "observed": "executedAt",
+            "rule": "observed time greater than validUntil",
+            "applies": true,
+            "signedValue": 2000,
+            "observedValue": 2001,
+            "mismatch": true
+          },
+          {
+            "code": "OUTSIDE_AUTHORIZATION_WINDOW",
+            "signed": "authorization.notBefore / authorization.expiresAt",
+            "observed": "executedAt",
+            "rule": "observed time earlier than notBefore or greater than expiresAt",
+            "applies": true,
+            "signedValue": [
+              1000,
+              2000
+            ],
+            "observedValue": 2001,
+            "mismatch": true
+          }
+        ],
+        "mismatchCodes": [
+          "OUTSIDE_AUTHORIZATION_WINDOW",
+          "OUTSIDE_TIME_WINDOW"
+        ],
+        "availabilityCodes": [],
+        "bound": false,
+        "rawBinding": {
+          "bound": false,
+          "reasonCodes": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ]
+        },
+        "correlation": {
+          "chain": true,
+          "delegatedExecutor": true,
+          "nonce": true
+        },
+        "complianceStatus": "NON_COMPLIANT",
+        "complianceReasonCodes": [
+          "OUTSIDE_AUTHORIZATION_WINDOW",
+          "OUTSIDE_TIME_WINDOW"
+        ],
+        "outcome": "COMPLETED",
+        "className": "envelope-binding"
+      },
+      "claims": [
+        {
+          "id": "C1.schema",
+          "status": "ESTABLISHED",
+          "statement": "observation is a priorseal.execution-observation.v1 envelope",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 3"
+        },
+        {
+          "id": "C2.binding-authorization-to-observation",
+          "status": "ESTABLISHED",
+          "statement": "observation correlates to the authorization by chain, delegated executor (authorization.delegate.executor vs observed sender) and nonce",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "chain": true,
+            "delegatedExecutor": true,
+            "nonce": true
+          },
+          "note": "the observation carries no authorizationId or intentHash; the pairing itself is by fixture layout (spec gap G5)"
+        },
+        {
+          "id": "C3.acceptance-before-execution",
+          "status": "ESTABLISHED",
+          "statement": "acceptance.acceptedAt is not later than the observed execution time (else AUTHORIZATION_AFTER_EXECUTION)",
+          "ruleSource": "docs/architecture/lifecycle.md",
+          "ours": {
+            "acceptedAt": 1000,
+            "executedAt": 2001
+          }
+        },
+        {
+          "id": "C4.decision-evidence-binding",
+          "status": "NOT_ESTABLISHED",
+          "statement": "binding to separate decision evidence",
+          "ruleSource": "n/a",
+          "note": "the matrix contains no decision-evidence object and the intent carries no contextCommitments; the only pre-execution evidence is the issuer acceptance (A1 to A10)"
+        },
+        {
+          "id": "C5.mismatch-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 4 mismatch set recomputed from the field map",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "published": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ]
+        },
+        {
+          "id": "C6.availability-codes",
+          "status": "ESTABLISHED",
+          "statement": "section 5 availability set recomputed",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": [],
+          "published": []
+        },
+        {
+          "id": "C7.bound",
+          "status": "ESTABLISHED",
+          "statement": "bound = (mismatch set is empty)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 4",
+          "ours": false,
+          "published": false
+        },
+        {
+          "id": "C8.compliance",
+          "status": "ESTABLISHED",
+          "statement": "compliance status and reason codes from an inferred rule (availability -> NOT_ASSESSABLE with those codes; correlated final mismatch -> NON_COMPLIANT with the mismatch codes; else COMPLIANT)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; not stated in the contract, spec gap G3/G4)",
+          "ours": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "OUTSIDE_AUTHORIZATION_WINDOW",
+              "OUTSIDE_TIME_WINDOW"
+            ]
+          },
+          "published": {
+            "status": "NON_COMPLIANT",
+            "codes": [
+              "OUTSIDE_AUTHORIZATION_WINDOW",
+              "OUTSIDE_TIME_WINDOW"
+            ]
+          }
+        },
+        {
+          "id": "C9.outcome",
+          "status": "ESTABLISHED",
+          "statement": "outcome from observation state (CONFIRMED -> COMPLETED; NOT_FOUND/PENDING/RPC_* or unavailable evidence -> UNDETERMINED)",
+          "ruleSource": "docs/architecture/lifecycle.md (inferred; spec gap G3)",
+          "ours": "COMPLETED",
+          "published": "COMPLETED"
+        },
+        {
+          "id": "C10.raw-profile-binding",
+          "status": "ESTABLISHED",
+          "statement": "the shipped profile's raw binding equals mismatch set UNION availability set (as the contract changelog note describes)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 0 (note on the shipped profile)",
+          "ours": {
+            "bound": false,
+            "codes": [
+              "OUTSIDE_AUTHORIZATION_WINDOW",
+              "OUTSIDE_TIME_WINDOW"
+            ]
+          },
+          "published": {
+            "bound": false,
+            "reasonCodes": [
+              "OUTSIDE_AUTHORIZATION_WINDOW",
+              "OUTSIDE_TIME_WINDOW"
+            ]
+          }
+        },
+        {
+          "id": "C11.receiptClaimsValid",
+          "status": "NOT_ESTABLISHED",
+          "statement": "profile.receiptClaimsValid",
+          "ruleSource": "not specified",
+          "note": "no receipt object is published in the matrix and the contract does not define this field; not independently derivable"
+        },
+        {
+          "id": "C12.className",
+          "status": "ESTABLISHED",
+          "statement": "case class derived from the result (availability code present -> evidence-availability)",
+          "ruleSource": "INPUT-CONTRACT.md (1.0.1) 5",
+          "ours": "envelope-binding",
+          "published": "envelope-binding"
+        }
+      ],
+      "comparison": [
+        {
+          "field": "reader.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "reader.mismatchCodes",
+          "ours": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "published": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "reader.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.partitionedBinding.mismatchCodes",
+          "ours": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "published": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.partitionedBinding.availabilityCodes",
+          "ours": [],
+          "published": [],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.rawBinding.bound",
+          "ours": false,
+          "published": false,
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.rawBinding.reasonCodes",
+          "ours": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "published": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.complianceStatus",
+          "ours": "NON_COMPLIANT",
+          "published": "NON_COMPLIANT",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "profile.complianceReasonCodes",
+          "ours": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "published": [
+            "OUTSIDE_AUTHORIZATION_WINDOW",
+            "OUTSIDE_TIME_WINDOW"
+          ],
+          "equal": true,
+          "comparison": "sorted-set"
+        },
+        {
+          "field": "profile.outcome",
+          "ours": "COMPLETED",
+          "published": "COMPLETED",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "className",
+          "ours": "envelope-binding",
+          "published": "envelope-binding",
+          "equal": true,
+          "comparison": "exact"
+        },
+        {
+          "field": "pass",
+          "ours": true,
+          "published": true,
+          "equal": true,
+          "comparison": "exact"
+        }
+      ],
+      "notComparable": [
+        {
+          "field": "profile.receiptClaimsValid",
+          "published": true,
+          "reason": "not specified by the contract; no receipt object in the matrix"
+        },
+        {
+          "field": "agreement.*",
+          "published": {
+            "readerMatchesProfileBinding": true,
+            "profileMatchesExpectedBinding": true,
+            "profileMatchesExpectedCompliance": true,
+            "profileMatchesExpectedOutcome": true
+          },
+          "reason": "their internal cross-implementation agreement flags; replaced here by our own comparison rows"
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "signature": [
+      {
+        "field": "signature.declaredAuthorizer",
+        "ours": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a",
+        "published": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a",
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "signature.recoveredAuthorizer",
+        "ours": "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A",
+        "published": "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A",
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "signature.authorizerMatches",
+        "ours": true,
+        "published": true,
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "signature.eip712Digest",
+        "ours": "0x9e404bfc63c56cda555b71c4e59237178edc7a428de7f50738804a1f092cf5b1",
+        "published": "0x9e404bfc63c56cda555b71c4e59237178edc7a428de7f50738804a1f092cf5b1",
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "signature.acceptanceIssuer",
+        "ours": "oel-exact-call-fixture-issuer",
+        "published": "oel-exact-call-fixture-issuer",
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "signature.acceptanceKeyId",
+        "ours": "oel-exact-call-fixture-key-1",
+        "published": "oel-exact-call-fixture-key-1",
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "signature.acceptanceSignatureValid",
+        "ours": true,
+        "published": true,
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "signature.authorizationValidAtNotBefore",
+        "ours": true,
+        "published": true,
+        "equal": true,
+        "comparison": "exact"
+      }
+    ],
+    "signatureNotComparable": [
+      {
+        "field": "signature.authorizationCode",
+        "published": "OK",
+        "reason": "code vocabulary not published; we report the individual checks of A11 instead"
+      }
+    ],
+    "summary": [
+      {
+        "field": "summary.cases",
+        "ours": 6,
+        "published": 6,
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "summary.envelopeBindingCases",
+        "ours": 5,
+        "published": 5,
+        "equal": true,
+        "comparison": "exact"
+      },
+      {
+        "field": "summary.evidenceAvailabilityCases",
+        "ours": 1,
+        "published": 1,
+        "equal": true,
+        "comparison": "exact"
+      }
+    ]
+  },
+  "summary": {
+    "claims": {
+      "ESTABLISHED": 78,
+      "CONTRADICTED": 1,
+      "NOT_ESTABLISHED": 12
+    },
+    "fields": {
+      "equal": 89,
+      "different": 0,
+      "notComparable": 13
+    },
+    "contradictionsExcludingDocConsistency": [],
+    "documentationFindings": [
+      "M6.readme-table-consistent"
+    ],
+    "result": "AGREES"
+  },
+  "limits": [
+    "Synthetic, offline fixtures: no chain observation, no RPC, no real execution or finality.",
+    "Answer-exposed: expected.json and report.json were read before and while writing this reader.",
+    "Compliance and outcome rules are inferred from lifecycle.md prose; the contract publishes them only per case.",
+    "Hash identities (intentHash, authorizationId, authorizationHash, entryHash) use rules from a doc written for a different fixture.",
+    "Not adoption, endorsement, integration or pilot by any party. Written by a different project (HORIZON SHIELD / NENRIN)."
+  ]
+}

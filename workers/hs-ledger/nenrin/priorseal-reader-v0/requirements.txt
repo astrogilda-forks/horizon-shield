@@ -1,0 +1,26 @@
+# priorseal-reader-v0, Python 3.11. Direct: pycryptodome, eth-keys, eth-account, cryptography. The rest are their pinned dependencies.
+annotated-types==0.8.0
+bitarray==3.12.1
+cffi==2.1.1
+ckzg==2.1.8
+cryptography==43.0.3
+cytoolz==1.2.0
+eth-account==0.13.4
+eth-hash==0.8.0
+eth-keyfile==0.8.1
+eth-keys==0.6.0
+eth-rlp==3.0.0
+eth-typing==6.0.0
+eth-utils==6.0.0
+eth_abi==6.0.0
+hexbytes==2.0.0
+parsimonious==0.10.0
+pycparser==3.11
+pycryptodome==3.21.0
+pydantic==2.14.1
+pydantic_core==2.50.1
+regex==2026.9.29
+rlp==5.0.0
+toolz==1.2.0
+typing-inspection==0.4.4
+typing_extensions==4.16.0
