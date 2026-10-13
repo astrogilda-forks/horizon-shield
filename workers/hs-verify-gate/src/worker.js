@@ -2607,9 +2607,79 @@ const FREE_INTERVAL_DAYS = 7;    // 無料層は週1回
 const NOTIFY_TIMEOUT_MS = 5000;
 const NOTIFY_MAX_PER_SWEEP = 3;
 
+// 2026-10-13 (concurrency audit G1). One key per row. The register used to be the single blob watch:registry, and every
+// writer (anonymous POST /watch, the sweep's markDeclined / markDeclared, the operator's quarantine and DELETE) read
+// the whole blob, changed one row and put the whole blob back. KV has no compare-and-swap and is eventually
+// consistent, so two writers that overlapped (or a writer that read a copy up to 60 s stale) put back a blob without
+// the other's row: a registration answered ok:true could vanish. Now each writer writes only its own row, at
+// watch:reg:<sha256(endpoint)> as { endpoint, row } (row null is a removal), so writers of different rows cannot
+// collide. Migration: the old blob is still read and never deleted or rewritten here; a per-key row overrides the
+// blob's row for the same endpoint, and a per-key null hides it. The row also rides in the key's metadata when it
+// fits, so reading the register is one list() plus one get per row too large for metadata.
+const REG_ROW_PREFIX = "watch:reg:";
+const REG_ROW_METADATA_MAX = 1000;   // KV metadata is capped at 1024 bytes serialized
+async function regRowKey(endpoint) { return REG_ROW_PREFIX + (await sha256hex(endpoint)); }
+
+// The per-key rows: Map endpoint -> row (null = removed). Throws when storage throws.
+async function readRegRows(env) {
+  const out = new Map();
+  let cursor;
+  for (let guard = 0; guard < 50; guard++) {
+    const r = await env.HS_VERIFY_KV.list({ prefix: REG_ROW_PREFIX, cursor, limit: 1000 });
+    for (const k of (r && Array.isArray(r.keys)) ? r.keys : []) {
+      const md = k.metadata;
+      let rec = (md && typeof md.e === "string" && Object.prototype.hasOwnProperty.call(md, "r")) ? { endpoint: md.e, row: md.r } : null;
+      if (!rec) rec = await env.HS_VERIFY_KV.get(k.name, "json");
+      if (rec && typeof rec.endpoint === "string") out.set(rec.endpoint, rec.row && typeof rec.row === "object" ? rec.row : null);
+    }
+    if (!r || r.list_complete || !r.cursor) break;
+    cursor = r.cursor;
+  }
+  return out;
+}
+
+// The whole register: the old blob, overlaid by the per-key rows. Rows only in per-key form follow the blob's rows
+// in added_at order (the order the blob kept by insertion). Throws when storage throws.
+async function loadRegistry(env) {
+  const blob = (await env.HS_VERIFY_KV.get(REGISTRY_KEY, "json")) || {};
+  const rows = await readRegRows(env);
+  const reg = {};
+  for (const ep of Object.keys(blob)) reg[ep] = blob[ep];
+  const fresh = [];
+  for (const [ep, row] of rows) {
+    if (!row) { delete reg[ep]; continue; }
+    if (Object.prototype.hasOwnProperty.call(reg, ep)) reg[ep] = row;
+    else fresh.push([ep, row]);
+  }
+  fresh.sort((a, b) => { const x = String(a[1].added_at || ""), y = String(b[1].added_at || ""); return x < y ? -1 : x > y ? 1 : (a[0] < b[0] ? -1 : 1); });
+  for (const [ep, row] of fresh) reg[ep] = row;
+  return reg;
+}
+
+// One row, for a writer. { row } (row null when the endpoint is not on the register), or null when storage threw.
+async function readRegistryRowForWrite(env, endpoint) {
+  if (!env || !env.HS_VERIFY_KV) return null;
+  try {
+    const rec = await env.HS_VERIFY_KV.get(await regRowKey(endpoint), "json");
+    if (rec && rec.endpoint === endpoint) return { row: rec.row && typeof rec.row === "object" ? rec.row : null };
+    const blob = (await env.HS_VERIFY_KV.get(REGISTRY_KEY, "json")) || {};
+    return { row: blob[endpoint] || null };
+  } catch (_e) { return null; }
+}
+
+// Writes one row (row null removes it). Never touches another row or the old blob.
+async function writeRegistryRow(env, endpoint, row) {
+  if (!env || !env.HS_VERIFY_KV) return false;
+  const rec = { endpoint, row: row || null };
+  let md = { e: endpoint, r: row || null };
+  if (new TextEncoder().encode(JSON.stringify(md)).length > REG_ROW_METADATA_MAX) md = { e: endpoint, big: true };
+  try { await env.HS_VERIFY_KV.put(await regRowKey(endpoint), JSON.stringify(rec), { metadata: md }); return true; }
+  catch (_e) { return false; }
+}
+
 async function readRegistry(env) {
   if (!env || !env.HS_VERIFY_KV) return {};
-  try { return (await env.HS_VERIFY_KV.get(REGISTRY_KEY, "json")) || {}; }
+  try { return await loadRegistry(env); }
   catch (_e) { return {}; }
 }
 
@@ -2619,7 +2689,7 @@ async function readRegistry(env) {
 // key is still an empty registry. A writer that gets null writes nothing.
 async function readRegistryForWrite(env) {
   if (!env || !env.HS_VERIFY_KV) return null;
-  try { return (await env.HS_VERIFY_KV.get(REGISTRY_KEY, "json")) || {}; }
+  try { return await loadRegistry(env); }
   catch (_e) { return null; }
 }
 const REGISTRY_READ_FAILED = { error: "registry_read_failed", note: "The register could not be read, so nothing was written. Try again; no row was changed." };
@@ -2669,23 +2739,23 @@ function isQuarantined(row, nowIso) {
 
 // 0.3.1. 断った/撤回した事実を登録簿の行に書く。変わった時だけ書く(KV の書き込みは掃引ごとに 8 回で足りる)。
 async function markDeclined(env, endpoint, declined) {
-  const reg = await readRegistryForWrite(env);
-  if (!reg) return;
-  const row = reg[endpoint];
+  const got = await readRegistryRowForWrite(env, endpoint);   // 2026-10-13 (G1): this row only
+  if (!got) return;
+  const row = got.row;
   if (!row) return;
   const was = !!row.owner_declined_at;
   if (declined === was) return;
   if (declined) row.owner_declined_at = new Date().toISOString();
   else { row.owner_declined_withdrawn_at = new Date().toISOString(); delete row.owner_declined_at; }
-  await writeRegistry(env, reg);
+  await writeRegistryRow(env, endpoint, row);
 }
 
 // 0.4.0. 所有者が consent file に書いた identity / witness_policy を登録簿の行に写す(宣言であって判定やない)。
 // 変わった時だけ書く。notify の URL は写さん(他人の webhook を公開する理由が無い。置いてある事実だけ)。
 async function markDeclared(env, endpoint, declared) {
-  const reg = await readRegistryForWrite(env);
-  if (!reg) return;
-  const row = reg[endpoint];
+  const got = await readRegistryRowForWrite(env, endpoint);   // 2026-10-13 (G1): this row only
+  if (!got) return;
+  const row = got.row;
   if (!row) return;
   const next = declared ? {
     identity: declared.identity && declared.identity.ref ? { kind: declared.identity.kind, ref: declared.identity.ref } : null,
@@ -2696,7 +2766,7 @@ async function markDeclared(env, endpoint, declared) {
   if (JSON.stringify(cur) === JSON.stringify(next)) return;
   if (next) { row.declared = next; row.declared_read_at = new Date().toISOString(); }
   else { delete row.declared; delete row.declared_read_at; }
-  await writeRegistry(env, reg);
+  await writeRegistryRow(env, endpoint, row);
 }
 
 // 2026-10-13 (#13). null means the list could not be read; [] means nothing has been removed.
@@ -2706,11 +2776,6 @@ async function readRemoved(env) {
 }
 const REMOVED_READ_FAILED_NOTE = "The public list of removals could not be read (storage error). This is NOT a statement that no row was ever removed.";
 
-async function writeRegistry(env, reg) {
-  if (!env || !env.HS_VERIFY_KV) return false;
-  try { await env.HS_VERIFY_KV.put(REGISTRY_KEY, JSON.stringify(reg)); return true; }
-  catch (_e) { return false; }
-}
 
 async function readSweepLast(env) {
   if (!env || !env.HS_VERIFY_KV) {
@@ -5946,11 +6011,14 @@ export default {
         return json({ error: "webhook_must_be_https" }, 400);
       }
       if (!env || !env.HS_VERIFY_KV) return json({ error: "storage_unavailable" }, 503);
-      const reg = await readRegistryForWrite(env);
-      if (!reg) return json(REGISTRY_READ_FAILED, 503);
-      const prev = reg[ep] || null;
-      if (!prev && Object.keys(reg).length >= REGISTRY_MAX) {
-        return json({ error: "registry_full", max: REGISTRY_MAX }, 429);
+      // 2026-10-13 (G1). Read and write this endpoint's row only; the whole register is read just to count a new row.
+      const got = await readRegistryRowForWrite(env, ep);
+      if (!got) return json(REGISTRY_READ_FAILED, 503);
+      const prev = got.row || null;
+      if (!prev) {
+        const reg = await readRegistryForWrite(env);
+        if (!reg) return json(REGISTRY_READ_FAILED, 503);
+        if (Object.keys(reg).length >= REGISTRY_MAX) return json({ error: "registry_full", max: REGISTRY_MAX }, 429);
       }
       const admin = !!(env.SWEEP_TOKEN && await ctEqual(request.headers.get("x-sweep-token") || "", env.SWEEP_TOKEN));
       const wk = await wellKnownConsent(ep);
@@ -5974,25 +6042,25 @@ export default {
       // 2026-09-04 に同意を断った翌日、その扉が匿名の依頼で列に入った。設計の芯(誰でも乗せられる)は残し、
       // 所有者には listing: decline という機械的な出口を与える。
       const ownerFile = wk.file_present === false ? "absent" : (wk.file_present === null ? "unread" : (wk.declined ? "decline" : (wk.consent ? "consent" : "present")));
-      reg[ep] = {
+      const nrow = {
         tier: tier,
         webhook: newHook,
         added_at: (prev && prev.added_at) || new Date().toISOString(),
         requested_by: (prev && prev.requested_by) || (admin ? "operator" : "anonymous"),
         owner_file_at_request: (prev && prev.owner_file_at_request) || ownerFile
       };
-      if (prev && prev.owner_declined_at) reg[ep].owner_declined_at = prev.owner_declined_at;
-      if (wk.declined) reg[ep].owner_declined_at = reg[ep].owner_declined_at || new Date().toISOString();
-      const ok = await writeRegistry(env, reg);
+      if (prev && prev.owner_declined_at) nrow.owner_declined_at = prev.owner_declined_at;
+      if (wk.declined) nrow.owner_declined_at = nrow.owner_declined_at || new Date().toISOString();
+      const ok = await writeRegistryRow(env, ep, nrow);
       return json({
         ok: ok,
         endpoint: ep,
         tier: tier,
         cadence: tier === "paid" ? "daily" : "weekly",
-        notified: !!reg[ep].webhook,
-        requested_by: reg[ep].requested_by,
-        owner_file_at_request: reg[ep].owner_file_at_request,
-        owner_declined: !!reg[ep].owner_declined_at,
+        notified: !!nrow.webhook,
+        requested_by: nrow.requested_by,
+        owner_file_at_request: nrow.owner_file_at_request,
+        owner_declined: !!nrow.owner_declined_at,
         history: "/history?endpoint=" + encodeURIComponent(ep),
         note: wk.declined
           ? "The owner of this origin declines measurement (" + CONSENT_WELL_KNOWN_PATH + " sets listing to decline). The row stays on the register and says declined; no verdict will be produced while the file says so."
@@ -6019,9 +6087,9 @@ export default {
       if (asha !== undefined && !(typeof asha === "string" && /^[0-9a-f]{64}$/.test(asha))) return json({ error: "bad_authorization_sha256" }, 400);
       if (typeof reason !== "string" || reason.trim().length < 8) return json({ error: "reason_required" }, 400);
       if (until !== undefined && !(typeof until === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(until))) return json({ error: "bad_until", note: "until is ISO-8601 UTC ending in Z, or absent" }, 400);
-      const reg = await readRegistryForWrite(env);
-      if (!reg) return json(REGISTRY_READ_FAILED, 503);
-      const row = reg[ep];
+      const got = await readRegistryRowForWrite(env, ep);   // 2026-10-13 (G1): this row only
+      if (!got) return json(REGISTRY_READ_FAILED, 503);
+      const row = got.row;
       if (!row) return json({ error: "not_on_register", note: "quarantine applies to rows on the register; an unknown endpoint has nothing to stop" }, 404);
       const at = new Date().toISOString();
       if (lift) {
@@ -6032,7 +6100,7 @@ export default {
         row.quarantined = { since: at, proposal_sha256: psha, ...(asha ? { authorization_sha256: asha } : {}), reason: reason.trim(), ...(until ? { until } : {}) };
         delete row.quarantine_lifted;
       }
-      const ok = await writeRegistry(env, reg);
+      const ok = await writeRegistryRow(env, ep, row);
       if (!ok) return json({ error: "registry_write_failed" }, 500);
       return json({ ok: true, endpoint: ep, quarantined: row.quarantined || null, quarantine_lifted: row.quarantine_lifted || null, at, gate_commit: gateCommit(),
         effect: lift ? "the row is measured again from the next sweep; the lift is recorded on the row" : "not measured and no verdict served while quarantined; lookup answers quarantined; the sweep records the skip",
@@ -6052,16 +6120,15 @@ export default {
       const reason = body && body.reason;
       if (typeof ep !== "string" || !ep) return json({ error: "endpoint_required" }, 400);
       if (typeof reason !== "string" || reason.trim().length < 8) return json({ error: "reason_required", note: "a removal without a stated reason is a silent edit; state it, it is published" }, 400);
-      const reg = await readRegistryForWrite(env);
-      if (!reg) return json(REGISTRY_READ_FAILED, 503);
+      const got = await readRegistryRowForWrite(env, ep);   // 2026-10-13 (G1): this row only
+      if (!got) return json(REGISTRY_READ_FAILED, 503);
       // The removal stone is appended to the removed list; read it first, so a failed read cannot replace the list.
       let removed;
       try { removed = (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || []; } catch (_e) { removed = null; }
       if (!Array.isArray(removed)) return json({ error: "removed_list_read_failed", note: "The public list of removals could not be read, so nothing was removed. Try again." }, 503);
-      const row = reg[ep];
+      const row = got.row;
       if (!row) return json({ error: "not_a_removable_row", note: "either not on the register, or a self row fixed in the gate's source" }, 404);
-      delete reg[ep];
-      const ok = await writeRegistry(env, reg);
+      const ok = await writeRegistryRow(env, ep, null);   // a per-key null hides the row, also when it lives in the old blob
       const stone = { endpoint: ep, removed_at: new Date().toISOString(), reason: reason.trim(), requested_by: row.requested_by || "unrecorded", added_at: row.added_at || null, owner_file_at_request: row.owner_file_at_request || null, history_kept: true };
       removed.push(stone);
       try { await env.HS_VERIFY_KV.put(REMOVED_KEY, JSON.stringify(removed)); } catch (_e) {}

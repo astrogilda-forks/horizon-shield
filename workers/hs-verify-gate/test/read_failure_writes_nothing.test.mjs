@@ -29,7 +29,13 @@ const seed = { [A]: { tier: "free", webhook: null, added_at: "2026-10-01T00:00:0
                [B]: { tier: "free", webhook: null, added_at: "2026-10-02T00:00:00Z", requested_by: "anonymous", owner_file_at_request: "absent" } };
 store.set("watch:registry", JSON.stringify(seed));
 store.set("watch:removed", JSON.stringify([{ endpoint: "https://old.redteam.invalid/mcp", removed_at: "2026-09-30T00:00:00Z", reason: "an earlier removal" }]));
-const regNow = () => JSON.parse(store.get("watch:registry"));
+// 2026-10-13 (concurrency audit G1): the register is the old blob overlaid by one key per row (watch:reg:<sha256>,
+// { endpoint, row }, row null = removed). regNow() is that merged view, the same one the gate serves.
+const regNow = () => {
+  const reg = { ...JSON.parse(store.get("watch:registry") || "{}") };
+  for (const [k, v] of store) { if (!k.startsWith("watch:reg:")) continue; const rec = JSON.parse(v); if (rec.row) reg[rec.endpoint] = rec.row; else delete reg[rec.endpoint]; }
+  return reg;
+};
 
 failing.add("watch:registry");
 let r = await req("/watch", "POST", { endpoint: C });

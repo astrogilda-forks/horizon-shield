@@ -61,7 +61,8 @@ let j = await r.json();
 t("a stranger cannot redirect an existing webhook: 403 webhook_change_needs_owner", r.status === 403 && j.error === "webhook_change_needs_owner", JSON.stringify(j));
 r = await post("/watch", { endpoint: EP_OPEN, webhook: null });
 t("a stranger cannot remove an existing webhook", r.status === 403);
-const row = JSON.parse(await ENV.HS_VERIFY_KV.get([...ENV.HS_VERIFY_KV.store.keys()].find((k) => /regist/i.test(k))))[EP_OPEN];
+// 2026-10-13 (concurrency audit G1): the register is one key per row (watch:reg:<sha256(endpoint)>), the old blob is only read.
+const row = (() => { for (const [k, v] of ENV.HS_VERIFY_KV.store) { if (k.startsWith("watch:reg:")) { const rec = JSON.parse(v); if (rec.endpoint === EP_OPEN) return rec.row; } } const b = ENV.HS_VERIFY_KV.store.get("watch:registry"); return b ? JSON.parse(b)[EP_OPEN] : null; })();
 t("the stored webhook is unchanged", row && row.webhook === "https://first.redteam.invalid/hook", JSON.stringify(row));
 r = await post("/watch", { endpoint: EP_OPEN });
 t("re-posting without a webhook field keeps the row and its webhook", r.status === 200 && (await r.json()).notified === true);
