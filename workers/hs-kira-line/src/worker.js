@@ -273,7 +273,7 @@ var worker_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
-      return json({ status: "ok", version: "v24-readfail2-20261013", service: "hs-kira-line" });
+      return json({ status: "ok", version: "v24-readfail3-20261013", service: "hs-kira-line" });
     }
     if (url.pathname === "/diagnosis" && request.method === "POST") {
       return handleDiagnosis(request, env, ctx);
@@ -1701,7 +1701,10 @@ async function ingestPartnerSilently(userMessage, userId, groupId, env, kiraDeci
     const _b = await _r.text().catch(() => "");
     console.log("[bridge] resp " + _r.status + " gid=" + (groupId || "none") + " " + _b.slice(0, 150));
     if (!_r.ok) {
-      try { await pushToLine(env.LINE_USER_ID, "【KIRAから hearing への転送失敗】status=" + _r.status + " gid=" + (groupId || "none") + "。加盟店の回答が取り込めてない。要確認。", env.LINE_CHANNEL_TOKEN); } catch (_e2) {}
+      // 2026-10-13 issue #13: say which read failed when hearing names it (503 intake_read_failed / store_read_failed).
+      let _code = "";
+      try { const _ej = JSON.parse(_b); if (_ej && typeof _ej.error === "string") _code = " " + _ej.error.slice(0, 40); } catch (_e4) {}
+      try { await pushToLine(env.LINE_USER_ID, "【KIRAから hearing への転送失敗】status=" + _r.status + _code + " gid=" + (groupId || "none") + "。加盟店の回答が取り込めてない。要確認。", env.LINE_CHANNEL_TOKEN); } catch (_e2) {}
       return { reply: "" };
     }
     // 2026-09-30 hearing の窓口が決めた返事の文を返す(呼ばれた発言にだけ、呼び出し側が送る)。
@@ -2253,6 +2256,7 @@ async function handlePartnerMessage(userMessage, replyToken, userId, justJoined,
   // Yakumo自動ヒアリング(hs-hearing)へ橋渡し。2026-08-19 patch42: 橋が落ちたら、落ちたと言う。理由も残す。
   let hr = null;
   let bridgeFail = env.KIRA_BRIDGE_KEY ? null : "KIRA_BRIDGE_KEY が未設定";
+  let bridgeReadFail = "";
   if (env.KIRA_BRIDGE_KEY) {
     try {
       const br = await fetch("https://hearing.horizonshield.dev/kira-bridge", {
@@ -2265,13 +2269,22 @@ async function handlePartnerMessage(userMessage, replyToken, userId, justJoined,
         if (data && data.ok) hr = kiraBridgeOut(data);
         else bridgeFail = "hearing の応答を使えなかった (ok でない)";
       } else {
-        bridgeFail = "hearing の応答を使えなかった (status " + br.status + ")";
+        // 2026-10-13 issue #13: hearing answers 503 <x>_read_failed when it could not read the conversation's intake
+        //   or store (it wrote nothing). Then KIRA does not decide either: the neutral receipt, and the owner is told.
+        let code = "";
+        try { const ej = await br.json(); if (ej && typeof ej.error === "string") code = ej.error.slice(0, 40); } catch (_e) {}
+        if (br.status === 503 && /^[a-z_]+_read_failed$/.test(code)) bridgeReadFail = code;
+        bridgeFail = "hearing の応答を使えなかった (status " + br.status + (code ? " " + code : "") + ")";
         console.error("kira-bridge non-ok:", br.status);
       }
     } catch (e) {
       bridgeFail = "橋渡しで例外: " + String((e && e.message) || e).slice(0, 80);
       console.error("kira-bridge error:", e.message);
     }
+  }
+  if (bridgeReadFail) {
+    await kiraReadFailAck(env, replyToken, QUOTE_ACK_TEXT, "加盟店 1対1: hearing が記録を今は読み込めなかった (" + bridgeReadFail + ") ため、KIRA は返していません。本文はヒアリングの記録に入っていません", userId, userMessage);
+    return;
   }
   // 手続きの一歩(kind の無い hearing の文)は、そのまま送る。業種の問いや登録の案内を KIRA が言い換えると手続きが崩れる。
   // 2026-10-05 v18: hearing が kind も文も返さない(人待ち等)ときに黙っていた(峰尾さまの「before」「アフター」に返事なし)。文が無ければ KIRA が決める。

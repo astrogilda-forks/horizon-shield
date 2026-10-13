@@ -66,16 +66,6 @@ export const ALLOW = [
   //
   // known: true の項目は「正しい形」ではない。本当に残っている issue #13 の型で、worker の直しは別の作業。
   // CI を赤にしないために通すが、走るたびに名指しする。直したら、その項目を消すこと (消し忘れは note で出る)。
-  { file: "workers/hs-hearing/src/hearing.js", fn: "handleKiraBridge", kind: "a-catch", known: true,
-    reason: "KNOWN, not fixed: a failed read of intake:<uid> is treated as no intake, so a conversation in awaiting_industry or handoff is restarted (industry asked again, startWithIndustry, putIntake overwrite)" },
-  { file: "workers/hs-hearing/src/hearing.js", fn: "handleKiraBridge/startWithIndustry", kind: "a-catch", known: true,
-    reason: "KNOWN, not fixed: a failed read of store:<sid> is treated as no store, so a new store and token are created and line2store/store2line are repointed, orphaning the existing store" },
-  { file: "workers/hs-hearing/src/autopilot.js", fn: "putStore", kind: "a-catch", known: true,
-    reason: "KNOWN, not fixed: a failed read of the saved store skips the merge, so the put drops the saved _writes, asked and pending ledger that the merge exists to keep" },
-  { file: "workers/hs-monitor/src/worker.js", fn: "scanAndNotify", kind: "a-helper", line_has: "getProspect(", known: true,
-    reason: "KNOWN, not fixed: getProspect returns null for both absent and failed, so a hot post from a known prospect saves a fresh record (contactCount 1, new firstScore) over the prospect's history" },
-  { file: "workers/hs-subscribe/src/worker.js", fn: "fetch", kind: "a-catch", known: true,
-    reason: "KNOWN, not fixed: a failed existence read counts a re-subscribe as new (count:<lang> + 1) and stamps created_at as now" },
   { file: "workers/hs-internal-mcp/src/worker.js", fn: "notifyMonitorDiff", kind: "a-catch",
     reason: "alert de-duplication only: a failed read of monitor:notified resends the current down list once, and the put stores the current alert set, not a merge with what was read" },
   { file: "workers/hs-kira-line/src/worker.js", fn: "processEvents", kind: "a-catch",

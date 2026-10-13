@@ -109,11 +109,14 @@ async function markAsSeen(kvKey, env) {
 // ========================================
 // 見込み客KV管理
 // ========================================
-async function getProspect(key, env) {
-  try {
-    const val = await env.SEEN_STORE.get(key);
-    return val ? JSON.parse(val) : null;
-  } catch { return null; }
+// 2026-10-13 (issue #13). Three outcomes: { prospect } when found, { absent: true } when KV has no such key,
+// { failed: true } when the read threw or the stored value would not parse. getProspect returned null for both
+// absent and failed, so a hot post from a known prospect saved a fresh record (contactCount 1) over its history.
+async function readProspect(key, env) {
+  let val;
+  try { val = await env.SEEN_STORE.get(key); } catch { return { failed: true }; }
+  if (!val) return { absent: true };
+  try { return { prospect: JSON.parse(val) }; } catch { return { failed: true }; }
 }
 
 async function saveProspect(key, data, env) {
@@ -621,6 +624,7 @@ async function scanAndNotify(env) {
   let notifiedWatch = 0;
   let recontact     = 0;
   let skipped       = 0;
+  let readFailed    = 0;
   const watchBatchItems = [];
 
   for (const post of allPosts) {
@@ -628,9 +632,17 @@ async function scanAndNotify(env) {
     const prospectKey = makeProspectKey(post);
 
     if (await isAlreadySeen(seenKey, env)) { skipped++; continue; }
+    // 2026-10-13 (issue #13). Read the prospect before marking the post seen. If it cannot be read, skip the post:
+    // nothing is written (not even the seen mark) and nothing is sent, so the next scan tries it again.
+    const rp = await readProspect(prospectKey, env);
+    if (rp.failed) {
+      readFailed++;
+      console.error(`[hs-monitor] prospect_read_failed in scanAndNotify: ${prospectKey} skipped, nothing written or sent; the next scan retries`);
+      continue;
+    }
     await markAsSeen(seenKey, env);
 
-    const existingProspect = await getProspect(prospectKey, env);
+    const existingProspect = rp.prospect || null;
     const result = await scorePost(post.text, env);
 
     console.log(`[${post.source}][${result.pattern}] score:${result.score} ${result.is_vendor ? '[業者]' : ''} "${post.title.slice(0, 25)}"`);
@@ -745,6 +757,7 @@ async function scanAndNotify(env) {
     skipped,
     rss:          rssPosts.length,
     x:            xPosts.length,
+    ...(readFailed ? { read_failed: readFailed } : {}),
   };
 }
 
