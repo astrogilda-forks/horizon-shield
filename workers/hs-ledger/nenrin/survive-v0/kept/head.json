@@ -1,11 +1,11 @@
 {
   "schema": "jidec-head-v1",
-  "n": 88,
-  "head": "bbbb357ee6f20a870fdfe5a50eb842674573dba06229593bfb85b304f0497e72",
+  "n": 95,
+  "head": "1fda4f126dca63e4414c894407a4e959fa5145002c82946bf9f33b4a4fc3227e",
   "root": "0000000000000000000000000000000000000000000000000000000000000000",
   "chain": "jidec-chain-v1",
-  "prev_entry_sha256": "bbbb357ee6f20a870fdfe5a50eb842674573dba06229593bfb85b304f0497e72",
-  "entry_sha256": "fc68c15f7310bb5eec512d9061085b688cb8c512a60139370a4cc30d3d1aad87",
+  "prev_entry_sha256": "1fda4f126dca63e4414c894407a4e959fa5145002c82946bf9f33b4a4fc3227e",
+  "entry_sha256": "34e6c7198dcf935db92522840999c1e494c9d5e810b80fdaeb11a5972efc4f02",
   "recipe": "entry_sha256 = sha256(canon({n, schema, claim_sha256, created_at, prev_entry_sha256})); canon = keys sorted, separators , and : without spaces, non-ASCII escaped (json.dumps sort_keys=True, separators=(',',':'), ensure_ascii=True); an absent schema or created_at is omitted, never null; entry 1 links to 64 zeros",
   "fields": [
     "n",

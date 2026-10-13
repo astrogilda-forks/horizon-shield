@@ -1,0 +1,13 @@
+{
+  "n": 90,
+  "work": "NENRIN task-witness batch (1 records)",
+  "claim_sha256": "8d4804cffb91867f54671b40e4ae7ebfb8ba8a08045a325ab58af3c4ac7211ce",
+  "record_canonical": "{\"schema\":\"nenrin-task-witness-batch-v1\",\"anchored_at\":\"2026-10-13T00:31:01.436Z\",\"count\":1,\"records\":[{\"evidence_id\":\"cb0f2ce1ce0e0bc7255a54aea9e1834c8c0f28655bd3139821e705e8052174ac\",\"task_id\":\"762fd34a-36f1-4bc3-a515-1880a2e394e3\",\"hop_seq\":0,\"witness_id\":\"did:key:z6Mkqeqwn8UPqgeaRj3hYgaAGY2KJMffd1PjdCt3dfakooJJ\",\"verdict\":\"PASS\",\"witness_sig\":true,\"edge_sig\":true}]}",
+  "schema": "v0-plain",
+  "created_at": "2026-10-13T00:31:01.493Z",
+  "ots_status": "confirmed",
+  "bitcoin_block": 971170,
+  "block_time": "2026-10-13 02:04 UTC",
+  "stamped_at": "2026-10-13T03:50:02.557Z",
+  "anchored_by": "schedule"
+}

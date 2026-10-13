@@ -1,0 +1,12 @@
+schema: nenrin-spec-v1-correction
+date: 2026-10-13
+corrects: JIDEC entry 19, claim sha256 9ccba2e325fd2a555fcdb2dec519b8c6bf7a669064674846aea98ecfff824e3d, NENRIN v1 specification, Bitcoin block 962507
+method: the corrected entry is not edited; this record is appended and cites it, and both stay readable
+phrase: "In one measured thirty-day window, one MCP server appeared in 93,983 search results and was invoked zero times." (Section 1 of entry 19)
+corrected_1: 93,983 is the impression count shown by the dashboard of one MCP directory on which the operator's own server is listed, for the thirty days to 2026-08-14 (93,983 impressions, 24 clicks, 421 profile views); it is not a count of search results across search engines or AI assistants
+corrected_2: zero is the number of tool calls made through that one directory listing in the same window; it is not the server's total. The server's own usage counter recorded calls in that window; it stores no IP addresses and cannot separate the operator's automated checks from outside calls, so how many calls came from outside is not known
+source: the Traffic paragraph of verify-directory/index.html in github.com/ogasurfproject-jpg/horizon-shield, which states the dashboard figures with their date
+also_corrected: README.md of the same repository, which had called the 93,983 AI search results; corrected in the commit that adds this seed
+not_yet_corrected: papers/nenrin-reproducibility/manuscript_v0.1.md repeats the sentence; it has two authors and is corrected only when both approve
+what_stays: the argument of Section 1 (an agent choosing between servers can read only what each vendor wrote about itself) and every other section of entry 19; this record changes no hash
+limits: this record narrows one sentence of entry 19; claim_19.txt and NENRIN_SPEC_v1.md are the anchored bytes and stay unchanged
