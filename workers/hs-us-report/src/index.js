@@ -95,6 +95,44 @@ const readOrder = async (env, id) => {
 const putOrder = (env, o) => env.US_ORDERS.put(`order:${o.id}`, JSON.stringify(o), { metadata: { status: o.status, paid_at: o.paid_at || null, created_at: o.created_at } });
 const sha16 = (o) => (o.draft && o.draft.sha256 ? o.draft.sha256.slice(0, 16) : null);
 
+// 2026-10-13 (concurrency audit U1). One immutable key per verified payment, pay:<order id>:<txn id>, written by the
+// IPN before it touches the order. The order is one KV value with several writers (the IPN, the hourly sweep, the
+// draft cron, the homeowner's answer link, the operator), and KV has no compare-and-swap, so a payment could be lost
+// from it: a second payment read a stale "awaiting_payment" copy and overwrote the first txn without the double-payment
+// alert, or the sweep read a stale unpaid copy and deleted an order that had just been paid. The payment key is never
+// read-modified-written, so it cannot be lost that way. The sweep never deletes an order that has one, and an hourly
+// reconcile (reconcilePayments) puts a lost "paid" back and raises a double payment the IPN could not see.
+// The metadata carries order, txn and at, so the reconcile lists without reading each key.
+export const PAYMENT_RECORDS = "pay-record-v1-20261013";
+const PAY_PREFIX = "pay:";
+const payKey = (orderId, txnId) => `${PAY_PREFIX}${orderId}:${txnId}`;
+const PAY_RECONCILE_LOOKBACK = 7 * DAY;
+// The reconcile only repairs or raises a payment older than this. The IPN marks the order paid milliseconds after it
+// writes the payment key, and a KV write is visible everywhere within about 60 s, so an order that still reads
+// "awaiting_payment" 10 minutes after its payment really lost its "paid". Acting earlier could act on a stale copy
+// of an order the IPN or the draft cron is still moving, and put an older copy back over it.
+const PAY_REPAIR_GRACE = 10 * 60 * 1000;
+async function recordPayment(env, orderId, txnId, gross) {
+  if (await env.US_ORDERS.get(payKey(orderId, txnId))) return;   // PayPal resends the same txn: keep the first time
+  const at = new Date().toISOString();
+  await env.US_ORDERS.put(payKey(orderId, txnId), JSON.stringify({ order_id: orderId, txn_id: txnId, gross, currency: "USD", at }), { metadata: { order: orderId, txn: txnId, at } });
+}
+// Every payment key under one order (or all), as { order, txn, at }. Throws when KV throws.
+async function listPayments(env, orderId) {
+  const out = [];
+  let cursor;
+  do {
+    const page = await env.US_ORDERS.list({ prefix: orderId ? `${PAY_PREFIX}${orderId}:` : PAY_PREFIX, cursor, limit: 1000 });
+    for (const k of page.keys) {
+      const m = k.metadata || {};
+      const rest = k.name.slice(PAY_PREFIX.length), cut = rest.lastIndexOf(":");
+      out.push({ order: m.order || rest.slice(0, cut), txn: m.txn || rest.slice(cut + 1), at: m.at || "" });
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  return out;
+}
+
 // ---------------------------------------------------------------- intake
 
 export async function handleIntake(request, env) {
@@ -211,11 +249,13 @@ export async function handleIpn(request, env, ctx, fetchImpl = fetch) {
     return json({ ok: true, skipped: chk.reason });
   }
   if (!txnId) return json({ ok: true, skipped: "no txn id" });
+  await recordPayment(env, order.id, txnId, chk.gross);   // 2026-10-13 (U1): first, and never overwritten by another txn
   let seen;
   try { seen = await env.US_ORDERS.get(`txn:${txnId}`); } catch { return json({ ok: false, error: "txn_read_failed" }, 503); }   // 2026-10-13
   if (seen) return json({ ok: true, duplicate: true });
   if (order.status !== "awaiting_payment") {
     await env.US_ORDERS.put(`txn:${txnId}`, order.id);
+    try { await env.US_ORDERS.put(`payalert:${order.id}`, String((await listPayments(env, order.id)).length)); } catch { /* the reconcile may alert once more; never blocks the IPN */ }
     await lineToshi(env, `【US】二重払いの疑い: ${order.id}(状態 ${order.status})に txn ${txnId} でもう一度 $${chk.gross}。PayPal で返金する。`, fetchImpl);
     return json({ ok: true, skipped: "already paid" });
   }
@@ -496,6 +536,11 @@ export async function sweep(env, now = Date.now()) {
       const oc = o.created_at ? new Date(o.created_at).getTime() : created;
       const op = o.paid_at ? new Date(o.paid_at).getTime() : paid;
       if (o.status === "awaiting_payment" && now - oc > UNPAID_TTL) {
+        // 2026-10-13 (U1). A payment key means the order was paid and its "paid" was lost or is not visible yet here:
+        // never delete it. reconcilePayments below marks it paid.
+        let pays;
+        try { pays = await listPayments(env, o.id); } catch { out.read_failed++; logReadFailed("sweep", `${PAY_PREFIX}${o.id}:`); continue; }
+        if (pays.length) continue;
         for (const f of o.files || []) await env.US_FILES.delete(f.key);
         await env.US_ORDERS.delete(k.name);
         out.unpaid_removed++;
@@ -524,7 +569,57 @@ export async function sweep(env, now = Date.now()) {
     }
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
+  await reconcilePayments(env, now, out);
   return out;
+}
+
+// 2026-10-13 (U1). Payments of the last PAY_RECONCILE_LOOKBACK, grouped by order. An order still "awaiting_payment"
+// with a payment older than PAY_REPAIR_GRACE is marked paid (from the earliest payment); an order with more than one txn is raised once per new txn
+// (payalert:<id> holds how many were raised); a payment whose order is gone is raised once (payalert:<id>:orphan).
+async function reconcilePayments(env, now, out) {
+  out.pay_repaired = 0; out.double_pay_alerts = 0; out.pay_orphans = 0;
+  let pays;
+  try { pays = await listPayments(env); } catch { out.read_failed++; logReadFailed("sweep", `${PAY_PREFIX}*`); return; }
+  const byOrder = new Map();
+  for (const p of pays) {
+    const t = p.at ? new Date(p.at).getTime() : 0;
+    if (!(t > 0) || now - t > PAY_RECONCILE_LOOKBACK) continue;
+    if (!byOrder.has(p.order)) byOrder.set(p.order, []);
+    byOrder.get(p.order).push(p);
+  }
+  for (const [id, list] of byOrder) {
+    list.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : a.txn < b.txn ? -1 : 1));
+    const txns = [...new Set(list.map((p) => p.txn))];
+    const settled = now - new Date(list[0].at).getTime() > PAY_REPAIR_GRACE;
+    if (!settled && txns.length < 2) continue;   // too fresh to judge; the next hourly sweep looks again
+    const rd = await readOrder(env, id);
+    if (rd.failed) { out.read_failed++; logReadFailed("sweep", `order:${id}`); continue; }
+    if (!rd.order) {
+      if (!settled) continue;
+      const mk = `payalert:${id}:orphan`;
+      if (!(await env.US_ORDERS.get(mk))) {
+        await env.US_ORDERS.put(mk, "1", { expirationTtl: 30 * 86400 });
+        out.pay_orphans++;
+        await lineToshi(env, `【US】入金の記録があるのに注文 ${id} が無い(txn ${txns.join(", ")})。返金か作り直しを決める。`);
+      }
+      continue;
+    }
+    const o = rd.order;
+    if (o.status === "awaiting_payment" && settled) {
+      o.status = "paid"; o.paid_at = list[0].at; o.txn_id = list[0].txn;
+      await putOrder(env, o);
+      out.pay_repaired++;
+      await lineToshi(env, `【US】入金の反映漏れを直した: ${id} を paid にした(txn ${list[0].txn})。下書きは次の巡回で作る。`);
+    }
+    if (txns.length > 1) {
+      const raised = Number((await env.US_ORDERS.get(`payalert:${id}`)) || 0);
+      if (txns.length > raised) {
+        await env.US_ORDERS.put(`payalert:${id}`, String(txns.length));
+        out.double_pay_alerts++;
+        await lineToshi(env, `【US】二重払いの疑い: ${id} に txn ${txns.length} 件(${txns.join(", ")})。PayPal で返金する。`);
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------- router
@@ -538,7 +633,7 @@ async function route(request, env, ctx) {
   const url = new URL(request.url);
   const p = url.pathname;
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(env, request) });
-  if (p === "/health") return json({ ok: true, service: "hs-us-report", engine: ENGINE_VERSION, bindings: { files: !!env.US_FILES, orders: !!env.US_ORDERS, browser: !!env.BROWSER, jccdb: !!env.JCCDB }, secrets: { paypal_business: !!env.PAYPAL_BUSINESS, anthropic: !!env.ANTHROPIC_API_KEY, resend: !!env.RESEND_API_KEY, line: !!env.LINE_CHANNEL_TOKEN && !!env.LINE_USER_ID, link: !!env.LINK_SECRET, admin: !!env.US_ADMIN_TOKEN } });
+  if (p === "/health") return json({ ok: true, service: "hs-us-report", engine: ENGINE_VERSION, payments: PAYMENT_RECORDS, bindings: { files: !!env.US_FILES, orders: !!env.US_ORDERS, browser: !!env.BROWSER, jccdb: !!env.JCCDB }, secrets: { paypal_business: !!env.PAYPAL_BUSINESS, anthropic: !!env.ANTHROPIC_API_KEY, resend: !!env.RESEND_API_KEY, line: !!env.LINE_CHANNEL_TOKEN && !!env.LINE_USER_ID, link: !!env.LINK_SECRET, admin: !!env.US_ADMIN_TOKEN } });
   if (p === "/intake" && request.method === "POST") return await handleIntake(request, env);
   if (p === "/quick" && request.method === "POST") return await handleQuick(request, env);
   if (p === "/webhook/paypal" && request.method === "POST") return await handleIpn(request, env, ctx);
