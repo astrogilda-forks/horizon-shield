@@ -1,0 +1,82 @@
+{
+  "ambiguous-execution.json": {
+    "result": "ambiguous",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "application-record-missing.json": {
+    "result": "insufficient_evidence",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "approval-not-granted.json": {
+    "result": "approval_not_granted",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "approved-audit-incomplete.json": {
+    "result": "insufficient_evidence",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "approved-no-match-declared-scope.json": {
+    "result": "no_match_in_declared_complete_scope",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "commit-unknown.json": {
+    "result": "recorded_outcome_not_successful_commit",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-database.json": {
+    "result": "call_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-parameters.json": {
+    "result": "call_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-principal.json": {
+    "result": "call_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-schema.json": {
+    "result": "call_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-sql.json": {
+    "result": "call_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "matching-commit-later-change.json": {
+    "result": "recorded_commit_matches",
+    "later_state": "changed",
+    "exit": 0
+  },
+  "matching-commit.json": {
+    "result": "recorded_commit_matches",
+    "later_state": "not_supplied",
+    "exit": 0
+  },
+  "outcome-disagreement.json": {
+    "result": "application_disagrees_with_audit",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "rolled-back.json": {
+    "result": "recorded_outcome_not_successful_commit",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "statement-failed.json": {
+    "result": "recorded_outcome_not_successful_commit",
+    "later_state": "not_supplied",
+    "exit": 1
+  }
+}
