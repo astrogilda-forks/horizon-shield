@@ -4,8 +4,8 @@
 // overwrite the day's counts. Every check here fails on the code before this change.
 import assert from "node:assert/strict";
 import worker, { generateDraft, draftPending, sweep } from "../src/index.js";
-import { dailyStats } from "../src/teardown.js";
-import { kv, r2, outside } from "./mocks.mjs";
+import { dailyStats, handleTeardown } from "../src/teardown.js";
+import { kv, r2, outside, jccdbService } from "./mocks.mjs";
 import { signPath } from "../src/sign.js";
 
 const log = [];
@@ -197,6 +197,50 @@ const today = new Date(now).toISOString().slice(0, 10);
     assert.ok(errors.some((e) => e.includes("stats_read_failed")), JSON.stringify(errors));
     assert.ok(res2, "sent after the read recovers");
     assert.ok(lines.pop().includes("来た 7"), "the real count, not zero");
+  });
+}
+
+{
+  // 2026-10-13. The day still unreadable at 00:xx UTC is sent at the next hour that can read it (up to 05:xx), once.
+  const { env, store, broken } = mkEnv();
+  const midnight = Date.UTC(new Date(now).getUTCFullYear(), new Date(now).getUTCMonth(), new Date(now).getUTCDate() + 1, 0, 5);
+  await store.put(`stats:${today}`, JSON.stringify({ land_x: 5 }));
+  broken.add(`stats:${today}`);
+  const before = sent();
+  const at00 = await dailyStats(env, midnight);
+  broken.delete(`stats:${today}`);
+  const at01 = await dailyStats(env, midnight + 3600000);
+  const at02 = await dailyStats(env, midnight + 2 * 3600000);
+  const at06 = await dailyStats(env, midnight + 6 * 3600000);
+  chk("dailyStats: a day unreadable at 00 UTC is sent at 01 UTC, exactly once, and not after 05 UTC", () => {
+    assert.equal(at00, false);
+    assert.ok(at01, "sent at the next hour");
+    assert.equal(at02, false, "the mark keeps it to one message");
+    assert.equal(at06, false, "outside the window");
+    assert.equal(sent() - before, 1);
+  });
+}
+{
+  // 2026-10-13. A failed public wage lookup is not "no public wage for this trade in your area".
+  const { env } = mkEnv();
+  env.ANTHROPIC_API_KEY = "x";
+  env.JCCDB = { async fetch() { return new Response("down", { status: 502 }); } };
+  const EXL = { doc: { total: 9000, trade: "roof replacement" }, lines: [{ item: "Labor, 2 men 3 days", amount: 9000, qty: null, unit: null, kind: "labor", labor: { workers: 2, days: 3, hours: null } }] };
+  const f = new FormData(); f.set("text", "Roof quote lines ".repeat(3)); f.set("zip", "78745"); f.set("trade", "roof");
+  const r = await handleTeardown(new Request(W + "/teardown", { method: "POST", body: f, headers: { origin: SITE, "cf-connecting-ip": "9.9.9.9" } }), env, { extract: async () => ({ extracted: EXL, gates: { pass: true, notes: [] } }) });
+  const b = await r.json();
+  const env2 = mkEnv().env; env2.ANTHROPIC_API_KEY = "x"; env2.JCCDB = jccdbService([]);
+  const f2 = new FormData(); f2.set("text", "Roof quote lines ".repeat(3)); f2.set("zip", "10001"); f2.set("trade", "roof");
+  const r2 = await handleTeardown(new Request(W + "/teardown", { method: "POST", body: f2, headers: { origin: SITE, "cf-connecting-ip": "9.9.9.8" } }), env2, { extract: async () => ({ extracted: EXL, gates: { pass: true, notes: [] } }) });
+  const b2 = await r2.json();
+  chk("teardown: an unreachable wage service says the reference is unavailable; a real no-match does not", () => {
+    assert.equal(r.status, 200, JSON.stringify(b));
+    assert.equal(b.teardown.reference, null);
+    assert.equal(b.teardown.reference_unavailable, true);
+    assert.ok(/could not be fetched/.test(b.teardown.reference_note));
+    assert.equal(r2.status, 200, JSON.stringify(b2));
+    assert.equal(b2.teardown.reference, null);
+    assert.ok(!b2.teardown.reference_unavailable, "a lookup that answered with no rows is a real no-match");
   });
 }
 

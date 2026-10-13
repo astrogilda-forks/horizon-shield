@@ -577,6 +577,10 @@ function render(r, focus){
 function renderRef(t, box){
  clear(box);
  var ref = t.reference;
+ if(!ref && t.reference_unavailable){
+  box.appendChild(el("p", "", t.reference_note || "The public wage data could not be fetched just now, so this teardown has no wage reference. Run it again in a few minutes to see it."));
+  return;
+ }
  if(!ref){
   box.appendChild(el("p", "", t.place ? "We found no public wage for this trade in your area. The questions below still apply." : "Add a ZIP code next time to see the public wage for this trade in your area."));
   return;

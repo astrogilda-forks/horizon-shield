@@ -223,12 +223,18 @@ export async function handleTeardown(request, env, deps = {}) {
 
   const chosen = String(form.get("trade") || "");
   const tk = Object.prototype.hasOwnProperty.call(TRADES, chosen) && chosen !== "other" ? chosen : tradeKey((ex.doc && ex.doc.trade) || chosen);
-  let wage = null, loading = null;
+  let wage = null, loading = null, wageFailed = false;
   if (geo && geo.ok) {
     loading = LOADING_BY_STATE[geo.state] || null;
-    try { wage = await wagesFor(env, geo, (TRADES[tk] || TRADES.other).occupations[0]); } catch { wage = null; }
+    // 2026-10-13 (#13). A failed lookup is not "no public wage for this trade in your area": the page said exactly
+    // that when the public data service could not be reached. The teardown now says the reference is unavailable.
+    try { wage = await wagesFor(env, geo, (TRADES[tk] || TRADES.other).occupations[0]); } catch { wage = null; wageFailed = true; }
   }
   const t = buildTeardown(ex, { tk, geo, wage, loading });
+  if (wageFailed) {
+    t.reference_unavailable = true;
+    t.reference_note = "The public wage data could not be fetched just now, so this teardown has no wage reference. This is not a finding that no public wage exists for the trade in your area. Run it again in a few minutes to see it.";
+  }
   if (t.reference) t.reference.sources = t.reference.sources.map((id) => ({ id, title: sourceTitles([id])[id] || id, url: sourceUrls([id])[id] || null }));
   const id = newId();
   const claim = crypto.randomUUID();
@@ -384,9 +390,12 @@ export function statsText(day, row) {
   return `【US EHN】${day}(UTC)\n来た ${land.reduce((s, [, v]) => s + v, 0)}${land.length ? "(" + land.map(([k, v]) => `${k} ${v}`).join("、") + ")" : ""}\n解剖 ${n("teardown_ok")}(読めず ${n("teardown_fail")})\n掲示板へ ${n("board_submit")} / 載せた ${n("board_publish")}\n$39 へ ${n("cta_check")} / 送った X ${n("share_x")}・コピー ${n("share_copy")}`;
 }
 
-// Called from the hourly cron. At 00:xx UTC, sends yesterday's counts once.
+// Called from the hourly cron. From 00:xx UTC, sends yesterday's counts once (the stats_sent mark).
+// 2026-10-13 (#13). Tried each hour from 00 to 05 UTC, so a day whose counts could not be read at 00:xx is sent at
+// the next hour that can read them, instead of being skipped for good. The mark keeps it to one message.
+export const DAILY_STATS_LAST_HOUR_UTC = 5;
 export async function dailyStats(env, now = Date.now()) {
-  if (new Date(now).getUTCHours() !== 0) return false;
+  if (new Date(now).getUTCHours() > DAILY_STATS_LAST_HOUR_UTC) return false;
   const day = utcDay(now - DAY);
   const mark = `stats_sent:${day}`;
   if (await env.US_ORDERS.get(mark)) return false;
