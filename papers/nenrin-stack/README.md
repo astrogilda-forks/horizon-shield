@@ -18,3 +18,14 @@ To rerun the main measurements:
 | Board | `ops/tsunagi/BOARD.md` and `ops/tsunagi/board.json` (nightly, `.github/workflows/tsunagi-board.yml`) |
 | Indicators and zeros | `docs/metrics/INDICATORS.md`, `ops/adoption/latest.json` |
 | Concurrency audit | `ops/concurrency_audit_20261013.md` |
+
+## Rerun it from outside
+
+The replication package is archived as doi:10.5281/zenodo.23344510 (the commit `1b854544a2b1` built with `make_replication_zip.sh`). The quickest outside check needs no clone and takes a few minutes: in an empty directory,
+
+```
+npm init -y && npm install nenrin-verify@0.5.2
+npx nenrin-tsunagi run nenrin-interop-v0.3-survivors -- "node node_modules/nenrin-verify/tsunagi_reference_batch.mjs {in} {out}"
+```
+
+The last line should read `nenrin-interop-v0.3-survivors: 9/9 verdict signatures reproduced (refereed by nenrin-tsunagi)`. To test a verifier of your own instead of ours, replace the quoted command with yours; `nenrin-tsunagi` writes all nine bundles to `{in}` as a JSON array `[{"name": ..., "bundle": ...}]` and reads `{out}` as a JSON object `{<name>: {"verdict": ..., "refusals": [...], "findings": [...]}}`. If you run it, please post the output in an issue of this repository. A run of your own verifier is recorded, with your permission, in `tools/adoption/registry.json`; the open calls are listed there.

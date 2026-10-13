@@ -127,10 +127,19 @@
       "what": "A second reader for signed NENRIN witness records, written by Probity from the record format without the producer reader: it verifies two outside walks (pipavlo82 and kuangmi-bit, ledger entry 73) under separately pinned keys, checks the signed target URL exactly and keeps true, false and null assertions apart; 62 tests, and a second operator (HORIZON SHIELD) reran it with the same answers",
       "evidence": "https://github.com/probityai/agent-evidence-atlas/blob/2bff38d8c13f7038d8d773bc77e44ab4f160751a/examples/nenrin-witness-pair/README.md",
       "date": "2026-10-09"
+    },
+    {
+      "who": "giskard09",
+      "author": "giskard09",
+      "subject": "a2a-card-sign-v01",
+      "what": "Ran an own RFC 8785 canonicalizer (jcs.py) blind against all 44 a2a-card-sign-v01 vectors at a2a-tck#246 8aa795b: byte-exact agreement on all 26 vectors governed by the served-as-is, unknown-retain and dual-name-tolerate readings, including the dual-signature transition case S3-D-012; the other 18 need AgentCard-aware pruning that a pure canonicalizer does not do. Shows the section 8.4.1 disagreement is about which bytes are covered, not RFC 8785",
+      "evidence": "https://github.com/a2aproject/a2a-tck/pull/246#issuecomment-6133531509",
+      "date": "2026-10-12"
     }
   ],
   "open_calls": {
-    "nenrin-provenance": "A NENRIN provenance verifier by a further author, in any language, that reproduces the verdict signatures of interop-v0, interop-v0.1 and interop-v0.2/edge. Two so far, both by kuangmi-bit: workers/hs-ledger/nenrin/interop-v0/INTEROP.md"
+    "nenrin-provenance": "A NENRIN provenance verifier by a further author, in any language, that reproduces the verdict signatures of interop-v0, interop-v0.1 and interop-v0.2/edge. Two so far, both by kuangmi-bit: workers/hs-ledger/nenrin/interop-v0/INTEROP.md",
+    "nenrin-interop-v0.3-survivors": "Point any NENRIN provenance verifier, in any language, at the nine survivors vectors and post the result: npx nenrin-tsunagi run nenrin-interop-v0.3-survivors -- \"<your verifier command> {in} {out}\". The reference takes one command after npm install nenrin-verify@0.5.2 (papers/nenrin-stack/README.md, section Rerun it from outside; replication package doi:10.5281/zenodo.23344510)"
   },
   "published_contracts": [
     {
