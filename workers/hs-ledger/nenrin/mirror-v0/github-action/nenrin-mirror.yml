@@ -29,8 +29,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  MIRROR_PY_URL: https://raw.githubusercontent.com/ogasurfproject-jpg/horizon-shield/0db849a2238f13d035c99930c7ad017122663a80/workers/hs-ledger/nenrin/mirror-v0/mirror.py
-  MIRROR_PY_SHA256: 76cefe5c3eaaacd4ac630a3c8242d644611410497bd59a0a66e3f2f8ee7958bc
+  MIRROR_PY_URL: https://raw.githubusercontent.com/ogasurfproject-jpg/horizon-shield/ff4273b2af29aa33de68c812be4d1c2f5e3c8d95/workers/hs-ledger/nenrin/mirror-v0/mirror.py
+  MIRROR_PY_SHA256: 7de4bd1d8fca8efef1e29a91ae400ff11207f8825532984760fe86afd70173ba
   BRANCH: nenrin-mirror
 
 jobs:
