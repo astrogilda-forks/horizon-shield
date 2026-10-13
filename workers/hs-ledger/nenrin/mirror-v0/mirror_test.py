@@ -45,6 +45,8 @@ class Ledger:
         self.witness = {}              # sha -> envelope served at /witness/<sha> (only in the named-record ledger)
         self.lie_about = None          # sha of an object to serve wrong bytes for
         self.missing = set()           # entry numbers whose json 404s
+        self.unstamped = set()         # entry numbers the ledger reports as unstamped (its /ots answers 404)
+        self.ots_404 = set()           # entry numbers whose /ots 404s while the entry claims a stamp
         self.requests = []
 
     def add_witness_batch(self):
@@ -63,7 +65,8 @@ class Ledger:
 
     def entry(self, n):
         return {"n": n, "work": "entry %d" % n, "claim_sha256": sha(self.raw[n]), "record_canonical": self.raw[n].decode("utf-8"),
-                "ots_status": "confirmed", "bitcoin_block": 968000 + n, "created_at": "2026-09-26T00:00:00Z"}
+                "ots_status": "unstamped" if n in self.unstamped else "confirmed", "bitcoin_block": None if n in self.unstamped else 968000 + n,
+                "created_at": "2026-09-26T00:00:00Z"}
 
     def index(self):
         ns = sorted(self.raw, reverse=True)
@@ -89,6 +92,8 @@ def make_handler(L):
                 if n not in L.raw or n in L.missing:
                     return self._send(404, b"not found")
                 if len(parts) == 3 and parts[2] == "ots":
+                    if n in L.unstamped or n in L.ots_404:
+                        return self._send(404, b'{"error":"proof not yet available"}')
                     return self._send(200, b"\x00OpenTimestamps\x00fake-proof-for-%d" % n, "application/octet-stream")
                 if q.get("format") == ["raw"]:
                     return self._send(200, L.raw[n], "application/octet-stream")
@@ -246,9 +251,34 @@ def main():
         assert M.verify(E, quiet=True) == 1
         open(p0, "wb").write(b0)
         n += 1; print("[9] witness batch without bytes_url: walks fetched from /witness/<sha>, bytes and signature kept; an altered and a missing walk listed, not stored; resume fetches only what is missing; 2 held of 3")
+
+        # [10] 2026-10-13: an entry the ledger reports as unstamped has no proof yet. pull and verify list it as awaiting,
+        # not as a problem; once the proof exists the next pull fetches it and the list empties. A missing proof for an
+        # entry that claims a stamp is still a problem. A copy with nothing awaiting carries no awaiting_stamp key.
+        L.raw[5] = b'{"schema":"nenrin-agreement-batch-v1","count":0,"records":[]}'
+        L.unstamped = {5}
+        F = os.path.join(tmp, "F")
+        assert M.pull(base, F, quiet=True) == 0
+        man = json.loads(open(os.path.join(F, "manifest.json"), encoding="utf-8").read())
+        assert man["problems"] == [] and man.get("awaiting_stamp") == [5], (man["problems"], man.get("awaiting_stamp"))
+        assert [e for e in man["entries"] if e["n"] == 5][0].get("awaiting_stamp") is True
+        rr = subprocess.run([sys.executable, os.path.join(HERE, "mirror.py"), "verify", "--dir", F], capture_output=True, text=True)
+        assert rr.returncode == 0 and "awaiting their first stamp" in rr.stdout and ": 5" in rr.stdout, rr.stdout
+        L.unstamped = set()
+        assert M.pull(base, F, quiet=True) == 0       # the proof now exists: fetched, nothing awaiting
+        man = json.loads(open(os.path.join(F, "manifest.json"), encoding="utf-8").read())
+        assert "awaiting_stamp" not in man and os.path.exists(os.path.join(F, "ledger", "5.ots")), man.get("awaiting_stamp")
+        L.ots_404 = {5}
+        G = os.path.join(tmp, "G")
+        assert M.pull(base, G, quiet=True) == 1       # claims confirmed, serves no proof: a problem, as before
+        man = json.loads(open(os.path.join(G, "manifest.json"), encoding="utf-8").read())
+        assert {"n": 5, "what": "ots_missing"} in man["problems"] and "awaiting_stamp" not in man
+        assert M.verify(G, quiet=True) == 1
+        L.ots_404 = set(); del L.raw[5]
+        n += 1; print("[10] unstamped entry: listed as awaiting, not a problem; fetched on the next pull once stamped; a stamped entry without a proof is still a problem")
     finally:
         srv.shutdown(); shutil.rmtree(tmp, ignore_errors=True)
-    print("\nSELF-TEST PASSED: nenrin-mirror-v0, %d checks (honest pull, resume, tampered copy, lying server, diff, unreachable entry, content digests, CLI, contract address rule, records named without bytes_url)" % n)
+    print("\nSELF-TEST PASSED: nenrin-mirror-v0, %d checks (honest pull, resume, tampered copy, lying server, diff, unreachable entry, content digests, CLI, contract address rule, records named without bytes_url, entries awaiting their first stamp)" % n)
 
 
 if __name__ == "__main__":

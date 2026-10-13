@@ -2,7 +2,7 @@
 
 For an organisation that holds a copy of the NENRIN ledger with `github-action/nenrin-mirror-vendored.yml`. The point of the vendored variant is that you review this file once, commit it into your own repository, and pin its sha256 in the workflow. No code is fetched at run time, and a change upstream changes nothing on your side until you commit a new copy and a new pin.
 
-File: `mirror.py`, 446 lines, Python 3 standard library only (`argparse, hashlib, json, os, sys, time, urllib`). No subprocess, no `eval`/`exec`, no dynamic import, no third-party package. sha256 at the time of writing: `6616e109aa5a5caac5e8961550a9327d10dd9ded02b0070c50ca606990222f2c`.
+File: `mirror.py`, 462 lines, Python 3 standard library only (`argparse, hashlib, json, os, sys, time, urllib`). No subprocess, no `eval`/`exec`, no dynamic import, no third-party package. sha256 at the time of writing: `7de4bd1d8fca8efef1e29a91ae400ff11207f8825532984760fe86afd70173ba` (2026-10-13: an entry the ledger reports as unstamped is listed as awaiting its first stamp, not as a problem; the six kinds of GET request and the only write location are unchanged).
 
 ## Every network call (all HTTP GET, through one function, `fetch`, line 54)
 

@@ -29,7 +29,7 @@ concurrency:
 
 env:
   MIRROR_PY: tools/nenrin-mirror/mirror.py
-  MIRROR_PY_SHA256: 6616e109aa5a5caac5e8961550a9327d10dd9ded02b0070c50ca606990222f2c
+  MIRROR_PY_SHA256: 7de4bd1d8fca8efef1e29a91ae400ff11207f8825532984760fe86afd70173ba
   BRANCH: nenrin-mirror
 
 jobs:

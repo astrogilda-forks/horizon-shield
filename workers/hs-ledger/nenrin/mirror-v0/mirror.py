@@ -186,7 +186,7 @@ def pull(base, d, n_from=None, n_to=None, quiet=False):
     global ALLOW_HTTP
     base = base.rstrip("/")
     ALLOW_HTTP = base.startswith("http://127.0.0.1") or base.startswith("http://localhost")
-    problems, entries, objects, named_problems = [], [], {}, []
+    problems, entries, objects, named_problems, awaiting = [], [], {}, [], []
     st, body = fetch(base + "/ledger?format=json")
     if st != 200:
         print("cannot read %s/ledger?format=json (status %s)" % (base, st)); return 2
@@ -238,8 +238,16 @@ def pull(base, d, n_from=None, n_to=None, quiet=False):
             if st == 200 and ob:
                 _write(op, ob)
         e["ots"] = os.path.exists(op)
+        # 2026-10-13. An entry the ledger itself reports as not yet stamped has no proof to fetch yet. That is a state,
+        # not a defect: it is listed under awaiting_stamp (and the entry carries awaiting_stamp), and the next pull
+        # fetches the proof once it exists. A missing proof for an entry the ledger says is pending or confirmed is
+        # still a problem. Both keys appear only when non-empty, so a copy with nothing awaiting is byte-identical to
+        # one written by the previous version.
         if not e["ots"]:
-            problems.append({"n": n, "what": "ots_missing"})
+            if entry.get("ots_status") == "unstamped":
+                e["awaiting_stamp"] = True; awaiting.append(n)
+            else:
+                problems.append({"n": n, "what": "ots_missing"})
         # objects the entry points to, content addressed
         for sha, url, kind in objects_of(entry):
             e["objects"].append(sha)
@@ -294,6 +302,7 @@ def pull(base, d, n_from=None, n_to=None, quiet=False):
            "objects": {k: objects[k] for k in sorted(objects)}, "problems": problems,
            # named records the ledger did not serve are listed, not failed: the copy is still honest about what it holds
            "named_record_problems": named_problems,
+           **({"awaiting_stamp": awaiting} if awaiting else {}),
            "establishes": ["that the bytes listed here, with these digests, were obtainable from base at mirrored_at",
                            "that every digest here recomputes offline from the files in this directory (run verify)",
                            "that another mirror with the same content_sha256 holds byte-identical evidence for the same range"],
@@ -302,7 +311,8 @@ def pull(base, d, n_from=None, n_to=None, quiet=False):
     man["content_sha256"], man["entries_sha256"] = content_digests(man)
     mb = json.dumps(man, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     _write(os.path.join(d, "manifest.json"), mb)
-    say("manifest.json sha256 %s; %d entries, %d objects, %d problem(s), %d named record(s) not obtained" % (sha256_hex(mb), len(entries), len(objects), len(problems), len(named_problems)))
+    say("manifest.json sha256 %s; %d entries, %d objects, %d problem(s), %d named record(s) not obtained%s" % (sha256_hex(mb), len(entries), len(objects), len(problems), len(named_problems),
+        "" if not awaiting else ", %d awaiting their first stamp (%s)" % (len(awaiting), ", ".join(str(x) for x in awaiting))))
     say("content_sha256 %s  entries_sha256 %s  (compare these with another mirror; the manifest sha never matches by design)" % (man["content_sha256"], man["entries_sha256"]))
     return 0 if not problems else 1
 
@@ -321,7 +331,7 @@ def content_digests(man):
 # --------------------------------------------------------------------------- verify (offline)
 def verify(d, quiet=False):
     say = (lambda *a: None) if quiet else print
-    problems, n_raw, n_obj, kinds = [], 0, 0, {}
+    problems, n_raw, n_obj, kinds, awaiting = [], 0, 0, {}, []
     named_total, named_held, named_missing = 0, 0, []
     ld = os.path.join(d, "ledger")
     for name in sorted(os.listdir(ld) if os.path.isdir(ld) else []):
@@ -342,7 +352,11 @@ def verify(d, quiet=False):
         else:
             problems.append({"n": n, "what": "raw_missing"})
         if not os.path.exists(os.path.join(ld, n + ".ots")):
-            problems.append({"n": n, "what": "ots_missing"})
+            # 2026-10-13. As in pull: the ledger said this entry was not yet stamped when it was copied. A state, not a defect.
+            if entry.get("ots_status") == "unstamped":
+                awaiting.append(n)
+            else:
+                problems.append({"n": n, "what": "ots_missing"})
         for sha, _url, kind in objects_of(entry):
             path = os.path.join(d, "objects", sha)
             if not os.path.exists(path):
@@ -376,6 +390,8 @@ def verify(d, quiet=False):
         except Exception:  # noqa: BLE001
             problems.append({"what": "manifest_json_unparseable"})
     say("verify %s: %d raw claims, %d objects, manifest %s, %d problem(s)" % (d, n_raw, n_obj, (msha or "absent")[:16], len(problems)))
+    if awaiting:
+        say("awaiting their first stamp (the ledger reported them unstamped; not a problem, the next pull fetches the proof): %s" % ", ".join(sorted(awaiting, key=lambda x: int(x) if x.isdigit() else 0)))
     say("records named by batches without bytes_url: %d held of %d%s" % (named_held, named_total, "" if not named_missing else " (not held: %s)" % ", ".join(m["sha"][:12] for m in named_missing[:20])))
     if csha:
         say("content_sha256 %s  entries_sha256 %s" % (csha, esha))
