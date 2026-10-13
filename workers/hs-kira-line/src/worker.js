@@ -206,9 +206,15 @@ contact@the-horizons-innovation.com`;
   return msg;
 }
 __name(buildBankMessage, "buildBankMessage");
+// 2026-10-13 issue #13: returns null when the KV read fails. A failed read is not a new user: callers must not
+//   reply as if the conversation were empty, and must not save a fresh history over the one they could not read.
 async function getHistory(userId, env) {
+  let data;
+  try { data = await env.SEEN_STORE.get(`chat:${userId}`); } catch (e) {
+    console.log("[kv] read failed key=chat:" + userId + " " + String(e && e.message || e));
+    return null;
+  }
   try {
-    const data = await env.SEEN_STORE.get(`chat:${userId}`);
     return data ? JSON.parse(data) : { messages: [], phase: "GREETING", visitCount: 0, usedTalks: [] };
   } catch {
     return { messages: [], phase: "GREETING", visitCount: 0, usedTalks: [] };
@@ -267,7 +273,7 @@ var worker_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
-      return json({ status: "ok", version: "v23-readfail-20261013", service: "hs-kira-line" });
+      return json({ status: "ok", version: "v24-readfail2-20261013", service: "hs-kira-line" });
     }
     if (url.pathname === "/diagnosis" && request.method === "POST") {
       return handleDiagnosis(request, env, ctx);
@@ -481,6 +487,12 @@ async function processEvents(events, env) {
         try { if (await handleOwnerLessonCommand(userMessage, replyToken, env)) continue; } catch (_e) {}
       }
       const pf = await isPartner(userId, userMessage, env);
+      // 2026-10-13 issue #13: a failed read of partner:<uid> is not "a consumer". Neither the store path nor the
+      //   consumer path (sales copy, chat record) is safe: only the neutral receipt, and the text goes to the owner.
+      if (pf.failed) {
+        await kiraReadFailAck(env, replyToken, QUOTE_ACK_TEXT, "加盟店かどうかを今は読み込めなかったため、KIRA は返していません", userId, userMessage);
+        continue;
+      }
       if (pf.partner) {
         await handlePartnerMessage(userMessage, replyToken, userId, pf.justJoined, env, event.message && event.message.id);
         continue;
@@ -496,10 +508,12 @@ async function processEvents(events, env) {
     }
     if (event.type === "message" && event.message.type === "image") {
       const pfImg = await isPartner(userId, "", env);
+      if (pfImg.failed) { await kiraReadFailAck(env, event.replyToken, "写真を受け取りました。ありがとうございます。担当の大賀が確認します。", "加盟店かどうかを今は読み込めなかったため、KIRA は写真を読んでいません", userId, ""); continue; }
       await handleImageMessage(event, userId, env, pfImg.partner);
     }
     if (event.type === "message" && event.message.type === "file") {
       const pfFile = await isPartner(userId, "", env);
+      if (pfFile.failed) { await kiraReadFailAck(env, event.replyToken, "ファイルを受け取りました。ありがとうございます。担当の大賀が確認します。", "加盟店かどうかを今は読み込めなかったため、KIRA はファイルを読んでいません", userId, String(event.message.fileName || "")); continue; }
       await handleFileMessage(event, userId, env, pfFile.partner);
     }
   }
@@ -527,6 +541,12 @@ HORIZON SHIELD\u306EAI\u30A8\u30FC\u30B8\u30A7\u30F3\u30C8\u300CKIRA\u300D\u3067
 __name(handleFollow, "handleFollow");
 async function handleKiraResponse(userMessage, replyToken, userId, env) {
   const history = await getHistory(userId, env);
+  if (history === null) {
+    // 2026-10-13 issue #13: the conversation could not be read. KIRA does not answer as if it had no history,
+    //   and nothing is saved. Only the neutral receipt, and the text goes to the owner.
+    await kiraReadFailAck(env, replyToken, QUOTE_ACK_TEXT, "会話の記録を今は読み込めなかったため、KIRA は返していません", userId, userMessage);
+    return;
+  }
   let mcpContext = "";
   try {
     const mcpKeywords = ["\u5857\u88C5", "\u5C4B\u6839", "\u30AD\u30C3\u30C1\u30F3", "\u6D74\u5BA4", "\u30C8\u30A4\u30EC", "\u7D66\u6E6F\u5668", "\u30A8\u30A2\u30B3\u30F3", "\u30B7\u30ED\u30A2\u30EA", "\u89E3\u4F53", "\u5916\u58C1", "\u30EA\u30D5\u30A9\u30FC\u30E0", "\u5DE5\u4E8B", "\u898B\u7A4D", "\u8CBB\u7528", "\u76F8\u5834", "\u30B0\u30EA\u30B9\u30C8\u30E9\u30C3\u30D7", "\u30C0\u30AF\u30C8", "\u9632\u97F3", "\u65AD\u71B1", "\u592A\u967D\u5149", "\u84C4\u96FB\u6C60", "\u5E8A", "\u30AF\u30ED\u30B9", "\u5185\u88C5", "\u914D\u7BA1", "\u96FB\u6C17", "\u30B5\u30C3\u30B7", "\u7A93", "\u8DB3\u5834"];
@@ -732,10 +752,12 @@ kind: estimate=見積書、site_photo=現場や施工の写真(施工前・施�
   //   hearing には審査の材料として渡す(kira_decides: 返事は作らせない)。hearing が手続きの文(業種の問い等)を返したときだけ、それをそのまま送る。
   let summary = String(result.summary || "").replace(/[0-9０-９,，]+[ 　]*(万円|万|円)/g, "").replace(/[¥￥$][ 　]*[0-9０-９,，]+/g, "").trim();
   if (!summary) summary = "見積書";
-  let memberGid = null;
-  try { const _rec = await env.SEEN_STORE.get("partner:" + userId); if (_rec) memberGid = (JSON.parse(_rec).groupId) || null; } catch (_e) {}
+  // 2026-10-13 issue #13: in a 1 to 1, a failed read of the store's group skips the hand-off to hearing (no record
+  //   without its group). The owner line then says it was not handed over.
+  const _mg = gid ? { failed: false, gid: null } : await kiraMemberGid(env, userId);
+  const memberGid = _mg.gid;
   let hr = null;
-  if (env.KIRA_BRIDGE_KEY) {
+  if (env.KIRA_BRIDGE_KEY && !_mg.failed) {
     try {
       const br = await fetch("https://hearing.horizonshield.dev/kira-bridge", { method: "POST", signal: (typeof AbortSignal !== "undefined" && AbortSignal.timeout) ? AbortSignal.timeout(10000) : undefined, headers: { "Content-Type": "application/json", "X-Bridge-Key": env.KIRA_BRIDGE_KEY }, body: JSON.stringify({ userId, text: summary, groupId: gid || memberGid, estimates: result.estimates, kira_decides: true }) });
       if (br.ok) { const data = await br.json(); if (data && data.ok) hr = kiraBridgeOut(data); }
@@ -766,8 +788,10 @@ __name(partnerMediaDescribe, "partnerMediaDescribe");
 //   ・使い道(掲載に使うか等)は約束しない。大賀へはまとめて 1 通(写真の保存と使い道は大賀が決める)。
 async function partnerMediaFinish(event, userId, env, kind, gid, entry) {
   const label = kind === "pdf" ? "ファイル" : "写真";
-  let memberGid = null;
-  if (!gid) { try { const _rec = await env.SEEN_STORE.get("partner:" + userId); if (_rec) memberGid = (JSON.parse(_rec).groupId) || null; } catch (_e) {} }
+  // 2026-10-13 issue #13: a failed read of the store's group leaves KIRA without that store's lessons, so KIRA does
+  //   not decide (the fixed receipt below is sent, and the owner gets the reading as before).
+  const _mg = gid ? { failed: false, gid: null } : await kiraMemberGid(env, userId);
+  const memberGid = _mg.gid;
   const scope = gid || memberGid || ("u:" + userId);
   const convKey = gid || ("dm:" + userId);
   await kiraConvAppend(env, convKey, "member", entry.line);
@@ -795,7 +819,7 @@ async function partnerMediaFinish(event, userId, env, kind, gid, entry) {
   if (proc) out = proc;
   else if (entries.every((x) => x.failed)) out = label + "を受け取りました。ありがとうございます。担当の大賀が確認します。";
   else {
-    r = await kiraPartnerDecide(env, scope, text, null, { dm: !gid, convKey, kind: "media" });
+    r = _mg.failed ? { ok: false, err: KIRA_CONTEXT_READ_FAIL } : await kiraPartnerDecide(env, scope, text, null, { dm: !gid, convKey, kind: "media" });
     if (r && r.ok && r.action !== "silent" && r.reply) out = r.reply;
     if (!out) out = label + "を受け取りました。ありがとうございます。担当の大賀が確認します。";
   }
@@ -1563,6 +1587,8 @@ async function touchDiagnosis(userId, env, partnerFlag) {
   if (partnerFlag) return;
   try {
     const history = await getHistory(userId, env);
+    // 2026-10-13 issue #13: never save a fresh record over a chat history that could not be read.
+    if (history === null) { console.log("[followup] touch skipped, history unreadable uid=" + userId); return; }
     const now = Date.now();
     if (!history.registeredAt) history.registeredAt = now;
     // new activity restarts the silence clock, and clears the ladder so the
@@ -1791,10 +1817,32 @@ async function kvFlag(env, key) {
     return "failed";
   }
 }
+// 2026-10-13 issue #13: the store's group from partner:<uid>, as { gid } or { failed: true }. A failed read is not
+//   "no group": using "u:<uid>" then would hide the store's own lessons from KIRA and file new ones in the wrong place.
+async function kiraMemberGid(env, userId) {
+  let rec;
+  try { rec = await env.SEEN_STORE.get("partner:" + userId); } catch (e) {
+    console.log("[kv] read failed key=partner:" + userId + " " + String(e && e.message || e));
+    return { failed: true, gid: null };
+  }
+  let gid = null;
+  try { if (rec) gid = (JSON.parse(rec).groupId) || null; } catch (_e) {}
+  return { failed: false, gid };
+}
+// 2026-10-13 issue #13: when what KIRA needs could not be read, send only the neutral receipt and give the text to the owner.
+async function kiraReadFailAck(env, replyToken, ackText, why, userId, text) {
+  if (replyToken) { try { await replyToLine(replyToken, ackText, env.LINE_CHANNEL_TOKEN); } catch (_e) {} }
+  const t = String(text || "");
+  try {
+    await pushToLine(env.LINE_USER_ID, "【KIRA 要確認】(" + why + ")\nユーザーID: " + userId + (t ? "\n" + t.slice(0, 400) + (t.length > 400 ? "…" : "") : ""), env.LINE_CHANNEL_TOKEN);
+  } catch (_e) {}
+}
+const KIRA_CONTEXT_READ_FAIL = "経験帳か会話を今は読み込めなかった";
 // Owner-facing replies when a list could not be read (2026-10-13). Never "none found" on a failed read.
 const KIRA_READ_FAIL_GROUPS = "加盟店グループの一覧を今は読み込めませんでした。";
 const KIRA_READ_FAIL_DMS = "加盟店さんとの 1 対 1 の一覧を今は読み込めませんでした。";
 const KIRA_READ_FAIL_LESSONS = "経験帳を今は読み込めませんでした。";
+const KIRA_READ_FAIL_RELAY = "送り先の候補を今は読み込めませんでした。";
 const KIRA_READ_FAIL_RETRY = "少し時間をおいて、もう一度お試しください。";
 async function kiraConvAppend(env, gid, who, text) {
   if (!gid || !text) return;
@@ -1802,7 +1850,7 @@ async function kiraConvAppend(env, gid, who, text) {
     const a = await kiraKvJsonStrict(env, "kira_gconv:" + gid, []);
     a.push({ who, text: String(text).slice(0, 600), at: new Date().toISOString() });
     await env.SEEN_STORE.put("kira_gconv:" + gid, JSON.stringify(a.slice(-KIRA_CONV_MAX)), { expirationTtl: 60 * 60 * 24 * 30 });
-  } catch (_e) {}
+  } catch (e) { console.log("[kira] conversation not appended (read or write failed) gid=" + gid + " " + String(e && e.message || e)); }
 }
 function kiraClean(s) {
   return String(s || "").replace(/[—–―─━‒−]/g, "、")
@@ -1843,9 +1891,17 @@ function kiraDecideContext(own, glob, conv, text, opts) {
 async function kiraPartnerDecide(env, gid, text, hearingHint, opts) {
   if (!env.ANTHROPIC_API_KEY) return { ok: false, err: "no_key" };
   const o = opts || {};
-  const own = await kiraKvJson(env, "kira_lessons:" + gid, []);
-  const glob = (await kiraKvJson(env, "kira_lessons:global", [])).filter(kiraGlobalOk);
-  const conv = await kiraKvJson(env, "kira_gconv:" + (o.convKey || gid), []);
+  // 2026-10-13 issue #13: if the lessons or the conversation cannot be read, KIRA does not answer as if it had
+  //   none. It returns not-ok, and every caller already has the not-ok path: the neutral receipt and the owner.
+  let own, glob, conv;
+  try {
+    own = await kiraKvJsonStrict(env, "kira_lessons:" + gid, []);
+    glob = (await kiraKvJsonStrict(env, "kira_lessons:global", [])).filter(kiraGlobalOk);
+    conv = await kiraKvJsonStrict(env, "kira_gconv:" + (o.convKey || gid), []);
+  } catch (e) {
+    console.log("[kira] context read failed gid=" + gid + " " + String(e && e.message || e));
+    return { ok: false, err: KIRA_CONTEXT_READ_FAIL };
+  }
   const ctx = kiraDecideContext(own, glob, conv, text, o);
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), 20000);
@@ -1876,7 +1932,7 @@ async function kiraLessonsAdd(env, gid, lessons, srcText) {
       a.push({ t: l.text, at, by: "kira", src: toGlobal ? "" : src });
       await env.SEEN_STORE.put(key, JSON.stringify(a.slice(-max)));
       added.push((toGlobal ? "全体: " : "この店: ") + l.text);
-    } catch (_e) {}
+    } catch (e) { console.log("[kira] lesson not added (read or write failed) key=" + key + " " + String(e && e.message || e)); }
   }
   return added;
 }
@@ -1891,7 +1947,7 @@ async function kiraDigestAdd(env, item) {
     const a = await kiraKvJsonStrict(env, key, []);
     a.push(Object.assign({ at: new Date().toISOString() }, item, { in: String(item.in || "").slice(0, 200), out: String(item.out || "").slice(0, 300), lessons: Array.isArray(item.lessons) ? item.lessons.slice(0, 3) : [] }));
     await env.SEEN_STORE.put(key, JSON.stringify(a.slice(-50)), { expirationTtl: 60 * 60 * 24 * 7 });
-  } catch (_e) {}
+  } catch (e) { console.log("[kira] digest item not added (read or write failed) " + String(e && e.message || e)); }
 }
 async function sendKiraDigest(env, nowMs) {
   const now = nowMs || Date.now();
@@ -1960,12 +2016,14 @@ async function kiraCatchUp(env, nowMs) {
     let i = conv.length - 1;
     while (i > 0 && conv[i - 1].who === "member") i--;
     const pending = conv.slice(i).map((c) => c.text).join("\n").slice(0, 1500);
-    let scope = to;
+    let scope = to, mgFailed = false;
     if (isDm) {
-      scope = "u:" + to;
-      try { const _rec = await env.SEEN_STORE.get("partner:" + to); if (_rec) scope = (JSON.parse(_rec).groupId) || scope; } catch (_e) {}
+      const _mg = await kiraMemberGid(env, to);
+      // 2026-10-13 issue #13: a failed read of the store's group is not "no group": KIRA does not decide, the owner is told.
+      mgFailed = _mg.failed;
+      scope = _mg.gid || ("u:" + to);
     }
-    const r = await kiraPartnerDecide(env, scope, pending, null, { dm: isDm, convKey, kind: "late" });
+    const r = mgFailed ? { ok: false, err: KIRA_CONTEXT_READ_FAIL } : await kiraPartnerDecide(env, scope, pending, null, { dm: isDm, convKey, kind: "late" });
     const where = isDm ? "1対1" : "グループ";
     if (r && r.ok && r.action !== "silent" && r.reply) {
       // 予行で KIRA がおわびを落とした(「前後の写真をいただきました」だけ)。遅れて届く返事には、必ずおわびを頭に付ける。
@@ -1994,7 +2052,13 @@ async function kiraPartnerDms(env) {
   const out = [];
   for (const uid of ids) {
     if (uid === env.LINE_USER_ID) continue;
-    const conv = await kiraKvJson(env, "kira_gconv:dm:" + uid, []);
+    // 2026-10-13 issue #13: a conversation that cannot be read would sort as "never spoke" and could drop out of
+    //   the top 10. The list is then not what it says (newest first), so the whole list counts as unread.
+    let conv;
+    try { conv = await kiraKvJsonStrict(env, "kira_gconv:dm:" + uid, []); } catch (e) {
+      console.log("[kv] read failed kira_gconv:dm:" + uid + " " + String(e && e.message || e));
+      return null;
+    }
     const lastMember = conv.filter((c) => c.who === "member").slice(-1)[0];
     out.push({ gid: uid, conv: "dm:" + uid, at: (lastMember && lastMember.at) || "", last: lastMember ? String(lastMember.text).slice(0, 30) : "" });
   }
@@ -2083,7 +2147,14 @@ async function handleOwnerLessonCommand(text, replyToken, env) {
     return true;
   }
   if ((m = t.match(/^([0-9０-９]{1,2})$/))) {
-    const pend = await kiraKvJson(env, "kira_relay_pending", null);
+    // 2026-10-13 issue #13: a failed read of the pending relay is not "nothing pending" (the number would fall through
+    //   to the consumer chat and the owner would never learn it was not sent).
+    let pend;
+    try { pend = await kiraKvJsonStrict(env, "kira_relay_pending", null); } catch (e) {
+      console.log("[relay] read failed " + String(e && e.message || e));
+      await replyToLine(replyToken, KIRA_READ_FAIL_RELAY + "何も送っていません。" + KIRA_READ_FAIL_RETRY, env.LINE_CHANNEL_TOKEN);
+      return true;
+    }
     if (!pend) return false;
     const list = pend.dm ? (pend.targets || []) : (pend.groups || []);
     const n = parseInt(m[1].replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)), 10);
@@ -2151,6 +2222,8 @@ async function isPartner(userId, text, env) {
     if (rec) return { partner: true, justJoined: false };
   } catch (e) {
     console.error("partner get error:", e.message);
+    // 2026-10-13 issue #13: unknown, not "not a partner". Callers check failed first.
+    return { partner: false, justJoined: false, failed: true };
   }
   return { partner: false, justJoined: false };
 }
@@ -2168,8 +2241,13 @@ async function handlePartnerMessage(userMessage, replyToken, userId, justJoined,
     if (seen) { console.log("[dm] skip redelivery mid=" + messageId); return; }
     try { await env.SEEN_STORE.put("kira_seen_msg:" + messageId, "1", { expirationTtl: 60 * 60 * 24 * 2 }); } catch (_e) {}
   }
-  let memberGid = null;
-  try { const _rec = await env.SEEN_STORE.get("partner:" + userId); if (_rec) { memberGid = (JSON.parse(_rec).groupId) || null; } } catch (_e) {}
+  // 2026-10-13 issue #13: if the store's group cannot be read, do not guess a scope (wrong lessons, wrong hearing record).
+  const _mg = await kiraMemberGid(env, userId);
+  if (_mg.failed) {
+    await kiraReadFailAck(env, replyToken, QUOTE_ACK_TEXT, "加盟店 1対1: 所属グループを今は読み込めなかったため、KIRA は返していません。ヒアリングにも渡していません", userId, userMessage);
+    return;
+  }
+  const memberGid = _mg.gid;
   const scope = memberGid || ("u:" + userId);
   const convKey = "dm:" + userId;
   // Yakumo自動ヒアリング(hs-hearing)へ橋渡し。2026-08-19 patch42: 橋が落ちたら、落ちたと言う。理由も残す。
