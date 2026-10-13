@@ -1,0 +1,511 @@
+{
+  "schema": "hs-indicators-sources-v1",
+  "prepared": "2026-10-13",
+  "repository_commit": "ff59188726319b8a3c00ff8cbf3892ffa1589bdd",
+  "page": "docs/metrics/INDICATORS.md",
+  "rules": [
+    "no indicator is summed with another",
+    "a number appears only where a public source supports it; owner-reported figures are labelled and not used as indicators",
+    "verification is not endorsement",
+    "to confirm means the source could not be read from where this file was prepared; nothing is inferred from it"
+  ],
+  "items": [
+    {
+      "id": "contrib.merged.content_upstream",
+      "indicator": 1,
+      "label": "Pull requests by this project whose changes are on the upstream default branch",
+      "value": 4,
+      "unit": "pull requests",
+      "retrieved": "2026-10-13",
+      "source_url": [
+        "https://raw.githubusercontent.com/a2aproject/a2a-python/main/tests/utils/signing_interop_vectors.json",
+        "https://raw.githubusercontent.com/a2aproject/a2a-python/main/tests/utils/test_signing_interop.py",
+        "https://raw.githubusercontent.com/agentrust-io/trace-spec/main/docs/verifying-after-the-freshness-window.md",
+        "https://raw.githubusercontent.com/aeoess/agent-governance-vocabulary/main/crosswalk/nenrin.yaml"
+      ],
+      "method": "HTTP GET of each changed file on the upstream default branch through raw.githubusercontent.com (status 200); for #195 the restored governance_attestation row was read in crosswalk/nenrin.yaml",
+      "confidence": "high",
+      "does_not_show": "that the upstream project uses, depends on or endorses NENRIN",
+      "status": "measured"
+    },
+    {
+      "id": "contrib.merged.record_read",
+      "indicator": 1,
+      "label": "Of those, PRs whose merge record was read on the PR page",
+      "value": 1,
+      "unit": "pull requests",
+      "retrieved": "2026-10-13",
+      "source_url": "https://github.com/aeoess/agent-governance-vocabulary/pull/192",
+      "method": "PR page read: badge 'Merged', 'aeoess merged 3 commits', 2026-10-05. The pages of #1286, #480 and #195 as fetched showed 'Open' while their files are on main; treated as a stale copy, merge dates to confirm",
+      "confidence": "high",
+      "does_not_show": "merge dates of the other three PRs",
+      "status": "measured"
+    },
+    {
+      "id": "contrib.merged.a2a-python_1286",
+      "indicator": 1,
+      "label": "a2aproject/a2a-python#1286",
+      "value": "content on upstream default branch",
+      "pr_url": "https://github.com/a2aproject/a2a-python/pull/1286",
+      "merge_date": "2026-10-07 (our records, to confirm)",
+      "changed": "adds tests/utils/signing_interop_vectors.json and tests/utils/test_signing_interop.py",
+      "source_url": "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/README.md",
+      "retrieved": "2026-10-13",
+      "method": "see contrib.merged.content_upstream",
+      "confidence": "high for content upstream; merge date to confirm",
+      "does_not_show": "adoption or endorsement",
+      "status": "measured"
+    },
+    {
+      "id": "contrib.merged.trace-spec_480",
+      "indicator": 1,
+      "label": "agentrust-io/trace-spec#480",
+      "value": "content on upstream default branch",
+      "pr_url": "https://github.com/agentrust-io/trace-spec/pull/480",
+      "merge_date": "2026-10-08 (our records, to confirm)",
+      "changed": "adds docs/verifying-after-the-freshness-window.md (informative) and three link lines",
+      "source_url": "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/workers/hs-ledger/nenrin/trace-pin-v0/README.md",
+      "retrieved": "2026-10-13",
+      "method": "see contrib.merged.content_upstream",
+      "confidence": "high for content upstream; merge date to confirm",
+      "does_not_show": "adoption or endorsement",
+      "status": "measured"
+    },
+    {
+      "id": "contrib.merged.agent-governance-vocabulary_192",
+      "indicator": 1,
+      "label": "aeoess/agent-governance-vocabulary#192",
+      "value": "content on upstream default branch",
+      "pr_url": "https://github.com/aeoess/agent-governance-vocabulary/pull/192",
+      "merge_date": "2026-10-05 (PR page)",
+      "changed": "adds crosswalk/nenrin.yaml and regenerated docs/generated/crosswalk-matrix.md",
+      "source_url": "https://github.com/aeoess/agent-governance-vocabulary/pull/192",
+      "retrieved": "2026-10-13",
+      "method": "see contrib.merged.content_upstream",
+      "confidence": "high for content upstream",
+      "does_not_show": "adoption or endorsement",
+      "status": "measured"
+    },
+    {
+      "id": "contrib.merged.agent-governance-vocabulary_195",
+      "indicator": 1,
+      "label": "aeoess/agent-governance-vocabulary#195",
+      "value": "content on upstream default branch",
+      "pr_url": "https://github.com/aeoess/agent-governance-vocabulary/pull/195",
+      "merge_date": "to confirm",
+      "changed": "restores the governance_attestation row (partial) of crosswalk/nenrin.yaml",
+      "source_url": "https://raw.githubusercontent.com/aeoess/agent-governance-vocabulary/main/crosswalk/nenrin.yaml",
+      "retrieved": "2026-10-13",
+      "method": "see contrib.merged.content_upstream",
+      "confidence": "high for content upstream; merge date to confirm",
+      "does_not_show": "adoption or endorsement",
+      "status": "measured"
+    },
+    {
+      "id": "contrib.open.a2a-tck_246",
+      "indicator": 1,
+      "label": "Open PR: a2aproject/a2a-tck#246",
+      "value": "open",
+      "pr_url": "https://github.com/a2aproject/a2a-tck/pull/246",
+      "retrieved": "2026-10-13",
+      "source_url": "https://github.com/a2aproject/a2a-tck/pull/246",
+      "method": "PR page read: badge 'Open', opened 2026-09-30, no reviews",
+      "confidence": "high",
+      "does_not_show": "anything about acceptance",
+      "status": "measured"
+    },
+    {
+      "id": "contrib.open.bernstein_6442",
+      "indicator": 1,
+      "label": "Open PR: bernstein #6442",
+      "value": null,
+      "status": "to confirm",
+      "retrieved": "2026-10-13",
+      "source_url": null,
+      "method": "not located from this environment; repository believed to be sipyourdrink-ltd/bernstein, also to confirm",
+      "confidence": "none",
+      "does_not_show": ""
+    },
+    {
+      "id": "contrib.toconfirm.w3id_6653",
+      "indicator": 1,
+      "label": "perma-id/w3id.org#6653",
+      "value": null,
+      "status": "to confirm",
+      "retrieved": "2026-10-13",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/workers/hs-verify-gate/ext/CONDUCT_EXT_v1.md",
+        "https://raw.githubusercontent.com/perma-id/w3id.org/master/horizonshield/.htaccess"
+      ],
+      "method": "our spec records it merged 2026-09-09; on 2026-10-13 horizonshield/.htaccess and horizonshield/README.md returned 404 on the master branch via raw.githubusercontent.com and w3id.org was not reachable; not counted",
+      "confidence": "low",
+      "does_not_show": ""
+    },
+    {
+      "id": "verifiers.independent_implementations.rows",
+      "indicator": "2a",
+      "label": "Independent implementation rows in the weekly adoption count",
+      "value": 14,
+      "unit": "rows",
+      "retrieved": "2026-10-12T05:59:05Z",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/tools/adoption/registry.json"
+      ],
+      "method": "tools/adoption/count_adoption.py: counts hand-kept registry rows, each with a public link, and checks every link answers",
+      "confidence": "high",
+      "does_not_show": "use, adoption or endorsement; that the implementations are correct beyond the published corpora",
+      "status": "measured"
+    },
+    {
+      "id": "verifiers.independent_implementations.authors",
+      "indicator": "2a",
+      "label": "Distinct authors of those rows",
+      "value": 7,
+      "unit": "authors",
+      "authors": [
+        "a2aproject/a2a-python",
+        "aeoess",
+        "agenstry.com",
+        "astrogilda",
+        "babyblueviper1",
+        "kuangmi-bit",
+        "luiksksk"
+      ],
+      "retrieved": "2026-10-12T05:59:05Z",
+      "source_url": "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json",
+      "method": "distinct 'author' field in the registry rows",
+      "confidence": "high",
+      "does_not_show": "organisational distance from this project; see relationships in INDICATORS.md",
+      "status": "measured"
+    },
+    {
+      "id": "verifiers.independent_implementations.link_503",
+      "indicator": "2a",
+      "label": "Rows whose link did not answer 200 during the count",
+      "value": 1,
+      "unit": "rows",
+      "retrieved": "2026-10-12T05:59:05Z",
+      "source_url": "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json",
+      "method": "link_status 503 for the Probity agent-evidence-atlas README; the same file answered 200 via raw.githubusercontent.com on 2026-10-13",
+      "confidence": "high",
+      "does_not_show": "",
+      "status": "measured"
+    },
+    {
+      "id": "verifiers.tsunagi.not_in_count",
+      "indicator": "2a",
+      "label": "Outside implementations on the TSUNAGI board not yet in the weekly count",
+      "value": 2,
+      "unit": "implementations",
+      "names": [
+        "babyblueviper1-nenrin-cleanroom",
+        "agent-evidence-atlas-action-presence"
+      ],
+      "retrieved": "2026-10-13T00:58:44Z",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/tsunagi/BOARD.md",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/tsunagi/board.json"
+      ],
+      "method": "nightly board: each implementation cloned from its author's repository and run against the corpora",
+      "confidence": "high",
+      "does_not_show": "that the board's green cell is an endorsement; it is a reproduction on that run",
+      "status": "measured"
+    },
+    {
+      "id": "verifiers.tsunagi.outside_runs",
+      "indicator": "2a",
+      "label": "Board runs by authors outside this project that reproduced every expectation",
+      "value": 18,
+      "unit": "runs (of 42 total runs)",
+      "retrieved": "2026-10-13T00:58:44Z",
+      "source_url": "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/tsunagi/BOARD.md",
+      "method": "BOARD.md summary line",
+      "confidence": "high",
+      "does_not_show": "number of people; several runs belong to the same implementation",
+      "status": "measured"
+    },
+    {
+      "id": "verifiers.reproduced_with_our_tool",
+      "indicator": "2b",
+      "label": "Reproductions run with our own tool",
+      "value": 3,
+      "unit": "cases",
+      "cases": [
+        {
+          "who": "pipavlo82",
+          "date": "2026-10-05",
+          "url": "https://github.com/ogasurfproject-jpg/horizon-shield/issues/29#issuecomment-5994495262"
+        },
+        {
+          "who": "kuangmi-bit/conduct-witness (from conduct-witness-template)",
+          "date": "last success 2026-10-06, counted 2026-10-12",
+          "url": "https://github.com/kuangmi-bit/conduct-witness"
+        },
+        {
+          "who": "aeoess (run0002 settlement recomputed during review of #192)",
+          "date": "2026-10-05",
+          "url": "https://github.com/aeoess/agent-governance-vocabulary/pull/192#issuecomment-5999460575"
+        }
+      ],
+      "retrieved": "2026-10-13",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/README.md",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json"
+      ],
+      "method": "hand list from the README evidence table and latest.json third_party_ci_reproductions",
+      "confidence": "medium",
+      "does_not_show": "that the tool is correct; agreement between the tool and the published files only",
+      "status": "measured"
+    },
+    {
+      "id": "verifiers.signed_witness_domains",
+      "indicator": "2c",
+      "label": "Outside domains that signed a walk and filed it to the JIDEC ledger",
+      "value": 3,
+      "unit": "domains",
+      "detail": {
+        "api.babyblueviper.com": [
+          57,
+          61
+        ],
+        "kuangmi-bit.github.io": [
+          71,
+          73,
+          75,
+          77,
+          79,
+          84
+        ],
+        "pipavlo82.github.io": [
+          65,
+          73
+        ]
+      },
+      "unsigned_names_not_counted": 3,
+      "ledger_entries_read": 88,
+      "retrieved": "2026-10-12T05:59:05Z",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json",
+        "https://ledger.horizonshield.dev/ledger/1"
+      ],
+      "method": "count_adoption.py reads https://ledger.horizonshield.dev/ledger/<n> for every entry, keeps nenrin-witness-batch-v1 records with signed_domain not ours",
+      "confidence": "high",
+      "does_not_show": "use of NENRIN in the witnesses' own systems; a walk observes our endpoint",
+      "status": "measured"
+    },
+    {
+      "id": "production.unaffiliated_runs",
+      "indicator": 3,
+      "label": "External production runs of NENRIN or MUSUBI by unaffiliated parties",
+      "value": 0,
+      "unit": "shown",
+      "retrieved": "2026-10-13",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json",
+        "https://raw.githubusercontent.com/kuangmi-bit/musubi-peer-contract/main/c.AB.json"
+      ],
+      "method": "reviewed every outside contract, agreement and witness record in latest.json; the only contract without a party from this project has task.purpose independent_reproduction of our own corpus",
+      "confidence": "high that none is shown",
+      "does_not_show": "absence in the world; only absence from the sources read",
+      "status": "measured"
+    },
+    {
+      "id": "production.contract_no_party_from_us",
+      "indicator": 3,
+      "label": "MUSUBI contracts with no party from this project",
+      "value": 1,
+      "unit": "contracts",
+      "retrieved": "2026-10-12T05:59:05Z",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json",
+        "https://github.com/kuangmi-bit/musubi-peer-contract"
+      ],
+      "method": "latest.json external_contracts.with_no_party_from_us; contract read 2026-10-13 (file sha256 8633b800...)",
+      "confidence": "high",
+      "does_not_show": "production use: its task is a reproduction of our corpus",
+      "status": "measured"
+    },
+    {
+      "id": "production.gate_outside_hosts",
+      "indicator": 3,
+      "label": "Outside hosts that used the hosted gate (30 days to 2026-10-02)",
+      "value": 5,
+      "unit": "hosts",
+      "status": "to confirm",
+      "retrieved": null,
+      "source_url": [
+        "https://gate.horizonshield.dev/usage",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/README.md"
+      ],
+      "method": "figure as stated in README; endpoint not reachable from this environment",
+      "confidence": "low until confirmed",
+      "does_not_show": "their running NENRIN; use of a service we operate"
+    },
+    {
+      "id": "production.register_rows_not_ours",
+      "indicator": 3,
+      "label": "Rows on the public conduct register that are not ours",
+      "value": "2 of 10",
+      "status": "to confirm",
+      "retrieved": null,
+      "source_url": [
+        "https://gate.horizonshield.dev/register",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/README.md"
+      ],
+      "method": "figure as stated in README; endpoint not reachable from this environment",
+      "confidence": "low until confirmed",
+      "does_not_show": "runs; registrations only"
+    },
+    {
+      "id": "production.outside_trace_pins",
+      "indicator": 3,
+      "label": "Outside TRACE signing keys pinned with trace-pin-v0",
+      "value": 0,
+      "unit": "keys",
+      "retrieved": "2026-10-12T05:59:05Z",
+      "source_url": "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/adoption/latest.json",
+      "method": "latest.json outside_trace_pins",
+      "confidence": "high",
+      "does_not_show": "",
+      "status": "measured"
+    },
+    {
+      "id": "llm_citations",
+      "indicator": 4,
+      "label": "Citations in LLM answers",
+      "value": null,
+      "status": "not measured publicly",
+      "retrieved": "2026-10-13",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/llm_visibility_monitor.py",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/visibility_last_run.txt",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/citation_instrument_20260915.md"
+      ],
+      "method": "no raw measurement output is committed; ops/visibility_last_run.txt (2026-09-14, 0 of 17, one model) is owner-reported; Bing Webmaster Tools figures come from an owner-only dashboard and are not repeated",
+      "confidence": "n/a",
+      "does_not_show": "the 93,983 figure is not a citation count"
+    },
+    {
+      "id": "directory.glama.kira",
+      "indicator": 5,
+      "label": "Glama server page: HORIZON SHIELD KIRA",
+      "value": "listed, 15 tools",
+      "retrieved": "2026-10-13",
+      "source_url": "https://glama.ai/mcp/servers/ogasurfproject-jpg/horizon-shield",
+      "method": "page read; score shown only as a badge image (to confirm); no usage figure on page; README copy on the page still had the withdrawn 93,983 sentence",
+      "confidence": "medium",
+      "does_not_show": "usage",
+      "status": "measured"
+    },
+    {
+      "id": "directory.glama.yakumo",
+      "indicator": 5,
+      "label": "Glama connector: HORIZON SHIELD YAKUMO",
+      "value": {
+        "health": "Healthy",
+        "uptime": "100.0% over 56 days",
+        "tdqs": "A 4.4/5, 6 tools, scored 2026-08-20",
+        "last_tested": "2026-10-13 07:11"
+      },
+      "retrieved": "2026-10-13",
+      "source_url": "https://glama.ai/mcp/connectors/io.github.ogasurfproject-jpg/hs-hearing",
+      "method": "page read",
+      "confidence": "medium",
+      "does_not_show": "usage; grade rates tool descriptions, not correctness",
+      "status": "measured"
+    },
+    {
+      "id": "directory.glama.webmcp",
+      "indicator": 5,
+      "label": "Glama connector: HORIZON SHIELD WebMCP Intake",
+      "value": {
+        "health": "Unhealthy",
+        "tdqs": "average 4.3/5 across 5 tools"
+      },
+      "retrieved": "2026-10-13",
+      "source_url": "https://uncloud.glama.ai/mcp/connectors/io.github.ogasurfproject-jpg/horizon-shield-webmcp",
+      "method": "page read",
+      "confidence": "medium",
+      "does_not_show": "usage",
+      "status": "measured"
+    },
+    {
+      "id": "directory.mcpso",
+      "indicator": 5,
+      "label": "mcp.so listing",
+      "value": "listed; 'No tools detected'; transport shown as stdio",
+      "retrieved": "2026-10-13",
+      "source_url": "https://mcp.so/zh/servers/horizon-shield",
+      "method": "page read; no view or usage numbers on page",
+      "confidence": "medium",
+      "does_not_show": "usage",
+      "status": "measured"
+    },
+    {
+      "id": "directory.official_registry",
+      "indicator": 5,
+      "label": "Official MCP Registry entries",
+      "value": null,
+      "status": "to confirm",
+      "names": [
+        "io.github.ogasurfproject-jpg/horizon-shield 1.1.0",
+        "io.github.ogasurfproject-jpg/horizon-shield-webmcp 1.0.4"
+      ],
+      "retrieved": "2026-10-13",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/server.json",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/server-webmcp.json",
+        "https://registry.modelcontextprotocol.io/v0/servers"
+      ],
+      "method": "names from our manifests; registry API not reachable from this environment",
+      "confidence": "n/a",
+      "does_not_show": "usage; the registry publishes metadata only"
+    },
+    {
+      "id": "directory.other",
+      "indicator": 5,
+      "label": "Smithery, Claude directory, ChatGPT app directory",
+      "value": null,
+      "status": "to confirm",
+      "retrieved": "2026-10-13",
+      "source_url": null,
+      "method": "not read for this page",
+      "confidence": "n/a",
+      "does_not_show": ""
+    },
+    {
+      "id": "directory.unnamed_dashboard",
+      "indicator": 5,
+      "label": "One directory's owner dashboard, 30 days to 2026-08-14",
+      "value": {
+        "impressions": 93983,
+        "clicks": 24,
+        "profile_views": 421,
+        "tool_calls_through_listing": 0
+      },
+      "status": "owner-reported, not checkable",
+      "retrieved": "2026-08-14",
+      "source_url": [
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/verify-directory/index.html",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/README.md",
+        "https://github.com/ogasurfproject-jpg/horizon-shield/commit/c2c596c6019e2a404e67c53d2e76fc65164a44ea"
+      ],
+      "method": "figures typed from a dashboard only the listing owner can see; the directory is not named in the repository; not used as an indicator",
+      "confidence": "not checkable",
+      "does_not_show": "search results, AI citations, visitors, users, or calls made by any route other than that listing"
+    },
+    {
+      "id": "paid_usage_retention",
+      "indicator": 6,
+      "label": "Paid usage and retention",
+      "value": null,
+      "status": "not published (owner decision)",
+      "retrieved": null,
+      "source_url": null,
+      "method": "none",
+      "confidence": "n/a",
+      "does_not_show": ""
+    }
+  ]
+}
