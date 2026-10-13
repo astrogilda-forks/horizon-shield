@@ -1,8 +1,8 @@
 # Records Outsiders Can Recheck: replication package
 
-Manuscript: `manuscript_v0.2.tex` (source) and `manuscript_v0.2.pdf`. Draft for submission to a peer-reviewed software engineering journal. Author: Toshikatsu Oga, The HORIZONs Co., Ltd., ORCID 0009-0000-9180-903X. License of this directory: CC BY 4.0 for the text, MIT for the scripts.
+Manuscript: `manuscript_v0.3.tex` (source) and `manuscript_v0.3.pdf`. Prepared for submission to the Journal of Systems and Software (In Practice track, Applied Research Report), in the Elsevier template. Author: Toshikatsu Oga, The HORIZONs Co., Ltd., ORCID 0009-0000-9180-903X. License of this directory: CC BY 4.0 for the text, MIT for the scripts.
 
-Every number in the manuscript traces to this repository at the commit that adds this directory. `NUMBERS.md` lists each number with its source file. Numbers marked with a dagger in the manuscript come from two private sources, released here:
+Every number in the manuscript traces to this repository at the commit archived on Zenodo (see the manuscript's data availability statement). `make_replication_zip.sh <commit>` rebuilds that archive from the repository: the manuscript, this directory and every path `NUMBERS.md` cites, exactly as committed. `NUMBERS.md` lists each number with its source file. Numbers marked with a dagger in the manuscript come from two private sources, released here:
 
 - `replication/cleanroom/`: the two specification-only reimplementation rounds of 2026-10-04 (section 5.2 of the manuscript). `GAPS_round1.md` and `GAPS_round2.md` are the agents' own gap reports; `verify_round1.py` and `verify_round2.py` are the verifiers they wrote. The agents saw only the specification text, the fixture bundles and (round 2) VERIFIER.md and the canonical vectors; they did not see the reference code or the expected results, and had no network. The operator scored their outputs afterwards against the frozen expectations of interop-v0 and interop-v0.1.
 - `replication/log_extracts.md`: the lines of the operator's work log (Japanese) that the manuscript cites.
