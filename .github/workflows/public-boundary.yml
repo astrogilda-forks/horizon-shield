@@ -28,3 +28,18 @@ jobs:
           node-version: "22"
       - run: node tools/listing_tools_sync.mjs --selftest
       - run: node tools/listing_tools_sync.mjs
+
+  # issue #13: a KV/R2 read whose failure is swallowed into null, {}, [] or "" and then written back or answered as
+  # "absent". ops/no_swallowed_read.mjs parses the deployed worker sources (wrangler main and its imports, plus
+  # workers/*/src) with the acorn bundled in Node and fails red on any hit outside its allowlist. The test checks
+  # bad snippets are flagged, the 2026-10-13 fixed patterns pass, and the current tree exits 0.
+  swallowed-read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          package-manager-cache: false
+          node-version: "22"
+      - run: node ops/no_swallowed_read.test.mjs
+      - run: node ops/no_swallowed_read.mjs
