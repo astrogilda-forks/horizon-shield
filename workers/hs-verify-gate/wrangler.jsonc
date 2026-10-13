@@ -33,6 +33,18 @@
     { "binding": "MCP_SVC", "service": "hs-mcp" }
   ],
 
+  // 2026-10-13 (concurrency audit G4, G5). 掃引の単走の lease。一度に走る掃引は一本(cron 18:00Z と運営の POST /sweep)。
+  // 中身は src/sweep_lease.js(worker.js から re-export)。顧客データは入らん。入るのは「いま誰が掃引中か」の一行だけ。
+  // この binding が無いと掃引は従来どおり lease 無しで走る(単体試験、GCP の双子)。
+  "durable_objects": {
+    "bindings": [
+      { "name": "SWEEP_LEASE_DO", "class_name": "SweepLeaseDO" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["SweepLeaseDO"] }
+  ],
+
   // 同一ゾーン522の迂回先。RELAY_TOKEN は secret で入れる:
   //   npx wrangler secret put RELAY_TOKEN
   // 中継側(hs-verify-relay)にも同じ値を入れる。片方だけだと 403 で

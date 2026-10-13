@@ -53,16 +53,22 @@ t("DELETE /watch with an unreadable register answers 503", r.status === 503, r.s
 t("and the row is still there", !!regNow()[A]);
 failing.delete("watch:registry");
 
-failing.add("watch:removed");
-r = await req("/watch", "DELETE", { endpoint: A, reason: "test removal with an unreadable removed list" }, { "x-sweep-token": TOKEN });
-t("DELETE /watch with an unreadable removed list answers 503", r.status === 503, r.status);
-t("and neither the row nor the removed list changed", !!regNow()[A] && JSON.parse(store.get("watch:removed")).length === 1);
-failing.delete("watch:removed");
+// 2026-10-13 (concurrency audit G3): a stone is its own key watch:removed:<sha256(endpoint)>; the old blob watch:removed is
+// read only. DELETE reads only this endpoint's own stone key, so the blob being unreadable no longer stops it, but an
+// unreadable stone key does (the earlier stone would be overwritten unseen). stonesNow() is the merged public list.
+const sha256hex = async (x) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(x)))].map((b) => b.toString(16).padStart(2, "0")).join("");
+const stonesNow = () => { const out = JSON.parse(store.get("watch:removed") || "[]"); for (const [k, v] of store) { if (k.startsWith("watch:removed:")) out.push(JSON.parse(v)); } return out; };
+const stoneKeyA = "watch:removed:" + (await sha256hex(A));
+failing.add(stoneKeyA);
+r = await req("/watch", "DELETE", { endpoint: A, reason: "test removal with an unreadable removed stone" }, { "x-sweep-token": TOKEN });
+t("DELETE /watch with an unreadable stone key answers 503", r.status === 503, r.status);
+t("and neither the row nor the removed list changed", !!regNow()[A] && stonesNow().length === 1);
+failing.delete(stoneKeyA);
 
 r = await req("/watch", "POST", { endpoint: C });
 t("with the register readable again, POST /watch adds the row and keeps the others", r.status === 200 && Object.keys(regNow()).length === 3, r.status + " " + JSON.stringify(Object.keys(regNow())));
 r = await req("/watch", "DELETE", { endpoint: A, reason: "test removal when everything reads" }, { "x-sweep-token": TOKEN });
-t("and DELETE /watch removes one row and appends one stone", r.status === 200 && !regNow()[A] && JSON.parse(store.get("watch:removed")).length === 2, r.status);
+t("and DELETE /watch removes one row and appends one stone (per key; the old blob is untouched)", r.status === 200 && !regNow()[A] && stonesNow().length === 2 && JSON.parse(store.get("watch:removed")).length === 1, r.status);
 
 console.log(`\n=== ${pass} / ${pass + fail} 合格 (read failure writes nothing, 2026-10-13) ===`);
 process.exit(fail ? 1 : 0);

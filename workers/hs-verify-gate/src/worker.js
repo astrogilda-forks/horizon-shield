@@ -37,6 +37,10 @@ import * as nenrin from "./nenrin_instant.js";
 import { keyHistoryDocument, cardJwksKeys } from "./key_history.js";
 import { answerWitnessRequest, measureWitnessSurfaces, loadWitnessKeyFromEnv, extractRequest as extractWitnessRequest, rpcReplyResult as witnessRpcResult, WITNESS_SURFACES } from "./witness.js";
 import { aeRoute } from "./ae_challenge.js";
+// 2026-10-13 (concurrency audit G4, G5). 掃引の単走。cron と運営の POST /sweep が重なると、履歴と変化ログと窓の塩を
+// 二つの古い写しから書く。Durable Object の lease で一度に一本だけ走らせる。中身は src/sweep_lease.js。
+import { SweepLeaseDO, acquireSweepLease, releaseSweepLease } from "./sweep_lease.js";
+export { SweepLeaseDO };
 
 // 仕様確定までの暫定値。名称や閾値はここだけ直せば全体に効く。
 const CONFIG = {
@@ -1117,15 +1121,98 @@ function mouldIssueToBody(issue) {
   };
 }
 
+// 2026-10-13 (concurrency audit G2). One key per record, listed by prefix. The list GET /mould serves used to be the
+// single blob mould:index that every writer (the GitHub workflow's POST /mould/from-issue, the operator's POST /mould)
+// read whole, unshifted its line onto and put back whole. Two writers that overlapped (or one that read a copy up to
+// 60 s stale) put back a list without the other's line: the record itself stayed at mould:<id> but dropped off the
+// list. Now the record key mould:<id> is the only thing a writer writes, with the list line in its metadata (when it
+// fits; a record whose line is too large for metadata is read with one get). mouldIndex() lists mould:* and overlays
+// the old blob read only: a blob line stands for its id, a per-key line fills in the ids the blob does not have, and
+// the result keeps the blob's shape and order (newest first, capped at 500). Migration: the blob is never rewritten
+// or deleted here. Rollback: code before this change lists from the blob only, so records written after this
+// deploy are served at /mould/<id> but not in the list until the blob is updated by hand (never needed if this stays).
+const MOULD_KEY_PREFIX = "mould:";
+const MOULD_INDEX_KEY = "mould:index";   // the old blob, read only
+const MOULD_INDEX_MAX = 500;
+const MOULD_LINE_METADATA_MAX = 1000;    // KV metadata is capped at 1024 bytes serialized
+function mouldIndexLine(rec) {
+  if (!rec || typeof rec !== "object" || typeof rec.id !== "string") return null;
+  return { id: rec.id, recorded_at: rec.recorded_at, class: rec.class,
+    searched: Array.isArray(rec.searched) ? rec.searched.length : 0, found: Array.isArray(rec.found) ? rec.found.length : 0,
+    repro: Array.isArray(rec.reproduce) ? rec.reproduce.length : 0,
+    by: rec.submission ? (rec.submission.by || null) : null, via: rec.submission ? (rec.submission.via || "operator") : "operator",
+    record_sha256: rec.record_sha256 };
+}
+// The old blob's lines, in the blob's order. Throws when storage throws.
+async function mouldIndexBlob(env) {
+  const idx = await env.HS_VERIFY_KV.get(MOULD_INDEX_KEY, "json");
+  return Array.isArray(idx) ? idx.filter((l) => l && typeof l.id === "string") : [];
+}
+// Every record id in storage, with its line from metadata when it rides there (null when it must be fetched).
+// Throws when storage throws.
+async function mouldRecordKeys(env) {
+  const out = [];
+  let cursor;
+  for (let guard = 0; guard < 50; guard++) {
+    const r = await env.HS_VERIFY_KV.list({ prefix: MOULD_KEY_PREFIX, cursor, limit: 1000 });
+    for (const k of (r && Array.isArray(r.keys)) ? r.keys : []) {
+      if (k.name === MOULD_INDEX_KEY) continue;
+      const id = k.name.slice(MOULD_KEY_PREFIX.length);
+      if (!id) continue;
+      const md = k.metadata;
+      out.push({ id, line: (md && typeof md.id === "string" && md.id === id && typeof md.record_sha256 === "string") ? md : null });
+    }
+    if (!r || r.list_complete || !r.cursor) break;
+    cursor = r.cursor;
+  }
+  return out;
+}
+// The list GET /mould serves: the old blob overlaid by the per-key records, newest first, at most MOULD_INDEX_MAX.
+// Throws when storage throws (the caller answers 503; a failed read is not an empty ledger).
+async function mouldIndex(env) {
+  const blob = await mouldIndexBlob(env);
+  const keys = await mouldRecordKeys(env);
+  const byId = new Map();
+  blob.forEach((l, i) => { if (!byId.has(l.id)) byId.set(l.id, { line: l, blob_pos: i }); });
+  for (const k of keys) {
+    if (byId.has(k.id)) continue;
+    let line = k.line;
+    if (!line) line = mouldIndexLine(await env.HS_VERIFY_KV.get(MOULD_KEY_PREFIX + k.id, "json"));
+    if (line) byId.set(k.id, { line, blob_pos: null });
+  }
+  const all = [...byId.values()];
+  // newest first, the order the blob kept (it was built by unshift at write time); ties fall back to the blob's own
+  // position, then the id, so the order is stable between two reads.
+  all.sort((a, b) => {
+    const x = String(a.line.recorded_at || ""), y = String(b.line.recorded_at || "");
+    if (x !== y) return x < y ? 1 : -1;
+    if (a.blob_pos !== null && b.blob_pos !== null) return a.blob_pos - b.blob_pos;
+    if (a.blob_pos !== null) return -1;
+    if (b.blob_pos !== null) return 1;
+    return a.line.id < b.line.id ? -1 : a.line.id > b.line.id ? 1 : 0;
+  });
+  return all.slice(0, MOULD_INDEX_MAX).map((x) => x.line);
+}
+const MOULD_READ_FAILED = { error: "mould_read_failed", read_failed: true, means: "The mould ledger could not be read (storage error). This is a read failure, NOT a statement that nothing is recorded, and nothing was written. Try again." };
+
 // 記録の作成そのもの。運営経路と Issue 経路の両方がここを通る。
 // 二つの入口が別々に記録を組み立てると、いつか片方だけ仕様が変わる。それも鋳型。
 async function mouldWrite(env, b) {
   const t = (v, n) => (v == null ? "" : String(v)).slice(0, n);
   const cls = t(b.class, 400);
   if (!cls) return { status: 400, body: { error: "class is required", usage: MOULD_USAGE } };
-  const idx = (await env.HS_VERIFY_KV.get("mould:index", "json")) || [];
-  const newId = t(b.id, 60) || ("mould-" + String(idx.length + 1).padStart(4, "0"));
-  if (await env.HS_VERIFY_KV.get("mould:" + newId)) {
+  let newId = t(b.id, 60);
+  if (!newId) {
+    // The operator's auto id counts the records (blob and per-key, as the list does), not the blob alone.
+    let count;
+    try { count = (await mouldIndex(env)).length; } catch (_e) { return { status: 503, body: MOULD_READ_FAILED }; }
+    newId = "mould-" + String(count + 1).padStart(4, "0");
+  }
+  // 2026-10-13 (G2). The append only check reads the record key itself, never the list, and a failed read is a
+  // failure (503), not "absent": a stale or failed read here used to let a record be rewritten.
+  let existing;
+  try { existing = await env.HS_VERIFY_KV.get(MOULD_KEY_PREFIX + newId); } catch (_e) { return { status: 503, body: { ...MOULD_READ_FAILED, id: newId } }; }
+  if (existing) {
     return { status: 409, body: { error: "already_recorded", id: newId, means: "This ledger is append only. A record is never rewritten." } };
   }
   const searched = (Array.isArray(b.searched) ? b.searched : []).map((x) => t(x, 300)).filter(Boolean).slice(0, 40);
@@ -1189,9 +1276,12 @@ async function mouldWrite(env, b) {
   };
   rec.record_sha256 = await sha256hex(JSON.stringify(rec));
   rec.recompute_note = RECOMPUTE_NOTE;
-  await env.HS_VERIFY_KV.put("mould:" + newId, JSON.stringify(rec));
-  idx.unshift({ id: newId, recorded_at: rec.recorded_at, class: rec.class, searched: searched.length, found: found.length, repro: reproduce.length, by: subBy, via: subVia, record_sha256: rec.record_sha256 });
-  await env.HS_VERIFY_KV.put("mould:index", JSON.stringify(idx.slice(0, 500)));
+  // 2026-10-13 (G2). The record key is the only write. Its list line rides in the metadata when it fits; the old blob
+  // mould:index is not touched (mouldIndex overlays it read only).
+  let md = mouldIndexLine(rec);
+  if (new TextEncoder().encode(JSON.stringify(md)).length > MOULD_LINE_METADATA_MAX) md = { id: newId, big: true };
+  try { await env.HS_VERIFY_KV.put(MOULD_KEY_PREFIX + newId, JSON.stringify(rec), { metadata: md }); }
+  catch (_e) { return { status: 503, body: { error: "mould_write_failed", id: newId, means: "The record could not be written (storage error). Nothing was recorded. Try again." } }; }
   return { status: 201, body: rec };
 }
 
@@ -2769,10 +2859,79 @@ async function markDeclared(env, endpoint, declared) {
   await writeRegistryRow(env, endpoint, row);
 }
 
+// 2026-10-13 (concurrency audit G3). One key per stone. The removal stones were one blob (watch:removed) that DELETE
+// /watch read whole, pushed onto and put back whole; two removals that overlapped, or one that read a copy up to 60 s
+// stale, put back a list without the other's stone, and a removal the public list is the only record of was lost.
+// Now a stone is written to watch:removed:<sha256(endpoint)> as the stone itself, also in the key's metadata when
+// it fits (reading the list is one list() plus one get per oversized stone). A second removal of the same endpoint
+// (re-registered in between) writes the same key with the earlier stones under `earlier`, so none is lost; the list
+// flattens them. readRemoved returns the old blob (read only, never rewritten or deleted) followed by the per-key
+// stones in removed_at order, the same flat list of stones as before. Rollback: code before this change reads the
+// blob only, so stones written after this deploy are not listed by it (they stay in KV).
+const REMOVED_STONE_PREFIX = "watch:removed:";   // the blob is "watch:removed" (no colon), so the prefix excludes it
+const REMOVED_STONE_METADATA_MAX = 1000;
+async function removedStoneKey(endpoint) { return REMOVED_STONE_PREFIX + (await sha256hex(endpoint)); }
+const stoneId = (s) => String(s.endpoint) + "\n" + String(s.removed_at);
+function flattenStone(rec, out, seen) {
+  if (!rec || typeof rec !== "object" || typeof rec.endpoint !== "string") return;
+  const earlier = Array.isArray(rec.earlier) ? rec.earlier : [];
+  for (const e of earlier) flattenStone(e, out, seen);
+  const { earlier: _drop, ...stone } = rec;
+  const id = stoneId(stone);
+  if (seen.has(id)) return;
+  seen.add(id);
+  out.push(stone);
+}
+// The per-key stones, flat, in removed_at order. Throws when storage throws.
+async function readRemovedStones(env) {
+  const recs = [];
+  let cursor;
+  for (let guard = 0; guard < 50; guard++) {
+    const r = await env.HS_VERIFY_KV.list({ prefix: REMOVED_STONE_PREFIX, cursor, limit: 1000 });
+    for (const k of (r && Array.isArray(r.keys)) ? r.keys : []) {
+      const md = k.metadata;
+      let rec = (md && typeof md.endpoint === "string" && typeof md.removed_at === "string" && !md.big) ? md : null;
+      if (!rec) rec = await env.HS_VERIFY_KV.get(k.name, "json");
+      if (rec && typeof rec.endpoint === "string") recs.push(rec);
+    }
+    if (!r || r.list_complete || !r.cursor) break;
+    cursor = r.cursor;
+  }
+  const out = [], seen = new Set();
+  for (const rec of recs) flattenStone(rec, out, seen);
+  out.sort((a, b) => { const x = String(a.removed_at || ""), y = String(b.removed_at || ""); return x < y ? -1 : x > y ? 1 : (a.endpoint < b.endpoint ? -1 : a.endpoint > b.endpoint ? 1 : 0); });
+  return out;
+}
 // 2026-10-13 (#13). null means the list could not be read; [] means nothing has been removed.
 async function readRemoved(env) {
   if (!env || !env.HS_VERIFY_KV) return [];
-  try { return (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || []; } catch (_e) { return null; }
+  try {
+    const blob = (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || [];
+    const seen = new Set();
+    const out = [];
+    for (const s of Array.isArray(blob) ? blob : []) { if (s && typeof s === "object") { seen.add(stoneId(s)); out.push(s); } }
+    for (const s of await readRemovedStones(env)) { if (!seen.has(stoneId(s))) { seen.add(stoneId(s)); out.push(s); } }
+    return out;
+  } catch (_e) { return null; }
+}
+// The stone already under this endpoint's key, if any: { stone } (stone null when none), or null when storage threw.
+async function readRemovedStoneForWrite(env, endpoint) {
+  try {
+    const rec = await env.HS_VERIFY_KV.get(await removedStoneKey(endpoint), "json");
+    return { stone: rec && typeof rec === "object" && rec.endpoint === endpoint ? rec : null };
+  } catch (_e) { return null; }
+}
+// Writes one stone (with the earlier stones of the same endpoint kept under it). Never touches the old blob.
+async function writeRemovedStone(env, stone, prev) {
+  const rec = { ...stone };
+  if (prev) {
+    const { earlier: pe, ...prevStone } = prev;
+    rec.earlier = (Array.isArray(pe) ? pe : []).concat([prevStone]);
+  }
+  let md = rec;
+  if (rec.earlier || new TextEncoder().encode(JSON.stringify(md)).length > REMOVED_STONE_METADATA_MAX) md = { endpoint: stone.endpoint, big: true };
+  try { await env.HS_VERIFY_KV.put(await removedStoneKey(stone.endpoint), JSON.stringify(rec), { metadata: md }); return true; }
+  catch (_e) { return false; }
 }
 const REMOVED_READ_FAILED_NOTE = "The public list of removals could not be read (storage error). This is NOT a statement that no row was ever removed.";
 
@@ -3173,7 +3332,8 @@ const OA_READ = {
 };
 const OA_REC_SHA = "8c78153b24677fe667158322f1703b2d93c36a353e1d31da619f92585d1ca244";
 const OA_EXAMPLES = {
-  "/health": { ok: true, gate_version: "0.4.15", gate_commit: "9475e33415c3" },
+  // 2026-10-13: the three fix markers (concurrency audit G2 to G5) added to the captured shape; the test demands key parity with the live route.
+  "/health": { ok: true, gate_version: "0.4.15", gate_commit: "9475e33415c3", mould_index: "per-key-20261013", removed_stones: "per-key-20261013", sweep: "single-flight-20261013" },
   "/register/lookup": {
     endpoint: "https://mcp.horizonshield.dev/mcp",
     status: "pending",
@@ -4159,7 +4319,35 @@ async function commitmentFiled(env, wid) {
   catch (_e) { throw new ReadFailure("commitment_filed_read_failed", "The filing record of this window's commitment"); }
 }
 
+// 2026-10-13 (concurrency audit G4, G5). One sweep at a time. The cron (18:00Z) and the operator's POST /sweep both
+// land here; two that overlapped wrote hist:<sha16> and changes:recent from two stale copies (one entry or change
+// line lost) and could both open the NENRIN window (two salts: the commitment filed for one, rows derived from the
+// other). The lease lives in SweepLeaseDO (src/sweep_lease.js), one instance, one block at a time. busy answers
+// { ran: false, error: "sweep_in_progress" } (POST /sweep sends it as 409; the cron skips); a lease error answers
+// { ran: false, error: "sweep_lease_unavailable" } and nothing is swept (fail closed, 503). Neither writes sweep:last:
+// that record belongs to the sweep that ran. Without the binding (unit tests, the GCP twin) the sweep runs unleased,
+// as before. The lease alone is the fix for hist:<sha16> and changes:recent: their public shape is one JSON value per
+// endpoint (entries, up to 400) and one list of 50 change lines, read whole by /history, /changes, /feed.xml and the
+// nightly archive, so one key per entry would turn one read into hundreds of gets without changing what a reader
+// sees; with every writer serialized here, the read-append-put is safe.
+const SWEEP_IN_PROGRESS = "sweep_in_progress";
+const SWEEP_LEASE_UNAVAILABLE = "sweep_lease_unavailable";
 async function runDailySweep(env, opts) {
+  const holder = (opts && opts.holder) || "unknown";
+  const lease = await acquireSweepLease(env, holder, Date.now());
+  if (lease.mode === "busy") {
+    return { ran: false, error: SWEEP_IN_PROGRESS, holder: lease.holder, started_at: lease.started_at, lease_expires_at: lease.expires_at, requested_by: holder,
+      note: "Another sweep holds the lease, so this one did not run and wrote nothing. Two sweeps at once would append history and open the NENRIN window from two stale copies. Wait for /sweep/last to move, then retry." };
+  }
+  if (lease.mode === "error") {
+    return { ran: false, error: SWEEP_LEASE_UNAVAILABLE, detail: lease.error, requested_by: holder,
+      note: "The sweep lease (Durable Object) could not be taken, so nothing was measured and nothing was written. This is a stop, not a measurement. Retry." };
+  }
+  try { return await runDailySweepUnleased(env, opts); }
+  finally { if (lease.mode === "acquired") await releaseSweepLease(env, lease.token); }
+}
+
+async function runDailySweepUnleased(env, opts) {
   const now = Date.now();
   const force = !!(opts && opts.force);
   // 2026-10-13 (#13). One register read for the whole sweep, null when it threw. It used to read as {}: outside rows
@@ -5379,7 +5567,9 @@ export default {
   async scheduled(event, env, ctx) {
     GATE_ENV = env;
     GATE_CONTEXT = "cron";
-    ctx.waitUntil(runDailySweep(env));
+    // 2026-10-13 (G4, G5). The lease is taken inside runDailySweep; when the operator's sweep holds it the cron skips
+    // (ran false, sweep_in_progress) and writes nothing. Logged so the skip is visible in the Worker logs.
+    ctx.waitUntil(runDailySweep(env, { holder: "cron" }).then((r) => { if (r && r.ran === false) console.log("sweep skipped: " + JSON.stringify(r).slice(0, 300)); }).catch(() => {}));
     ctx.waitUntil(netFreeze(env, netDay(Date.now() - 86400000)).catch(() => {}));
   },
 
@@ -5538,7 +5728,8 @@ export default {
 
       if (request.method === "GET") {
         if (seg) {
-          const one = await env.HS_VERIFY_KV.get("mould:" + seg, "json");
+          let one;
+          try { one = await env.HS_VERIFY_KV.get("mould:" + seg, "json"); } catch (_e) { return json({ ...MOULD_READ_FAILED, id: seg }, 503); }
           if (!one) {
             return json({
               error: "not_found",
@@ -5548,7 +5739,9 @@ export default {
           }
           return json(one, 200);
         }
-        const idx = (await env.HS_VERIFY_KV.get("mould:index", "json")) || [];
+        // 2026-10-13 (G2). Listed from the record keys, the old blob overlaid read only. A failed read is 503, not an empty ledger.
+        let idx;
+        try { idx = await mouldIndex(env); } catch (_e) { return json({ ...MOULD_USAGE, ...MOULD_READ_FAILED, count: null, records: null }, 503); }
         return json({ ...MOULD_USAGE, count: idx.length, records: idx }, 200);
       }
       if (request.method === "POST") {
@@ -6122,16 +6315,18 @@ export default {
       if (typeof reason !== "string" || reason.trim().length < 8) return json({ error: "reason_required", note: "a removal without a stated reason is a silent edit; state it, it is published" }, 400);
       const got = await readRegistryRowForWrite(env, ep);   // 2026-10-13 (G1): this row only
       if (!got) return json(REGISTRY_READ_FAILED, 503);
-      // The removal stone is appended to the removed list; read it first, so a failed read cannot replace the list.
-      let removed;
-      try { removed = (await env.HS_VERIFY_KV.get(REMOVED_KEY, "json")) || []; } catch (_e) { removed = null; }
-      if (!Array.isArray(removed)) return json({ error: "removed_list_read_failed", note: "The public list of removals could not be read, so nothing was removed. Try again." }, 503);
+      // 2026-10-13 (G3). The stone is its own key (watch:removed:<sha256(endpoint)>); the old blob is not read or
+      // written here. Only this endpoint's earlier stone is read, so a failed read cannot lose any other stone; a
+      // failed read is still a stop, because the earlier stone would be overwritten unseen.
+      const prevStone = await readRemovedStoneForWrite(env, ep);
+      if (!prevStone) return json({ error: "removed_list_read_failed", note: "The public record of this endpoint's earlier removal could not be read, so nothing was removed. Try again." }, 503);
       const row = got.row;
       if (!row) return json({ error: "not_a_removable_row", note: "either not on the register, or a self row fixed in the gate's source" }, 404);
-      const ok = await writeRegistryRow(env, ep, null);   // a per-key null hides the row, also when it lives in the old blob
       const stone = { endpoint: ep, removed_at: new Date().toISOString(), reason: reason.trim(), requested_by: row.requested_by || "unrecorded", added_at: row.added_at || null, owner_file_at_request: row.owner_file_at_request || null, history_kept: true };
-      removed.push(stone);
-      try { await env.HS_VERIFY_KV.put(REMOVED_KEY, JSON.stringify(removed)); } catch (_e) {}
+      // The stone first: a row removed without its public stone would be the silent edit the reason requirement exists to prevent.
+      const stoneOk = await writeRemovedStone(env, stone, prevStone.stone);
+      if (!stoneOk) return json({ error: "removed_stone_write_failed", note: "The public removal record could not be written, so the row was not removed. Try again." }, 503);
+      const ok = await writeRegistryRow(env, ep, null);   // a per-key null hides the row, also when it lives in the old blob
       return json({ ok: ok, removed: stone, note: "The row is gone from the schedule. Its history stays readable at /history, and this removal is listed publicly under removed on /watchlist and /register." });
     }
 
@@ -6162,7 +6357,11 @@ export default {
       }
       let force = false;
       try { const b = await request.json(); force = !!(b && b.force); } catch (_e) {}
-      return json(await runDailySweep(env, { force: force }));
+      // 2026-10-13 (G4, G5). busy is 409, a lease failure 503; both ran nothing and wrote nothing.
+      const sw = await runDailySweep(env, { force: force, holder: "operator POST /sweep" });
+      if (sw && sw.ran === false && sw.error === SWEEP_IN_PROGRESS) return json(sw, 409);
+      if (sw && sw.ran === false && sw.error === SWEEP_LEASE_UNAVAILABLE) return json(sw, 503);
+      return json(sw);
     }
     if (path === "/watchlist") {
       let wl;
@@ -6334,7 +6533,8 @@ export default {
       });
     }
 
-    if (path === "/health") return json({ ok: true, gate_version: CONFIG.version, gate_commit: gateCommit() });
+    // 2026-10-13 (concurrency audit G2, G3, G4, G5). The three markers let ops/prod_fix_check.sh see which fixes are live.
+    if (path === "/health") return json({ ok: true, gate_version: CONFIG.version, gate_commit: gateCommit(), mould_index: "per-key-20261013", removed_stones: "per-key-20261013", sweep: "single-flight-20261013" });
     if (path === "/usage") return json(await usageReport(env, url.searchParams.get("days")));
     if (path === "/spec") { bumpUsage(env, ctx, "spec_hits", null); return json(spec()); }
     if (path === "/ext/conduct/v1" || path === "/ext/conduct/v1/") return await conductExtResponse(request, url.origin);
