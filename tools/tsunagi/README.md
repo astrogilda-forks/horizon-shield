@@ -26,7 +26,7 @@ endorsement, and a red one is written down, never hidden.
   match, and the tool's exit code is recorded but is not the result. The first is Poke-nushi's NENRIN and VATE S3
   crosswalk (VATE #84): per case, the NENRIN records it compares must be byte for byte the ones published in
   `workers/hs-ledger/nenrin/vate-s3-v0/records`, CW-01 to CW-11 must have their expected status, each NENRIN verifier
-  (npm, PyPI) its expected verdict and refusals, and VATE its expected assessment and `record_linkage` with `retry_authorized: false`. The board records the sha256 of every report it scored. It has
+  (npm, PyPI) its expected verdict and refusals, and VATE its expected assessment and `record_linkage` with `retry_authorized: false`. The board records the sha256 of every report it scored, and the nightly run keeps the reports themselves in `reports/` of its 30-day `tsunagi-board` workflow artifact (`--keep-reports`). It has
   two rows, `"mode": "saved"` (the saved reports compared) and `"mode": "rerun"` (the VATE assessor and both NENRIN
   verifiers run again at the versions the crosswalk names), and the board shows which one each cell did.
 - **Self-reported** (`count_line`, `all_pass`, `approval_lines`, `json_results`, `pytest`). The board reads the count
