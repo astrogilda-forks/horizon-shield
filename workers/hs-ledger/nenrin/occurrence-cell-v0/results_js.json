@@ -1,0 +1,92 @@
+{
+  "o00_signed_grant_and_provider_receipt": {
+    "verdict": "accepted",
+    "refusals": [],
+    "findings": [
+      "evidence_bound_unchecked",
+      "no_delegation_observations"
+    ]
+  },
+  "o01_signed_grant_no_receipt_key": {
+    "verdict": "refused",
+    "refusals": [
+      "execution_incomplete_pair"
+    ],
+    "findings": [
+      "no_delegation_observations"
+    ]
+  },
+  "o02_signed_grant_receipt_null": {
+    "verdict": "refused",
+    "refusals": [
+      "execution_incomplete_pair"
+    ],
+    "findings": [
+      "no_delegation_observations"
+    ]
+  },
+  "o03_receipt_signed_by_caller_key": {
+    "verdict": "refused",
+    "refusals": [
+      "execution_signature_invalid",
+      "execution_unreconciled"
+    ],
+    "findings": [
+      "evidence_bound_unchecked",
+      "no_delegation_observations"
+    ]
+  },
+  "o04_self_named_provider_self_receipt": {
+    "verdict": "accepted",
+    "refusals": [],
+    "findings": [
+      "evidence_bound_unchecked",
+      "no_delegation_observations",
+      "self_authorized"
+    ]
+  },
+  "o05_signed_receipt_status_failed": {
+    "verdict": "accepted",
+    "refusals": [],
+    "findings": [
+      "evidence_bound_unchecked",
+      "no_delegation_observations"
+    ]
+  },
+  "o09_receipt_without_evidence_pointer": {
+    "verdict": "accepted",
+    "refusals": [],
+    "findings": [
+      "no_delegation_observations",
+      "no_evidence_bound"
+    ]
+  },
+  "o06_lookup_not_found": {
+    "verdict": "refused",
+    "refusals": [
+      "evidence_invalid"
+    ],
+    "findings": [
+      "no_delegation_observations"
+    ],
+    "lookup_calls": 1
+  },
+  "o07_lookup_found_not_matching": {
+    "verdict": "refused",
+    "refusals": [
+      "evidence_invalid"
+    ],
+    "findings": [
+      "no_delegation_observations"
+    ],
+    "lookup_calls": 1
+  },
+  "o08_lookup_found_and_matching": {
+    "verdict": "accepted",
+    "refusals": [],
+    "findings": [
+      "no_delegation_observations"
+    ],
+    "lookup_calls": 1
+  }
+}

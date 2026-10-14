@@ -1,0 +1,42 @@
+# occurrence-cell-v0 raw run
+HEAD: af0cfd75c6760595b0e5d38cfc703d0c5f65f409  uncommitted files in this directory: 1
+python: Python 3.11.15  cryptography: 46.0.7
+node: v22.22.2  go: go version go1.24.7 linux/amd64
+
+$ python3 -B make_occurrence_cases.py
+wrote 7 cases to in.json
+exit 0
+in.json sha256: d879038e964708d801654cc93a82f2cd88d72d31406d6381fc94e41852df6a26
+
+$ node run_occurrence.mjs
+o00_signed_grant_and_provider_receipt {"verdict":"accepted","refusals":[],"findings":["evidence_bound_unchecked","no_delegation_observations"]}
+o01_signed_grant_no_receipt_key {"verdict":"refused","refusals":["execution_incomplete_pair"],"findings":["no_delegation_observations"]}
+o02_signed_grant_receipt_null {"verdict":"refused","refusals":["execution_incomplete_pair"],"findings":["no_delegation_observations"]}
+o03_receipt_signed_by_caller_key {"verdict":"refused","refusals":["execution_signature_invalid","execution_unreconciled"],"findings":["evidence_bound_unchecked","no_delegation_observations"]}
+o04_self_named_provider_self_receipt {"verdict":"accepted","refusals":[],"findings":["evidence_bound_unchecked","no_delegation_observations","self_authorized"]}
+o05_signed_receipt_status_failed {"verdict":"accepted","refusals":[],"findings":["evidence_bound_unchecked","no_delegation_observations"]}
+o09_receipt_without_evidence_pointer {"verdict":"accepted","refusals":[],"findings":["no_delegation_observations","no_evidence_bound"]}
+o06_lookup_not_found {"verdict":"refused","refusals":["evidence_invalid"],"findings":["no_delegation_observations"],"lookup_calls":1}
+o07_lookup_found_not_matching {"verdict":"refused","refusals":["evidence_invalid"],"findings":["no_delegation_observations"],"lookup_calls":1}
+o08_lookup_found_and_matching {"verdict":"accepted","refusals":[],"findings":["no_delegation_observations"],"lookup_calls":1}
+exit 0
+
+$ python3 -B run_occurrence_py.py
+o00_signed_grant_and_provider_receipt {"verdict":"accepted","refusals":[],"findings":["evidence_bound_unchecked","no_delegation_observations"]}
+o01_signed_grant_no_receipt_key {"verdict":"refused","refusals":["execution_incomplete_pair"],"findings":["no_delegation_observations"]}
+o02_signed_grant_receipt_null {"verdict":"refused","refusals":["execution_incomplete_pair"],"findings":["no_delegation_observations"]}
+o03_receipt_signed_by_caller_key {"verdict":"refused","refusals":["execution_signature_invalid","execution_unreconciled"],"findings":["evidence_bound_unchecked","no_delegation_observations"]}
+o04_self_named_provider_self_receipt {"verdict":"accepted","refusals":[],"findings":["evidence_bound_unchecked","no_delegation_observations","self_authorized"]}
+o05_signed_receipt_status_failed {"verdict":"accepted","refusals":[],"findings":["evidence_bound_unchecked","no_delegation_observations"]}
+o09_receipt_without_evidence_pointer {"verdict":"accepted","refusals":[],"findings":["no_delegation_observations","no_evidence_bound"]}
+o06_lookup_not_found {"verdict":"refused","refusals":["evidence_invalid"],"findings":["no_delegation_observations"],"lookup_calls":1}
+o07_lookup_found_not_matching {"verdict":"refused","refusals":["evidence_invalid"],"findings":["no_delegation_observations"],"lookup_calls":1}
+o08_lookup_found_and_matching {"verdict":"accepted","refusals":[],"findings":["no_delegation_observations"],"lookup_calls":1}
+exit 0
+
+$ (cd ../sdk-go && go run ./cmd/nenrin-verify-go --batch <abs>/in.json <abs>/results_go.json)
+exit 0
+
+$ compare: every row of results_py.json and results_go.json against results_js.json
+rows js=10 py=10 go=7, differing: none
+exit 0
