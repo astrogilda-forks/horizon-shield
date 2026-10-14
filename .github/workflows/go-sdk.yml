@@ -52,7 +52,7 @@ concurrency:
 jobs:
   test:
     name: go vet and go test (${{ matrix.label }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -101,7 +101,7 @@ jobs:
     name: tag the module release and fetch it through the Go proxy
     if: github.event_name == 'workflow_dispatch'
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     defaults:

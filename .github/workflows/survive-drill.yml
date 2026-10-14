@@ -24,7 +24,7 @@ env:
 
 jobs:
   keep:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
       chain_rc: ${{ steps.chain.outputs.rc }}
@@ -90,7 +90,7 @@ jobs:
 
   chain-verdict:
     needs: keep
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     timeout-minutes: 2
@@ -107,7 +107,7 @@ jobs:
 
   drill:
     needs: keep
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

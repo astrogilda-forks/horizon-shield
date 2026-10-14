@@ -50,7 +50,7 @@ concurrency:
 
 jobs:
   split:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       shards: ${{ steps.plan.outputs.shards }}
       matrix: ${{ steps.plan.outputs.matrix }}
@@ -79,7 +79,7 @@ jobs:
 
   walk:
     needs: split
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 330          # 6時間の上限より前に、こちらで止める
     strategy:
       fail-fast: false            # 1つのシャードが止まっても、他は最後まで走らせる
@@ -115,7 +115,7 @@ jobs:
   merge:
     needs: [split, walk]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0

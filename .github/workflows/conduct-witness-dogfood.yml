@@ -5,7 +5,7 @@ on:
     - cron: "23 4 * * 1"
 jobs:
   witness:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: ogasurfproject-jpg/horizon-shield/conduct-witness-action@main
         with:

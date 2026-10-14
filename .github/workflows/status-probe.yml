@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   probe:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -77,7 +77,7 @@ jobs:
   keep:
     needs: probe
     if: needs.probe.outputs.commit_due == 'true' || inputs.commit == true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write

@@ -10,7 +10,7 @@ permissions:
   contents: read
 jobs:
   boundary:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: bash tools/boundary/check_public_boundary.sh
@@ -19,7 +19,7 @@ jobs:
   # canonical tool list in tools/listing_tools_sync.mjs. Fails red on a retired tool name used as current, a missing
   # tool, or a mirrored manifest that differs from its source.
   listing-sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -34,7 +34,7 @@ jobs:
   # workers/*/src) with the acorn bundled in Node and fails red on any hit outside its allowlist. The test checks
   # bad snippets are flagged, the 2026-10-13 fixed patterns pass, and the current tree exits 0.
   swallowed-read:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
