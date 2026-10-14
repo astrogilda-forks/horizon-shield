@@ -733,6 +733,64 @@
           "total": 9
         }
       ]
+    },
+    {
+      "id": "poke-nushi-vate-nenrin-s3-crosswalk",
+      "ours": false,
+      "author": "Poke-nushi (VATE maintainer)",
+      "repo": "https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope.git",
+      "language": "Python",
+      "license": "Apache-2.0",
+      "pin": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "note": "Poke-nushi's NENRIN and VATE S3 crosswalk (reference/nenrin-s3-crosswalk-example), pinned to the commit that added it, as agreed in VATE #84. It compares NENRIN's verdicts on three records (match, target_mismatch, missing_receipt) with VATE's assessment of the same S3 write across eleven relationships. Two rows: the saved reports, and both checkers run again (VATE assessor with jsonschema 4.26.0, nenrin-verify 0.5.1 from npm and 0.5.3 from PyPI). The board reads the comparison report and scores every finding against tools/tsunagi/expected/vate-nenrin-s3-crosswalk-v0.json itself, and checks that the NENRIN records compared are byte for byte workers/hs-ledger/nenrin/vate-s3-v0/records. The crosswalk's exit code is not the result. No combined protocol verdict, no signer authority and no general compatibility are claimed, by the crosswalk or by this row.",
+      "runs": [
+        {
+          "corpus": "vate-nenrin-s3-crosswalk-v0",
+          "mode": "saved",
+          "cwd": "@impl",
+          "cmd": [
+            "python3",
+            "-B",
+            "@board/adapters/vate_crosswalk.py",
+            "run",
+            "--impl",
+            "@impl",
+            "--mode",
+            "saved",
+            "--out",
+            "@out"
+          ],
+          "records": "@impl/reference/nenrin-s3-crosswalk-example/third_party/nenrin/records",
+          "parse": "crosswalk_findings",
+          "total": 3
+        },
+        {
+          "corpus": "vate-nenrin-s3-crosswalk-v0",
+          "mode": "rerun",
+          "cwd": "@impl",
+          "setup": [
+            "python3",
+            "-B",
+            "@board/adapters/vate_crosswalk.py",
+            "setup"
+          ],
+          "cmd": [
+            "python3",
+            "-B",
+            "@board/adapters/vate_crosswalk.py",
+            "run",
+            "--impl",
+            "@impl",
+            "--mode",
+            "rerun",
+            "--out",
+            "@out"
+          ],
+          "records": "@impl/reference/nenrin-s3-crosswalk-example/third_party/nenrin/records",
+          "parse": "crosswalk_findings",
+          "total": 3
+        }
+      ]
     }
   ],
   "pairs": [

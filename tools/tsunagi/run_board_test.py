@@ -156,6 +156,59 @@ with tempfile.TemporaryDirectory(prefix="tsunagi-pin-test-") as td:
     t("pin: a short sha is refused, not guessed", (not ok) and "40-hex" in err)
     ok, err = rb.clone(url, os.path.join(td, "d"), "0" * 40)
     t("pin: a pin that cannot be fetched is a clone error, never a fallback to the head", (not ok) and "could not" in err)
+
+# crosswalk findings refereed by the board (2026-10-14, VATE #84): a case counts only when every finding matches
+import copy
+E, ours = rb.load_crosswalk_expected("vate-nenrin-s3-crosswalk-v0")
+t("crosswalk expectations: three cases, pinned file, this repository's records read", sorted(E["cases"]) == ["match", "missing_receipt", "target_mismatch"] and all(ours.values()))
+def cw_report(mode="rerun"):
+    """A comparison report in the crosswalk's shape, built from the expectations themselves."""
+    modes = E["evidence_modes"][mode]
+    cases = []
+    for name, w in E["cases"].items():
+        cases.append({"nenrin_case": name, "vate_case": w["vate_case"], "evidence_modes": dict(modes),
+                      "relationships": [{"id": k, "status": v} for k, v in w["relationships"].items()],
+                      "native_reports": {k: {"report": {"verdict": n["verdict"], "refusals": [{"code": c, "reason": r} for c, r in n["refusals"]]}}
+                                         for k, n in w["native"].items()},
+                      "vate_report": {"report": dict(w["vate"])}})
+    return {"schema": E["report_schema"], "pins": dict(E["pins"]), "evidence_modes": dict(modes), "cases": cases}
+with tempfile.TemporaryDirectory(prefix="tsunagi-cw-test-") as td:
+    for name, raw in ours.items():
+        os.makedirs(os.path.join(td, name)); open(os.path.join(td, name, E["records"]["file"]), "wb").write(raw)
+    r = rb.score_crosswalk(E, cw_report(), "rerun", td, 3, ours)
+    t("crosswalk: every finding as expected is 3/3 and a pass", r["passed"] and r["reproduced"] == 3 and r["scored_by"] == "board")
+    bad = cw_report(); tm = [c for c in bad["cases"] if c["nenrin_case"] == "target_mismatch"][0]
+    [x for x in tm["relationships"] if x["id"] == "CW-06"][0]["status"] = "matched"
+    r = rb.score_crosswalk(E, bad, "rerun", td, 3, ours)
+    t("crosswalk: a target mismatch reported as matched fails that case only", not r["passed"] and r["reproduced"] == 2
+      and r["per_vector"]["target_mismatch"]["result"] == "differs: CW-06")
+    bad = cw_report(); mr = [c for c in bad["cases"] if c["nenrin_case"] == "missing_receipt"][0]
+    [x for x in mr["relationships"] if x["id"] == "CW-01"][0]["status"] = "mismatched"
+    t("crosswalk: not_assessed turned into a finding fails the missing-receipt case", rb.score_crosswalk(E, bad, "rerun", td, 3, ours)["per_vector"]["missing_receipt"]["ok"] is False)
+    bad = cw_report(); bad["cases"][0]["native_reports"]["pypi"]["report"]["verdict"] = "refused"
+    t("crosswalk: one native verdict changed fails that case", rb.score_crosswalk(E, bad, "rerun", td, 3, ours)["reproduced"] == 2)
+    bad = cw_report(); [c for c in bad["cases"] if c["nenrin_case"] == "match"][0]["vate_report"]["report"]["retry_authorized"] = True
+    t("crosswalk: retry_authorized true fails the case", rb.score_crosswalk(E, bad, "rerun", td, 3, ours)["per_vector"]["match"]["ok"] is False)
+    bad = cw_report(); [c for c in bad["cases"] if c["nenrin_case"] == "missing_receipt"][0]["vate_report"]["report"]["record_linkage"] = "matched"
+    t("crosswalk: VATE record_linkage other than not_assessed fails the missing-receipt case", rb.score_crosswalk(E, bad, "rerun", td, 3, ours)["per_vector"]["missing_receipt"]["result"] == "differs: vate")
+    r = rb.score_crosswalk(E, cw_report("saved"), "rerun", td, 3, ours)
+    t("crosswalk: a saved-report comparison is not a pass for the rerun row", not r["passed"] and "evidence modes" in r["problem"])
+    t("crosswalk: the saved row passes on a saved-report comparison", rb.score_crosswalk(E, cw_report("saved"), "saved", td, 3, ours)["passed"])
+    bad = cw_report(); bad["cases"] = bad["cases"][:2]
+    t("crosswalk: a case missing from the report is not a pass", not rb.score_crosswalk(E, bad, "rerun", td, 3, ours)["passed"])
+    bad = cw_report(); bad["pins"]["nenrin_commit"] = "0" * 40
+    t("crosswalk: other NENRIN records pinned is not a pass", not rb.score_crosswalk(E, bad, "rerun", td, 3, ours)["passed"])
+    t("crosswalk: no report is 0/3 and says so", rb.score_crosswalk(E, None, "rerun", td, 3, ours)["reproduced"] == 0
+      and "no readable" in rb.score_crosswalk(E, None, "rerun", td, 3, ours)["problem"])
+    open(os.path.join(td, "match", E["records"]["file"]), "ab").write(b" ")
+    r = rb.score_crosswalk(E, cw_report(), "rerun", td, 3, ours)
+    t("crosswalk: records that are not byte for byte ours fail that case", r["per_vector"]["match"]["findings"]["records"]["result"] == "different bytes" and r["reproduced"] == 2)
+cw_runs = [r for i in impls for r in i["runs"] if r["parse"] == "crosswalk_findings"]
+t("every crosswalk run names a pinned expectations file and a mode", cw_runs and all(r["corpus"] in rb.CROSSWALK_CORPORA and r.get("mode") in ("saved", "rerun") for r in cw_runs))
+t("crosswalk rows run only at a pinned commit", all(i.get("pin") for i in impls if any(r["parse"] == "crosswalk_findings" for r in i["runs"])))
+t("history: a saved and a rerun row of one corpus are separate cells",
+  rb.cell_key({"implementation": "x", "corpus": "c", "scored_by": "board", "mode": "saved"}) != rb.cell_key({"implementation": "x", "corpus": "c", "scored_by": "board", "mode": "rerun"}))
+
 print("")
 if fail:
     print("FAIL %d (tsunagi)" % fail); sys.exit(1)

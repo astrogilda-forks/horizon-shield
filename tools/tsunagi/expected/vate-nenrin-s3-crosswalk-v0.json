@@ -1,0 +1,146 @@
+{
+  "schema": "hs-tsunagi-crosswalk-expected-v0",
+  "corpus": "vate-nenrin-s3-crosswalk-v0",
+  "what": "What Poke-nushi's NENRIN and VATE S3 crosswalk must report for the three cases, as its README states them at the pinned commit. The board runs the crosswalk (from saved reports, or with both checkers run again), reads the comparison report it writes, and compares each finding here itself; the crosswalk's exit code is recorded but not taken as the result. It also checks that the NENRIN records the crosswalk compares are byte for byte the ones this repository published.",
+  "source": {
+    "repository": "https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope",
+    "commit": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+    "example": "reference/nenrin-s3-crosswalk-example",
+    "basis": "README.md, section 'Interpret the results', checked against the report compare_records.py writes from the saved records; VATE record_linkage added at Poke-nushi's request in VATE #84"
+  },
+  "report_schema": "nenrin-vate-public-crosswalk-v1",
+  "pins": {
+    "nenrin_commit": "bfde94be9d8089b7c683bc31b9c39c3879b07ab2",
+    "vate_commit": "b3b6d4f9610e159e92d3b41b66e72fc7251758dc"
+  },
+  "records": {
+    "ours": "workers/hs-ledger/nenrin/vate-s3-v0/records",
+    "theirs": "third_party/nenrin/records",
+    "file": "nenrin-bundle.json"
+  },
+  "evidence_modes": {
+    "saved": {
+      "nenrin": "saved",
+      "vate": "saved"
+    },
+    "rerun": {
+      "nenrin": "fresh_local_run",
+      "vate": "fresh_local_run"
+    }
+  },
+  "cases": {
+    "match": {
+      "vate_case": "matching",
+      "relationships": {
+        "CW-01": "matched",
+        "CW-02": "matched",
+        "CW-03": "matched",
+        "CW-04": "matched",
+        "CW-05": "matched",
+        "CW-06": "matched",
+        "CW-07": "matched",
+        "CW-08": "matched",
+        "CW-09": "matched",
+        "CW-10": "matched",
+        "CW-11": "matched"
+      },
+      "native": {
+        "npm": {
+          "verdict": "accepted",
+          "refusals": []
+        },
+        "pypi": {
+          "verdict": "accepted",
+          "refusals": []
+        }
+      },
+      "vate": {
+        "assessment": "supported_under_local_assumptions",
+        "retry_authorized": false,
+        "record_linkage": "matched"
+      }
+    },
+    "target_mismatch": {
+      "vate_case": "target-mismatch",
+      "relationships": {
+        "CW-01": "matched",
+        "CW-02": "matched",
+        "CW-03": "mismatched",
+        "CW-04": "matched",
+        "CW-05": "matched",
+        "CW-06": "mismatched",
+        "CW-07": "matched",
+        "CW-08": "matched",
+        "CW-09": "matched",
+        "CW-10": "matched",
+        "CW-11": "matched"
+      },
+      "native": {
+        "npm": {
+          "verdict": "refused",
+          "refusals": [
+            [
+              "execution_invalid",
+              "action_diverged"
+            ]
+          ]
+        },
+        "pypi": {
+          "verdict": "refused",
+          "refusals": [
+            [
+              "execution_invalid",
+              "action_diverged"
+            ]
+          ]
+        }
+      },
+      "vate": {
+        "assessment": "contradictory",
+        "retry_authorized": false,
+        "record_linkage": "matched"
+      }
+    },
+    "missing_receipt": {
+      "vate_case": "missing-post",
+      "relationships": {
+        "CW-01": "not_assessed",
+        "CW-02": "not_assessed",
+        "CW-03": "not_assessed",
+        "CW-04": "not_assessed",
+        "CW-05": "not_assessed",
+        "CW-06": "not_assessed",
+        "CW-07": "not_assessed",
+        "CW-08": "not_assessed",
+        "CW-09": "not_assessed",
+        "CW-10": "not_assessed",
+        "CW-11": "matched"
+      },
+      "native": {
+        "npm": {
+          "verdict": "refused",
+          "refusals": [
+            [
+              "execution_incomplete_pair",
+              null
+            ]
+          ]
+        },
+        "pypi": {
+          "verdict": "refused",
+          "refusals": [
+            [
+              "execution_incomplete_pair",
+              null
+            ]
+          ]
+        }
+      },
+      "vate": {
+        "assessment": "insufficient",
+        "retry_authorized": false,
+        "record_linkage": "not_assessed"
+      }
+    }
+  }
+}
