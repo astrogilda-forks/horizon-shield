@@ -1,0 +1,771 @@
+{
+  "board_sha256": "9db05fcdae656acc8827c0b0436e0ed3fe9054b706c2f3aa52d1940f876e689c",
+  "differential": null,
+  "implementations": {
+    "poke-nushi-vate-nenrin-s3-crosswalk": {
+      "author": "Poke-nushi (VATE maintainer)",
+      "clone_error": null,
+      "commit": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "id": "poke-nushi-vate-nenrin-s3-crosswalk",
+      "language": "Python",
+      "license": "Apache-2.0",
+      "ours": false,
+      "pinned": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "repo": "https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope.git"
+    }
+  },
+  "measured_at": "2026-10-14T13:28:28Z",
+  "pairs": [],
+  "repository_commit": "795c292bf35f2a44344a6fe93a8167ae2e2a1c11",
+  "runs": [
+    {
+      "commit": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "corpus": "vate-nenrin-s3-crosswalk-v0",
+      "exit": 0,
+      "expected_total": 3,
+      "implementation": "poke-nushi-vate-nenrin-s3-crosswalk",
+      "mode": "saved",
+      "mode_declared": true,
+      "of": 3,
+      "ours": false,
+      "passed": true,
+      "per_vector": {
+        "match": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "missing_receipt": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "target_mismatch": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        }
+      },
+      "pinned": true,
+      "report_sha256": "e985653f49510ae80f59ac761aa98a334b38ab7e1773f2fc93fad1a502be137c",
+      "reproduced": 3,
+      "scored_by": "board",
+      "seconds": 0.2,
+      "status": "ran"
+    },
+    {
+      "commit": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "corpus": "vate-nenrin-s3-crosswalk-v0",
+      "exit": 0,
+      "expected_total": 3,
+      "implementation": "poke-nushi-vate-nenrin-s3-crosswalk",
+      "mode": "rerun",
+      "mode_declared": true,
+      "of": 3,
+      "ours": false,
+      "passed": true,
+      "per_vector": {
+        "match": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "missing_receipt": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "target_mismatch": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        }
+      },
+      "pinned": true,
+      "report_sha256": "cc76265f417c8f10f82d4b8708e31ceae389cf5589ffeba018fd1f7e9c2d1a14",
+      "reproduced": 3,
+      "scored_by": "board",
+      "seconds": 3.4,
+      "status": "ran"
+    }
+  ],
+  "schema": "hs-tsunagi-board-v1",
+  "summary": {
+    "not_run": 0,
+    "outside_authors_passing": [
+      "Poke-nushi (VATE maintainer)"
+    ],
+    "outside_passed": 2,
+    "passed": 2,
+    "refereed_passed": 2,
+    "runs": 2
+  }
+}
