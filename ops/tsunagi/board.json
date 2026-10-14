@@ -1,5 +1,5 @@
 {
-  "board_sha256": "7b84e2dfd7fbedb1d0d1be958008c559cebe7891804ffeefadc2a72f07c8c1c7",
+  "board_sha256": "b58984fc5e4e4258765f91100d829a9a3db1ee7343b4d24861329232a22099e4",
   "differential": {
     "agree": 40,
     "bundles": 40,
@@ -20,7 +20,7 @@
     "a2aproject-a2a-python": {
       "author": "a2aproject (the official A2A Python SDK)",
       "clone_error": null,
-      "commit": "0ee47d7baa47a706e33934a4e4c3d46bad16298f",
+      "commit": "a4c4fc91a22778f3d805e5e592bf690915a33033",
       "id": "a2aproject-a2a-python",
       "language": "Python",
       "license": "Apache-2.0",
@@ -40,7 +40,7 @@
     "babyblueviper1-approval-v2": {
       "author": "babyblueviper1",
       "clone_error": null,
-      "commit": "9d4cf2c7782fe79b68c7679b4967180ebdb9e0bd",
+      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
       "id": "babyblueviper1-approval-v2",
       "language": "Python",
       "license": "MIT",
@@ -50,7 +50,7 @@
     "babyblueviper1-nenrin-cleanroom": {
       "author": "babyblueviper1",
       "clone_error": null,
-      "commit": "9d4cf2c7782fe79b68c7679b4967180ebdb9e0bd",
+      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
       "id": "babyblueviper1-nenrin-cleanroom",
       "language": "Python",
       "license": "MIT",
@@ -60,7 +60,7 @@
     "hs-ledger-trace-pin": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "id": "hs-ledger-trace-pin",
       "language": "JavaScript",
       "license": null,
@@ -70,7 +70,7 @@
     "hs-nenrin-go": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "id": "hs-nenrin-go",
       "language": "Go",
       "license": null,
@@ -80,7 +80,7 @@
     "hs-nenrin-pypi": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "id": "hs-nenrin-pypi",
       "language": "Python",
       "license": null,
@@ -90,7 +90,7 @@
     "hs-nenrin-reference": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "id": "hs-nenrin-reference",
       "language": "JavaScript",
       "license": null,
@@ -100,7 +100,7 @@
     "hs-settle-v1.10-approval": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "id": "hs-settle-v1.10-approval",
       "language": "Python",
       "license": null,
@@ -138,7 +138,7 @@
       "repo": "https://github.com/probityai/agent-evidence-vectors.git"
     }
   },
-  "measured_at": "2026-10-13T23:07:42Z",
+  "measured_at": "2026-10-14T21:56:44Z",
   "pairs": [
     {
       "a": "babyblueviper1-approval-v2",
@@ -251,14 +251,15 @@
       "what": "the action-presence vectors, read by two outside implementations written by different people, compared case by case"
     }
   ],
-  "repository_commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+  "repository_commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
   "runs": [
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 5,
       "ours": true,
       "passed": true,
@@ -294,17 +295,19 @@
           "want": "accepted [] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 5,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 13,
       "ours": true,
       "passed": true,
@@ -388,17 +391,19 @@
           "want": "refused [delegation_observation_invalid] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 13,
       "scored_by": "board",
       "seconds": 0.2,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 36,
       "ours": true,
       "passed": true,
@@ -620,17 +625,19 @@
           "want": "accepted [] [evidence_bound_unchecked,witness_disagreement]"
         }
       },
+      "pinned": false,
       "reproduced": 36,
       "scored_by": "board",
       "seconds": 0.3,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -690,17 +697,19 @@
           "want": "refused [execution_invalid,preflight_invalid] [declared_executed_divergence,evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.3-survivors",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -760,17 +769,19 @@
           "want": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 28,
       "ours": true,
       "passed": true,
@@ -944,17 +955,19 @@
           "want": "refused [no_embedded_signature] []"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
       "seconds": 0.0,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-bind-v0",
       "exit": 0,
       "expected_total": 28,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 28,
       "ours": true,
       "passed": true,
@@ -1128,17 +1141,19 @@
           "want": "not_bound [trace:no_embedded_signature] [acted_at_is_stated,trace_claims_not_appraised]"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-span-v0",
       "exit": 0,
       "expected_total": 16,
       "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
       "of": 16,
       "ours": true,
       "passed": true,
@@ -1240,17 +1255,19 @@
           "want": "span_not_bound [span_attribute_mismatch:nenrin.bind.sha256] [acted_at_is_stated,trace_claims_not_appraised]"
         }
       },
+      "pinned": false,
       "reproduced": 16,
       "scored_by": "board",
       "seconds": 0.0,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 5,
       "ours": true,
       "passed": true,
@@ -1286,17 +1303,19 @@
           "want": "accepted [] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 5,
       "scored_by": "board",
-      "seconds": 10.3,
+      "seconds": 11.2,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 13,
       "ours": true,
       "passed": true,
@@ -1380,17 +1399,19 @@
           "want": "refused [delegation_observation_invalid] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 13,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 36,
       "ours": true,
       "passed": true,
@@ -1612,17 +1633,19 @@
           "want": "accepted [] [evidence_bound_unchecked,witness_disagreement]"
         }
       },
+      "pinned": false,
       "reproduced": 36,
       "scored_by": "board",
       "seconds": 0.3,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -1682,17 +1705,19 @@
           "want": "refused [execution_invalid,preflight_invalid] [declared_executed_divergence,evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.3-survivors",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -1752,17 +1777,19 @@
           "want": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 28,
       "ours": true,
       "passed": true,
@@ -1936,17 +1963,19 @@
           "want": "refused [no_embedded_signature] []"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-bind-v0",
       "exit": 0,
       "expected_total": 28,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 28,
       "ours": true,
       "passed": true,
@@ -2120,17 +2149,19 @@
           "want": "not_bound [trace:no_embedded_signature] [acted_at_is_stated,trace_claims_not_appraised]"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-span-v0",
       "exit": 0,
       "expected_total": 16,
       "implementation": "hs-nenrin-go",
+      "mode": "rerun",
       "of": 16,
       "ours": true,
       "passed": true,
@@ -2232,17 +2263,19 @@
           "want": "span_not_bound [span_attribute_mismatch:nenrin.bind.sha256] [acted_at_is_stated,trace_claims_not_appraised]"
         }
       },
+      "pinned": false,
       "reproduced": 16,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 5,
       "ours": true,
       "passed": true,
@@ -2278,17 +2311,19 @@
           "want": "accepted [] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 5,
       "scored_by": "board",
       "seconds": 0.2,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 13,
       "ours": true,
       "passed": true,
@@ -2372,17 +2407,19 @@
           "want": "refused [delegation_observation_invalid] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 13,
       "scored_by": "board",
       "seconds": 0.2,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 36,
       "ours": true,
       "passed": true,
@@ -2604,17 +2641,19 @@
           "want": "accepted [] [evidence_bound_unchecked,witness_disagreement]"
         }
       },
+      "pinned": false,
       "reproduced": 36,
       "scored_by": "board",
       "seconds": 0.4,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -2674,17 +2713,19 @@
           "want": "refused [execution_invalid,preflight_invalid] [declared_executed_divergence,evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.2,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-interop-v0.3-survivors",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -2744,17 +2785,19 @@
           "want": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 28,
       "ours": true,
       "passed": true,
@@ -2928,17 +2971,19 @@
           "want": "refused [no_embedded_signature] []"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-bind-v0",
       "exit": 0,
       "expected_total": 28,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 28,
       "ours": true,
       "passed": true,
@@ -3112,17 +3157,19 @@
           "want": "not_bound [trace:no_embedded_signature] [acted_at_is_stated,trace_claims_not_appraised]"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-span-v0",
       "exit": 0,
       "expected_total": 16,
       "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
       "of": 16,
       "ours": true,
       "passed": true,
@@ -3224,17 +3271,19 @@
           "want": "span_not_bound [span_attribute_mismatch:nenrin.bind.sha256] [acted_at_is_stated,trace_claims_not_appraised]"
         }
       },
+      "pinned": false,
       "reproduced": 16,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
       "implementation": "hs-ledger-trace-pin",
+      "mode": "rerun",
       "of": 28,
       "ours": true,
       "passed": true,
@@ -3408,6 +3457,7 @@
           "want": "refused [no_embedded_signature] []"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
       "seconds": 0.0,
@@ -3419,10 +3469,12 @@
       "exit": 0,
       "expected_total": 5,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 5,
       "ours": false,
       "passed": true,
       "per_vector": null,
+      "pinned": false,
       "reproduced": 5,
       "scored_by": "implementation",
       "seconds": 0.1,
@@ -3435,10 +3487,12 @@
       "exit": 0,
       "expected_total": 13,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 13,
       "ours": false,
       "passed": true,
       "per_vector": null,
+      "pinned": false,
       "reproduced": 13,
       "scored_by": "implementation",
       "seconds": 0.1,
@@ -3451,10 +3505,12 @@
       "exit": 0,
       "expected_total": 36,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 36,
       "ours": false,
       "passed": true,
       "per_vector": null,
+      "pinned": false,
       "reproduced": 36,
       "scored_by": "implementation",
       "seconds": 0.5,
@@ -3467,6 +3523,7 @@
       "exit": 0,
       "expected_total": 5,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 5,
       "ours": false,
       "passed": true,
@@ -3502,6 +3559,7 @@
           "want": "accepted [] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 5,
       "scored_by": "board",
       "seconds": 0.1,
@@ -3513,6 +3571,7 @@
       "exit": 0,
       "expected_total": 13,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 13,
       "ours": false,
       "passed": true,
@@ -3596,6 +3655,7 @@
           "want": "refused [delegation_observation_invalid] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 13,
       "scored_by": "board",
       "seconds": 0.1,
@@ -3607,6 +3667,7 @@
       "exit": 0,
       "expected_total": 36,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 36,
       "ours": false,
       "passed": true,
@@ -3828,6 +3889,7 @@
           "want": "accepted [] [evidence_bound_unchecked,witness_disagreement]"
         }
       },
+      "pinned": false,
       "reproduced": 36,
       "scored_by": "board",
       "seconds": 0.5,
@@ -3839,10 +3901,12 @@
       "exit": 0,
       "expected_total": 9,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 9,
       "ours": false,
       "passed": true,
       "per_vector": null,
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "implementation",
       "seconds": 0.2,
@@ -3855,6 +3919,7 @@
       "exit": 0,
       "expected_total": 9,
       "implementation": "kuangmi-bit-nenrin-independent-verifiers",
+      "mode": "rerun",
       "of": 9,
       "ours": false,
       "passed": true,
@@ -3914,17 +3979,19 @@
           "want": "refused [execution_invalid,preflight_invalid] [declared_executed_divergence,evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.2,
       "status": "ran"
     },
     {
-      "commit": "9d4cf2c7782fe79b68c7679b4967180ebdb9e0bd",
+      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
       "implementation": "babyblueviper1-nenrin-cleanroom",
+      "mode": "rerun",
       "of": 5,
       "ours": false,
       "passed": true,
@@ -3960,17 +4027,19 @@
           "want": "accepted [] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 5,
       "scored_by": "board",
       "seconds": 0.2,
       "status": "ran"
     },
     {
-      "commit": "9d4cf2c7782fe79b68c7679b4967180ebdb9e0bd",
+      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
       "implementation": "babyblueviper1-nenrin-cleanroom",
+      "mode": "rerun",
       "of": 13,
       "ours": false,
       "passed": true,
@@ -4054,17 +4123,19 @@
           "want": "refused [delegation_observation_invalid] [evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 13,
       "scored_by": "board",
       "seconds": 0.5,
       "status": "ran"
     },
     {
-      "commit": "9d4cf2c7782fe79b68c7679b4967180ebdb9e0bd",
+      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
       "implementation": "babyblueviper1-nenrin-cleanroom",
+      "mode": "rerun",
       "of": 36,
       "ours": false,
       "passed": true,
@@ -4286,17 +4357,19 @@
           "want": "accepted [] [evidence_bound_unchecked,witness_disagreement]"
         }
       },
+      "pinned": false,
       "reproduced": 36,
       "scored_by": "board",
       "seconds": 1.1,
       "status": "ran"
     },
     {
-      "commit": "9d4cf2c7782fe79b68c7679b4967180ebdb9e0bd",
+      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
       "implementation": "babyblueviper1-approval-v2",
+      "mode": "rerun",
       "of": 9,
       "ours": false,
       "passed": true,
@@ -4347,6 +4420,7 @@
           "result": "approved"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "implementation",
       "seconds": 0.1,
@@ -4354,11 +4428,12 @@
       "stdout_sha256": "e3f642d81ab22703d58821a9e9502724e00b1e603ccfa70987445465f7d33b59"
     },
     {
-      "commit": "9d4cf2c7782fe79b68c7679b4967180ebdb9e0bd",
+      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
       "implementation": "babyblueviper1-approval-v2",
+      "mode": "rerun",
       "of": 9,
       "ours": false,
       "passed": true,
@@ -4445,17 +4520,19 @@
           }
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-settle-v1.10-approval",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -4506,6 +4583,7 @@
           "result": "approved"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "implementation",
       "seconds": 0.2,
@@ -4513,11 +4591,12 @@
       "stdout_sha256": "e3f642d81ab22703d58821a9e9502724e00b1e603ccfa70987445465f7d33b59"
     },
     {
-      "commit": "138512b8456b079ecffb79fd0e398f99150c4de0",
+      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
       "implementation": "hs-settle-v1.10-approval",
+      "mode": "rerun",
       "of": 9,
       "ours": true,
       "passed": true,
@@ -4604,6 +4683,7 @@
           }
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 0.1,
@@ -4615,6 +4695,7 @@
       "exit": 0,
       "expected_total": 13,
       "implementation": "probity-a2a-card-readers",
+      "mode": "rerun",
       "of": 13,
       "ours": false,
       "passed": true,
@@ -4672,6 +4753,7 @@
           "ok": true
         }
       },
+      "pinned": false,
       "reproduced": 13,
       "scored_by": "implementation",
       "seconds": 0.1,
@@ -4684,6 +4766,7 @@
       "exit": 0,
       "expected_total": 5,
       "implementation": "probity-a2a-card-readers",
+      "mode": "rerun",
       "of": 5,
       "ours": false,
       "passed": true,
@@ -4709,6 +4792,7 @@
           "ok": true
         }
       },
+      "pinned": false,
       "reproduced": 5,
       "scored_by": "implementation",
       "seconds": 0.1,
@@ -4716,15 +4800,17 @@
       "stdout_sha256": "bf88276f294a4815a0a88d888b87a8b744fcae33710dcfef6ce2f6042112c93b"
     },
     {
-      "commit": "0ee47d7baa47a706e33934a4e4c3d46bad16298f",
+      "commit": "a4c4fc91a22778f3d805e5e592bf690915a33033",
       "corpus": "a2a-card-sign-v01/s0-control",
       "exit": 0,
       "expected_total": 10,
       "implementation": "a2aproject-a2a-python",
+      "mode": "rerun",
       "of": 10,
       "ours": false,
       "passed": true,
       "per_vector": null,
+      "pinned": false,
       "reproduced": 10,
       "scored_by": "implementation",
       "seconds": 1.9,
@@ -4737,6 +4823,7 @@
       "exit": 0,
       "expected_total": 28,
       "implementation": "luiksksk-nenrin-trace-intake-cleanroom",
+      "mode": "rerun",
       "of": 28,
       "ours": false,
       "passed": true,
@@ -4910,9 +4997,10 @@
           "want": "refused [no_embedded_signature] []"
         }
       },
+      "pinned": false,
       "reproduced": 28,
       "scored_by": "board",
-      "seconds": 0.1,
+      "seconds": 0.0,
       "status": "ran"
     },
     {
@@ -4921,6 +5009,7 @@
       "exit": 0,
       "expected_total": 9,
       "implementation": "agent-evidence-atlas-action-presence",
+      "mode": "rerun",
       "of": 9,
       "ours": false,
       "passed": true,
@@ -4980,6 +5069,7 @@
           "want": "refused [execution_invalid,preflight_invalid] [declared_executed_divergence,evidence_bound_unchecked]"
         }
       },
+      "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
       "seconds": 3.3,
