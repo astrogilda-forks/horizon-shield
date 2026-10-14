@@ -1,0 +1,13 @@
+python: Python 3.11.15
+$ python3 -I -B reader_v1.py vectors_decision_bound_real_run.json out_v1_real.json
+AR-00-REAL BOUND
+cases=1 BOUND=1 checks_matched=6 checks_mismatched=0
+exit 0
+$ python3 -I -B reader_v1.py vectors_decision_bound.json out_v1_synthetic.json
+DECISION-BOUND-OK BOUND
+DECISION-BOUND-LEGACY UNBOUND_LEGACY_ONLY
+DECISION-BOUND-FORGED-CITATION FAIL_DECISION_ID
+DECISION-BOUND-SUBSTITUTED FAIL_BINDING
+DECISION-BOUND-DENIED BOUND_NOT_PERMIT
+cases=5 BOUND=1 BOUND_NOT_PERMIT=1 FAIL_BINDING=1 FAIL_DECISION_ID=1 UNBOUND_LEGACY_ONLY=1 checks_matched=7 checks_mismatched=8
+exit 0

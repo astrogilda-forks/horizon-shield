@@ -1,0 +1,43 @@
+{
+  "AR-00-REAL": {
+    "checks": {
+      "decision_bound_output_hash": {
+        "equal": true,
+        "recomputed": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+        "stated": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf"
+      },
+      "decision_id": {
+        "equal": true,
+        "recomputed": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+        "stated": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e"
+      },
+      "info:policy_id_vs_grant_profile/execution_digest": {
+        "equal": true,
+        "recomputed": "probity-protected-action-reference-v0/da8a10646dad6df9ae8a9bc7f00298cea87e0e97a1e03392374c34e7aa680679",
+        "stated": "probity-protected-action-reference-v0/da8a10646dad6df9ae8a9bc7f00298cea87e0e97a1e03392374c34e7aa680679"
+      },
+      "info:source.approved_request.content_sha256": {
+        "equal": true,
+        "recomputed": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "stated": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91"
+      },
+      "info:ts_ms_as_iso_vs_grant_issued_at_iso": {
+        "equal": true,
+        "recomputed": "2026-10-14T01:39:06Z",
+        "stated": "2026-10-14T01:39:06Z"
+      },
+      "legacy_output_hash": {
+        "equal": true,
+        "recomputed": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "stated": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91"
+      }
+    },
+    "notes": [
+      "decision_preimage carries fields beyond the four the docstring names (action_ref, policy_id, outcome, ts_ms): canonicalization_profile_id; hashed as-is",
+      "written content bytes are not in the record; content_sha256 is taken as given, not recomputed",
+      "decision_preimage is taken from the record itself; its authenticity (separate channel) is outside this check, per the contract",
+      "record self-declares synthetic=false; not independently checkable"
+    ],
+    "verdict": "BOUND"
+  }
+}

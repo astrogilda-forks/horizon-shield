@@ -1,0 +1,7 @@
+Python 3.11.15
+--- stdout+stderr ---
+[stdout]
+AR-00-REAL BOUND
+cases=1 BOUND=1 checks_matched=6 checks_mismatched=0
+[stderr]
+exit_code=0
