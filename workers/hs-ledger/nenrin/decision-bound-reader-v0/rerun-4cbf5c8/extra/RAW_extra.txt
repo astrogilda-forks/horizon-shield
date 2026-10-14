@@ -1,0 +1,18 @@
+$ python3 -I -B tools/make_extra_cases.py <4cbf5c8>/decision-bound-output-v1/vectors_decision_bound.json extra_cases.json
+extra_cases.json sha256 808805a71a67f6b62ce9e85a1d47f9218b8531dcec6301e735598fcf67cd2588
+$ python3 -I -B rerun-7125f55d/B/reader.py extra_cases.json out_B.json
+X-FORGED-CITATION-OVER-LEGACY DECISION_ID_MISMATCH
+X-DENIED-OVER-LEGACY UNVERIFIABLE_LEGACY
+X-DENIED-NEITHER OUTPUT_HASH_MISMATCH
+SUMMARY cases=3 DECISION_ID_MISMATCH=1 OUTPUT_HASH_MISMATCH=1 UNVERIFIABLE_LEGACY=1
+exit=0
+$ python3 -I -B rerun-4cbf5c8/C/reader.py extra_cases.json out_C.json
+X-FORGED-CITATION-OVER-LEGACY FORGED_DECISION_CITATION
+X-DENIED-OVER-LEGACY ORDERING_UNVERIFIABLE
+X-DENIED-NEITHER BINDING_MISMATCH
+SUMMARY total=3 FORGED_DECISION_CITATION=1 BINDING_MISMATCH=1 ORDERING_UNVERIFIABLE=1
+exit=0
+$ (in <4cbf5c8>/decision-bound-output-v1) python3 -c 'import verify_decision_bound as v; print each case_id and v.verify_case(case)["code"]'
+X-FORGED-CITATION-OVER-LEGACY FORGED_DECISION_CITATION
+X-DENIED-OVER-LEGACY ORDERING_UNVERIFIABLE
+X-DENIED-NEITHER BINDING_MISMATCH

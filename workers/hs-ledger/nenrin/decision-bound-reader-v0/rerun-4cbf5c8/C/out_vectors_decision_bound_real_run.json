@@ -1,0 +1,109 @@
+{
+  "reader": "blind second reader, decision-bound-output-v1",
+  "input": "../fence/vectors_decision_bound_real_run.json",
+  "cases": [
+    {
+      "case_id": "AR-00-REAL-AS-OBSERVED",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": true
+        },
+        {
+          "step": 2,
+          "check": "recorded_output_hash == bound_output_hash",
+          "passed": false
+        },
+        {
+          "step": 3,
+          "check": "recorded_output_hash == legacy_output_hash",
+          "passed": true
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91"
+      },
+      "fields_present_but_not_read": [
+        "source",
+        "synthetic"
+      ],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:c7c141b8f6f403caef15d01c95e67bb9929a4dcc56f3a9c2f6b607b2a7ba5bf0\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"permit\",\"policy_id\":\"probity-protected-action-reference-v0/da8a10646dad6df9ae8a9bc7f00298cea87e0e97a1e03392374c34e7aa680679\",\"ts_ms\":1791941946000}",
+      "citation_recomputes": true,
+      "bound_output_preimage_jcs": "{\"content_sha256\":\"7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91\",\"decision_id\":\"sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e\",\"version\":\"decision-bound-output-v1\"}",
+      "bound_output_hash": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+      "bound_matches": false,
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "legacy_matches": true,
+      "outcome": "permit",
+      "verdict": "ORDERING_UNVERIFIABLE"
+    },
+    {
+      "case_id": "AR-00-REAL-DECISION-BOUND",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": true
+        },
+        {
+          "step": 2,
+          "check": "recorded_output_hash == bound_output_hash",
+          "passed": true
+        },
+        {
+          "step": "2a",
+          "check": "decision_preimage.outcome == \"permit\"",
+          "passed": true
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf"
+      },
+      "fields_present_but_not_read": [
+        "source",
+        "synthetic"
+      ],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:c7c141b8f6f403caef15d01c95e67bb9929a4dcc56f3a9c2f6b607b2a7ba5bf0\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"permit\",\"policy_id\":\"probity-protected-action-reference-v0/da8a10646dad6df9ae8a9bc7f00298cea87e0e97a1e03392374c34e7aa680679\",\"ts_ms\":1791941946000}",
+      "citation_recomputes": true,
+      "bound_output_preimage_jcs": "{\"content_sha256\":\"7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91\",\"decision_id\":\"sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e\",\"version\":\"decision-bound-output-v1\"}",
+      "bound_output_hash": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+      "bound_matches": true,
+      "outcome": "permit",
+      "outcome_is_permit": true,
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "verdict": "COMMITMENT_AFTER_DECISION"
+    }
+  ],
+  "errors": [],
+  "file_profile_label_not_hashed": "decision-bound-output-v1-real-run",
+  "summary": {
+    "total": 2,
+    "counts": {
+      "ORDERING_UNVERIFIABLE": 1,
+      "COMMITMENT_AFTER_DECISION": 1
+    }
+  }
+}

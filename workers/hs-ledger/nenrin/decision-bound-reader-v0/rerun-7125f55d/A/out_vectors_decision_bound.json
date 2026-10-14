@@ -1,0 +1,112 @@
+{
+  "DECISION-BOUND-DENIED": {
+    "checks": {
+      "decision_bound_output_hash": {
+        "equal": false,
+        "recomputed": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+        "stated": null
+      },
+      "decision_id": {
+        "equal": false,
+        "recomputed": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+        "stated": null
+      }
+    },
+    "notes": [
+      "missing required field(s): decision_id, decision_bound_output_hash",
+      "decision_preimage carries fields beyond the four the docstring names (action_ref, policy_id, outcome, ts_ms): canonicalization_profile_id; hashed as-is",
+      "bound hash alternative readings that match stated: none",
+      "written content bytes are not in the record; content_sha256 is taken as given, not recomputed",
+      "decision_preimage is taken from the record itself; its authenticity (separate channel) is outside this check, per the contract"
+    ],
+    "verdict": "FAIL_DECISION_ID"
+  },
+  "DECISION-BOUND-FORGED-CITATION": {
+    "checks": {
+      "decision_bound_output_hash": {
+        "equal": false,
+        "recomputed": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+        "stated": null
+      },
+      "decision_id": {
+        "equal": false,
+        "recomputed": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "stated": null
+      }
+    },
+    "notes": [
+      "missing required field(s): decision_id, decision_bound_output_hash",
+      "decision_preimage carries fields beyond the four the docstring names (action_ref, policy_id, outcome, ts_ms): canonicalization_profile_id; hashed as-is",
+      "bound hash alternative readings that match stated: none",
+      "written content bytes are not in the record; content_sha256 is taken as given, not recomputed",
+      "decision_preimage is taken from the record itself; its authenticity (separate channel) is outside this check, per the contract"
+    ],
+    "verdict": "FAIL_DECISION_ID"
+  },
+  "DECISION-BOUND-LEGACY": {
+    "checks": {
+      "decision_bound_output_hash": {
+        "equal": false,
+        "recomputed": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+        "stated": null
+      },
+      "decision_id": {
+        "equal": false,
+        "recomputed": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "stated": null
+      }
+    },
+    "notes": [
+      "missing required field(s): decision_id, decision_bound_output_hash",
+      "decision_preimage carries fields beyond the four the docstring names (action_ref, policy_id, outcome, ts_ms): canonicalization_profile_id; hashed as-is",
+      "bound hash alternative readings that match stated: none",
+      "written content bytes are not in the record; content_sha256 is taken as given, not recomputed",
+      "decision_preimage is taken from the record itself; its authenticity (separate channel) is outside this check, per the contract"
+    ],
+    "verdict": "FAIL_DECISION_ID"
+  },
+  "DECISION-BOUND-OK": {
+    "checks": {
+      "decision_bound_output_hash": {
+        "equal": false,
+        "recomputed": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+        "stated": null
+      },
+      "decision_id": {
+        "equal": false,
+        "recomputed": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "stated": null
+      }
+    },
+    "notes": [
+      "missing required field(s): decision_id, decision_bound_output_hash",
+      "decision_preimage carries fields beyond the four the docstring names (action_ref, policy_id, outcome, ts_ms): canonicalization_profile_id; hashed as-is",
+      "bound hash alternative readings that match stated: none",
+      "written content bytes are not in the record; content_sha256 is taken as given, not recomputed",
+      "decision_preimage is taken from the record itself; its authenticity (separate channel) is outside this check, per the contract"
+    ],
+    "verdict": "FAIL_DECISION_ID"
+  },
+  "DECISION-BOUND-SUBSTITUTED": {
+    "checks": {
+      "decision_bound_output_hash": {
+        "equal": false,
+        "recomputed": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+        "stated": null
+      },
+      "decision_id": {
+        "equal": false,
+        "recomputed": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "stated": null
+      }
+    },
+    "notes": [
+      "missing required field(s): decision_id, decision_bound_output_hash",
+      "decision_preimage carries fields beyond the four the docstring names (action_ref, policy_id, outcome, ts_ms): canonicalization_profile_id; hashed as-is",
+      "bound hash alternative readings that match stated: none",
+      "written content bytes are not in the record; content_sha256 is taken as given, not recomputed",
+      "decision_preimage is taken from the record itself; its authenticity (separate channel) is outside this check, per the contract"
+    ],
+    "verdict": "FAIL_DECISION_ID"
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "reader": "blind second reader, decision-bound-output-v1",
+  "input": "../fence/vectors_decision_bound.json",
+  "cases": [
+    {
+      "case_id": "DECISION-BOUND-OK",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": true
+        },
+        {
+          "step": 2,
+          "check": "recorded_output_hash == bound_output_hash",
+          "passed": true
+        },
+        {
+          "step": "2a",
+          "check": "decision_preimage.outcome == \"permit\"",
+          "passed": true
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415"
+      },
+      "fields_present_but_not_read": [],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:9c3d1f3a9e6b2d4c5a7e8f9012345678901234567890123456789012345678\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"permit\",\"policy_id\":\"probity-protected-action-reference-v0/policy-A\",\"ts_ms\":1760000100000}",
+      "citation_recomputes": true,
+      "bound_output_preimage_jcs": "{\"content_sha256\":\"7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91\",\"decision_id\":\"sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63\",\"version\":\"decision-bound-output-v1\"}",
+      "bound_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_matches": true,
+      "outcome": "permit",
+      "outcome_is_permit": true,
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "verdict": "COMMITMENT_AFTER_DECISION"
+    },
+    {
+      "case_id": "DECISION-BOUND-LEGACY",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": true
+        },
+        {
+          "step": 2,
+          "check": "recorded_output_hash == bound_output_hash",
+          "passed": false
+        },
+        {
+          "step": 3,
+          "check": "recorded_output_hash == legacy_output_hash",
+          "passed": true
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91"
+      },
+      "fields_present_but_not_read": [],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:9c3d1f3a9e6b2d4c5a7e8f9012345678901234567890123456789012345678\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"permit\",\"policy_id\":\"probity-protected-action-reference-v0/policy-A\",\"ts_ms\":1760000100000}",
+      "citation_recomputes": true,
+      "bound_output_preimage_jcs": "{\"content_sha256\":\"7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91\",\"decision_id\":\"sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63\",\"version\":\"decision-bound-output-v1\"}",
+      "bound_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_matches": false,
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "legacy_matches": true,
+      "outcome": "permit",
+      "verdict": "ORDERING_UNVERIFIABLE"
+    },
+    {
+      "case_id": "DECISION-BOUND-FORGED-CITATION",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": false
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:2e54729f8c9e947e556eeae602d98cf773a7cf96af111bdd69b34bfeab246f45"
+      },
+      "fields_present_but_not_read": [],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:9c3d1f3a9e6b2d4c5a7e8f9012345678901234567890123456789012345678\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"permit\",\"policy_id\":\"probity-protected-action-reference-v0/policy-A\",\"ts_ms\":1760000100000}",
+      "citation_recomputes": false,
+      "bound_output_hash": null,
+      "legacy_output_hash": null,
+      "verdict": "FORGED_DECISION_CITATION"
+    },
+    {
+      "case_id": "DECISION-BOUND-SUBSTITUTED",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": true
+        },
+        {
+          "step": 2,
+          "check": "recorded_output_hash == bound_output_hash",
+          "passed": false
+        },
+        {
+          "step": 3,
+          "check": "recorded_output_hash == legacy_output_hash",
+          "passed": false
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:327606a446a7d61707f15c09cc2dd27b60e2b2944fad0bc11e355ff970fdca86"
+      },
+      "fields_present_but_not_read": [],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:9c3d1f3a9e6b2d4c5a7e8f9012345678901234567890123456789012345678\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"permit\",\"policy_id\":\"probity-protected-action-reference-v0/policy-A\",\"ts_ms\":1760000100000}",
+      "citation_recomputes": true,
+      "bound_output_preimage_jcs": "{\"content_sha256\":\"7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91\",\"decision_id\":\"sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63\",\"version\":\"decision-bound-output-v1\"}",
+      "bound_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_matches": false,
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "legacy_matches": false,
+      "outcome": "permit",
+      "verdict": "BINDING_MISMATCH"
+    },
+    {
+      "case_id": "DECISION-BOUND-DENIED",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": true
+        },
+        {
+          "step": 2,
+          "check": "recorded_output_hash == bound_output_hash",
+          "passed": true
+        },
+        {
+          "step": "2a",
+          "check": "decision_preimage.outcome == \"permit\"",
+          "passed": false
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232"
+      },
+      "fields_present_but_not_read": [],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:9c3d1f3a9e6b2d4c5a7e8f9012345678901234567890123456789012345678\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"deny\",\"policy_id\":\"probity-protected-action-reference-v0/policy-A\",\"ts_ms\":1760000100000}",
+      "citation_recomputes": true,
+      "bound_output_preimage_jcs": "{\"content_sha256\":\"7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91\",\"decision_id\":\"sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f\",\"version\":\"decision-bound-output-v1\"}",
+      "bound_output_hash": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "bound_matches": true,
+      "outcome": "deny",
+      "outcome_is_permit": false,
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "verdict": "UNAUTHORIZED_BINDING"
+    },
+    {
+      "case_id": "KNOWN-LIMITATION-COMMITMENT-NOT-WRITE",
+      "checks_run": [
+        {
+          "step": 1,
+          "check": "claimed_decision_id == recomputed_decision_id",
+          "passed": true
+        },
+        {
+          "step": 2,
+          "check": "recorded_output_hash == bound_output_hash",
+          "passed": true
+        },
+        {
+          "step": "2a",
+          "check": "decision_preimage.outcome == \"permit\"",
+          "passed": true
+        }
+      ],
+      "inputs": {
+        "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+        "content_sha256": "7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+        "recorded_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415"
+      },
+      "fields_present_but_not_read": [
+        "prior_unbound_commitment"
+      ],
+      "preimage_field_names": [
+        "action_ref",
+        "canonicalization_profile_id",
+        "outcome",
+        "policy_id",
+        "ts_ms"
+      ],
+      "preimage_has_exactly_the_five_named_fields": true,
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_preimage_jcs": "{\"action_ref\":\"sha256:9c3d1f3a9e6b2d4c5a7e8f9012345678901234567890123456789012345678\",\"canonicalization_profile_id\":\"f018a62879ab01f21e8fe5e9e7486dadba0b795e9358b32fd24d38d2c1f1f07d\",\"outcome\":\"permit\",\"policy_id\":\"probity-protected-action-reference-v0/policy-A\",\"ts_ms\":1760000100000}",
+      "citation_recomputes": true,
+      "bound_output_preimage_jcs": "{\"content_sha256\":\"7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91\",\"decision_id\":\"sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63\",\"version\":\"decision-bound-output-v1\"}",
+      "bound_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_matches": true,
+      "outcome": "permit",
+      "outcome_is_permit": true,
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "verdict": "COMMITMENT_AFTER_DECISION"
+    }
+  ],
+  "errors": [],
+  "file_profile_label_not_hashed": "decision-bound-output-v1",
+  "summary": {
+    "total": 6,
+    "counts": {
+      "COMMITMENT_AFTER_DECISION": 2,
+      "ORDERING_UNVERIFIABLE": 1,
+      "FORGED_DECISION_CITATION": 1,
+      "BINDING_MISMATCH": 1,
+      "UNAUTHORIZED_BINDING": 1
+    }
+  }
+}

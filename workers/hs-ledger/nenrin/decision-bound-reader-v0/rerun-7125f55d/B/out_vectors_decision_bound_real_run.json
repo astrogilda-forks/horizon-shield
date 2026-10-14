@@ -1,0 +1,56 @@
+{
+  "input": "../fence/vectors_decision_bound_real_run.json",
+  "profile_label_not_hashed": "decision-bound-output-v1-real-run",
+  "results": [
+    {
+      "bound_output_hash_from_claimed_id": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+      "bound_output_hash_from_recomputed_id": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+      "case_id": "AR-00-REAL-AS-OBSERVED",
+      "claimed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+      "recorded_equals_bound_from_claimed_id": false,
+      "recorded_equals_bound_from_recomputed_id": false,
+      "recorded_equals_legacy": true,
+      "recorded_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "rule": "C5",
+      "verdict": "UNVERIFIABLE_LEGACY"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+      "bound_output_hash_from_recomputed_id": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+      "case_id": "AR-00-REAL-DECISION-BOUND",
+      "claimed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:1c5c85631708f0a1933ec1f0ad5981a07ed322353731da58920f11a51410e49e",
+      "recorded_equals_bound_from_claimed_id": true,
+      "recorded_equals_bound_from_recomputed_id": true,
+      "recorded_equals_legacy": false,
+      "recorded_output_hash": "sha256:a6ef258a2510098fa083559c130bda094eb90a410738c7c39af4124af36378bf",
+      "rule": "C2+C3+C4",
+      "verdict": "ACCEPTED"
+    }
+  ],
+  "summary": {
+    "by_verdict": {
+      "ACCEPTED": 1,
+      "UNVERIFIABLE_LEGACY": 1
+    },
+    "cases": 2
+  },
+  "version_constant": "decision-bound-output-v1"
+}

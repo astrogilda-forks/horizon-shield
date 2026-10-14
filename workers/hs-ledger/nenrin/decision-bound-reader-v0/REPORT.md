@@ -75,3 +75,40 @@ the bound hash an overlay computed later from retained values.
 
 Python 3.11.15 here. No file from the author's repository is copied into this directory; `FENCE_SHA256SUMS` pins the
 three fence files by hash.
+
+## Re-runs after the author's fixes
+
+Each re-run follows the same order: the raw output was posted on #76 before the author's verifier or its diff was
+opened, and the comparison came after. The blind copies of the vectors drop `expected_code` and `note` from each case
+(`tools/make_blind_copy.py` reproduces every copy's sha256 in `BLIND_COPY_SHA256SUMS`). No file from the author's
+repository is copied here; each `FENCE_SHA256SUMS` pins the fence by hash.
+
+### `rerun-7125f55d/` (author's commit `7125f55d117961fde33bb50a8b7ef7683c4240f9`)
+
+- `A/`: the first blind reader (`blind/reader.py`, unchanged) on the new records. It fails every case only because the
+  records renamed `decision_id` and `decision_bound_output_hash` to `claimed_decision_id` and
+  `recorded_output_hash`; its recomputed values still equal the ones the records state.
+- `B/`: a new blind reader written in a separate session from the four fence files only (`B/reader.py`, its guesses
+  in `B/GAPS.md`). 7 of 7 cases fall in the same groups as the author's `expected_code`, under its own names. The one
+  gap left that could flip a verdict: the text did not say to reject a `claimed_decision_id` that does not recompute
+  before the output hash is checked (FORGED-CITATION). The `input` field of `B/out_*.json` was rewritten from the
+  local fence path to `../fence/...` after the run; nothing else was changed.
+
+### `rerun-4cbf5c8/` (author's commit `4cbf5c85a22659ebd13bb5aa2f4fb7e924b3c207`)
+
+- `B/`: reader B from `rerun-7125f55d/B/reader.py`, unchanged. Same groups on all 8 cases, including the new
+  KNOWN-LIMITATION-COMMITMENT-NOT-WRITE, which it accepts.
+- `C/`: another new blind reader, written in a separate session from the four fence files only, told to use the
+  text's result names where the text gives them and to follow a check order only if the text prescribes one. It found
+  the order in the text and gives the author's `expected_code` on all 8 cases, name for name. Its two remaining
+  guesses are in `C/GAPS.md` (A.2 and A.3).
+- `extra/`: three cases built by `tools/make_extra_cases.py` that swap only `recorded_output_hash`, to test those two
+  guesses. The author's `verify_case()`, reader C and reader B all agree on all three (`extra/RAW_extra.txt`). The text
+  still allows the other reading on those three; a sentence and three vectors would pin it.
+
+Run a re-run:
+
+    git clone https://github.com/giskard09/execution-join-ref-remora-bridge && cd execution-join-ref-remora-bridge
+    git checkout 4cbf5c85a22659ebd13bb5aa2f4fb7e924b3c207
+    python3 -I -B <this dir>/tools/make_blind_copy.py decision-bound-output-v1/vectors_decision_bound.json blind.json
+    python3 -I -B <this dir>/rerun-4cbf5c8/C/reader.py blind.json out.json
