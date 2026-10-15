@@ -4,33 +4,32 @@
  "courier": "bitcoin p2p getheaders",
  "mode": "window from manifest",
  "peers": {
-  "125.26.248.32:8333": {
-   "tip_height": 966384,
-   "headers": 4753
+  "37.110.117.214:8333": {
+   "tip_height": 968416,
+   "headers": 6785
   },
-  "79.100.237.181:8333": {
-   "tip_height": 966384,
-   "headers": 4753
+  "70.80.251.51:8333": {
+   "tip_height": 968416,
+   "headers": 6785
   },
-  "99.172.29.3:8333": {
-   "tip_height": 966384,
-   "headers": 4753
+  "82.192.8.133:8333": {
+   "tip_height": 968416,
+   "headers": 6785
   }
  },
  "peers_failed": {
-  "73.227.239.221:8333": "[Errno 61] Connection refused",
-  "46.142.130.60:8333": "timed out",
-  "35.244.117.249:8333": "timed out"
+  "47.197.224.152:8333": "served a header that fails validation at height 961632: checkpoint mismatch at height 961632",
+  "139.162.185.121:8333": "connection closed by peer"
  },
  "min_peers": 2,
- "synced_at": 1789060106,
+ "synced_at": 1790265373,
  "start_height": 961632,
- "count": 4753,
- "tip_height": 966384,
- "tip_hash": "0000000000000000000134aa3ff6b306f9726aae0aa658d8b4a56838c7f8fcc0",
- "tip_time": 1789059871,
- "chainwork_hex": "85c9bb8e7c230af29bacb7e",
- "sha256": "527ea133bbe56df65bcab907a8b5ef613224f2b9aedfe2dcfb81bc87b4cb0312",
+ "count": 6785,
+ "tip_height": 968416,
+ "tip_hash": "0000000000000000000122af55415c0cfe39fa65742f4083a4e464d5f074b9ac",
+ "tip_time": 1790265162,
+ "chainwork_hex": "c02991a20171011932fbf86",
+ "sha256": "e1f352486a20344239df211f56c44c3d862eeb179cf0704263c9af69d925c485",
  "start_prev_hash": "00000000000000000000807f9dc917442a67910426d79ebb2f8aa2149327ce8a",
  "start_bits": 386022100,
  "prior_times": [
@@ -51,12 +50,14 @@
   "963648": "00000000000000000001769d9a327f5b455aa8a2dd407b1b63040d2a9f832d32",
   "965451": "00000000000000000000e9f3195446ee74b371312941d73e8fdddab86499b499",
   "965454": "0000000000000000000189026da7d21f973d0cc81df1a4d920d68cbe10d127fa",
-  "966384": "0000000000000000000134aa3ff6b306f9726aae0aa658d8b4a56838c7f8fcc0"
+  "966384": "0000000000000000000134aa3ff6b306f9726aae0aa658d8b4a56838c7f8fcc0",
+  "968416": "0000000000000000000122af55415c0cfe39fa65742f4083a4e464d5f074b9ac"
  },
- "retarget_boundaries_verified": 2,
+ "retarget_boundaries_verified": 3,
  "retarget_verified_at": [
   963648,
-  965664
+  965664,
+  967680
  ],
  "unverified": [
   {

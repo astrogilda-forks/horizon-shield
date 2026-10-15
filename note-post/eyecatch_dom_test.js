@@ -61,7 +61,11 @@ f.addEventListener('change', () => {
   d.innerHTML = '<button id="save">保存</button>';
   document.body.appendChild(d);
   document.getElementById('save').onclick = () => {
+    // M: 保存を押しても何も起きない(画面が残り、画像も付かない)。
+    if (${o.saveNoop ? 'true' : 'false'}) return;
     d.remove();
+    // L: 切り抜きの画面は閉じるが、別の小さな画面(role=dialog)が残る。Escape でも消えない。
+    if (${o.lingerDialog ? 'true' : 'false'}) { const t = document.createElement('div'); t.setAttribute('role', 'dialog'); t.style.cssText = 'position:fixed;right:10px;bottom:10px;width:240px;height:40px;background:#ffd'; t.textContent = '画像を保存しました'; document.body.appendChild(t); }
     let im;
     if (${o.asBackground ? 'true' : 'false'}) { im = document.createElement('div'); im.style.cssText = 'width:800px;height:300px;background-image:url(data:image/png;base64,${PNG1});background-size:cover'; }
     else { im = new Image(); im.style.cssText = 'width:800px;height:300px;display:block'; im.src = 'data:image/png;base64,${PNG1}'; }
@@ -85,6 +89,9 @@ const CASES = [
   { name: 'I 本物に近い形(名札の無い見出しの口、隠れた本文の口)', css: '', opts: { noLabel: true, hiddenMenu: true, bodyButton: true }, want: true },
   // 2026-10-03 第3話: 丸いボタンは押せたが「アップロードの項目が見つからない」。項目の言葉が完全一致しない形。
   { name: 'J メニューの言葉が「画像をアップロードする」で、外に出した浮きメニュー', css: '', opts: { noLabel: true, portalMenu: true, bodyButton: true }, want: true },
+  // 2026-10-04: 三回とも「保存のあとも画面が残った」と失敗扱いにしたが、公開の頁には画像が付いていた。
+  { name: 'L 保存のあとに別の画面が残るが、題の上に画像が付いた', css: '', opts: { noLabel: true, portalMenu: true, bodyButton: true, lingerDialog: true }, want: true },
+  { name: 'M 保存を押しても画面が残り、画像も付かない', css: '', opts: { noLabel: true, portalMenu: true, bodyButton: true, saveNoop: true }, want: false },
 ];
 
 (async () => {

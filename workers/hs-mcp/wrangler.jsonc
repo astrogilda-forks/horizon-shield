@@ -25,6 +25,12 @@
   //   Glamaのキャッシュ・利用者のブックマークが指している。落とせない。
   "workers_dev": true,
 
+  // ★2026-10-09 混雑よけの数え役。src/mcp.js の checkRateLimit が env.RL を先に使う(KV の put を待たない)。
+  //   namespace_id はこのアカウントの中で他の Worker と重ならない整数なら何でもよい。60 秒に 60 回、IP ごと。
+  "ratelimits": [
+    { "name": "RL", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } }
+  ],
+
   "kv_namespaces": [
     {
       "binding": "RL_KV",

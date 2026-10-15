@@ -141,10 +141,12 @@ const DASH = new RegExp("[" + String.fromCharCode(0x2012, 0x2013, 0x2014, 0x2015
   const pref = await call("find_verified_contractor", { area: "神奈川県" });
   chk("神奈川県で平塚の店は当たらん(名簿に県名が無い、正直に 0)", pref.verified_count === 0);
 
-  liveMode = "fail";
+  // 2026-10-09: mcp.js は名簿を isolate の中で 60 秒覚える。取得経路を一つずつ試すので、場面ごとに忘れさせる。
+  const forget = () => { if (globalThis.__HS_MEMO__) globalThis.__HS_MEMO__.clear(); };
+  forget(); liveMode = "fail";
   const f = await call("find_verified_contractor", { area: "平塚" });
   chk("live が落ちたら静的に落ちる(source が static)", /static/.test(f.source) && f.verified_count === 1, JSON.stringify(f).slice(0, 200));
-  staticMode = "fail";
+  forget(); staticMode = "fail";
   const g = await call("find_verified_contractor", { area: "平塚" });
   chk("両方落ちたら isError(0 件とは言わん)", g._isError === true && g.count === undefined, JSON.stringify(g).slice(0, 200));
   liveMode = "ok"; staticMode = "ok";
@@ -154,10 +156,12 @@ const DASH = new RegExp("[" + String.fromCharCode(0x2012, 0x2013, 0x2014, 0x2015
   const origFetch = globalThis.fetch;
   globalThis.fetch = async (url) => { if (String(url && url.url ? url.url : url).includes("hearing.horizonshield.dev")) publicCalls++; return origFetch(url); };
   const svcOk = { HEARING_SVC: { fetch: async (req) => new Response(JSON.stringify(FIX_LIVE), { headers: { "content-type": "application/json" } }) } };
+  forget();
   const sv = await call("find_verified_contractor", { area: "平塚" }, svcOk);
   chk("HEARING_SVC 有り: source に service binding、verified 1", /service binding/.test(sv.source) && sv.verified_count === 1, sv.source);
   chk("  公開 fetch は呼ばれてへん", publicCalls === 0, publicCalls);
   const svcBroken = { HEARING_SVC: { fetch: async () => { throw new Error("binding down"); } } };
+  forget();
   const sb = await call("find_verified_contractor", { area: "平塚" }, svcBroken);
   chk("HEARING_SVC が壊れとる: 公開 fetch(live)に落ちる", /live KV\)$/.test(sb.source) && sb.verified_count === 1, sb.source);
   chk("  公開 fetch が 1 回呼ばれた", publicCalls === 1, publicCalls);
