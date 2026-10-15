@@ -41,4 +41,5 @@ paths = [
   '''workers/hs-ledger/nenrin/provenance-v0/candidate_fixture\.json''',
   '''workers/hs-ledger/nenrin/interop-v0/fixtures/.*\.json''',
   '''workers/hs-ledger/nenrin/(sdk-python/src/nenrin_verify/_repo/)?trace-(intake|bind|span)-v0/fixtures/.*\.json''',
+  '''workers/hs-ledger/nenrin/idp-bind-v0/fixtures/.*\.json''',
 ]

@@ -1,0 +1,173 @@
+{
+  "schema": "idp-bind-v0/expected",
+  "version": "0.1.0",
+  "note": "verdict signature per fixture: verdict, sorted refusal codes, sorted finding codes. Keys derive from public labels in make_fixtures.mjs; the issuer is a mock in Microsoft Entra ID v2.0 shape (ES256), nothing here was issued by Microsoft",
+  "jwks_sha256": "785a666a03f6ed69622af384e52d6b1a641f96b8e007194e934e9431d1cfe984",
+  "cases": {
+    "b00_bound": {
+      "intent": "a live Entra-shaped token for the subject, bound to the actor key at 00:30Z inside the token's hour; accepted, bearer_only (no cnf)",
+      "expect": {
+        "verdict": "accepted",
+        "refusals": [],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b01_cnf_bound": {
+      "intent": "the same with a cnf claim naming the actor key (RFC 7800): accepted, cnf_bound",
+      "expect": {
+        "verdict": "accepted",
+        "refusals": [],
+        "findings": [
+          "cnf_bound"
+        ]
+      }
+    },
+    "b02_binding_changed_after_signing": {
+      "intent": "nonce changed after signing: binding_id does not recompute and actor_sig does not verify",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "actor_sig_invalid",
+          "binding_recompute_mismatch"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b03_signed_by_other_actor": {
+      "intent": "the binding names actor_id A but is signed by key B: actor_sig_invalid (a lifted binding)",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "actor_sig_invalid"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b04_token_from_other_issuer_key": {
+      "intent": "the token is signed by a key that is not in the pinned JWKS: idp_signature_invalid",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "idp_signature_invalid"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b05_jwks_not_pinned_bytes": {
+      "intent": "the JWKS document differs from the pinned digest by one byte: jwks_digest_mismatch (the issuer key is not trusted from these bytes)",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "jwks_digest_mismatch"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b06_subject_differs": {
+      "intent": "the token is for another subject than idp.subject says: subject_mismatch",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "subject_mismatch"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b07_audience_differs": {
+      "intent": "the token was issued for another audience: audience_mismatch (a token for one relying party cannot bind at another)",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "audience_mismatch"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b08_bound_after_expiry": {
+      "intent": "bound_at one second after exp: outside_token_window",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "outside_token_window"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b09_bound_before_nbf": {
+      "intent": "bound_at one second before nbf: outside_token_window",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "outside_token_window"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b10_cnf_names_other_key": {
+      "intent": "the issuer bound the token to another key: cnf_mismatch",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "cnf_mismatch"
+        ],
+        "findings": []
+      }
+    },
+    "b11_kid_not_in_jwks": {
+      "intent": "the token names a kid the pinned JWKS does not hold: key_not_in_jwks (a rotated key needs a new pin)",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "key_not_in_jwks"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b12_alg_none": {
+      "intent": "alg none with an empty signature: header says none, which is not a supported algorithm; refused twice (alg_unsupported, key lookup)",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "alg_unsupported"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    },
+    "b13_token_digest_differs": {
+      "intent": "the carried token is not the one the signed binding digests: token_digest_mismatch, and the binding no longer recomputes",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "actor_sig_invalid",
+          "binding_recompute_mismatch",
+          "token_digest_mismatch"
+        ],
+        "findings": [
+          "bearer_only"
+        ]
+      }
+    }
+  }
+}

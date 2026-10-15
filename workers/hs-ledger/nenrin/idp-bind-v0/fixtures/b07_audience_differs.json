@@ -1,0 +1,23 @@
+{
+  "binding": {
+    "schema": "idp-bind-v0/binding",
+    "actor_id": "did:key:z6Mkndj5m9nUz5ipPEiMHTZ7gHHL7QtWzpxjznB2D1fNAwdK",
+    "idp": {
+      "issuer": "https://login.microsoftonline.com/3f1d2b6e-7c5a-4b1e-9d2f-0a8c6e4b2d11/v2.0",
+      "subject": "c2d9e0a1-5b7f-4c3e-8a2d-1f0e9b8c7d6a",
+      "audience": "api://nenrin-idp-bind/relying-party-1",
+      "kid": "test-kid-2026-10",
+      "alg": "ES256"
+    },
+    "token_sha256": "f6275ff31ec1d96898ede16c53deb04b4555d35ad6c5edb662bbc94d82990cd9",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6InRlc3Qta2lkLTIwMjYtMTAifQ.eyJhdWQiOiJhcGk6Ly9hbm90aGVyLXJlbHlpbmctcGFydHkiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vM2YxZDJiNmUtN2M1YS00YjFlLTlkMmYtMGE4YzZlNGIyZDExL3YyLjAiLCJpYXQiOjE3OTIwMjI0MDAsIm5iZiI6MTc5MjAyMjQwMCwiZXhwIjoxNzkyMDI2MDAwLCJzdWIiOiJjMmQ5ZTBhMS01YjdmLTRjM2UtOGEyZC0xZjBlOWI4YzdkNmEiLCJvaWQiOiJjMmQ5ZTBhMS01YjdmLTRjM2UtOGEyZC0xZjBlOWI4YzdkNmEiLCJ0aWQiOiIzZjFkMmI2ZS03YzVhLTRiMWUtOWQyZi0wYThjNmU0YjJkMTEiLCJhenAiOiIwZjZiMWMyZC1hZ2VudC1hcHAtaWQiLCJ2ZXIiOiIyLjAiLCJ4bXNfYWdlbnRfdHlwZSI6ImFnZW50LWlkZW50aXR5In0.WkRUacF4BLqjOspzwKg0YEcMeF0pJB4vHJXqb3YkNpgsF1xSfyX-xvv3yT2Zgs7EB_e84iHUTRvsCugUAEIBEg",
+    "bound_at": "2026-10-15T00:30:00Z",
+    "nonce": "n-0001",
+    "binding_id": "754eb16c786fdfce33eca4469c7da813a6995064895684f27f4ed1e1d6398dad",
+    "actor_sig": "JSwAi7Ed8xsCmLprPmOOzpz6QuCxvl71ipysIgtULUd1A1bBlWIG9xPp+nIW5WbrirOFtUXQg3SXRsQ4v7fEAQ=="
+  },
+  "jwks": {
+    "sha256": "785a666a03f6ed69622af384e52d6b1a641f96b8e007194e934e9431d1cfe984",
+    "document": "{\"keys\":[{\"kty\":\"EC\",\"use\":\"sig\",\"kid\":\"test-kid-2026-10\",\"crv\":\"P-256\",\"x\":\"BFWWqux4ZTsxM34_-kkpkLPKjGF7Tr_wVs9821X7uJM\",\"y\":\"BbrKCJV69OZhfGJRuILjByQmkrDoovKBwy_zeUc7hP0\",\"x5t\":\"OvnBN3rVa2AHzR-UEmRhVOzcc0g\"}]}"
+  }
+}

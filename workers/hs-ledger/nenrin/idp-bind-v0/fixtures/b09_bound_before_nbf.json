@@ -1,0 +1,23 @@
+{
+  "binding": {
+    "schema": "idp-bind-v0/binding",
+    "actor_id": "did:key:z6Mkndj5m9nUz5ipPEiMHTZ7gHHL7QtWzpxjznB2D1fNAwdK",
+    "idp": {
+      "issuer": "https://login.microsoftonline.com/3f1d2b6e-7c5a-4b1e-9d2f-0a8c6e4b2d11/v2.0",
+      "subject": "c2d9e0a1-5b7f-4c3e-8a2d-1f0e9b8c7d6a",
+      "audience": "api://nenrin-idp-bind/relying-party-1",
+      "kid": "test-kid-2026-10",
+      "alg": "ES256"
+    },
+    "token_sha256": "104938cb8fb2cf63de0135882ddf23de6c6e73cf111821f3deccec36a36d54cd",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6InRlc3Qta2lkLTIwMjYtMTAifQ.eyJhdWQiOiJhcGk6Ly9uZW5yaW4taWRwLWJpbmQvcmVseWluZy1wYXJ0eS0xIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tLzNmMWQyYjZlLTdjNWEtNGIxZS05ZDJmLTBhOGM2ZTRiMmQxMS92Mi4wIiwiaWF0IjoxNzkyMDIyNDAwLCJuYmYiOjE3OTIwMjI0MDAsImV4cCI6MTc5MjAyNjAwMCwic3ViIjoiYzJkOWUwYTEtNWI3Zi00YzNlLThhMmQtMWYwZTliOGM3ZDZhIiwib2lkIjoiYzJkOWUwYTEtNWI3Zi00YzNlLThhMmQtMWYwZTliOGM3ZDZhIiwidGlkIjoiM2YxZDJiNmUtN2M1YS00YjFlLTlkMmYtMGE4YzZlNGIyZDExIiwiYXpwIjoiMGY2YjFjMmQtYWdlbnQtYXBwLWlkIiwidmVyIjoiMi4wIiwieG1zX2FnZW50X3R5cGUiOiJhZ2VudC1pZGVudGl0eSJ9.c2kedTi1TRkeZCdz8LLN7vhgais1RTpNYzjzmL1u3QDq_NGdxs82WlAx2Qh3oEpl8uwNyZ28fJ2Uos-ua-6VCQ",
+    "bound_at": "2026-10-14T23:59:59Z",
+    "nonce": "n-0001",
+    "binding_id": "25bab7b6861c196e1e94cf357a90b65eb5c741fb211a7d75f050913fc09a4a95",
+    "actor_sig": "QH/J7iph9kXY1h0uxOKAFl6GHcTu3+zk/LYhPJX6D2wemprxJv5TdFU4HA+hJ2jkKragXtWoL60oW1KYv9ZQBQ=="
+  },
+  "jwks": {
+    "sha256": "785a666a03f6ed69622af384e52d6b1a641f96b8e007194e934e9431d1cfe984",
+    "document": "{\"keys\":[{\"kty\":\"EC\",\"use\":\"sig\",\"kid\":\"test-kid-2026-10\",\"crv\":\"P-256\",\"x\":\"BFWWqux4ZTsxM34_-kkpkLPKjGF7Tr_wVs9821X7uJM\",\"y\":\"BbrKCJV69OZhfGJRuILjByQmkrDoovKBwy_zeUc7hP0\",\"x5t\":\"OvnBN3rVa2AHzR-UEmRhVOzcc0g\"}]}"
+  }
+}
