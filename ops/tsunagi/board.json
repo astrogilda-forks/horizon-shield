@@ -1,5 +1,5 @@
 {
-  "board_sha256": "b58984fc5e4e4258765f91100d829a9a3db1ee7343b4d24861329232a22099e4",
+  "board_sha256": "6d4e4d6ae23c61c7b8028e1568e8deb77340217bf4946d402a375fa06e19cb57",
   "differential": {
     "agree": 40,
     "bundles": 40,
@@ -30,7 +30,7 @@
     "agent-evidence-atlas-action-presence": {
       "author": "Sankalp Gilda (astrogilda), Probity AI",
       "clone_error": null,
-      "commit": "884df4d30e394722511791219061aa428c228be9",
+      "commit": "afb94f1c44633f22c6bdaab4bc2fd9d5fbbf03bf",
       "id": "agent-evidence-atlas-action-presence",
       "language": "Python",
       "license": "Apache-2.0",
@@ -40,7 +40,7 @@
     "babyblueviper1-approval-v2": {
       "author": "babyblueviper1",
       "clone_error": null,
-      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
       "id": "babyblueviper1-approval-v2",
       "language": "Python",
       "license": "MIT",
@@ -50,7 +50,7 @@
     "babyblueviper1-nenrin-cleanroom": {
       "author": "babyblueviper1",
       "clone_error": null,
-      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
       "id": "babyblueviper1-nenrin-cleanroom",
       "language": "Python",
       "license": "MIT",
@@ -60,7 +60,7 @@
     "hs-ledger-trace-pin": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "id": "hs-ledger-trace-pin",
       "language": "JavaScript",
       "license": null,
@@ -70,7 +70,7 @@
     "hs-nenrin-go": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "id": "hs-nenrin-go",
       "language": "Go",
       "license": null,
@@ -80,7 +80,7 @@
     "hs-nenrin-pypi": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "id": "hs-nenrin-pypi",
       "language": "Python",
       "license": null,
@@ -90,7 +90,7 @@
     "hs-nenrin-reference": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "id": "hs-nenrin-reference",
       "language": "JavaScript",
       "license": null,
@@ -100,7 +100,7 @@
     "hs-settle-v1.10-approval": {
       "author": "ogasurfproject-jpg",
       "clone_error": null,
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "id": "hs-settle-v1.10-approval",
       "language": "Python",
       "license": null,
@@ -110,7 +110,7 @@
     "kuangmi-bit-nenrin-independent-verifiers": {
       "author": "kuangmi-bit",
       "clone_error": null,
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "id": "kuangmi-bit-nenrin-independent-verifiers",
       "language": "Python",
       "license": "MIT",
@@ -127,6 +127,17 @@
       "ours": false,
       "repo": "https://github.com/luiksksk/nenrin-trace-intake-cleanroom.git"
     },
+    "poke-nushi-vate-nenrin-s3-crosswalk": {
+      "author": "Poke-nushi (VATE maintainer)",
+      "clone_error": null,
+      "commit": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "id": "poke-nushi-vate-nenrin-s3-crosswalk",
+      "language": "Python",
+      "license": "Apache-2.0",
+      "ours": false,
+      "pinned": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "repo": "https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope.git"
+    },
     "probity-a2a-card-readers": {
       "author": "Sankalp Gilda (astrogilda), Probity AI",
       "clone_error": null,
@@ -138,7 +149,7 @@
       "repo": "https://github.com/probityai/agent-evidence-vectors.git"
     }
   },
-  "measured_at": "2026-10-14T21:56:44Z",
+  "measured_at": "2026-10-15T21:46:37Z",
   "pairs": [
     {
       "a": "babyblueviper1-approval-v2",
@@ -251,10 +262,10 @@
       "what": "the action-presence vectors, read by two outside implementations written by different people, compared case by case"
     }
   ],
-  "repository_commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+  "repository_commit": "958244fd01af19710be8d3a272dd6b256dba338c",
   "runs": [
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
@@ -302,7 +313,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
@@ -398,7 +409,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
@@ -632,7 +643,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
@@ -704,7 +715,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.3-survivors",
       "exit": 0,
       "expected_total": 9,
@@ -776,7 +787,67 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
+      "corpus": "nenrin-interop-v0.3-own-proto",
+      "exit": 0,
+      "expected_total": 7,
+      "implementation": "hs-nenrin-reference",
+      "mode": "rerun",
+      "of": 7,
+      "ours": true,
+      "passed": true,
+      "per_vector": {
+        "q00_base": {
+          "ok": true,
+          "reason": null,
+          "result": "accepted [] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "accepted [] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q01_own_proto_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q02_own_proto_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q03_own_proto_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q04_audit_note_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q05_audit_note_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q06_audit_note_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        }
+      },
+      "pinned": false,
+      "reproduced": 7,
+      "scored_by": "board",
+      "seconds": 0.1,
+      "status": "ran"
+    },
+    {
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
@@ -962,7 +1033,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-bind-v0",
       "exit": 0,
       "expected_total": 28,
@@ -1148,7 +1219,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-span-v0",
       "exit": 0,
       "expected_total": 16,
@@ -1262,7 +1333,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
@@ -1306,11 +1377,11 @@
       "pinned": false,
       "reproduced": 5,
       "scored_by": "board",
-      "seconds": 11.2,
+      "seconds": 10.4,
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
@@ -1406,7 +1477,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
@@ -1640,7 +1711,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
@@ -1712,7 +1783,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.3-survivors",
       "exit": 0,
       "expected_total": 9,
@@ -1784,7 +1855,67 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
+      "corpus": "nenrin-interop-v0.3-own-proto",
+      "exit": 0,
+      "expected_total": 7,
+      "implementation": "hs-nenrin-go",
+      "mode": "rerun",
+      "of": 7,
+      "ours": true,
+      "passed": true,
+      "per_vector": {
+        "q00_base": {
+          "ok": true,
+          "reason": null,
+          "result": "accepted [] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "accepted [] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q01_own_proto_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q02_own_proto_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q03_own_proto_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q04_audit_note_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q05_audit_note_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q06_audit_note_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        }
+      },
+      "pinned": false,
+      "reproduced": 7,
+      "scored_by": "board",
+      "seconds": 0.1,
+      "status": "ran"
+    },
+    {
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
@@ -1970,7 +2101,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-bind-v0",
       "exit": 0,
       "expected_total": 28,
@@ -2156,7 +2287,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-span-v0",
       "exit": 0,
       "expected_total": 16,
@@ -2270,7 +2401,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
@@ -2318,7 +2449,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
@@ -2414,7 +2545,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
@@ -2648,7 +2779,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
@@ -2716,11 +2847,11 @@
       "pinned": false,
       "reproduced": 9,
       "scored_by": "board",
-      "seconds": 0.2,
+      "seconds": 0.1,
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-interop-v0.3-survivors",
       "exit": 0,
       "expected_total": 9,
@@ -2792,7 +2923,67 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
+      "corpus": "nenrin-interop-v0.3-own-proto",
+      "exit": 0,
+      "expected_total": 7,
+      "implementation": "hs-nenrin-pypi",
+      "mode": "rerun",
+      "of": 7,
+      "ours": true,
+      "passed": true,
+      "per_vector": {
+        "q00_base": {
+          "ok": true,
+          "reason": null,
+          "result": "accepted [] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "accepted [] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q01_own_proto_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q02_own_proto_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q03_own_proto_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q04_audit_note_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q05_audit_note_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q06_audit_note_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        }
+      },
+      "pinned": false,
+      "reproduced": 7,
+      "scored_by": "board",
+      "seconds": 0.1,
+      "status": "ran"
+    },
+    {
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
@@ -2978,7 +3169,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-bind-v0",
       "exit": 0,
       "expected_total": 28,
@@ -3164,7 +3355,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-span-v0",
       "exit": 0,
       "expected_total": 16,
@@ -3278,7 +3469,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "nenrin-trace-intake-v0",
       "exit": 0,
       "expected_total": 28,
@@ -3464,7 +3655,7 @@
       "status": "ran"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
@@ -3482,7 +3673,7 @@
       "stdout_sha256": "b97c6088c71964e16445d2293aa18ec011e890d40b13887d2eefb866c74a9295"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
@@ -3500,7 +3691,7 @@
       "stdout_sha256": "e1e79096aedc01ad60a3182d8ce6392c82501e8fee491a89f67552696ef233e0"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
@@ -3518,7 +3709,7 @@
       "stdout_sha256": "021478294fa83a94a2dc7aef8e77830b1eace07cbea7cef9a67ff720e25f386e"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
@@ -3566,7 +3757,7 @@
       "status": "ran"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
@@ -3662,7 +3853,7 @@
       "status": "ran"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
@@ -3896,7 +4087,7 @@
       "status": "ran"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
@@ -3914,7 +4105,7 @@
       "stdout_sha256": "72cc15341d9fa93b42494cd856143c855175a35d5996c03cd9342cfdd769dd78"
     },
     {
-      "commit": "a71cadd86187c1df16c503cb587c0f2ec3284906",
+      "commit": "4203123b2bb8dd494543deac837d296238211fb3",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
@@ -3986,7 +4177,7 @@
       "status": "ran"
     },
     {
-      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
       "corpus": "nenrin-interop-v0",
       "exit": 0,
       "expected_total": 5,
@@ -4034,7 +4225,7 @@
       "status": "ran"
     },
     {
-      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
       "corpus": "nenrin-interop-v0.1",
       "exit": 0,
       "expected_total": 13,
@@ -4130,7 +4321,7 @@
       "status": "ran"
     },
     {
-      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
       "corpus": "nenrin-interop-v0.2-edge",
       "exit": 0,
       "expected_total": 36,
@@ -4364,7 +4555,139 @@
       "status": "ran"
     },
     {
-      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
+      "corpus": "nenrin-interop-v0.3-survivors",
+      "exit": 0,
+      "expected_total": 9,
+      "implementation": "babyblueviper1-nenrin-cleanroom",
+      "mode": "rerun",
+      "of": 9,
+      "ours": false,
+      "passed": true,
+      "per_vector": {
+        "p00_base": {
+          "ok": true,
+          "reason": null,
+          "result": "accepted [] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "accepted [] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p01_caller_sig_bit_flipped": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p02_grant_signed_by_provider_key": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p03_grant_ref_not_recomputing": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p04_receipt_id_not_recomputing": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p05_receipt_names_other_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p06_hour_24_inside_window": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p07_executed_after_not_after": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "p08_receipt_from_unauthorized_provider": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        }
+      },
+      "pinned": false,
+      "reproduced": 9,
+      "scored_by": "board",
+      "seconds": 0.1,
+      "status": "ran"
+    },
+    {
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
+      "corpus": "nenrin-interop-v0.3-own-proto",
+      "exit": 0,
+      "expected_total": 7,
+      "implementation": "babyblueviper1-nenrin-cleanroom",
+      "mode": "rerun",
+      "of": 7,
+      "ours": false,
+      "passed": true,
+      "per_vector": {
+        "q00_base": {
+          "ok": true,
+          "reason": null,
+          "result": "accepted [] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "accepted [] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q01_own_proto_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q02_own_proto_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q03_own_proto_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q04_audit_note_in_grant": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,preflight_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q05_audit_note_in_receipt": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [execution_invalid,execution_signature_invalid,execution_unreconciled] [evidence_bound_unchecked,no_delegation_observations]"
+        },
+        "q06_audit_note_in_intent": {
+          "ok": true,
+          "reason": null,
+          "result": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]",
+          "want": "refused [preflight_invalid,preflight_signature_invalid] [evidence_bound_unchecked,no_delegation_observations]"
+        }
+      },
+      "pinned": false,
+      "reproduced": 7,
+      "scored_by": "board",
+      "seconds": 0.1,
+      "status": "ran"
+    },
+    {
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
@@ -4428,7 +4751,7 @@
       "stdout_sha256": "e3f642d81ab22703d58821a9e9502724e00b1e603ccfa70987445465f7d33b59"
     },
     {
-      "commit": "5abe7a646ca2361a9009a18957f62215d23fa2dd",
+      "commit": "0a818e735edd6f7637156506c93202058c94cee1",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
@@ -4527,7 +4850,7 @@
       "status": "ran"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
@@ -4591,7 +4914,7 @@
       "stdout_sha256": "e3f642d81ab22703d58821a9e9502724e00b1e603ccfa70987445465f7d33b59"
     },
     {
-      "commit": "aadbee42e28f36527fb8e2d5e23d16425422618b",
+      "commit": "958244fd01af19710be8d3a272dd6b256dba338c",
       "corpus": "musubi-approval-v2",
       "exit": 0,
       "expected_total": 9,
@@ -5004,7 +5327,7 @@
       "status": "ran"
     },
     {
-      "commit": "884df4d30e394722511791219061aa428c228be9",
+      "commit": "afb94f1c44633f22c6bdaab4bc2fd9d5fbbf03bf",
       "corpus": "nenrin-interop-v0.2-action-presence",
       "exit": 0,
       "expected_total": 9,
@@ -5074,21 +5397,760 @@
       "scored_by": "board",
       "seconds": 3.3,
       "status": "ran"
+    },
+    {
+      "commit": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "corpus": "vate-nenrin-s3-crosswalk-v0",
+      "exit": 0,
+      "expected_total": 3,
+      "implementation": "poke-nushi-vate-nenrin-s3-crosswalk",
+      "mode": "saved",
+      "mode_declared": true,
+      "of": 3,
+      "ours": false,
+      "passed": true,
+      "per_vector": {
+        "match": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "missing_receipt": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "target_mismatch": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        }
+      },
+      "pinned": true,
+      "report_sha256": "9e7ec27b116d724793c6ce712f17257e45dd4e754e6c709fe84845626172ccd3",
+      "reproduced": 3,
+      "scored_by": "board",
+      "seconds": 0.2,
+      "status": "ran"
+    },
+    {
+      "commit": "79a9f91a468be6ef238697baafb5dfe3927a365b",
+      "corpus": "vate-nenrin-s3-crosswalk-v0",
+      "exit": 0,
+      "expected_total": 3,
+      "implementation": "poke-nushi-vate-nenrin-s3-crosswalk",
+      "mode": "rerun",
+      "mode_declared": true,
+      "of": 3,
+      "ours": false,
+      "passed": true,
+      "per_vector": {
+        "match": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [],
+                "verdict": "accepted"
+              },
+              "want": {
+                "refusals": [],
+                "verdict": "accepted"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "supported_under_local_assumptions",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "missing_receipt": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "not_assessed",
+              "want": "not_assessed"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_incomplete_pair",
+                    null
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "insufficient",
+                "record_linkage": "not_assessed",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        },
+        "target_mismatch": {
+          "findings": {
+            "CW-01": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-02": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-03": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-04": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-05": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-06": {
+              "ok": true,
+              "result": "mismatched",
+              "want": "mismatched"
+            },
+            "CW-07": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-08": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-09": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-10": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "CW-11": {
+              "ok": true,
+              "result": "matched",
+              "want": "matched"
+            },
+            "native.npm": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "native.pypi": {
+              "ok": true,
+              "result": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              },
+              "want": {
+                "refusals": [
+                  [
+                    "execution_invalid",
+                    "action_diverged"
+                  ]
+                ],
+                "verdict": "refused"
+              }
+            },
+            "records": {
+              "ok": true,
+              "result": "identical",
+              "want": "identical"
+            },
+            "vate": {
+              "ok": true,
+              "result": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              },
+              "want": {
+                "assessment": "contradictory",
+                "record_linkage": "matched",
+                "retry_authorized": false
+              }
+            }
+          },
+          "ok": true,
+          "reason": null,
+          "result": "all 15 findings match",
+          "want": "all 15 findings"
+        }
+      },
+      "pinned": true,
+      "report_sha256": "cdd43796612c737715813d13174d43c1d23fd6397ec7fd3d74f65de71198231a",
+      "reproduced": 3,
+      "scored_by": "board",
+      "seconds": 3.7,
+      "status": "ran"
     }
   ],
   "schema": "hs-tsunagi-board-v1",
   "summary": {
     "not_run": 0,
     "outside_authors_passing": [
+      "Poke-nushi (VATE maintainer)",
       "Sankalp Gilda (astrogilda), Probity AI",
       "a2aproject (the official A2A Python SDK)",
       "babyblueviper1",
       "kuangmi-bit",
       "luiksksk"
     ],
-    "outside_passed": 18,
-    "passed": 45,
-    "refereed_passed": 36,
-    "runs": 45
+    "outside_passed": 22,
+    "passed": 52,
+    "refereed_passed": 43,
+    "runs": 52
   }
 }
