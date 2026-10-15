@@ -37,10 +37,12 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 TIMEOUT = 900
 NENRIN = os.path.join(ROOT, "workers", "hs-ledger", "nenrin")
 HISTORY_KEEP = 60
+KEEP_REPORTS = None   # --keep-reports DIR: write each crosswalk comparison report the board scored, by implementation and mode
 # What outside code must not be able to change between runs: the corpora the board scores against, the generator, and
 # the board's own tools and adapters. Snapshotted before anything outside runs, checked and restored after each run.
 GUARDED = [os.path.join(NENRIN, d) for d in ("interop-v0", "interop-v0.1", "interop-v0.2", "interop-v0.3", "conformance-v0", "sdk", "sdk-python/src",
-                                             "musubi-v0", "trace-intake-v0", "trace-bind-v0", "trace-span-v0", "trace-pin-v0")] + [HERE]
+                                             "musubi-v0", "trace-intake-v0", "trace-bind-v0", "trace-span-v0", "trace-pin-v0",
+                                             "vate-s3-v0")] + [HERE]
 
 # The a2a-approval-v2 vectors (babyblueviper1, settle v1.10's approver), refereed by the board from this repository's pinned copy,
 # not from the author's repository: an implementation cannot change the answers it is scored against (2026-10-09, #34).
@@ -84,6 +86,114 @@ def score_approval(cases, result, total):
         out["problem"] = "the implementation wrote no readable output file"
     elif not ok_out:
         out["problem"] = "the output file is not a JSON object keyed by case name"
+    return out
+
+
+# Crosswalks: an outside tool that compares two checkers' reports. The board runs it, reads the comparison report it
+# writes, and compares every finding with this repository's pinned expectations itself; the tool's exit code is recorded
+# but is not the result (2026-10-14, Poke-nushi's NENRIN and VATE S3 crosswalk, VATE #84).
+CROSSWALK_CORPORA = {
+    "vate-nenrin-s3-crosswalk-v0": (os.path.join(HERE, "expected", "vate-nenrin-s3-crosswalk-v0.json"),
+                                    "a339c11bd95cde67dd5b125ee8c946bb08db6a4687e628ab84b72919b1c96919"),
+}
+
+
+def load_crosswalk_expected(name):
+    path, pin = CROSSWALK_CORPORA[name]
+    raw = open(path, "rb").read()
+    if hashlib.sha256(raw).hexdigest() != pin:
+        raise ValueError("%s does not match its pinned sha256" % os.path.relpath(path, ROOT))
+    E = json.loads(raw.decode("utf-8"))
+    rec = E["records"]
+    ours = {c: open(os.path.join(ROOT, rec["ours"], c, rec["file"]), "rb").read() for c in E["cases"]}   # before outside code runs
+    return E, ours
+
+
+def _dig(obj, *keys):
+    for k in keys:
+        if not isinstance(obj, dict) or k not in obj:
+            return None
+        obj = obj[k]
+    return obj
+
+
+def _native_sig(rep):
+    """verdict plus the refusals as a sorted list of [code, reason]: what the expectations file states for each verifier."""
+    if not isinstance(rep, dict) or not isinstance(rep.get("refusals"), list):
+        return None
+    try:
+        refs = sorted([[x.get("code"), x.get("reason")] for x in rep["refusals"]], key=lambda r: json.dumps(r))
+    except AttributeError:
+        return None
+    return {"verdict": rep.get("verdict"), "refusals": refs}
+
+
+def score_crosswalk(expected, report, mode, records_dir, total, ours):
+    """Compare a crosswalk's comparison report with the pinned expectations, finding by finding, and count a case only
+    when every one of its findings matches (as agreed in VATE #84). Per case: the NENRIN records it compared are byte for
+    byte this repository's, each relationship CW-01..CW-11 has the expected status, each NENRIN verifier (npm, PyPI) has
+    the expected verdict and refusals, and VATE has the expected assessment and record_linkage with
+    retry_authorized false. The report's
+    schema, pins and evidence modes must be the expected ones for this mode."""
+    E = expected
+    per, problems = {}, []
+    want_modes = E["evidence_modes"].get(mode)
+    rec = E["records"]
+    if not isinstance(report, dict):
+        problems.append("the crosswalk wrote no readable comparison report" if report is None else "the report is not a JSON object")
+        report = {}
+    else:
+        if report.get("schema") != E["report_schema"]:
+            problems.append("report schema %r, expected %r" % (report.get("schema"), E["report_schema"]))
+        for k, v in E["pins"].items():
+            if _dig(report, "pins", k) != v:
+                problems.append("pins.%s is %r, expected %r" % (k, _dig(report, "pins", k), v))
+        if report.get("evidence_modes") != want_modes:
+            problems.append("evidence modes %r, expected %r for mode %s" % (report.get("evidence_modes"), want_modes, mode))
+    by = {}
+    for c in report.get("cases") if isinstance(report.get("cases"), list) else []:
+        if isinstance(c, dict) and isinstance(c.get("nenrin_case"), str):
+            by[c["nenrin_case"]] = c
+    extra = sorted(set(by) - set(E["cases"]))
+    if extra:
+        problems.append("cases not in the expectations: " + ", ".join(extra[:10]))
+    for case, want in E["cases"].items():
+        got = by.get(case)
+        theirs = None
+        if records_dir:
+            try:
+                theirs = open(os.path.join(records_dir, case, rec["file"]), "rb").read()
+            except OSError:
+                theirs = None
+        r = "identical" if theirs is not None and theirs == ours[case] else ("missing" if theirs is None else "different bytes")
+        f = {"records": {"ok": r == "identical", "result": r, "want": "identical"}}
+        if got is not None:
+            if got.get("vate_case") != want["vate_case"]:
+                problems.append("%s is paired with VATE case %r, expected %r" % (case, got.get("vate_case"), want["vate_case"]))
+            if got.get("evidence_modes") != want_modes:
+                problems.append("%s evidence modes %r, expected %r" % (case, got.get("evidence_modes"), want_modes))
+        rels = {}
+        for x in (got or {}).get("relationships") or []:
+            if isinstance(x, dict) and isinstance(x.get("id"), str):
+                rels[x["id"]] = x.get("status")
+        for rid, st in want["relationships"].items():
+            f[rid] = {"ok": rels.get(rid) == st, "result": rels.get(rid), "want": st}
+        for k, w in want["native"].items():
+            g = _native_sig(_dig(got, "native_reports", k, "report"))
+            f["native." + k] = {"ok": g == w, "result": g, "want": w}
+        vr = _dig(got, "vate_report", "report")
+        g = {k: vr.get(k) for k in want["vate"]} if isinstance(vr, dict) else None
+        f["vate"] = {"ok": g == want["vate"], "result": g, "want": want["vate"]}
+        bad = [k for k, v in f.items() if not v["ok"]]
+        per[case] = {"ok": not bad and got is not None, "result": "all %d findings match" % len(f) if not bad else
+                     ("not in the report" if got is None else "differs: " + ", ".join(bad)),
+                     "reason": None, "want": "all %d findings" % len(f), "findings": f}
+    n = sum(1 for v in per.values() if v["ok"])
+    out = {"reproduced": n, "of": len(per), "expected_total": total, "per_vector": per, "scored_by": "board",
+           "passed": n == len(per) == total and not problems}
+    if problems:
+        out["problems"] = problems[:20]
+        out["problem"] = problems[0]
     return out
 
 
@@ -278,6 +388,7 @@ def run_board(spec, ext_dir, local=None):
     corpora = {n: REFEREE.load_corpus(n, NENRIN) for n in REFEREE.CORPORA}   # read before any outside code runs
     batch_texts = {n: REFEREE.batch_text(n, NENRIN) for n in REFEREE.CORPORA}
     approval = {n: load_approval_corpus(n) for n in APPROVAL_CORPORA}
+    crosswalk = {n: load_crosswalk_expected(n) for n in CROSSWALK_CORPORA}
     snap = snapshot()
     for impl in spec["implementations"]:
         impl_dir = None
@@ -305,8 +416,10 @@ def run_board(spec, ext_dir, local=None):
                 vectors[run["corpus"]] = expand(run["vectors"], impl_dir, HERE, vectors)
             row = {"implementation": impl["id"], "ours": impl["ours"], "corpus": run["corpus"], "commit": info["commit"],
                    "pinned": bool(impl.get("pin")), "mode": run.get("mode", "rerun"),
-                   "scored_by": "board" if run["parse"] in ("batch_referee", "batch_approval_referee") else "implementation",
+                   "scored_by": "board" if run["parse"] in BOARD_SCORED else "implementation",
                    "expected_total": run["total"]}
+            if "mode" in run:
+                row["mode_declared"] = True
             if info["clone_error"]:
                 row.update({"status": "not_run", "reason": "the repository could not be cloned: " + info["clone_error"]})
                 rows.append(row); continue
@@ -317,6 +430,33 @@ def run_board(spec, ext_dir, local=None):
                 if code != 0:
                     row.update({"status": "not_run", "reason": "setup failed (exit %d): %s" % (code, (err or out).strip()[-300:])})
                     rows.append(row); continue
+            if run["parse"] == "crosswalk_findings":
+                E, ours = crosswalk[run["corpus"]]
+                with tempfile.TemporaryDirectory(prefix="tsunagi-io-") as t:
+                    io = {"@out": os.path.join(t, "report.json")}
+                    code, out, err, secs = sh([expand(x, impl_dir, HERE, vectors, io) for x in run["cmd"]], cwd=cwd, env=env)
+                    try:
+                        report = REFEREE.read_output(io["@out"])
+                    except Exception:  # missing, too large, not JSON: scored as no report
+                        report = None
+                    if report is not None:
+                        raw = open(io["@out"], "rb").read()
+                        row["report_sha256"] = hashlib.sha256(raw).hexdigest()
+                        if KEEP_REPORTS:
+                            os.makedirs(KEEP_REPORTS, exist_ok=True)
+                            with open(os.path.join(KEEP_REPORTS, "%s__%s.json" % (impl["id"], run.get("mode", "rerun"))), "wb") as fh:
+                                fh.write(raw)
+                records_dir = expand(run["records"], impl_dir, HERE, vectors) if run.get("records") else None
+                res = score_crosswalk(E, report, run.get("mode", "rerun"), records_dir, run["total"], ours)
+                row.update({"status": "ran", "exit": code, "seconds": secs, **res})
+                if report is None or code != 0:
+                    row["stderr_tail"] = (err or out).strip()[-300:]
+                tampered = restore_if_changed(snap)
+                if tampered:
+                    row.update({"passed": False, "tampered_with": tampered[:20],
+                                "problem": "the run changed files the board scores against; they were restored and the cell is not a pass"})
+                rows.append(row)
+                continue
             if run["parse"] in ("batch_referee", "batch_approval_referee"):
                 if run["parse"] == "batch_referee":
                     cases, _ = corpora[run["corpus"]]
@@ -428,6 +568,15 @@ def differential(spec, heads, dirs, vectors, snap=None):
             "note": "fresh keys and signatures every run; there is no frozen answer, only whether the implementations agree"}
 
 
+BOARD_SCORED = ("batch_referee", "batch_approval_referee", "crosswalk_findings")
+
+
+def cell_key(r):
+    """One history cell per implementation, corpus, scorer and, for a crosswalk's saved row, mode."""
+    return (r["implementation"] + " | " + r["corpus"] + (" | board" if r.get("scored_by") == "board" else "")
+            + (" | saved" if r.get("mode") == "saved" else ""))
+
+
 def update_history(prev, board):
     """Per cell: consecutive passing runs, first pass, the commit it last moved to; keeps the last HISTORY_KEEP runs."""
     hist = {"schema": "hs-tsunagi-history-v0", "cells": {}}
@@ -435,7 +584,7 @@ def update_history(prev, board):
         hist["cells"] = prev["cells"]
     day = board["measured_at"]
     for r in board["runs"]:
-        key = r["implementation"] + " | " + r["corpus"] + (" | board" if r.get("scored_by") == "board" else "")
+        key = cell_key(r)
         c = hist["cells"].get(key) or {"first_seen": day, "first_pass": None, "streak": 0, "commit": None, "commit_since": day, "runs": []}
         passed = bool(r.get("passed"))
         c["streak"] = c["streak"] + 1 if passed else 0
@@ -494,10 +643,12 @@ def to_md(board, hist=None):
         else:
             res = "%s %s/%s" % ("pass" if r["passed"] else "FAIL", r.get("reproduced"), r.get("expected_total"))
         link = r["implementation"] if not h["repo"] else "[%s](%s)" % (r["implementation"], h["repo"][:-4] if h["repo"].endswith(".git") else h["repo"])
-        c = cells.get(r["implementation"] + " | " + r["corpus"] + (" | board" if r.get("scored_by") == "board" else ""), {})
+        c = cells.get(cell_key(r), {})
         streak = str(c.get("streak", "")) + ((" (since %s)" % c["first_pass"][:10]) if c.get("first_pass") and c.get("streak") else "")
         by = {"board": "board", "implementation": "self"}.get(r.get("scored_by"), "")
-        L.append("| %s | %s | %s | %s | %s | %s | `%s`%s |" % (link, who, r["corpus"], res, by, streak, (r.get("commit") or "")[:8],
+        corpus = r["corpus"] + ((" (%s)" % {"saved": "saved reports", "rerun": "checkers run again"}.get(r.get("mode"), r.get("mode")))
+                                if r.get("mode_declared") else "")
+        L.append("| %s | %s | %s | %s | %s | %s | `%s`%s |" % (link, who, corpus, res, by, streak, (r.get("commit") or "")[:8],
                                                             " pinned" if r.get("pinned") else ""))
     L += ["", "## Two implementations, one corpus", "", "| corpus | a | b | scored by | agree |", "|---|---|---|---|---|"]
     for p in board["pairs"]:
@@ -548,7 +699,10 @@ def main():
     ap.add_argument("--local", action="append", default=[], metavar="ID=PATH", help="use a working copy instead of cloning")
     ap.add_argument("--history-in", help="the previous history.json, to carry streaks forward")
     ap.add_argument("--no-differential", action="store_true")
+    ap.add_argument("--keep-reports", metavar="DIR", help="write each crosswalk comparison report the board scored (its sha256 is in board.json either way)")
     a = ap.parse_args()
+    global KEEP_REPORTS
+    KEEP_REPORTS = os.path.abspath(a.keep_reports) if a.keep_reports else None
     spec = json.load(open(os.path.join(HERE, "implementations.json"), encoding="utf-8"))
     if a.only:
         keep = set(a.only.split(","))

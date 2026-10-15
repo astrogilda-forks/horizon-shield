@@ -19,6 +19,16 @@ endorsement, and a red one is written down, never hidden.
   `{"<name>": {"result", "reason"}}`, and the board compares each answer exactly with this repository's pinned copy of
   the vectors (`workers/hs-ledger/nenrin/musubi-v0/fixtures/babyblueviper1_approver_v2/vectors.json`, sha256 pinned in
   `run_board.py`), not with the copy in your repository. Self-reported rows for the same corpus stay beside them.
+- **Refereed by the board, crosswalks** (`"parse": "crosswalk_findings"`). For a tool that compares two checkers'
+  reports rather than verifying a corpus itself. The command writes one comparison report to `@out`; the board reads it
+  and compares every finding with an expectations file pinned in this repository
+  (`tools/tsunagi/expected/<corpus>.json`, sha256 pinned in `run_board.py`). A case counts only when all of its findings
+  match, and the tool's exit code is recorded but is not the result. The first is Poke-nushi's NENRIN and VATE S3
+  crosswalk (VATE #84): per case, the NENRIN records it compares must be byte for byte the ones published in
+  `workers/hs-ledger/nenrin/vate-s3-v0/records`, CW-01 to CW-11 must have their expected status, each NENRIN verifier
+  (npm, PyPI) its expected verdict and refusals, and VATE its expected assessment and `record_linkage` with `retry_authorized: false`. The board records the sha256 of every report it scored, and the nightly run keeps the reports themselves in `reports/` of its 30-day `tsunagi-board` workflow artifact (`--keep-reports`). It has
+  two rows, `"mode": "saved"` (the saved reports compared) and `"mode": "rerun"` (the VATE assessor and both NENRIN
+  verifiers run again at the versions the crosswalk names), and the board shows which one each cell did.
 - **Self-reported** (`count_line`, `all_pass`, `approval_lines`, `json_results`, `pytest`). The board reads the count
   your command prints. Kept for implementations that registered that way; the board says so in the "scored by" column.
 - **Tonight's fresh bundles.** The adversary in `workers/hs-ledger/nenrin/conformance-v0` signs a new set of edge
