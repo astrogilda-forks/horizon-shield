@@ -10,7 +10,7 @@ import (
 
 // The frozen provenance corpora: every verdict signature must be reproduced.
 func TestFrozenCorpora(t *testing.T) {
-	for _, dir := range []string{"interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "interop-v0.3/survivors"} {
+	for _, dir := range []string{"interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "interop-v0.3/survivors", "interop-v0.3/own-proto"} {
 		root := filepath.Join("..", "..", dir)
 		b, err := os.ReadFile(filepath.Join(root, "expected.json"))
 		if err != nil {

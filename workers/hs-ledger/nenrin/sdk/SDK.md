@@ -72,6 +72,24 @@ account, no token, no trust in HS. A mismatch exits 2 and prints the two trees t
 attestation (who built it, from which commit) and this script (what that commit builds, on your
 machine), the chain source to package is closed at both ends by the reader, not by the operator.
 
+## 0.5.3 (2026-10-15): an own `__proto__` key is part of the preimage (verifier_version 0.1.7)
+
+A record's preimage is the record minus its derived fields, every other own key included (VERIFIER.md section 2).
+The reference built that copy with `Object.assign({}, rec)`, which does not copy an own `__proto__` key (it runs the
+`__proto__` setter instead), so a signed grant, receipt or intent with the JSON member `"__proto__": {...}` added
+AFTER signing still recomputed to its stored id and was accepted; the same field under any other name was refused.
+Reported by pipavlo82 (#29, 2026-10-15) with a direct Ed25519 check showing the stored signatures do not cover the
+added field. The copy is now `withoutDerived` (bind.mjs): every own key kept, by `Object.defineProperty`. The Python
+and Go ports, which emulated the old copy on purpose, follow (PyPI 0.5.5, Go v0.2.2). No other verdict changes: the
+93 + 9 frozen fixtures and the 31 parity bundles give the same signatures as before.
+
+`npx nenrin-tsunagi` carries the new corpus `nenrin-interop-v0.3-own-proto` (7 cases, `interop-v0.3/own-proto/`): a
+clean grant + receipt + intent, the own `__proto__` key added to each of the three after signing (refused), and an
+ordinary `audit_note` key added the same way as the control (refused with the same signature). A verifier that keeps
+every own key gives 7/7; one built on Object.assign or spread gives 4/7.
+
+    npx nenrin-tsunagi run nenrin-interop-v0.3-own-proto -- "node my_verifier.mjs {in} {out}"
+
 ## 0.5.2 (2026-10-13): interop-v0.3/survivors, vectors that kill the faults the older corpora let survive
 
 `npx nenrin-tsunagi` carries two more provenance corpora. `nenrin-interop-v0.3-survivors` (9 cases,

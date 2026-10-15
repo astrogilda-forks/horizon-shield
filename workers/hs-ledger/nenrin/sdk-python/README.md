@@ -146,6 +146,16 @@ gives values a numeric comparator cannot order, `new URL(s).host`) goes through 
 whitespace, strings and numbers as JSON.stringify writes them. The JavaScript side of the same hash is
 `tests/parity/js_canon.mjs` (twelve lines).
 
+## 0.5.5 (2026-10-15)
+
+Verifier change (verifier_version 0.1.7, with npm 0.5.3): a record's own `"__proto__"` key stays in its preimage. The
+JS reference copied records with `Object.assign({}, rec)`, which drops that one own key, and `_without` here called
+`_js.assign` to emulate exactly that, so a signed grant, receipt or intent with `"__proto__": {...}` added after
+signing recomputed to its stored id and was accepted (pipavlo82, #29). `_without` now takes the record's own items
+minus the derived keys, nothing else. `nenrin-tsunagi` carries `nenrin-interop-v0.3-own-proto` (7 cases): the key
+added to each of the three records after signing, and an ordinary key added the same way as the control; this port
+gives 7/7. The other corpora and the 31 parity bundles give the same signatures as before.
+
 ## 0.5.4 (2026-10-13)
 
 `nenrin-tsunagi` carries two more provenance corpora. `nenrin-interop-v0.3-survivors` (9 cases,

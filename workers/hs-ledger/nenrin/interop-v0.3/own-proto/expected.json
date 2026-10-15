@@ -1,0 +1,115 @@
+{
+  "schema": "nenrin-interop-expected-v0",
+  "version": "0.3.1",
+  "frozen_from": "make_own_proto_vectors.py in this directory (deterministic: keys from public labels)",
+  "verifier": "nenrin-provenance-verify-v0 (sdk/nenrin_verify.mjs; npm and PyPI nenrin-verify; Go nenrin-verify-go)",
+  "note": "the canonical verdict signature each fixture must reproduce: verdict, sorted refusal codes, sorted finding codes. q01 to q03 add the own JSON key \"__proto__\" to one signed record after signing; q04 to q06 add an ordinary unknown key the same way and must give the same signature",
+  "cases": {
+    "q00_base": {
+      "intent": "the clean grant, receipt and intent every other vector changes by one added field: accepted",
+      "task_id": "task_own_proto",
+      "expect": {
+        "verdict": "accepted",
+        "refusals": [],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "q01_own_proto_in_grant": {
+      "intent": "the own JSON key \"__proto__\" added to the signed grant after signing. Section 2 keeps every non-derived field in the preimage, so grant_ref no longer recomputes (execution_invalid, grant_recompute_mismatch) and caller_sig no longer verifies over the full preimage (execution_signature_invalid); the intent names the grant by the stored grant_ref, which is no longer this grant's recomputed id (preflight_invalid, intent_unbound). A verifier whose copy of the record drops an own \"__proto__\" key (Object.assign) accepts",
+      "task_id": "task_own_proto",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_signature_invalid",
+          "preflight_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "q02_own_proto_in_receipt": {
+      "intent": "the same key added to the signed receipt: receipt_id does not recompute (execution_invalid), provider_sig does not verify (execution_signature_invalid), and no authentic receipt is left to reconcile (execution_unreconciled)",
+      "task_id": "task_own_proto",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_signature_invalid",
+          "execution_unreconciled"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "q03_own_proto_in_intent": {
+      "intent": "the same key added to the signed intent: intent_id does not recompute (preflight_invalid, intent_recompute_mismatch) and intent_sig does not verify (preflight_signature_invalid); the grant and receipt are untouched, so the execution step passes",
+      "task_id": "task_own_proto",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "preflight_invalid",
+          "preflight_signature_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "q04_audit_note_in_grant": {
+      "intent": "control: an ordinary unknown key \"audit_note\" added to the grant after signing. Same signature as q01; a verifier must not tell the two apart",
+      "task_id": "task_own_proto",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_signature_invalid",
+          "preflight_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "q05_audit_note_in_receipt": {
+      "intent": "control: the same ordinary key added to the receipt. Same signature as q02",
+      "task_id": "task_own_proto",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "execution_invalid",
+          "execution_signature_invalid",
+          "execution_unreconciled"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    },
+    "q06_audit_note_in_intent": {
+      "intent": "control: the same ordinary key added to the intent. Same signature as q03",
+      "task_id": "task_own_proto",
+      "expect": {
+        "verdict": "refused",
+        "refusals": [
+          "preflight_invalid",
+          "preflight_signature_invalid"
+        ],
+        "findings": [
+          "evidence_bound_unchecked",
+          "no_delegation_observations"
+        ]
+      }
+    }
+  }
+}

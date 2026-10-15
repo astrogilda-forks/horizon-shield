@@ -25,7 +25,7 @@ from ._js import (UNDEF, JSTypeError, assign, OBJECT_PROTOTYPE_KEYS, CanonicalEr
                   date_parse, is_num, is_obj, node_b64decode, nullish, or_, prop, seq, sort_numeric, stringify,
                   truthy, uniq)
 
-VERIFIER_VERSION = "0.1.6"
+VERIFIER_VERSION = "0.1.7"
 CONSUME_VERSION = "0.1.1"
 CANDIDATE_EVIDENCE_VERSION = "0.1.0"
 LINK_PREFIX = "nenrin-exec://"
@@ -42,8 +42,11 @@ def sha256hex(s):
 
 
 def _without(rec, derived):
-    """Object.assign({}, rec) and delete the derived keys; canonical() then reads own keys only."""
-    return {k: v for k, v in assign(rec).items() if k not in derived}
+    """The record's own keys minus the derived ones; every other own key stays, "__proto__" included. The reference
+    used Object.assign({}, rec), which does not copy an own "__proto__" key, so a record carrying that field as an own
+    wire key hashed without it (pipavlo82, #29, 2026-10-15); bind.mjs withoutDerived and this port now keep it."""
+    items = rec.items() if isinstance(rec, dict) else assign(rec).items()
+    return {k: v for k, v in items if k not in derived}
 
 
 # ---- task-delegation-bind-v0/bind.mjs ----

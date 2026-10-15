@@ -38,10 +38,21 @@ export function canonical(v) {
 // evidence_id = content hash over the preimage (the record minus derived/envelope fields).
 // Signatures are excluded so adding them never changes evidence_id, and the witness signs the same bytes.
 const DERIVED_FIELDS = ["evidence_id", "witness_sig", "edge_sig", "consent"];   // consent: record-privacy-v1, see task_ledger_v0.mjs
-export function preimage(obs) {
-  const b = Object.assign({}, obs);
-  for (const k of DERIVED_FIELDS) delete b[k];
+// withoutDerived(rec, derived): the record's own keys minus the derived ones, every other own key kept, "__proto__"
+// included. Object.assign({}, rec) does not copy an own "__proto__" key (it runs the __proto__ setter instead), so a
+// record carrying that field as an own wire key, which JSON.parse produces, hashed WITHOUT it and a post-signing
+// addition went unnoticed (pipavlo82, #29, 2026-10-15). VERIFIER.md section 2: every non-derived field, unknown
+// fields included, stays in the preimage. Object.defineProperty writes an own data property whatever the key is.
+export function withoutDerived(rec, derived) {
+  const b = {};
+  for (const k of Object.keys(rec)) {
+    if (derived.includes(k)) continue;
+    Object.defineProperty(b, k, { value: rec[k], enumerable: true, writable: true, configurable: true });
+  }
   return b;
+}
+export function preimage(obs) {
+  return withoutDerived(obs, DERIVED_FIELDS);
 }
 export function evidenceId(obs) {
   return sha256hex(canonical(preimage(obs)));

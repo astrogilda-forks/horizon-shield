@@ -261,10 +261,21 @@ export function canonical(v) {
 // evidence_id = content hash over the preimage (the record minus derived/envelope fields).
 // Signatures are excluded so adding them never changes evidence_id, and the witness signs the same bytes.
 const DERIVED_FIELDS = ["evidence_id", "witness_sig", "edge_sig", "consent"];   // consent: record-privacy-v1, see task_ledger_v0.mjs
-export function preimage(obs) {
-  const b = Object.assign({}, obs);
-  for (const k of DERIVED_FIELDS) delete b[k];
+// withoutDerived(rec, derived): the record's own keys minus the derived ones, every other own key kept, "__proto__"
+// included. Object.assign({}, rec) does not copy an own "__proto__" key (it runs the __proto__ setter instead), so a
+// record carrying that field as an own wire key, which JSON.parse produces, hashed WITHOUT it and a post-signing
+// addition went unnoticed (pipavlo82, #29, 2026-10-15). VERIFIER.md section 2: every non-derived field, unknown
+// fields included, stays in the preimage. Object.defineProperty writes an own data property whatever the key is.
+export function withoutDerived(rec, derived) {
+  const b = {};
+  for (const k of Object.keys(rec)) {
+    if (derived.includes(k)) continue;
+    Object.defineProperty(b, k, { value: rec[k], enumerable: true, writable: true, configurable: true });
+  }
   return b;
+}
+export function preimage(obs) {
+  return withoutDerived(obs, DERIVED_FIELDS);
 }
 export function evidenceId(obs) {
   return sha256hex(canonical(preimage(obs)));
@@ -384,11 +395,8 @@ export function verifySigned(obs, resolve) {
 const GRANT_DERIVED = ["grant_ref", "caller_sig", "action_binding"];
 const RECEIPT_DERIVED = ["receipt_id", "provider_sig", "action_binding"];
 
-function stripped(rec, derived) {
-  const b = Object.assign({}, rec);
-  for (const k of derived) delete b[k];
-  return b;
-}
+// withoutDerived keeps every own key that is not derived, an own "__proto__" key included (bind.mjs, #29).
+const stripped = (rec, derived) => withoutDerived(rec, derived);
 export const grantPreimage = (g) => stripped(g, GRANT_DERIVED);
 export const receiptPreimage = (r) => stripped(r, RECEIPT_DERIVED);
 export const grantRef = (g) => sha256hex(canonical(grantPreimage(g)));
@@ -644,7 +652,7 @@ export function verifyEvidence(receipt, lookup) {
 // declared one thing and did another.
 
 const INTENT_DERIVED = ["intent_id", "intent_sig", "action_binding"]; // action_binding is derived, see bind_exec.mjs
-export const intentPreimage = (i) => { const b = Object.assign({}, i); for (const k of INTENT_DERIVED) delete b[k]; return b; };
+export const intentPreimage = (i) => withoutDerived(i, INTENT_DERIVED);   // every own key kept, "__proto__" included (bind.mjs, #29)
 export const intentId = (i) => sha256hex(canonical(intentPreimage(i)));
 export function intentRecomputeOk(i) { return typeof i.intent_id === "string" && i.intent_id === intentId(i); }
 export function intentBindsGrant(g, i) { return typeof i.grant_ref === "string" && i.grant_ref === grantRef(g); }
@@ -765,7 +773,10 @@ export function preflightReport(input) {
 // never collapsed into the favorable outcome. The wall that no signature can cross (no side-effect oracle) is
 // written into does_not_establish on every report, accepted or refused.
 
-export const VERIFIER_VERSION = "0.1.6";
+export const VERIFIER_VERSION = "0.1.7";
+// 0.1.7 (nenrin-verify 0.5.3, #29): a record's own "__proto__" wire key is part of its preimage like any other
+// non-derived field (section 2). The preimage copies used Object.assign, which does not copy that one own key, so a
+// record with "__proto__" added after signing recomputed to its stored id and was accepted. Corpus: interop-v0.3/own-proto.
 export const LINK_PREFIX = "nenrin-exec://";
 
 // R3 generalized to a SET with possibly several witnesses per hop: seqs contiguous from 0, every root has a

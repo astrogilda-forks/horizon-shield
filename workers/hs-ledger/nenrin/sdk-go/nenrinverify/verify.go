@@ -15,10 +15,10 @@ import (
 )
 
 // VerifierVersion is the reference verifier_version this port reproduces.
-const VerifierVersion = "0.1.6"
+const VerifierVersion = "0.1.7"
 
 // PortVersion is the version of this Go port.
-const PortVersion = "0.2.1"
+const PortVersion = "0.2.2"
 
 const (
 	linkPrefix           = "nenrin-exec://"
@@ -228,10 +228,26 @@ func verifyDetached(sig Value, pub ed25519.PublicKey, pre func() Value) (ok bool
 
 // ---- records ----
 
+// without is the record's own keys minus the derived ones; every other own key stays, "__proto__" included. The
+// reference used Object.assign({}, rec), which does not copy an own "__proto__" key, so a record carrying that field
+// as an own wire key hashed without it (pipavlo82, #29, 2026-10-15); bind.mjs withoutDerived and this port keep it.
 func without(rec Value, derived ...string) *Object {
-	o := assign(rec)
-	for _, k := range derived {
-		o.del(k)
+	src, ok := rec.(*Object)
+	if !ok {
+		return assign(rec)
+	}
+	o := newObject()
+	for _, k := range src.Keys() {
+		skip := false
+		for _, d := range derived {
+			if k == d {
+				skip = true
+				break
+			}
+		}
+		if !skip {
+			o.set(k, src.vals[k])
+		}
 	}
 	return o
 }

@@ -42,6 +42,7 @@ CORPORA = {
     "nenrin-trace-span-v0": "trace-span-v0",
     "nenrin-interop-v0.2-action-presence": "interop-v0.2/action-presence",
     "nenrin-interop-v0.3-survivors": "interop-v0.3/survivors",
+    "nenrin-interop-v0.3-own-proto": "interop-v0.3/own-proto",
 }
 
 

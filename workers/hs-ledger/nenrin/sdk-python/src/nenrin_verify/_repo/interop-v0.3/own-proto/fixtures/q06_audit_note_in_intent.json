@@ -1,0 +1,59 @@
+{
+  "task_id": "task_own_proto",
+  "grant": {
+    "schema": "task-execution-bind-v0/grant",
+    "task_id": "task_own_proto",
+    "action": {
+      "tool": "a2a.invoke",
+      "target": "/task",
+      "args_sha256": "sha_args_ok"
+    },
+    "caller_id": "did:key:z6Mkhz994a2ammQqqLUYLL1RTtGmNLa29MquJKUxtuDZR1d6",
+    "provider_id": "did:key:z6MksSfjceLH293SoRXBEiP9QdRQvwVtpTZ8QFpjr49BXQft",
+    "nonce": "n1",
+    "not_before": "2026-10-15T00:00:00Z",
+    "not_after": "2026-10-15T01:00:00Z",
+    "grant_ref": "c8553f839439f91df734885b42012ebf93112e4f6574e2670e997a6edd71323a",
+    "caller_sig": "q4fvW9uZCW/+x42k5gqBpFgMcfGWVpF0tgDnb/rP/IC19KfWDYUOKYnbIA+Enjxn79fLVlJd9srdhzngY3tABQ=="
+  },
+  "receipt": {
+    "schema": "task-execution-bind-v0/receipt",
+    "task_id": "task_own_proto",
+    "grant_ref": "c8553f839439f91df734885b42012ebf93112e4f6574e2670e997a6edd71323a",
+    "executed_action": {
+      "tool": "a2a.invoke",
+      "target": "/task",
+      "args_sha256": "sha_args_ok"
+    },
+    "outcome": {
+      "status": "completed",
+      "result_sha256": "sha_res_1",
+      "evidence": {
+        "kind": "ledger_record",
+        "ref": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "system": "ledger.horizonshield.dev"
+      }
+    },
+    "provider_id": "did:key:z6MksSfjceLH293SoRXBEiP9QdRQvwVtpTZ8QFpjr49BXQft",
+    "executed_at": "2026-10-15T00:30:00Z",
+    "receipt_id": "70ad58af20ef7ef1a29201c8e062350a5ef693088e8491d879e5ca1998d60714",
+    "provider_sig": "3522QCdM1eQnc+U+ayM8jCldb2IXl74oqbtcGMG5LnV2q+r4VBUkIpl0XelgAsXS99E0jsVpIuc/TYFOrbSpDg=="
+  },
+  "intent": {
+    "schema": "task-execution-bind-v0/intent",
+    "task_id": "task_own_proto",
+    "grant_ref": "c8553f839439f91df734885b42012ebf93112e4f6574e2670e997a6edd71323a",
+    "proposed_action": {
+      "tool": "a2a.invoke",
+      "target": "/task",
+      "args_sha256": "sha_args_ok"
+    },
+    "provider_id": "did:key:z6MksSfjceLH293SoRXBEiP9QdRQvwVtpTZ8QFpjr49BXQft",
+    "declared_at": "2026-10-15T00:20:00Z",
+    "intent_id": "4aadaddec490dc340f7b028856ce5d8642018b6edf3a4751a559cfe389ea2112",
+    "intent_sig": "cn41OE7Wn8uK9c5552L0Yu4SyPA2bW1UC8cAyXCp+XWVPXWrXDnE1a654g7IGVSiiTmZqnb7FlHJj9uSRBDDBw==",
+    "audit_note": {
+      "audit_note": "not signed"
+    }
+  }
+}

@@ -55,7 +55,13 @@ Ed25519 signature over canonical(P), where P is the preimage named below. There 
 base64, a wrong length, or an unresolvable key all mean the signature does not verify.
 
 **Preimages.** Each record's preimage is the record with its derived fields removed. Every other field, including
-fields this file does not name, stays in the preimage.
+fields this file does not name, stays in the preimage. That includes a field whose key is `__proto__`: it is an
+ordinary JSON member of the record, parsed as an own key, kept in the preimage and hashed like any other. A verifier
+whose copy of a record silently drops that one key (JavaScript `Object.assign` and the spread operator run the
+`__proto__` setter instead of copying it; the reference did this before nenrin-verify 0.5.3, verifier_version
+0.1.7) recomputes the stored id for a record changed after signing and accepts it (pipavlo82, #29, 2026-10-15).
+Corpus: ../interop-v0.3/own-proto (the key added to a signed grant, receipt and intent, each refused with the same
+signature as an ordinary unknown key added the same way).
 
 | record | derived fields removed | id = sha256(preimage) | signature over canonical(preimage) | signer |
 |---|---|---|---|---|

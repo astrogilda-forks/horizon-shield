@@ -135,6 +135,17 @@
    },
    "sha256": "173a0fbda4dfaadaa859af52e02b65afd94d2205e5d01c4ef6fa53462151a575",
    "bytes": 567
+  },
+  {
+   "name": "lone surrogates (rule 7): a lone high and a lone low surrogate are written as \\udxxx; U+FFFD and a real pair are written raw",
+   "value": {
+    "high": "\ud800",
+    "low": "x\udc00y",
+    "fffd": "�",
+    "pair": "🛡"
+   },
+   "sha256": "d9ea49838950c01c6fbb98d66c7b9929a614c14ddd405214bcfd9ccb76a77ed0",
+   "bytes": 61
   }
  ]
 }

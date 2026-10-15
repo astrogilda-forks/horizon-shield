@@ -1,5 +1,5 @@
 // Package nenrinverify is a Go port of the NENRIN provenance verifier (npm and PyPI nenrin-verify,
-// verifier_version 0.1.6). The JavaScript file sdk/nenrin_verify.mjs is the reference; this port is held to it by
+// verifier_version 0.1.7). The JavaScript file sdk/nenrin_verify.mjs is the reference; this port is held to it by
 // the frozen corpora (interop-v0, interop-v0.1, interop-v0.2/edge) and by conformance-v0/differential.py, which
 // runs JavaScript, Python and this port on the same bundles and prints every verdict signature that differs.
 //

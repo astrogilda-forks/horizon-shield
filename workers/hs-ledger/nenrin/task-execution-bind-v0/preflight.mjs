@@ -18,12 +18,12 @@
 // "preauthorized" means the provider's DECLARED action matches the caller's signed grant. It does not promise
 // the provider will execute that action; the receipt, checked afterward, is what catches a provider that
 // declared one thing and did another.
-import { canonical, sha256hex, aggregateVerdict, sigBytes } from "../task-delegation-bind-v0/bind.mjs";
+import { canonical, sha256hex, aggregateVerdict, sigBytes, withoutDerived } from "../task-delegation-bind-v0/bind.mjs";
 import { grantRef, grantRecomputeOk, actionsEqual, isRfc3339Utc, providerAuthorized, grantIsSelfAuthorized, reconcileOutcome, checkActionBinding, actionBindingOk } from "./bind_exec.mjs";
 import { sign as nodeSign, verify as nodeVerify, generateKeyPairSync } from "node:crypto";
 
 const INTENT_DERIVED = ["intent_id", "intent_sig", "action_binding"]; // action_binding is derived, see bind_exec.mjs
-export const intentPreimage = (i) => { const b = Object.assign({}, i); for (const k of INTENT_DERIVED) delete b[k]; return b; };
+export const intentPreimage = (i) => withoutDerived(i, INTENT_DERIVED);   // every own key kept, "__proto__" included (bind.mjs, #29)
 export const intentId = (i) => sha256hex(canonical(intentPreimage(i)));
 export function intentRecomputeOk(i) { return typeof i.intent_id === "string" && i.intent_id === intentId(i); }
 export function intentBindsGrant(g, i) { return typeof i.grant_ref === "string" && i.grant_ref === grantRef(g); }

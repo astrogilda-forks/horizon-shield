@@ -18,18 +18,15 @@
 // it establishes that the provider's CLAIMED action matches the authorization, not that the provider
 // performed it in the world. E2 makes a lost outcome recoverable and equivocation detectable; it does NOT
 // prevent equivocation and does NOT prove the reconciled outcome is the real-world outcome.
-import { canonical, sha256hex } from "../task-delegation-bind-v0/bind.mjs";
+import { canonical, sha256hex, withoutDerived } from "../task-delegation-bind-v0/bind.mjs";
 
 // Derived/envelope fields, excluded from the content hash so signing never changes the hash and the
 // signer signs the same bytes the verifier recomputes. Same discipline as evidence_id in bind.mjs.
 const GRANT_DERIVED = ["grant_ref", "caller_sig", "action_binding"];
 const RECEIPT_DERIVED = ["receipt_id", "provider_sig", "action_binding"];
 
-function stripped(rec, derived) {
-  const b = Object.assign({}, rec);
-  for (const k of derived) delete b[k];
-  return b;
-}
+// withoutDerived keeps every own key that is not derived, an own "__proto__" key included (bind.mjs, #29).
+const stripped = (rec, derived) => withoutDerived(rec, derived);
 export const grantPreimage = (g) => stripped(g, GRANT_DERIVED);
 export const receiptPreimage = (r) => stripped(r, RECEIPT_DERIVED);
 export const grantRef = (g) => sha256hex(canonical(grantPreimage(g)));

@@ -32,7 +32,7 @@ def corpus(edges):
         add(c["name"], "frozen", c["bundle"])
         for p, op, b in mutations(c["bundle"]):
             add(c["name"], "/".join(map(str, p)) + " " + op, b)
-    for d in ("interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "interop-v0.3/survivors"):
+    for d in ("interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "interop-v0.3/survivors", "interop-v0.3/own-proto"):
         for f in sorted(glob.glob(os.path.join(NENRIN, d, "fixtures", "*.json"))):
             add(d + "/" + os.path.basename(f)[:-5], "frozen", json.load(open(f, encoding="utf-8")))
     for e in edges:

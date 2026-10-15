@@ -113,10 +113,18 @@ REQUIRED_DNE = [
 ]
 
 
+_LONE_SURROGATE = re.compile("[\ud800-\udfff]")
+
+
 def canonical(obj):
     """Canonical bytes as in conduct-v1 section 4: UTF-8, keys sorted at every level,
-    separators , and : with no spaces, non-ASCII unescaped."""
-    return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    separators , and : with no spaces, non-ASCII unescaped. One exception (musubi-canonical-v0 rule 7, the
+    same as provenance-v0/VERIFIER.md section 2 and JSON.stringify): a lone surrogate, which json.loads accepts
+    from "\\ud800" and UTF-8 cannot carry, is written back as \\udxxx with lowercase hex. json.dumps left it raw and
+    the later .encode("utf-8") raised UnicodeEncodeError instead of answering (pipavlo82, Issue #29, 2026-10-15).
+    In a Python str a surrogate code point is always lone: a valid pair in the JSON text became one character."""
+    text = json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return _LONE_SURROGATE.sub(lambda m: "\\u%04x" % ord(m.group(0)), text)
 
 
 def sha256_hex(b):

@@ -11,6 +11,11 @@
 //   5. Numbers: integers only, within plus or minus (2^53 - 1), written in decimal with no sign on zero, no
 //      exponent, no fraction. A float, NaN or Infinity has no canonical form and verify_contract refuses it.
 //   6. true, false, null as literals. Empty object "{}" and empty array "[]".
+//   7. A lone surrogate (a UTF-16 code unit U+D800..U+DFFF outside a pair) is written as \udxxx with lowercase hex,
+//      the same as provenance-v0/VERIFIER.md section 2 and JSON.stringify. It is the one code unit above U+001F that
+//      is escaped: UTF-8 cannot carry it raw. Before 2026-10-15 this file wrote U+FFFD for it, so "\ud800", "\ud801"
+//      and "\ufffd" hashed alike, while the Python canonicalizer raised UnicodeEncodeError (pipavlo82, Issue #29).
+//      Vectors "lone surrogates" in canonical_vectors.json pin the bytes in both runtimes.
 //
 // canonical_vectors.json holds fixed inputs with the sha256 of their canonical bytes. contract_v0.py's selftest
 // recomputes them in Python and, when node is present, runs this file over the same vectors and asserts the
@@ -36,7 +41,8 @@ function str(s) {
   let out = '"';
   for (const ch of s) {
     const c = ch.codePointAt(0);
-    if (ch === '"') out += '\\"';
+    if (c >= 0xd800 && c <= 0xdfff) out += "\\u" + c.toString(16);   // rule 7: a lone surrogate (for..of yields a pair as one code point)
+    else if (ch === '"') out += '\\"';
     else if (ch === "\\") out += "\\\\";
     else if (c === 0x08) out += "\\b";
     else if (c === 0x0c) out += "\\f";

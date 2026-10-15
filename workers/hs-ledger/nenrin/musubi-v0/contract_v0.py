@@ -1013,7 +1013,8 @@ def _selftest():
     node = shutil.which("node")
     if node:
         for vec in vecs:
-            rr = subprocess.run([node, CANONICAL_TWIN], input=json.dumps(vec["value"], ensure_ascii=False).encode("utf-8"),
+            # ensure_ascii: the twin's input may carry a lone surrogate (rule 7), which UTF-8 cannot write raw
+            rr = subprocess.run([node, CANONICAL_TWIN], input=json.dumps(vec["value"], ensure_ascii=True).encode("ascii"),
                                 capture_output=True, timeout=30)
             assert rr.returncode == 0, (vec["name"], rr.stderr.decode()[-300:])
             assert rr.stdout == canonical(vec["value"]).encode("utf-8"), ("twin differs", vec["name"], rr.stdout[:120])
@@ -1025,7 +1026,10 @@ def _selftest():
     onk = verify_contract(nk)
     assert onk["verdict"] == "refused" and any(x["code"] == "key_not_printable_ascii" for x in onk["refusals"]), onk
     assert scan_keys({"a": {"bé": 1}, "c": [{"\t": 2}], "ok": {"x y": 1}}) == [("$.a", "bé"), ("$.c[0]", "\t")]
-    print("[10] canonical pin: %d vectors recompute; %s; a float (bond.amount 1000.5) and a non-ASCII key are refused" % (len(vecs), twin_note))
+    ls = json.loads(json.dumps(rec)); ls["task"]["note"] = "\ud800"
+    ols = verify_contract(ls)
+    assert "contract_sha256" in ols and ols["contract_sha256"] == contract_sha256(ls), ols   # rule 7: hashed, not crashed
+    print("[10] canonical pin: %d vectors recompute; %s; a float (bond.amount 1000.5) and a non-ASCII key are refused; a lone surrogate in a value is written \\udxxx and hashed" % (len(vecs), twin_note))
 
     # [9b] grant.limits (2026-10-10): typed at the door, only with requirements.admission, and a child may only lower it.
     # Counted with the type door, not as an eleventh check: settle_v1_6.py is published, is not edited, and its self

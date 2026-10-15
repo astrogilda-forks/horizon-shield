@@ -19,7 +19,10 @@ import { verifySignedExecution, reconcileSigned } from "../task-execution-bind-v
 import { verifyEvidence } from "../task-execution-bind-v0/outcome_evidence.mjs";
 import { verifyPreflight, verifyIntentSig, intentMatchesReceipt } from "../task-execution-bind-v0/preflight.mjs";
 
-export const VERIFIER_VERSION = "0.1.6";
+export const VERIFIER_VERSION = "0.1.7";
+// 0.1.7 (nenrin-verify 0.5.3, #29): a record's own "__proto__" wire key is part of its preimage like any other
+// non-derived field (section 2). The preimage copies used Object.assign, which does not copy that one own key, so a
+// record with "__proto__" added after signing recomputed to its stored id and was accepted. Corpus: interop-v0.3/own-proto.
 export const LINK_PREFIX = "nenrin-exec://";
 
 // R3 generalized to a SET with possibly several witnesses per hop: seqs contiguous from 0, every root has a
