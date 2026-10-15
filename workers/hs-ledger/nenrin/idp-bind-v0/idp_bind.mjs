@@ -153,7 +153,7 @@ export function verify(input) {
     // cnf (RFC 7800): if the issuer bound the token to a key, it must be this actor key
     if (p.cnf != null) {
       const cnf = p.cnf && typeof p.cnf === "object" ? p.cnf : {};
-      const named = cnf.kid === b.actor_id || cnf.did === b.actor_id;
+      const named = typeof b.actor_id === "string" && (cnf.kid === b.actor_id || cnf.did === b.actor_id);
       if (!named) refuse("cnf_mismatch", "token cnf names a key other than actor_id");
       else find("cnf_bound", "the issuer bound this token to the actor key (RFC 7800 cnf), so the identity side is possession-proven");
     } else {
