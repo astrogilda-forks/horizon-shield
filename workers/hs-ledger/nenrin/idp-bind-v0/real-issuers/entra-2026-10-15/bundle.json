@@ -1,0 +1,42 @@
+{
+  "task_id": "task_entra_demo_1792069386",
+  "grant": {
+    "schema": "task-execution-bind-v0/grant",
+    "task_id": "task_entra_demo_1792069386",
+    "action": {
+      "tool": "a2a.invoke",
+      "target": "/invoices/pay",
+      "args_sha256": "26373b6ce0b53b6838bae3e6c5f757277c5114915aab17c3a7642a74e65b80f2"
+    },
+    "caller_id": "did:key:z6Mkv87MRXeBje6xwWkhT9ccRWSSd4qEQTkQb19AAkPMFN4Q",
+    "provider_id": "did:key:z6MkkHk52CH2tjfkzfnzn53zcouZ38ffTT4At3phRCcfE5KC",
+    "nonce": "g-1",
+    "not_before": "2026-10-15T13:02:06Z",
+    "not_after": "2026-10-15T14:03:06Z",
+    "grant_ref": "4492d54246e1299d8b5139eb19bb5f2e481f76c87fd8a8b52f3e1e359b61d8fb",
+    "caller_sig": "Z+3vVHYiyH3kfXiI4a5VCee1BvJ2ZAgFhcwA0jCvOb3lMBC6OvKrRDhENpiLpQDhk8YXCL9XK3ahC9ZJiz1ZAw=="
+  },
+  "receipt": {
+    "schema": "task-execution-bind-v0/receipt",
+    "task_id": "task_entra_demo_1792069386",
+    "grant_ref": "4492d54246e1299d8b5139eb19bb5f2e481f76c87fd8a8b52f3e1e359b61d8fb",
+    "executed_action": {
+      "tool": "a2a.invoke",
+      "target": "/invoices/pay",
+      "args_sha256": "26373b6ce0b53b6838bae3e6c5f757277c5114915aab17c3a7642a74e65b80f2"
+    },
+    "outcome": {
+      "status": "completed",
+      "result_sha256": "71ec6531111765511cf25f385e717f34f316f24cf1c3f2ea5d42e294c0c532f8",
+      "evidence": {
+        "kind": "ledger_record",
+        "ref": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "system": "ledger.horizonshield.dev"
+      }
+    },
+    "provider_id": "did:key:z6MkkHk52CH2tjfkzfnzn53zcouZ38ffTT4At3phRCcfE5KC",
+    "executed_at": "2026-10-15T13:03:11Z",
+    "receipt_id": "c26af522990bf14e1c8e8b3e5ea659f033ffba96c51607c7b527f8b51400d666",
+    "provider_sig": "G4Tg2yXt47g4CNPyAh7XpQ+yn4gvI7uWvBuBtF8nDsGJIsAJjyzZfix9KWCL/raX2Iv2lqtyAUkaYZecTXSQBw=="
+  }
+}

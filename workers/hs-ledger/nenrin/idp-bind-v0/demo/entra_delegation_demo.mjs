@@ -102,7 +102,7 @@ function reader() {
   const ok = ra.verdict === "accepted" && rb.verdict === "accepted" && rp.verdict === "accepted"
     && g.caller_id === bindingA.actor_id && g.provider_id === bindingB.actor_id && rc.provider_id === bindingB.actor_id;
   if (!ok) { console.log("\nNOT ESTABLISHED: one of the four checks refused, or the keys do not line up"); process.exit(1); }
-  console.log("\nestablished, by anyone holding these four files and no Microsoft credential:");
+  console.log("\nestablished, by anyone holding these four files and no credential from the issuer:");
   console.log("  " + bindingA.idp.issuer + " / " + bindingA.idp.subject + " (as " + g.caller_id.slice(0, 20) + "...) authorized " + g.action.tool + " " + g.action.target + " for " + g.task_id + ", window " + g.not_before + " .. " + g.not_after);
   console.log("  " + bindingB.idp.issuer + " / " + bindingB.idp.subject + " (as " + rc.provider_id.slice(0, 20) + "...) reported executing that action at " + rc.executed_at + ", receipt bound to grant " + g.grant_ref.slice(0, 16) + "...");
   console.log("  the executed action equals the authorized one (E1), the receipt commits to the grant by hash (E3), the executor is the one the grant named");

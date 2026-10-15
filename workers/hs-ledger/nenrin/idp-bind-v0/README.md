@@ -29,4 +29,11 @@ prints what is established: which provider subject authorized which action, whic
 that the executed action equals the authorized one and the receipt commits to the grant by hash; and what is not
 (that the action happened in the world, that the subjects are who the tenant says, and, without `cnf`, possession
 of the identity beyond holding a live token). With a real tenant, `--token-a`, `--token-b` and `--jwks` take the
-two client-credentials tokens and the tenant's JWKS document; nothing else changes. No live tenant run yet.
+two client-credentials tokens and the tenant's JWKS document; nothing else changes.
+
+## Real issuers
+
+[`real-issuers/`](real-issuers) holds two runs with real tokens: Google
+(`https://accounts.google.com`, service-account ID tokens) and Microsoft Entra ID (a v2.0 tenant, client-credentials
+access tokens). Both were established by the same reader in both runtimes. The Google run is published in full (tokens expired); the Entra bindings are withheld because GitHub push protection treats Entra tokens as secrets even after expiry, and are pinned by digest. `node real-issuers/check.mjs` rechecks
+them offline, with no credential from either issuer.

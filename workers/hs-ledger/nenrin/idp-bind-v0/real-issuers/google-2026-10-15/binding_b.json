@@ -1,0 +1,17 @@
+{
+  "schema": "idp-bind-v0/binding",
+  "actor_id": "did:key:z6MkofW5HKv5fLVxBZY8NS8if5fMkxZGehcdYuHtsVbcEGRF",
+  "idp": {
+    "issuer": "https://accounts.google.com",
+    "subject": "115692724741532430986",
+    "audience": "api://nenrin-relying-party",
+    "kid": "943a3a5d7d919625a454e489b75c29adab57acba",
+    "alg": "RS256"
+  },
+  "token_sha256": "fc7701f74fc6650f9a816a47afc6056a7b9789731ff80fd7492f404c9f45a15f",
+  "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk0M2EzYTVkN2Q5MTk2MjVhNDU0ZTQ4OWI3NWMyOWFkYWI1N2FjYmEiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhcGk6Ly9uZW5yaW4tcmVseWluZy1wYXJ0eSIsImF6cCI6IjExNTY5MjcyNDc0MTUzMjQzMDk4NiIsImVtYWlsIjoibmVucmluLWFnZW50LWJAdHN1Z2ktbWFya2V0cGxhY2UuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZXhwIjoxNzkyMDY2ODUwLCJpYXQiOjE3OTIwNjMyNTAsImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsInN1YiI6IjExNTY5MjcyNDc0MTUzMjQzMDk4NiJ9.GOl3SoQlWQC9JG-24D3X54su12fX8jf3Fa5q6Xo2t7YJkGQZmF8NYJlATtsjb-XOV-mnlqGR-uQDH6HomhVaOoeKAAY9zZA2gMQE1hJSAckc60HR4THmE4LcgwXCw-J4ikWCVAgrMuua2ZUF98zB7Q4VLL8logf3eqIiRMYfpA10ra3er58zJ5wI9NCchhZMrhDbewOdFegICW1tViVUJQZSIWj0zBdh6QQFODl4rnUI-Cs9O1vPgQDL92hLX04DeC-5oS2YBapoeX4_lQoy6zIBPAdftMPRhQhnLq1ajZK-48rg_AxPht8qlysLr6obFui_JC50lhQtjUwC--nTgg",
+  "bound_at": "2026-10-15T11:20:50Z",
+  "nonce": "app-b-1",
+  "binding_id": "8210c15d87febcb1548e66acca25db4b2a1d23fc8bf20def2db805b316b5ff0e",
+  "actor_sig": "OHit4t2YEsYTNUo6GOsUb2S0BOn55LNIOaD2FyEQn45g4Z/goMScvAThKJLt/HIDw8SkRBIu7DjewVjIY/7jAw=="
+}
