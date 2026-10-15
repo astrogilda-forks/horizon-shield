@@ -13,9 +13,11 @@
 // With a real tenant the only things that change are the two tokens and the JWKS: each agent obtains its token
 // from https://login.microsoftonline.com/<tenant>/oauth2/v2.0/token (client credentials, scope <audience>/.default)
 // and the relying party fetches https://login.microsoftonline.com/<tenant>/discovery/v2.0/keys once and pins its
-// sha256. Pass them with --token-a <file> --token-b <file> --jwks <file>; nothing else in this file reads the
-// network, and the reader step is identical. No claim about Entra's behaviour is made beyond the published token
-// format; the mock issuer signs RS256 like Entra does.
+// sha256. Pass them with --token-a <file> --token-b <file> --jwks <file> (and --audience <uri> when the binding should
+// name an audience other than the token's aud); nothing else in this file reads the network, and the reader step is
+// identical. A real Entra token for a custom API is a v2.0 token (iss .../v2.0) only when the API app registration sets
+// requestedAccessTokenVersion = 2; otherwise iss is https://sts.windows.net/<tenant>/, and the kid is in the same JWKS.
+// No claim about Entra's behaviour is made beyond the published token format; the mock issuer signs RS256 like Entra.
 import { generateKeyPairSync, createHash, sign as nodeSign } from "node:crypto";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { verify as verifyBinding, makeBinding, signJwt, newActorKey, sha256hex, canonical } from "../idp_bind.mjs";
@@ -43,13 +45,18 @@ function mockTenant() {
 function run() {
   mkdirSync(OUT, { recursive: true });
   const T = mockTenant();
-  const AUD = "api://nenrin-relying-party";                                     // the relying party both agents present to
+  const payloadOf = (tok) => JSON.parse(Buffer.from(tok.split(".")[1], "base64url").toString());
+  const realA = arg("--token-a") ? readFileSync(arg("--token-a"), "utf8").trim() : null;
+  const realB = arg("--token-b") ? readFileSync(arg("--token-b"), "utf8").trim() : null;
+  // the relying party both agents present to: given, or read from a real token's aud (string or first element), or the mock's
+  const AUD = arg("--audience") || (realA ? [].concat(payloadOf(realA).aud)[0] : "api://nenrin-relying-party");
   const A = { sub: "0a9f1c2e-agent-a-object-id", app: "app-a", key: newActorKey() };
   const B = { sub: "5b3d7e1f-agent-b-object-id", app: "app-b", key: newActorKey() };
   const boundAt = iso(now);
-  const tokA = arg("--token-a") ? readFileSync(arg("--token-a"), "utf8").trim() : T.token(A.sub, AUD, A.app);
-  const tokB = arg("--token-b") ? readFileSync(arg("--token-b"), "utf8").trim() : T.token(B.sub, AUD, B.app);
+  const tokA = realA || T.token(A.sub, AUD, A.app);
+  const tokB = realB || T.token(B.sub, AUD, B.app);
   const jwksDoc = arg("--jwks") ? readFileSync(arg("--jwks"), "utf8") : T.jwks;
+  if (realA) { A.sub = payloadOf(realA).sub; B.sub = payloadOf(tokB).sub; }
   const jwks = { sha256: sha256hex(jwksDoc), document: jwksDoc };
   const kid = JSON.parse(Buffer.from(tokA.split(".")[0], "base64url").toString()).kid;
   const iss = JSON.parse(Buffer.from(tokA.split(".")[1], "base64url").toString()).iss;
