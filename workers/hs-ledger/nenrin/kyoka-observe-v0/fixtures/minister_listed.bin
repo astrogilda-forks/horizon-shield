@@ -1,0 +1,34 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS"><title>国土交通省 | 建設業者 検索</title></head><body>
+<div>データ閲覧 ＞ 建設業者</div>
+<form name="ksModel"><input type="hidden" name="resultCount" value="2"><input type="hidden" name="pageCount" value="1"></form>
+<table class="re_disp">
+<tr>
+ <th>No.</th>
+ <th>許可行政庁</th>
+ <th>許可番号</th>
+ <th>商号又は名称</th>
+ <th>代表者名</th>
+ <th>営業所名</th>
+ <th>所在地</th>
+</tr>
+<tr>
+ <td style="text-align:right;">1</td>
+ <td style="text-align:left; white-space : nowrap;">関東地方整備局</td>
+ <td style="text-align:left; white-space : nowrap;" title="licenseNo">第004321号</td>
+ <td style="text-align:left;"><a href="javascript:void(0);" onclick="js_ShowDetail('01004321')">（株）見本建設</a></td>
+ <td style="text-align:left; white-space : nowrap;">見本　一郎</td>
+ <td style="text-align:left;">本店</td>
+ <td style="text-align:left;">東京都千代田区見本町１－２－３</td>
+</tr>
+<tr>
+ <td style="text-align:right;">2</td>
+ <td style="text-align:left; white-space : nowrap;">関東地方整備局</td>
+ <td style="text-align:left; white-space : nowrap;" title="licenseNo">第004321号</td>
+ <td style="text-align:left;"><a href="javascript:void(0);" onclick="js_ShowDetail('01004321')">（株）見本建設</a></td>
+ <td style="text-align:left; white-space : nowrap;">見本　一郎</td>
+ <td style="text-align:left;">横浜支店</td>
+ <td style="text-align:left;">神奈川県横浜市中区見本通４－５</td>
+</tr>
+</table>
+<div>（補足説明）「保険加入状況」は大臣許可業者を先行して掲載いたします。</div>
+<div>Copyright&copy; 2008-2019 MLIT Japan. All Rights Reserved.</div></body></html>

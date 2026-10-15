@@ -1,0 +1,104 @@
+# NENRIN with GitHub Actions as the identity provider: three jobs in three environments get three OIDC tokens (three
+# different subjects, repo:<owner>/<repo>:environment:<name>); one job binds a NENRIN key to each, signs the payer's
+# grant, the executor's receipt and the payee's confirmation, and checks them with the reader (payee-confirm-v0).
+#
+# The tokens are bearer credentials for a few minutes, for the audience nenrin-payee-confirm. They are never printed:
+# each role job writes its token to a one-day artifact, and the three-parties job deletes those three artifacts as soon
+# as it has downloaded them (so they are downloadable, by a signed-in user who knows to look, for well under a minute),
+# then waits until every token has expired before it uploads the bindings. A binding of one of these subjects counts
+# only if its binding_id is listed in a run summary of this workflow; anyone else holding a token in that minute could
+# bind it to their own key, and that is the bearer-token limit idp-bind-v0 states.
+name: nenrin-github-oidc
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: nenrin-github-oidc
+  cancel-in-progress: false
+
+jobs:
+  payer:
+    runs-on: ubuntu-24.04
+    environment: nenrin-payer
+    permissions: { id-token: write }
+    steps:
+      - name: Token for the payer (not printed)
+        run: |
+          set -euo pipefail
+          mkdir -p tok
+          curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=nenrin-payee-confirm" | jq -r .value > tok/payer
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with: { name: tok-payer, path: tok/payer, retention-days: 1 }
+  executor:
+    runs-on: ubuntu-24.04
+    environment: nenrin-executor
+    permissions: { id-token: write }
+    steps:
+      - name: Token for the executor (not printed)
+        run: |
+          set -euo pipefail
+          mkdir -p tok
+          curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=nenrin-payee-confirm" | jq -r .value > tok/executor
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with: { name: tok-executor, path: tok/executor, retention-days: 1 }
+  payee:
+    runs-on: ubuntu-24.04
+    environment: nenrin-payee
+    permissions: { id-token: write }
+    steps:
+      - name: Token for the payee (not printed)
+        run: |
+          set -euo pipefail
+          mkdir -p tok
+          curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=nenrin-payee-confirm" | jq -r .value > tok/payee
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with: { name: tok-payee, path: tok/payee, retention-days: 1 }
+
+  three-parties:
+    needs: [payer, executor, payee]
+    runs-on: ubuntu-24.04
+    permissions: { contents: read, actions: write }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { pattern: "tok-*", path: "${{ runner.temp }}/tok", merge-multiple: true }
+      - name: Delete the three token artifacts now
+        env: { GH_TOKEN: "${{ github.token }}", REPO: "${{ github.repository }}", RUN: "${{ github.run_id }}" }
+        run: |
+          set -euo pipefail
+          for id in $(gh api "repos/$REPO/actions/runs/$RUN/artifacts" --jq '.artifacts[] | select(.name | startswith("tok-")) | .id'); do
+            gh api -X DELETE "repos/$REPO/actions/artifacts/$id"
+          done
+      - name: Bind, grant, execute, confirm, read
+        run: |
+          set -euo pipefail
+          T="$RUNNER_TEMP/tok"
+          curl -sSf https://token.actions.githubusercontent.com/.well-known/jwks -o "$T/jwks"
+          J=$(sha256sum "$T/jwks" | cut -c1-64)
+          node workers/hs-ledger/nenrin/payee-confirm-v0/three_party_demo.mjs --out run \
+            --token-a "$T/payer" --token-b "$T/executor" --token-c "$T/payee" --jwks "$T/jwks" \
+            --trust "https://token.actions.githubusercontent.com=$J"
+          node -e 'const fs=require("fs");const e=["payer","executor","payee"].map(r=>JSON.parse(Buffer.from(fs.readFileSync(process.argv[1]+"/"+r,"utf8").trim().split(".")[1],"base64url")).exp);fs.writeFileSync("exp",String(Math.max(...e)))' "$T"
+          rm -rf "$T"
+          { echo; echo "issuer JWKS sha256 (fetched by this run): \`$J\`"; echo; echo "binding_ids:"; for r in payer executor payee; do echo "- $r \`$(jq -r .binding_id run/binding_$r.json)\`"; done; } >> "$GITHUB_STEP_SUMMARY"
+          sha256sum run/*.json > run/SHA256SUMS
+      - name: The offline tests (after binding, so the tokens are used as soon as they arrive)
+        run: |
+          node workers/hs-ledger/nenrin/payee-confirm-v0/payee_confirm.test.mjs
+          node workers/hs-ledger/nenrin/idp-bind-v0/idp_bind.test.mjs
+      - name: Wait until every token has expired
+        run: |
+          now=$(date +%s); exp=$(cat exp); wait=$(( exp - now + 30 ))
+          if [ "$wait" -gt 900 ]; then echo "token lifetime longer than expected: $wait s"; exit 1; fi
+          if [ "$wait" -gt 0 ]; then sleep "$wait"; fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nenrin-github-oidc-${{ github.run_id }}
+          path: run/
+          retention-days: 90
