@@ -591,6 +591,30 @@
           ],
           "parse": "batch_referee",
           "total": 36
+        },
+        {
+          "corpus": "nenrin-interop-v0.3-survivors",
+          "cwd": "@impl/examples/nenrin-cleanroom-verifier",
+          "cmd": [
+            "python3",
+            "nenrin_cleanroom.py",
+            "@in",
+            "@out"
+          ],
+          "parse": "batch_referee",
+          "total": 9
+        },
+        {
+          "corpus": "nenrin-interop-v0.3-own-proto",
+          "cwd": "@impl/examples/nenrin-cleanroom-verifier",
+          "cmd": [
+            "python3",
+            "nenrin_cleanroom.py",
+            "@in",
+            "@out"
+          ],
+          "parse": "batch_referee",
+          "total": 7
         }
       ]
     },
