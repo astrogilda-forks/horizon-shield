@@ -161,7 +161,7 @@
       "eth-utils": "6.0.0"
     },
     "self": {
-      "reader.py": "7b7fe7d3cd1bc69643bb10df832d4d68b383b3bfc0f8919c7719038274db9448",
+      "reader.py": "80d2ace2ca30785db01fe6e8594f63272485d46d4f826ee04b9eaeaff3cfa450",
       "requirements.txt": "ad8b1aacae438ff2886a9f9082c3221b27ccbae42903016e235d7eda5dd32e02"
     }
   },

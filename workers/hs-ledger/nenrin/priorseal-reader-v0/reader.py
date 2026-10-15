@@ -318,6 +318,12 @@ def observed_time(obs):
     return t, ("executedAt" if obs.get("executedAt") is not None else "observedAt")
 
 
+def time_int(t):
+    """The observed time as an integer, or None when it is not one (G10: a non-numeric executedAt such as "late"
+    made this reader raise ValueError instead of answering; piiiico, atlas #49, 2026-10-15). A bool is not a time."""
+    return t if isinstance(t, int) and not isinstance(t, bool) else None
+
+
 def present(intent, k):
     # "only when present in the signed intent": read as key present with a non-null value (see spec gap G6).
     return k in intent and intent[k] is not None
@@ -359,13 +365,20 @@ def field_map(auth, obs):
         js_string(intent.get("transactionValue")) != js_string(obs.get("nativeValue")),
         intent.get("transactionValue"), obs.get("nativeValue"))
     t, tsrc = observed_time(obs)
+    ti = time_int(t)
     vu = intent.get("validUntil")
-    row("OUTSIDE_TIME_WINDOW", "intent.validUntil", tsrc, "observed time greater than validUntil",
-        vu is not None and t is not None, (t is not None and vu is not None and int(t) > int(vu)), vu, t)
+    # G9/G10: a missing time (both fields absent) or a non-integer time cannot pass a window check. The two
+    # shipped paths disagree on the first (reader.mjs skips, the profile fails closed) and both pass the second;
+    # this reader marks the row as applying and mismatched, so the case is not bound, and says why in the rule.
+    bad_time = t is None or ti is None
+    why = "" if not bad_time else (" (no observed time: cannot be inside any window)" if t is None
+                                   else " (observed time is not an integer: cannot be inside any window)")
+    row("OUTSIDE_TIME_WINDOW", "intent.validUntil", tsrc, "observed time greater than validUntil" + why,
+        vu is not None, bad_time or ti > int(vu), vu, t)
     nb, ex = auth.get("notBefore"), auth.get("expiresAt")
     row("OUTSIDE_AUTHORIZATION_WINDOW", "authorization.notBefore / authorization.expiresAt", tsrc,
-        "observed time earlier than notBefore or greater than expiresAt", t is not None,
-        (t is not None and (int(t) < int(nb) or int(t) > int(ex))), [nb, ex], t)
+        "observed time earlier than notBefore or greater than expiresAt" + why, True,
+        bad_time or ti < int(nb) or ti > int(ex), [nb, ex], t)
     mismatch = sorted(r["code"] for r in rows if r["mismatch"])
     # INPUT-CONTRACT.md 5: executionDataAvailable false yields EXECUTION_UNAVAILABLE.
     avail = sorted(["EXECUTION_UNAVAILABLE"] if obs.get("executionDataAvailable") is False else [])
@@ -639,7 +652,7 @@ def main():
                         "observation correlates to the authorization by chain, delegated executor (authorization.delegate.executor vs observed sender) and nonce",
                         SRC_LC, ours=corr,
                         note="the observation carries no authorizationId or intentHash; the pairing itself is by fixture layout (spec gap G5)"))
-        cc.append(claim("C3.acceptance-before-execution", est(t is not None and int(acc["acceptedAt"]) <= int(t)),
+        cc.append(claim("C3.acceptance-before-execution", est(time_int(t) is not None and int(acc["acceptedAt"]) <= time_int(t)),
                         "acceptance.acceptedAt is not later than the observed execution time (else AUTHORIZATION_AFTER_EXECUTION)",
                         SRC_LC, ours={"acceptedAt": acc["acceptedAt"], tsrc: t}))
         cc.append(claim("C4.decision-evidence-binding", NOT_ESTABLISHED,

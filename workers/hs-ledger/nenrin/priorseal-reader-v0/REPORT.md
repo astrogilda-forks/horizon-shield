@@ -156,6 +156,29 @@ completed but non-compliant) all say `COMPLETED`. Documentation only; no compute
 G8. **Undefined report fields.** `receiptClaimsValid` and `authorizationCode` are not defined and the
 receipt they refer to is not published, so they cannot be reproduced from outside.
 
+G9 to G11 were found by piiiico (Pico) with one-field variants of case-00 run through `reader.mjs`, the profile
+and a second JavaScript reader (atlas #49, 2026-10-15). They are outside the matrix and are not scored against it;
+this reader's answers to the same three variants, at a scratch copy of the pinned matrix, are recorded here.
+
+G9. **A missing execution time.** With neither `executedAt` nor `observedAt`, `reader.mjs` skips both window
+checks and reports bound; the profile fails closed (`OUTSIDE_AUTHORIZATION_WINDOW`,
+`AUTHORIZATION_AFTER_EXECUTION`, `NON_COMPLIANT`). Section 4 does not say which, and
+`AUTHORIZATION_AFTER_EXECUTION` is not in its map. Before 2026-10-15 this reader did what `reader.mjs` does at
+the binding (both window rows `applies: false`, `bound: true`) and noticed only at `C3.acceptance-before-execution`
+(CONTRADICTED, report DISAGREES). It now treats a missing time as outside both windows: `bound: false`,
+`OUTSIDE_AUTHORIZATION_WINDOW` and `OUTSIDE_TIME_WINDOW`, with the reason in the row's rule text.
+
+G10. **A non-numeric execution time.** `executedAt: "late"` passes both shipped paths (every comparison against a
+string is false, and the receipt timeline check types `observedAt` but not `executedAt`). This reader did worse:
+`int("late")` raised `ValueError` and no report was written. It now refuses the row (`time_int`): a time that is
+not an integer is outside both windows. The producer should refuse it first.
+
+G11. **`chainId` as a string.** `chainId: "8453"` against the signed integer 8453: both shipped paths use strict
+`!==` and report `CHAIN_MISMATCH`; the section 4 paragraph says the comparison is after `String()`, and the row says
+"strict equality of the integer values". Pico's reader and this one followed the paragraph and report bound
+(`CHAIN_MISMATCH` row `mismatch: false`). Three readers from one text, two answers: the text has to pick one rule.
+This reader is left as it is until the text does.
+
 ## What could not be established
 
 - Binding to separate decision evidence (C4): the matrix contains none, and the intent has no
