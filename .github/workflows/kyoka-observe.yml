@@ -1,0 +1,74 @@
+# kyoka-observe-v0: ask Japan's public register of licensed construction businesses about ONE licence number, record
+# what it answered, and bind the observer key to this run's GitHub Actions identity. On demand only; one query per run.
+#
+# The artifact holds observation.json, binding.json and jwks.json, uploaded only after the run's token has expired.
+# response.bin (the register's page as served, which shows a representative's name) is re-read by this run's own
+# reader and then left on the runner: it is not uploaded and not committed. Artifacts of a public repository can be
+# downloaded by any signed-in user, so the artifact is publication. For a sole proprietor the trade name in the record
+# is usually a person's name too; it is what the register itself publishes, and the lookup is dispatched by hand.
+name: kyoka-observe
+
+on:
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "minister (国土交通大臣許可) or governor (知事許可)"
+        required: true
+        type: choice
+        options: [minister, governor]
+      prefecture:
+        description: "governor only: the prefecture, e.g. 神奈川県"
+        required: false
+        default: ""
+      license_no:
+        description: "the licence number, up to 6 digits"
+        required: true
+
+concurrency:
+  group: kyoka-observe
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    environment: nenrin-observer
+    permissions: { id-token: write, contents: read }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - name: The offline tests first
+        run: node workers/hs-ledger/nenrin/kyoka-observe-v0/kyoka_observe.test.mjs
+      - name: One lookup, recorded and bound
+        env:
+          KIND: ${{ inputs.kind }}
+          PREF: ${{ inputs.prefecture }}
+          NO: ${{ inputs.license_no }}
+        run: |
+          set -euo pipefail
+          case "$NO" in (*[!0-9]*|'') echo "license_no must be digits"; exit 2;; esac
+          if [ "$KIND" = governor ]; then
+            node workers/hs-ledger/nenrin/kyoka-observe-v0/observe.mjs --kind governor --prefecture "$PREF" --license-no "$NO" --out run
+          else
+            node workers/hs-ledger/nenrin/kyoka-observe-v0/observe.mjs --kind minister --license-no "$NO" --out run
+          fi
+      - name: The reader again, from the files alone, trusting the JWKS this run fetched
+        run: |
+          set -euo pipefail
+          J=$(jq -r .sha256 run/jwks.json)
+          node workers/hs-ledger/nenrin/kyoka-observe-v0/observe.mjs --verify run --trust "https://token.actions.githubusercontent.com=$J"
+          rm run/response.bin
+      - name: Wait until the token has expired
+        run: |
+          exp=$(node -e 'const b=require("./run/binding.json");console.log(JSON.parse(Buffer.from(b.token.split(".")[1],"base64url")).exp)')
+          wait=$(( exp - $(date +%s) + 30 ))
+          if [ "$wait" -gt 900 ]; then echo "token lifetime longer than expected: $wait s"; exit 1; fi
+          if [ "$wait" -gt 0 ]; then sleep "$wait"; fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: kyoka-observe-${{ github.run_id }}
+          path: run/
+          retention-days: 30
