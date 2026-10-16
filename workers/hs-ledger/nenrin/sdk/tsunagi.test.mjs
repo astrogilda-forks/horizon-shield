@@ -46,6 +46,8 @@ const rr = T.run("nenrin-interop-v0.2-edge", [process.execPath, join(HERE, "tsun
 chk("run: tsunagi_reference_batch.mjs scores 36/36, exit 0", rr.exit === 0 && rr.reproduced === 36, JSON.stringify(rr).slice(0, 300));
 const rn = T.run("nenrin-interop-v0", [process.execPath, "-e", "0", "{in}", "{out}"]);
 chk("run: a command that writes nothing scores 0 with the reason", rn.reproduced === 0 && /no readable output file \(FileNotFoundError\)/.test(rn.problem));
+const re = T.run("nenrin-interop-v0", [process.execPath, "-e", "process.stderr.write('ImportError: no module named atlas\\n'); process.exit(1)", "{in}", "{out}"]);
+chk("run: a failing command keeps its stderr tail for the report (#48)", re.reproduced === 0 && /ImportError: no module named atlas/.test(re.stderr_tail || ""), JSON.stringify(re).slice(0, 300));
 const rm = T.run("nenrin-interop-v0", ["/nonexistent/verifier-binary", "{in}", "{out}"]);
 chk("run: a command that does not exist exits 127", rm.exit === 127 && rm.reproduced === 0);
 {

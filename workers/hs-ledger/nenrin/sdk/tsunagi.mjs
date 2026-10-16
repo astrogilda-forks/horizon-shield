@@ -255,6 +255,8 @@ function printResult(name, res) {
   }
   for (const k of res.extra || []) console.log("NG   " + k + "  not in the corpus");
   if (res.problem) console.log("problem: " + res.problem);
+  // 2026-10-17 (#48): when the command failed, show the end of its stderr; it usually names the cause.
+  if (res.problem && res.stderr_tail) console.log("stderr (last 300 chars):\n" + res.stderr_tail);
   console.log(name + ": " + res.reproduced + "/" + res.of + " verdict signatures reproduced (refereed by nenrin-tsunagi)");
 }
 

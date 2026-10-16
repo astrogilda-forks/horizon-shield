@@ -169,6 +169,9 @@ def _print(name, res):
         print("NG   %s  not in the corpus" % k)
     if res.get("problem"):
         print("problem: " + res["problem"])
+        # 2026-10-17 (#48): when the command failed, show the end of its stderr; it usually names the cause.
+        if res.get("stderr_tail"):
+            print("stderr (last 300 chars):\n" + res["stderr_tail"])
     print("%s: %d/%d verdict signatures reproduced (refereed by nenrin-tsunagi)" % (name, res["reproduced"], res["of"]))
 
 
