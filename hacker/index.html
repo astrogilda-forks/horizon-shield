@@ -513,6 +513,47 @@ footer{border-top:1px solid var(--line);background:transparent;padding:30px 22px
 .phase-dot{background:#e0714f !important}
 .tile-phase{color:#b8542f !important;background:#fbeadf !important}
 </style>
+<style id="ehn-plain-override">
+/* 2026-10-17 番人: 投稿画面と同じ紙の地・墨・罫線にそろえる。角丸・影・グラデーションを外す(可逆、この塊を消せば元に戻る) */
+:root{--paper:#EDE8DC;--paper2:#E3DCCB;--field:#F5F1E8;--card:#F5F1E8;--card-2:#F5F1E8;
+  --ink:#1A1C1A;--ink2:#3C3D38;--mut:#6E6C62;--mut2:#9A968A;
+  --rule:#C3BBA8;--rule-soft:#D8D0BE;--line:#C3BBA8;--line-soft:#D8D0BE;
+  --blue:#2B4C7E;--blue-bg:#DCE4EE;--brand:#2B4C7E;--brand-ink:#2B4C7E;--brand-bg:#DCE4EE;
+  --future:#2B4C7E;--future-2:#2B4C7E;--cyan:#2B4C7E;
+  --alert:#A8331F;--alert-bg:#EFD9D2;--ok:#3F6B4A;--ok-bg:#D9E4D8;--amber:#8A6A1F;--amber-bg:#EFE6CF}
+body{background:var(--paper) !important;background-image:linear-gradient(var(--paper2) .5px,transparent .5px),linear-gradient(90deg,var(--paper2) .5px,transparent .5px) !important;background-size:26px 26px !important;color:var(--ink) !important}
+body *:not(#_){border-radius:0 !important;box-shadow:none !important;text-shadow:none !important}
+.wanted *:not(#_){color:inherit;-webkit-text-fill-color:currentColor !important}
+.wanted .wanted-amt-v,.wanted .wanted-flags,.wanted .wanted-eyebrow{color:var(--alert) !important}
+.topbar{background:var(--paper) !important;border-bottom:2px solid var(--ink) !important}
+.logo .mk{background:none !important;color:var(--ink) !important;-webkit-text-fill-color:currentColor !important;font-family:var(--mono) !important;font-weight:800 !important;padding:0 !important}
+.logo .ja{color:var(--mut) !important}
+.titleblock,.dm-hero,.post-cta-in,.wanted,.live-card,.ehn-live{background:var(--field) !important;border:1.5px solid var(--ink) !important;color:var(--ink) !important}
+.titleblock::before,.titleblock::after,.wanted::before,.live-card::before{display:none !important}
+.titleblock h1,.titleblock .lead,.wanted-title,.wanted-sub,.wanted-k,.wanted-verdict,.wanted-note{color:var(--ink) !important;-webkit-text-fill-color:currentColor !important}
+.titleblock h1 b{background:linear-gradient(transparent 62%,var(--alert-bg) 62%) !important;color:var(--ink) !important;-webkit-text-fill-color:currentColor !important}
+.titleblock .eyebrow{background:none !important;border:none !important;color:var(--blue) !important;font-family:var(--mono) !important;letter-spacing:.18em !important;padding:0 !important}
+.titleblock .spec-cell{background:var(--paper) !important;border:1px solid var(--rule) !important}
+.titleblock .spec-k,.titleblock .spec-cell .u{color:var(--mut) !important}
+.titleblock .spec-v{color:var(--ink) !important}
+.titleblock .spec-v.alert,.wanted-flags,.wanted-amt-v,.lc-amt-v,.live-card .lc-amt-v{color:var(--alert) !important;-webkit-text-fill-color:currentColor !important;background:none !important}
+.wanted-eyebrow,.dm-hero-k,.dm-hero-v,.dm-hero-v span,.tile-phase{color:var(--alert) !important;background:none !important}
+.wanted-seal,.wanted-genre,.tile-genre,.sh-genre{background:none !important;border:1px solid var(--ink) !important;color:var(--ink) !important;padding:2px 8px !important;transform:none !important}
+.post-cta-btn,.wanted-link,.btn-post,.upsell a,.ptab.on{background:var(--ink) !important;color:var(--paper) !important;border:1px solid var(--ink) !important}
+.dm-dot,.ptab-dot,.phase-dot{background:var(--alert) !important}
+.ptab.on .ptab-dot{background:var(--paper) !important}
+.tile-av,.cmt-av{background:var(--paper2) !important;color:var(--ink) !important}
+.ehn-hz,.ehn-hz-rays,.ehn-side-li .fill{background:var(--blue) !important}
+.ehn-hz-rays{display:none !important}
+.wanted-mascot{display:none !important}
+.toast:not(.on){visibility:hidden !important}
+.hs-brief{background:var(--field) !important;border:1px solid var(--rule) !important}
+.hs-brief h3,.hs-brief a{color:var(--blue) !important}
+/* ログインしていない人の上の帯: ログインの大きなボタン 2 つではなく、解剖への入口を 1 つ */
+.tb-cta{font-family:var(--sans);font-size:14px;font-weight:600;background:var(--ink);color:var(--paper);text-decoration:none;padding:9px 14px;white-space:nowrap}
+.tb-login{font-family:var(--mono);font-size:12px;color:var(--mut);background:none;border:none;cursor:pointer;padding:0 0 0 12px;white-space:nowrap}
+@media(max-width:680px){.tb-right{width:auto !important;margin-left:auto}.tb-code{display:none !important}}
+</style>
 </head>
 <body>
 
@@ -523,7 +564,7 @@ footer{border-top:1px solid var(--line);background:transparent;padding:30px 22px
       <span class="tb-code">ESTIMATE-HACKER-NEWS / REV.01</span>
     </div>
     <div class="tb-right" id="tbRight">
-      <button class="tb-btn" onclick="login()"><span class="dot"></span>LINEでログイン</button>
+      <a class="tb-cta" href="/hacker/submit/?from=board">見積書を解剖する(無料)</a><button class="tb-login" onclick="login()">ログイン</button>
     </div>
   </div>
 </div>
@@ -589,7 +630,7 @@ function renderTop(){
     const av=USER.picture_url?`<img src="${esc(USER.picture_url)}" alt="">`:`<span style="width:26px;height:26px;background:var(--blue-bg);border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--blue)">${esc(ini)}</span>`;
     el.innerHTML=`<a class="tb-user" href="/hacker/me/" style="text-decoration:none;color:inherit;cursor:pointer">${av}<span>${esc(USER.display_name||'施主')}</span></a><button class="tb-logout" onclick="logout()">LOGOUT</button>`;
   }else{
-    el.innerHTML=`<button class="tb-btn" onclick="login()"><span class="dot"></span>LINEでログイン</button><button class="tb-btn" style="background:#4285F4;border-left:1px solid var(--rule-soft)" onclick="loginGoogle()">Googleでログイン</button>`;
+    el.innerHTML=`<a class="tb-cta" href="/hacker/submit/?from=board">見積書を解剖する(無料)</a><button class="tb-login" onclick="login()">ログイン</button>`;
   }
 }
 async function login(){try{const r=await fetch(API+'/auth/line-login-start',{method:'POST'});const d=await r.json();if(d.login_url){location.href=d.login_url;}else{toast('ログインを開始できませんでした');}}catch(e){toast('通信エラーが発生しました');}} async function loginGoogle(){try{const r=await fetch(API+'/auth/google-login-start',{method:'POST'});const d=await r.json();if(d.login_url){location.href=d.login_url;}else{toast('ログインを開始できませんでした');}}catch(e){toast('通信エラーが発生しました');}}

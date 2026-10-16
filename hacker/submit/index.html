@@ -187,7 +187,12 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
 .hero-sub{font-size:13px;color:var(--mut);margin-top:10px;font-family:var(--mono)}
 .hero-sub a{color:var(--blue)}
 @media(max-width:680px){
-  .hero{padding:22px 0 16px}
+  .hero{padding:16px 0 12px}
+  .hero .eyebrow,.lead-more{display:none}
+  .hero-sub{margin-top:6px}
+  /* スマホではドラッグの箱は使わない。選んだ後だけ、選んだファイルの行として出す */
+  .drop:not(.has){display:none}
+  .pick-row{margin-top:4px}
   .drop{padding:26px 16px}
   .sec{padding:18px 0}
   .flow{flex-direction:column}
@@ -236,7 +241,7 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
     <div class="hero">
       <div class="eyebrow">SUBMIT YOUR ESTIMATE</div>
       <h1>その見積もり、高い？<br><b>写真1枚で解剖</b>します。</h1>
-      <p class="lead">見積書をスマホで撮るだけ。無料、登録もログインもいりません。KIRA が項目ごとに読み、気をつける点を30秒ほどで返します。<b>結果はあなたにだけ表示されます。</b>掲示板に載せるかは、結果を見てから決められます。載せなくても構いません。</p>
+      <p class="lead">見積書をスマホで撮るだけ。無料、ログインも不要です。KIRA が項目ごとに読み、気をつける点を30秒ほどで返します。<b>結果はあなたにだけ表示されます。</b><span class="lead-more">掲示板に載せるかは、結果を見てから決められます。</span></p>
       <div class="hero-sub">建設実務30年の監修 / 業者から紹介料を受け取らない第三者 / <a href="/hacker/kaibou/">解剖の例を見る</a></div>
     </div>
 
