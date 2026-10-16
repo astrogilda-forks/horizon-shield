@@ -13,7 +13,8 @@
 // the register served those bytes; independent observers asking the same question are how that is approached, and
 // the record is built so two of them can be compared byte for byte (same request, same extractor). It does not prove
 // that the person at the door is the business on the register, that the licence covers the work in question (the list
-// page carries no trade or expiry; that is v0.2, from the detail page), or that the register is current (MLIT updates
+// page carries no trade or expiry; since 0.2.0 the optional detail record reads both from the register's detail page,
+// see kyoka_detail.mjs, and even then a trade is not a job), or that the register is current (MLIT updates
 // it twice a month). The representative's name on the list page is never copied into the record: it is a person's
 // name, and for a sole proprietor it is the business; it stays inside the hashed response bytes only.
 //
@@ -27,13 +28,17 @@
 //                    office, address } ], register_message }   rows are the register rows for the queried licence
 //   observed_at    RFC3339 UTC "...Z"
 //   nonce          caller chosen string
+//   detail?        (0.2.0) { request, response, result } for the register's detail page of the same licence, see
+//                  kyoka_detail.mjs; result { status: "read", trade_name, trades: [ { trade, class } ], grants, validity }
+//                  or { status: "unreadable", reason }. A 0.1.0 record has no detail and verifies as before.
 import { createHash, sign as nodeSign, verify as nodeVerify } from "node:crypto";
 import { canonical, sha256hex, withoutDerived, sigBytes } from "../task-delegation-bind-v0/bind.mjs";
 import { isRfc3339Utc } from "../task-execution-bind-v0/bind_exec.mjs";
 import { publicKeyFromDidKey } from "../task-delegation-bind-v0/verify_fixture.mjs";
 import { checkIdentity } from "../idp-bind-v0/trusted_identity.mjs";
+import { TRADES, DETAIL_URL, DETAIL_EXTRACTOR, detailRequestBody, detailRecord } from "./kyoka_detail.mjs";
 
-export const KYOKA_OBSERVE_VERSION = "0.1.0";
+export const KYOKA_OBSERVE_VERSION = "0.2.0";
 export const SCHEMA = "kyoka-observe-v0/observation";
 export const EXTRACTOR = "mlit-etsuran-list-v0";
 export const REGISTER_URL = "https://etsuran2.mlit.go.jp/TAKKEN/kensetuKensaku.do";
@@ -129,7 +134,7 @@ export function resultFor(q, ex) {
 }
 
 // ---- making one (the observer's side) ----
-export function makeObservation({ observerPrivateKey, observerId, query, responseBytes, observedAt, nonce }) {
+export function makeObservation({ observerPrivateKey, observerId, query, responseBytes, detailBytes, observedAt, nonce }) {
   const p = queryProblem(query);
   if (p) throw new Error(p);
   const body = requestBody(query);
@@ -140,6 +145,7 @@ export function makeObservation({ observerPrivateKey, observerId, query, respons
     response: { sha256: createHash("sha256").update(responseBytes).digest("hex"), length: responseBytes.length, charset: "Shift_JIS", extractor: EXTRACTOR },
     result: { status: res.status, rows: res.rows, rows_truncated: res.rows_truncated, register_message: res.register_message },
     observed_at: observedAt, nonce };
+  if (detailBytes != null) o.detail = detailRecord(query, Buffer.from(detailBytes));
   o.observation_id = observationId(o);
   o.observer_sig = nodeSign(null, Buffer.from(canonical(observationPreimage(o)), "utf8"), observerPrivateKey).toString("base64");
   return o;
@@ -147,7 +153,7 @@ export function makeObservation({ observerPrivateKey, observerId, query, respons
 
 // ---- verification (offline) ----
 export const AUDIENCE = "nenrin-kyoka-observe";
-// input: { observation, response_bytes?, binding?, jwks?, trusted?: { "<issuer>": ["<jwks sha256>"] } }
+// input: { observation, response_bytes?, detail_bytes?, binding?, jwks?, trusted?: { "<issuer>": ["<jwks sha256>"] } }
 // trusted is the reader's own choice of issuer keys; a JWKS that only the bundle vouches for is reported as such.
 export function verify(input) {
   const refusals = [], findings = [], establishes = [], does_not_establish = [];
@@ -200,6 +206,29 @@ export function verify(input) {
   else if (!qp && Array.isArray(R.rows) && R.rows.some((r) => !rowMatches(o.query, r)))
     refuse("row_not_for_query", "a row is for another licence number or another authority than the query");
 
+  // 2b. the detail record, when there is one: the fixed request for the same licence, a well formed reading, and a
+  // trade name that agrees with the list page's rows
+  const D = o.detail;
+  const DR = D && typeof D === "object" && !Array.isArray(D) ? D.result || {} : {};
+  if (D !== undefined) {
+    if (!D || typeof D !== "object" || Array.isArray(D) || Object.keys(D).sort().join() !== "request,response,result") refuse("bad_detail", "detail carries exactly request, response and result");
+    else {
+      const dq = D.request || {}, ds = D.response || {};
+      if (!qp) {
+        if (dq.url !== DETAIL_URL || dq.method !== "POST") refuse("detail_request_target_mismatch", "detail.request must be POST to " + DETAIL_URL);
+        if (dq.body !== detailRequestBody(o.query)) refuse("detail_request_body_mismatch", "detail.request.body is not detailRequestBody(query)");
+        if (dq.body_sha256 !== sha256hex(String(dq.body))) refuse("detail_request_digest_mismatch", "detail.request.body_sha256 is not sha256 of detail.request.body");
+      }
+      if (ds.extractor !== DETAIL_EXTRACTOR || ds.charset !== "Shift_JIS" || !/^[0-9a-f]{64}$/.test(String(ds.sha256)) || !Number.isInteger(ds.length))
+        refuse("bad_detail_response_descriptor", "detail.response must name sha256, length, Shift_JIS and " + DETAIL_EXTRACTOR);
+      const p = detailResultProblem(DR);
+      if (p) refuse("bad_detail_result", p);
+      else if (DR.status === "read" && R.status === "not_listed") refuse("detail_list_disagree", "the detail page was read for a licence the list page did not list");
+      else if (DR.status === "read" && R.status === "listed" && Array.isArray(R.rows) && !R.rows.some((r) => r && r.trade_name === DR.trade_name))
+        refuse("detail_list_disagree", "the detail page's trade name is not the trade name of any listed row");
+    }
+  }
+
   // 3. with the response bytes: they are the bytes named, and the extractor gives the same rows
   const bytes = input.response_bytes;
   if (bytes == null) find("response_not_supplied", "the response bytes were not supplied: the rows are the observer's reading, not rechecked here");
@@ -211,6 +240,26 @@ export function verify(input) {
       const same = again.status === R.status && canonical(again.rows) === canonical(R.rows) && again.register_message === R.register_message;
       if (!same) refuse("extraction_mismatch", "re-extracting the supplied bytes does not give the recorded result");
       else find("extraction_reproduced", "re-extracting the response bytes gives exactly the recorded rows");
+    }
+  }
+
+  // 3b. with the detail page's bytes: the same, for the detail record
+  let detailReproduced = false;
+  if (D !== undefined && D && typeof D === "object") {
+    const dbytes = input.detail_bytes;
+    if (dbytes == null) find("detail_response_not_supplied", "the detail page's bytes were not supplied: trades and validity are the observer's reading, not rechecked here");
+    else {
+      const buf = Buffer.from(dbytes), ds = D.response || {};
+      if (createHash("sha256").update(buf).digest("hex") !== ds.sha256 || buf.length !== ds.length) refuse("detail_response_digest_mismatch", "the supplied detail bytes are not the detail response the record names");
+      else if (!qp) {
+        if (canonical(detailRecord(o.query, buf).result) !== canonical(DR)) refuse("detail_extraction_mismatch", "re-extracting the supplied detail bytes does not give the recorded detail result");
+        else { detailReproduced = true; find("detail_extraction_reproduced", "re-extracting the detail page's bytes gives exactly the recorded trades and validity"); }
+      }
+    }
+    if (DR.status === "read" && DR.validity && isRfc3339Utc(o.observed_at)) {
+      const day = o.observed_at.slice(0, 10);
+      if (day < DR.validity.from) find("validity_starts_after_observation", "the period shown starts after the day observed: the register shows a renewed licence, and the period before it is not on the page");
+      else if (day > DR.validity.to) find("validity_ended_before_observation", "the period shown had ended by the day observed");
     }
   }
 
@@ -232,12 +281,42 @@ export function verify(input) {
       ? said + " " + R.rows.length + " row(s) for that licence" + (R.rows_truncated ? " on the first page of more" : "") + ": " + [...new Set(R.rows.map((r) => r.trade_name))].join(", ")
       : R.status === "not_listed" ? (reproduced ? "in those bytes, re-read here, the register listed" : "the observer records that the register listed") + " no business under that licence"
       : "the observer records that the register's answer could not be read as its list page");
+    if (D !== undefined) {
+      const said2 = detailReproduced ? "in the detail page's bytes, re-read here, the register shows" : "the observer records that the register's detail page shows";
+      establishes.push(DR.status === "read"
+        ? said2 + " the trades " + DR.trades.map((t) => t.trade + " (" + t.class + ")").join(", ") + " and the period of validity " + DR.validity.from + " to " + DR.validity.to + " (converted from the register's 令和 dates)"
+        : "the observer records that the register's detail page could not be read (" + DR.reason + ")");
+    }
   }
   does_not_establish.push("that the register served those bytes: TLS does not sign content, so this is what the observer says it received");
   does_not_establish.push("that the person or company you are dealing with is the business on the register");
-  does_not_establish.push("the licensed trades or the licence's expiry: the list page does not carry them (v0.2 reads the detail page)");
+  if (D !== undefined && DR.status === "read") {
+    does_not_establish.push("that the licence covers the job you are buying: the register lists trades (業種), not jobs, and 一般 or 特定 is about how much may be subcontracted, not about the quality of the work");
+    does_not_establish.push("that the licence was in force on a day outside the period shown: the page shows the latest grant's period only, and a renewed licence shows the new period, which can start after the day observed");
+  } else does_not_establish.push("the licensed trades or the licence's expiry: the list page does not carry them, and this record has no readable detail page");
   does_not_establish.push("that the register is current: MLIT updates it about twice a month");
   return report(refusals, findings, establishes, does_not_establish, id);
+}
+
+// the shape of a detail result (kyoka_detail.mjs): null when well formed, otherwise why not
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+const TRADE_NAMES = TRADES.map((t) => t[1]);
+export function detailResultProblem(r) {
+  if (!r || typeof r !== "object" || Array.isArray(r)) return "detail.result is not an object";
+  const keys = Object.keys(r).sort().join();
+  if (r.status === "unreadable") return keys === "reason,status" && typeof r.reason === "string" && r.reason ? null : "an unreadable detail carries exactly status and reason";
+  if (r.status !== "read") return "detail.result.status must be read or unreadable";
+  if (keys !== "grants,status,trade_name,trades,validity") return "a read detail carries exactly status, trade_name, trades, grants, validity";
+  if (typeof r.trade_name !== "string" || !r.trade_name) return "trade_name must be a non-empty string";
+  if (!Array.isArray(r.trades) || r.trades.some((t) => !t || typeof t !== "object" || Object.keys(t).sort().join() !== "class,trade" || !TRADE_NAMES.includes(t.trade) || !["一般", "特定"].includes(t.class)))
+    return "trades are { trade, class } with one of the 29 trades and 一般 or 特定";
+  const idx = r.trades.map((t) => TRADE_NAMES.indexOf(t.trade));
+  if (idx.some((v, i) => i && v <= idx[i - 1])) return "trades appear once each, in the register's order";
+  if (!Array.isArray(r.grants) || !r.grants.length || r.grants.some((g) => typeof g !== "string" || !ISO_DAY.test(g))) return "grants is a non-empty list of ISO dates";
+  const v = r.validity;
+  if (!v || typeof v !== "object" || Object.keys(v).sort().join() !== "from,to" || !ISO_DAY.test(v.from) || !ISO_DAY.test(v.to) || !(v.from < v.to)) return "validity is { from, to }, ISO dates, from before to";
+  if (v.from !== r.grants[0]) return "validity is the period of the first grant shown";
+  return null;
 }
 
 const label = (q) => (q && q.kind === "minister" ? "国土交通大臣許可" : (q && q.prefecture) + "知事許可") + " 第" + (q && q.license_no) + "号";

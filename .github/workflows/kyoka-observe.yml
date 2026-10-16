@@ -2,8 +2,9 @@
 # what it answered, and bind the observer key to this run's GitHub Actions identity. On demand only; one query per run.
 #
 # The artifact holds observation.json, binding.json and jwks.json, uploaded only after the run's token has expired.
-# response.bin (the register's page as served, which shows a representative's name) is re-read by this run's own
-# reader and then left on the runner: it is not uploaded and not committed. Artifacts of a public repository can be
+# response.bin and detail.bin (the register's pages as served, which show a representative's name and, on the detail
+# page, a telephone number) are re-read by this run's own reader and then deleted on the runner: they are not uploaded
+# and not committed. Artifacts of a public repository can be
 # downloaded by any signed-in user, so the artifact is publication. For a sole proprietor the trade name in the record
 # is usually a person's name too; it is what the register itself publishes, and the lookup is dispatched by hand.
 name: kyoka-observe
@@ -60,7 +61,8 @@ jobs:
           set -euo pipefail
           J=$(jq -r .sha256 run/jwks.json)
           node workers/hs-ledger/nenrin/kyoka-observe-v0/observe.mjs --verify run --trust "https://token.actions.githubusercontent.com=$J"
-          rm run/response.bin
+          rm -f run/response.bin run/detail.bin
+          test -z "$(ls run | grep -vxE 'observation\.json|binding\.json|jwks\.json')" || { echo "unexpected file in run/"; ls run; exit 1; }
       - name: Wait until the token has expired
         run: |
           exp=$(node -e 'const b=require("./run/binding.json");console.log(JSON.parse(Buffer.from(b.token.split(".")[1],"base64url")).exp)')

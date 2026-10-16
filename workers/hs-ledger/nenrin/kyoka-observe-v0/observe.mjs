@@ -13,18 +13,22 @@
 // In GitHub Actions with `permissions: id-token: write`, the run's token (issuer https://token.actions.githubusercontent.com,
 // audience nenrin-kyoka-observe) is bound to the observer key with idp-bind-v0, and the issuer's JWKS is pinned by
 // sha256. Outside Actions the observation is still made and signed, just not bound to an identity.
-// Writes: observation.json, response.bin (the register's bytes, which carry the representative's name: the workflow
-// keeps them out of the published artifact), and, when bound, binding.json and jwks.json.
+// Since 0.2.0, when the list page lists the licence, the run also asks for that licence's detail page (ksGaiyo.do, one
+// more request in the same session) and records the trades and the period of validity (kyoka_detail.mjs).
+// Writes: observation.json, response.bin and detail.bin (the register's bytes, which carry the representative's name
+// and the detail page's telephone number: the workflow keeps them out of the published artifact), and, when bound,
+// binding.json and jwks.json.
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { makeObservation, verify, requestBody, queryProblem, REGISTER_URL } from "./kyoka_observe.mjs";
+import { makeObservation, verify, requestBody, queryProblem, resultFor, extractList, REGISTER_URL } from "./kyoka_observe.mjs";
+import { detailRequestBody, DETAIL_URL } from "./kyoka_detail.mjs";
 import { makeBinding, newActorKey, sha256hex } from "../idp-bind-v0/idp_bind.mjs";
 import { parseTrust } from "../idp-bind-v0/trusted_identity.mjs";
 import { parseStrict } from "../sdk/nenrin_verify.mjs";
 
 const args = process.argv.slice(2);
 const arg = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
-const UA = "HORIZON SHIELD kyoka-observe-v0 (+https://horizonshield.dev; one licence lookup per run)";
+const UA = "HORIZON SHIELD kyoka-observe-v0 (+https://horizonshield.dev; one licence lookup per run: list and detail page)";
 const AUD = "nenrin-kyoka-observe";
 const iso = (d) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
 
@@ -47,8 +51,18 @@ async function observe() {
   const observedAt = iso(new Date());
   writeFileSync(join(out, "response.bin"), bytes);
 
+  // the detail page, only for a licence the list page listed
+  let detailBytes = null;
+  if (resultFor(query, extractList(bytes)).status === "listed") {
+    const dr = await fetch(DETAIL_URL, { method: "POST", body: detailRequestBody(query),
+      headers: { "user-agent": UA, "content-type": "application/x-www-form-urlencoded", referer: REGISTER_URL, ...(cookie ? { cookie } : {}) } });
+    if (!dr.ok) { console.error("register answered HTTP " + dr.status + " for the detail page"); process.exit(3); }
+    detailBytes = Buffer.from(await dr.arrayBuffer());
+    writeFileSync(join(out, "detail.bin"), detailBytes);
+  }
+
   const key = newActorKey();
-  const observation = makeObservation({ observerPrivateKey: key.privateKey, observerId: key.actorId, query, responseBytes: bytes, observedAt, nonce: "run-" + (process.env.GITHUB_RUN_ID || Date.now()) });
+  const observation = makeObservation({ observerPrivateKey: key.privateKey, observerId: key.actorId, query, responseBytes: bytes, detailBytes, observedAt, nonce: "run-" + (process.env.GITHUB_RUN_ID || Date.now()) });
   writeFileSync(join(out, "observation.json"), JSON.stringify(observation, null, 2) + "\n");
 
   // bind the observer key to this run's identity, when there is one
@@ -73,16 +87,21 @@ function reader(dir) {
   const trust = args.flatMap((a, i) => (a === "--trust" ? [args[i + 1]] : []));
   const input = { observation: j("observation.json"), trusted: parseTrust(trust) };
   if (existsSync(join(dir, "response.bin"))) input.response_bytes = readFileSync(join(dir, "response.bin"));
+  if (existsSync(join(dir, "detail.bin"))) input.detail_bytes = readFileSync(join(dir, "detail.bin"));
   if (existsSync(join(dir, "binding.json"))) { input.binding = j("binding.json"); input.jwks = j("jwks.json"); }
   const r = verify(input);
   const o = input.observation;
   const lines = [
-    "## kyoka-observe-v0", "",
+    "## kyoka-observe-v0 (reader " + r.version + ")", "",
     "| | |", "| --- | --- |",
     "| query | " + (o.query.kind === "minister" ? "国土交通大臣許可" : o.query.prefecture + "知事許可") + " 第" + o.query.license_no + "号 |",
     "| observed_at | " + o.observed_at + " |",
     "| result | " + o.result.status + " (" + o.result.rows.length + " row(s)) |",
     "| response sha256 | `" + o.response.sha256 + "` (" + o.response.length + " bytes) |",
+    ...(o.detail ? (o.detail.result.status === "read"
+      ? ["| trades | " + o.detail.result.trades.map((t) => t.trade + " (" + t.class + ")").join(", ") + " |",
+         "| period of validity | " + o.detail.result.validity.from + " to " + o.detail.result.validity.to + " |"]
+      : ["| detail page | unreadable (" + o.detail.result.reason + ") |"]).concat(["| detail sha256 | `" + o.detail.response.sha256 + "` (" + o.detail.response.length + " bytes) |"]) : []),
     ...(input.jwks ? ["| issuer JWKS sha256 | `" + input.jwks.sha256 + "` (compare with your own fetch before passing it to --trust) |"] : []),
     "| observation_id | `" + o.observation_id + "` |",
     "| verdict | " + r.verdict + " " + JSON.stringify(r.refusals.map((x) => x.code)) + " " + JSON.stringify(r.findings.map((x) => x.code)) + " |", "",
