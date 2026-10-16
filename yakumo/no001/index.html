@@ -18,11 +18,7 @@
 <link rel="alternate" type="text/plain" href="https://shield.the-horizons-innovation.com/llms.txt" title="LLM向けサイト要約">
 <link rel="mcp-server" href="https://hearing.horizonshield.dev/mcp">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[
-{"@type":"Organization","@id":"https://shield.the-horizons-innovation.com/#org","name":"HORIZON SHIELD","alternateName":"The HORIZ音s株式会社","url":"https://shield.the-horizons-innovation.com","telephone":"0463-74-5917"},
-{"@type":"LocalBusiness","@id":"https://shield.the-horizons-innovation.com/yakumo/no001/#store","name":"リフォーム職人株式会社","areaServed":["愛知県長久手市","名古屋市","日進市","尾張旭市","瀬戸市"],"knowsAbout":["外壁塗装","屋根リフォーム","内装リフォーム"],"memberOf":{"@type":"Organization","name":"Yakumo 加盟店モール","url":"https://shield.the-horizons-innovation.com/yakumo/"},"identifier":"No.001"},
-{"@type":"ProfilePage","@id":"https://shield.the-horizons-innovation.com/yakumo/no001/#page","about":{"@id":"https://shield.the-horizons-innovation.com/yakumo/no001/#store"},"isPartOf":"https://shield.the-horizons-innovation.com/yakumo/","publisher":{"@id":"https://shield.the-horizons-innovation.com/#org"}}
-]}
+{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://shield.the-horizons-innovation.com/#org", "name": "HORIZON SHIELD", "alternateName": "The HORIZ音s株式会社", "url": "https://shield.the-horizons-innovation.com", "telephone": "0463-74-5917"}, {"@type": ["LocalBusiness", "HomeAndConstructionBusiness"], "@id": "https://shield.the-horizons-innovation.com/yakumo/no001/#store", "name": "リフォーム職人株式会社", "areaServed": ["愛知県長久手市", "名古屋市", "日進市", "尾張旭市", "瀬戸市"], "knowsAbout": ["外壁塗装", "屋根リフォーム", "内装リフォーム"], "memberOf": {"@type": "Organization", "name": "Yakumo 加盟店モール", "url": "https://shield.the-horizons-innovation.com/yakumo/"}, "identifier": "No.001", "url": "https://shield.the-horizons-innovation.com/yakumo/no001/", "address": {"@type": "PostalAddress", "postalCode": "480-1124", "addressRegion": "愛知県", "addressLocality": "長久手市", "streetAddress": "戸田谷1405", "addressCountry": "JP"}, "telephone": "+81-561-56-7974", "geo": {"@type": "GeoCoordinates", "latitude": 35.1734512, "longitude": 137.0366804}, "hasMap": "https://maps.google.com/?cid=16804833412888031870", "sameAs": ["https://maps.google.com/?cid=16804833412888031870"], "subjectOf": {"@type": "Report", "name": "KIRA適正診断の記録（加盟No.001）", "datePublished": "2026-09-19", "author": {"@type": "Organization", "name": "HORIZON SHIELD", "url": "https://shield.the-horizons-innovation.com/"}, "url": "https://shield.the-horizons-innovation.com/yakumo/no001/verification-record.json", "encodingFormat": "application/json", "description": "実際の見積書3件を照合し、適正度88・誠実度ティアB・過剰請求の指摘0。記録の sha256: 15de8e84ddcd9127a191ea8348745623af3f5ad015b0280efeefb8dd4f490390"}}, {"@type": "ProfilePage", "@id": "https://shield.the-horizons-innovation.com/yakumo/no001/#page", "about": {"@id": "https://shield.the-horizons-innovation.com/yakumo/no001/#store"}, "isPartOf": "https://shield.the-horizons-innovation.com/yakumo/", "publisher": {"@id": "https://shield.the-horizons-innovation.com/#org"}}]}
 </script>
 <style>
   :root{--void:#080B11;--void-2:#0A0E16;--ink:#EAF0F8;--ink-dim:#7E8CA2;--ink-faint:#4A5568;
@@ -108,18 +104,41 @@
     <span class="badge-no">加盟 No.001 ・ FOUNDING MEMBER</span>
     <h1>リフォーム職人株式会社</h1>
     <p class="sub">愛知県長久手市 ・ 外壁塗装 / 屋根 / 内装 ・ Yakumo 加盟店</p>
-    <div id="statusBox" class="status"><span class="d"></span><span id="statusText">加盟確定 ・ 初回ヒアリングと適正診断(KIRA)を実施中</span></div>
+    <div id="statusBox" class="status ok"><span class="d"></span><span id="statusText">検証済み ・ 適正診断(KIRA)通過</span></div>
   </div>
 
   <div class="grid">
     <div class="card">
       <h3>適正度スコア</h3>
-      <div class="score-wrap"><div id="scoreN" class="n pending">検証中</div><div style="font-size:12px;color:var(--ink-faint);margin-top:8px;" id="scoreL">audit_estimate 通過後に表示</div></div>
+      <div class="score-wrap"><div id="scoreN" class="n">88</div><div style="font-size:12px;color:var(--ink-faint);margin-top:8px;" id="scoreL">誠実度ティア B ・ 実際の見積書3件で通過</div></div>
     </div>
     <div class="card">
       <h3>対応工種・エリア</h3>
       <div class="tags" id="worksTags"><span class="tg">外壁塗装</span><span class="tg">屋根</span><span class="tg">内装</span></div>
       <div class="tags" style="margin-top:6px;" id="areaTags"><span class="tg">愛知県長久手市</span><span class="tg">名古屋市</span><span class="tg">日進市</span><span class="tg">尾張旭市</span><span class="tg">瀬戸市</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>検証の記録</h2>
+    <p style="color:var(--ink-dim);font-size:14px;">HORIZON SHIELD が、この店の実際の見積書を相場データ（JCCDB・souba-db）と照合した記録です。検証したのは見積もりの金額と内訳の適正さで、工事の出来栄えや保証ではありません。</p>
+    <div class="mcp-box">
+      <div><span class="k">検証日</span> 2026年9月19日</div>
+      <div><span class="k">照合した見積書</span> 3件（店舗の内装改修）</div>
+      <div><span class="k">結果</span> 適正度 88 ・ 誠実度ティア B ・ 過剰請求の指摘 0件</div>
+      <div><span class="k">記録</span> <a href="https://shield.the-horizons-innovation.com/yakumo/no001/verification-record.json">verification-record.json</a></div>
+      <div><span class="k">sha256</span> <code style="word-break:break-all">15de8e84ddcd9127a191ea8348745623af3f5ad015b0280efeefb8dd4f490390</code></div>
+    </div>
+    <p style="color:var(--ink-dim);font-size:13px;">記録のファイルをダウンロードして sha256 を計算すると、上の値と一致します（例: <code>shasum -a 256 verification-record.json</code>）。</p>
+  </div>
+
+  <div class="sec">
+    <h2>所在地と連絡先</h2>
+    <p style="color:var(--ink-dim);font-size:14px;">Google マップに掲載されている店の情報と同じ表記にしています。</p>
+    <div class="mcp-box">
+      <div><span class="k">所在地</span> 〒480-1124 愛知県長久手市戸田谷1405</div>
+      <div><span class="k">電話</span> <a href="tel:0561567974">0561-56-7974</a></div>
+      <div><span class="k">地図</span> <a href="https://maps.google.com/?cid=16804833412888031870" rel="noopener">Google マップで見る</a></div>
     </div>
   </div>
 

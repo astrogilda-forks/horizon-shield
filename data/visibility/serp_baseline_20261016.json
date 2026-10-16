@@ -1,0 +1,25 @@
+{
+  "schema": "serp-baseline/v1",
+  "measured_at": "2026-10-16T09:40+09:00",
+  "method": "TOshi の Chrome で検索結果の1ページ目を開き、自然検索の結果のドメインを上から記録。広告と動画は除く。Brave は8問中6問で計測、7問目からボット確認の画面が出たので止めた(突破はしない)。",
+  "targets": {"hs": "shield.the-horizons-innovation.com", "no002": "mineotfc.com / ミネオトーヨー住器", "no001": "reform-s.net / reform-sn.com / リフォーム職人"},
+  "results": [
+    {"engine": "brave", "q": "外壁塗装 100万円 高い", "hs_rank": null, "members": false},
+    {"engine": "brave", "q": "外壁塗装 見積もり 適正価格", "hs_rank": null, "members": false},
+    {"engine": "brave", "q": "給湯器交換 20万 高い", "hs_rank": null, "members": false},
+    {"engine": "brave", "q": "リフォーム 見積もり 第三者 チェック", "hs_rank": null, "members": false},
+    {"engine": "brave", "q": "見積書 一式 確認", "hs_rank": null, "members": false},
+    {"engine": "brave", "q": "平塚市 窓 リフォーム おすすめ", "hs_rank": null, "members": false},
+    {"engine": "brave", "q": "外壁塗装 見積もり 高いか 確認", "hs_rank": null, "members": false, "note": "上位20件に無し"},
+    {"engine": "bing", "q": "外壁塗装 100万円 高い", "hs_rank": 7, "members": false},
+    {"engine": "bing", "q": "給湯器交換 20万 高い", "hs_rank": 2, "hs_rank_2": 5, "members": false},
+    {"engine": "bing", "q": "平塚市 窓 リフォーム おすすめ", "hs_rank": null, "members": false},
+    {"engine": "bing", "q": "長久手市 リフォーム 会社", "hs_rank": null, "members": false}
+  ],
+  "maps": {
+    "no002_google": {"name": "ミネオトーヨー住器（株）", "rating": 4.2, "reviews": 5, "newest_review_visible": "2年前", "category": "リノベーション業者", "website": "mineotfc.com"},
+    "no002_bing": {"listed": true, "verified_mark": true, "category": "リフォーム業者"},
+    "no001_google": {"name": "リフォーム職人", "rating": 5.0, "reviews": 1, "newest_review": "2週間前", "category": "リノベーション業者", "websites": ["reform-s.net", "reform-sn.com"]}
+  },
+  "next": "同じ問いを2026-11-16と2027-01-16に測り直す。加盟店ページの公開、地図の手直し、バッジの設置の後の変化を見る。"
+}
