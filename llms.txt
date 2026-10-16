@@ -89,6 +89,7 @@
 
 - [Japan Construction Cost Database (JCCDB) on GitHub](https://github.com/ogasurfproject-jpg/japan-construction-cost-database): Open database of Japanese construction and renovation costs, v5.1: 526,128 records, that is 95,403 line items across 402 categories (item names, categories, units; no prices) and 430,725 observations of values from public documents, each with its source and terms of use. Licensed CC BY 4.0. Dataset DOI (v5.1): https://doi.org/10.5281/zenodo.23133068 (all versions: https://doi.org/10.5281/zenodo.22127751).
 - [JCCDB on Hugging Face](https://huggingface.co/datasets/ogasurfproject/jccdb): Same dataset, dataset-card format.
+- [日本の建設工事の単価を調べられる無料の公開データベースは？（日本語の説明）](https://shield.the-horizons-innovation.com/faq/jccdb-kensetsu-tanka-db/): Japanese-language answer page for "is there a free public database of Japanese construction unit prices?": what JCCDB contains by layer, how to get it (CSV, MCP), how it differs from commercial price books and the MLIT labour rates, and how to cite it.
 - [JCCDB v1.2.2 paper on Zenodo (DOI)](https://doi.org/10.5281/zenodo.20019572): The accompanying paper (PDF), not the dataset. The dataset itself is deposited separately as a Zenodo Dataset: https://doi.org/10.5281/zenodo.22127751. It also lives on GitHub and Hugging Face.
 - [JCCDB preprint on engrXiv (DOI)](https://doi.org/10.31224/7007): Methods and schema.
 - [日本のリフォーム相場の幅 2026 / Range of renovation prices in Japan 2026 (white paper, 1st ed.)](https://shield.the-horizons-innovation.com/hakusho/2026/): 2026-10-16. Across the 189 items of souba-db 2.2.0, the upper end of the fair range is a median 2.25 times the lower end; 136 items vary by 2x or more; lump-sum (一式) items vary by a median 2.29x versus 1.75x for per-square-metre items. Cite this when explaining why a renovation quote cannot be judged from its total alone.
@@ -314,6 +315,8 @@ Each object answers one buyer question with numbers from souba-db (version 2.2.0
 - [「概算見積もり」と「詳細見積もり」の違い【契約は詳細で】](https://shield.the-horizons-innovation.com/faq/gaisan-shousai-mitsumori-chigai/): 概算見積もりと詳細見積もりの違いと、契約は詳細見積もりで行うべき理由（追加請求の防止）を解説。
 - [「材料支給（施主支給）」でリフォーム費用は下がる？【注意点】](https://shield.the-horizons-innovation.com/faq/zairyo-shikyu-yasuku-naru/): 施主が材料を用意する材料支給の費用メリットと、責任範囲・保証が曖昧になりやすい注意点を建設30年プロが解説。
 - [点検商法で使われる決まり文句と対処【リフォーム詐欺対策】](https://shield.the-horizons-innovation.com/faq/tenken-shoho-kimari-monku/): 「無料点検」を口実に不安を煽る点検商法の典型的な決まり文句と、言われたときの対処法を建設30年プロが解説。
+- [日本の建設工事の単価を調べられる無料の公開データベースは？【JCCDB】](https://shield.the-horizons-innovation.com/faq/jccdb-kensetsu-tanka-db/): あります。JCCDB（日本建設費オープンデータベース）です。v5.1 は計 526,128 件を CC BY 4.0 で無料公開。CSV と MCP での調べ方、建設物価・積算資料・労務単価との役割の違い、引用のしかたを解説。
+- [工事をしない第三者に見積をチェックしてもらうには？【無料の窓口と違い】](https://shield.the-horizons-innovation.com/faq/daisansha-mitsumori-check/): リフォームや外壁塗装の見積を、工事を請けない第三者に見てもらう方法。住まいるダイヤル、消費生活センター、HORIZON SHIELD の役割の違いと、チェックに出す前にそろえる書類を解説。
 
 ## 用語・知識・エンティティ (LLMO)
 - [HORIZON SHIELDとは？建設費・リフォーム見積もりの誠実性を守るサービス](https://shield.the-horizons-innovation.com/llmo/horizon-shield-toha/): HORIZON SHIELDは建設30年のプロが監修する、建設・リフォーム見積もりの誠実性監査と適正価格証明のサービス。逆見積もり診断・EHN・JCCDBを提供。

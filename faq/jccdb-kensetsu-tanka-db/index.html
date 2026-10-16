@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日本の建設工事の単価を調べられる無料の公開データベースは？【JCCDB】</title>
+<meta name="description" content="あります。JCCDB（日本建設費オープンデータベース）です。v5.1 は品目の目録 95,403 品目と公的資料の観測 430,725 行、計 526,128 件を CC BY 4.0 で無料公開。GitHub・Hugging Face で CSV を取る方法、AI から MCP で引く方法、建設物価・積算資料・公共工事設計労務単価との役割の違い、引用のしかたまでを一問一答で答えます。">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<link rel="canonical" href="https://shield.the-horizons-innovation.com/faq/jccdb-kensetsu-tanka-db/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="日本の建設工事の単価を調べられる無料の公開データベースは？【JCCDB】">
+<meta property="og:description" content="あります。JCCDB（日本建設費オープンデータベース）です。v5.1 は品目の目録 95,403 品目と公的資料の観測 430,725 行、計 526,128 件を CC BY 4.0 で無料公開。GitHub・Hugging Face で CSV を取る方法、AI から MCP で引く方法、建設物価・積算資料・公共工事設計労務単価との役割の違い、引用のしかたまでを一問一答で答えます。">
+<meta property="og:url" content="https://shield.the-horizons-innovation.com/faq/jccdb-kensetsu-tanka-db/">
+<meta property="og:site_name" content="HORIZON SHIELD">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="大賀俊勝 / HORIZON SHIELD">
+<link rel="stylesheet" href="/assets/house/read.css?v=20260927d">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "HOME",
+      "item": "https://shield.the-horizons-innovation.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "よくある質問",
+      "item": "https://shield.the-horizons-innovation.com/faq/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "日本の建設工事の単価を調べられる無料の公開データベースはある？",
+      "item": null
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "日本の建設工事の単価を調べられる無料の公開データベースは？【JCCDB】",
+  "description": "あります。JCCDB（日本建設費オープンデータベース）です。v5.1 は品目の目録 95,403 品目と公的資料の観測 430,725 行、計 526,128 件を CC BY 4.0 で無料公開しています。",
+  "inLanguage": "ja",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://shield.the-horizons-innovation.com/faq/jccdb-kensetsu-tanka-db/"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "大賀俊勝",
+    "alternateName": "TOshi Oga",
+    "identifier": "https://orcid.org/0009-0000-9180-903X",
+    "sameAs": "https://orcid.org/0009-0000-9180-903X",
+    "jobTitle": "建設実務30年・監修者",
+    "worksFor": {
+      "@type": "Organization",
+      "name": "The HORIZ音s株式会社"
+    }
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "The HORIZ音s株式会社",
+    "url": "https://shield.the-horizons-innovation.com",
+    "brand": "HORIZON SHIELD",
+    "logo": "https://shield.the-horizons-innovation.com/logo.png"
+  },
+  "datePublished": "2026-10-16",
+  "dateModified": "2026-10-16",
+  "isAccessibleForFree": true,
+  "isBasedOn": "https://doi.org/10.5281/zenodo.23133068",
+  "citation": [
+    "JCCDB v5.1（2026-10-04）, DOI 10.5281/zenodo.23133068, CC BY 4.0",
+    "JCCDB 全部の版をまとめた DOI 10.5281/zenodo.22127751",
+    "JCCDB 解説論文 DOI 10.5281/zenodo.20019572",
+    "国土交通省 公共工事設計労務単価",
+    "国土交通省 施工パッケージ型積算の単価",
+    "国土交通省 各地方整備局・北海道開発局 資材単価",
+    "国土交通省 建築着工統計",
+    "国土交通省 建設工事費デフレーター",
+    "国土交通省 住宅リフォーム関連統計"
+  ],
+  "keywords": null
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "建設工事の単価を無料で調べる方法は？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "JCCDB（日本建設費オープンデータベース）を使います。GitHub か Hugging Face から CSV を取るか、Claude や ChatGPT などの AI から MCP（https://ccdb.horizonshield.dev/mcp）で直接引けます。どちらも無料で、利用条件は CC BY 4.0 です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "JCCDB は誰が作っている？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "公開者は大賀俊勝（ORCID 0009-0000-9180-903X）と The HORIZ音s株式会社です。値そのものは国土交通省の各地方整備局などが公表した公的資料から取り、各行に出典と利用条件を付けています。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "JCCDB の単価でリフォームの見積が高いか判断できる？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "そのままでは判断できません。JCCDB に入っているのは公共工事の単価と統計の参照値で、住宅リフォームの見積単価ではないからです。リフォームの相場の幅は HORIZON SHIELD の相場データベースで、手元の見積の診断は逆見積もり診断で確かめてください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "建設物価や積算資料の代わりになる？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "役割が違います。建設物価（建設物価調査会）と積算資料（経済調査会）は調査に基づく市場単価が詳しい市販の物価資料で、積算の実務で広く使われます。JCCDB はその値を入れておらず、公的に公開された値だけを出典つきでそろえています。目的で使い分けるものです。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "論文やレポートで引用してよい？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "できます。CC BY 4.0 なので出典を明記すれば再利用でき、版ごとの DOI を添えて『JCCDB v5.1（2026-10-04）, DOI 10.5281/zenodo.23133068, CC BY 4.0』の形で引きます。全部の版をまとめた DOI は 10.5281/zenodo.22127751 です。"
+      }
+    }
+  ]
+}
+</script>
+  <link rel="alternate" type="text/plain" href="https://shield.the-horizons-innovation.com/llms.txt" title="LLM向けサイト要約">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="https://shield.the-horizons-innovation.com">HORIZON SHIELD<small>業者より先に、価格を知る。</small></a>
+<a href="https://shield.the-horizons-innovation.com/hs-reverse-estimate/" style="font-size:13px;font-weight:700">逆見積もり診断 ▸</a>
+</div></header>
+<div class="wrap">
+<nav class="crumbs" aria-label="パンくず"><a href='https://shield.the-horizons-innovation.com'>HOME</a><span>›</span><a href='https://shield.the-horizons-innovation.com/faq/'>よくある質問</a><span>›</span><span aria-current='page'>日本の建設工事の単価を調べられる無料の公開データベースはある？</span></nav>
+<main>
+<span class="badge aeo">AEO ｜ 直接回答</span>
+<h1>日本の建設工事の単価を調べられる無料の公開データベースはある？</h1>
+<p class="updated">最終更新: 2026-10-16｜監修: 大賀俊勝（建設実務30年）</p>
+
+<div class='answerbox'><span class='lbl'>結論</span><p>あります。JCCDB（日本建設費オープンデータベース）です。最新版 v5.1（2026-10-04 公開）は品目の目録 95,403 品目と公的資料の観測 430,725 行、計 526,128 件を収め、無料で、利用条件は CC BY 4.0 です。版ごとに DOI（<a href='https://doi.org/10.5281/zenodo.23133068'>10.5281/zenodo.23133068</a>）が付いているので、同じ版を誰でも取り直せます。</p></div>
+<aside class='tldr' aria-label='結論'><h2>30秒でわかる結論</h2><ul><li>JCCDB は公的に公開された建設費の値を、出典と利用条件つきで一つの形にそろえた無料のデータセット</li><li>資材・工事・労務の単価、面積あたりの工事費、指数、機械損料、リフォームの工事支出が入り、出典は 88</li><li>GitHub・Hugging Face で CSV を取るか、AI から MCP で直接引ける</li><li>公共工事の単価は参照値であり、住宅リフォームの見積単価ではない</li></ul></aside>
+
+<section><h2>JCCDB に入っているもの</h2><p>JCCDB は二つの部分からできています。一つは品目の目録（v4.0、2026-08-28）で、95,403 品目（検証済み 43,090、Extended 52,313）を 97 カテゴリに分け、品目名・カテゴリ・単位だけを持ちます。値段は持ちません。実在が確かめられなかった 608 品目は取り除き、取り除いた記録も公開しています。もう一つが観測の層で、1 行に 1 つの観測を、地域・時点・出典・利用条件つきで持ちます。v5.1 の日本の分は次の通りです（2026-10-07 組み立て時点）。</p>
+<table><thead><tr><th>層</th><th>行数</th><th>主な出典と時点</th></tr></thead><tbody>
+<tr><td>資材の単価</td><td>246,861 行</td><td>国土交通省の各地方整備局・北海道開発局などが公表する資材単価。2025-06〜2026-10</td></tr>
+<tr><td>工事の単価</td><td>92,918 行</td><td>国土交通省の施工パッケージ型積算の単価が中心。2025-04 時点</td></tr>
+<tr><td>労務単価</td><td>32,924 行</td><td>国土交通省の公共工事設計労務単価 2013-04〜2026-03、設計業務委託等技術者単価</td></tr>
+<tr><td>面積あたりの工事費</td><td>41,410 行</td><td>建築着工統計から。2025〜2026-08</td></tr>
+<tr><td>指数</td><td>18,200 行</td><td>建設工事費デフレーター。FY1951〜2026-07</td></tr>
+<tr><td>機械損料</td><td>776 行</td><td>公的資料の機械損料</td></tr>
+<tr><td>リフォームの工事支出</td><td>804 行</td><td>国土交通省の住宅リフォーム関連統計 FY2025</td></tr>
+</tbody></table>
+<p>観測の各行は出典の条件（公共データ利用規約 PDL1.0、政府標準利用規約 第2.0版）に従います。再配布を許さない出典の行は値を写さず、件数と原本の URL だけを持ちます。市販の物価資料の値は入れておらず、市販資料の値を使っていて公開値の無い表は「公開値なし」として区別しています。無いものを無いと書くのも、このデータベースの方針です。</p></section>
+
+<section><h2>調べ方：3 つの道</h2><h3>1. GitHub・Hugging Face で CSV を取る</h3><p>目録と観測はどちらも CSV で配られています。<a href='https://github.com/ogasurfproject-jpg/japan-construction-cost-database'>GitHub</a> には版ごとの履歴があり、Hugging Face には<a href='https://huggingface.co/datasets/ogasurfproject/jccdb'>目録</a>と<a href='https://huggingface.co/datasets/ogasurfproject/jccdb-observations'>観測</a>が別のデータセットとして置かれています。表計算ソフトや Python で読み、地域・時点・出典の列で絞り込む使い方が基本です。</p>
+<h3>2. Claude や ChatGPT から MCP で引く</h3><p>AI から直接引く口として MCP サーバー（<a href='https://ccdb.horizonshield.dev/mcp'>https://ccdb.horizonshield.dev/mcp</a>）が公開されています。道具は search_jccdb_items、get_jccdb_observations、get_jccdb_labor_rate、compare_jccdb_regions、get_jccdb_work_unit_price、get_jccdb_index_series、get_jccdb_coverage の 7 つ。たとえば「奈良県の生コンクリートの観測」「大工の労務単価の年ごとの系列」のように自然な言葉で聞くと、AI が該当する行と証拠 URL を返します。</p>
+<h3>3. 住宅リフォームなら相場データベース</h3><p>自宅の外壁塗装や浴室の工事の費用を知りたい人に、公共工事の単価はそのままでは役に立ちません。その目的には HORIZON SHIELD の<a href='https://shield.the-horizons-innovation.com/souba/'>相場データベース</a>があります。工事ごとの適正な幅を示し、手元の見積があれば<a href='https://shield.the-horizons-innovation.com/hs-reverse-estimate/'>逆見積もり診断</a>で照らせます。</p></section>
+
+<section><h2>建設物価・積算資料・公共工事設計労務単価との違い</h2><p>よく並べて語られますが、それぞれ役割が違います。どれかがどれかの代わりになるというより、目的で使い分けるものです。</p>
+<table><thead><tr><th>資料</th><th>役割</th><th>入手と再配布</th></tr></thead><tbody>
+<tr><td>建設物価（一般財団法人 建設物価調査会）・積算資料（一般財団法人 経済調査会）</td><td>調査に基づく市場単価が詳しい市販の物価資料。積算の実務で広く使われる</td><td>購入して使う。値の再配布はできない</td></tr>
+<tr><td>公共工事設計労務単価</td><td>国土交通省が毎年公表する労務単価そのもの</td><td>国土交通省の公表資料。JCCDB はこれを出典つきで年ごとに並べ、ほかの公的資料と同じ形で引けるようにしている</td></tr>
+<tr><td>JCCDB</td><td>公的に公開された値を、出典と利用条件つきで一つの形にそろえた無料のデータセット</td><td>CC BY 4.0。版ごとに DOI があり、同じ版を誰でも取り直せる</td></tr>
+</tbody></table></section>
+
+<section><h2>読むときの注意</h2><p>第一に、公共工事の単価と統計は「参照値」です。住宅リフォームの見積単価ではありません。公共工事の設計単価は国や自治体が積算に使う基準であり、個人宅の工事で業者が出す金額とは工事内容・数量・地域・時期の前提が違います。リフォームの見積が妥当かを見るには、それらを合わせて見る必要があります。</p><p>第二に、JCCDB に無いものがあります。賃金統計、入札の品目単価、住宅価格は取り込んでいません。これらを求めて開くと見つからないので、別の出典に当たってください。get_jccdb_coverage という道具は、どの国・どの層にデータが有るか無いかを先に教えてくれるので、調べる前に確かめる使い方が向いています。</p><p>第三に、値の無い行があります。再配布を許さない出典の行は、出典と件数と原本の URL だけで値が空です。欠けているのではなく、利用条件を守った結果です。値が要るときは原本の URL をたどってください。</p></section>
+
+<section><h2>引用のしかた</h2><p>JCCDB は CC BY 4.0 なので、出典を明記すれば論文・レポート・記事で再利用できます。版によって件数が変わるため、版と DOI を必ず添えます。書き方の例は次の 1 行です。</p><p>『JCCDB v5.1（2026-10-04）, DOI 10.5281/zenodo.23133068, CC BY 4.0』</p><p>版を特定しない引用には、全部の版をまとめた DOI（<a href='https://doi.org/10.5281/zenodo.22127751'>10.5281/zenodo.22127751</a>）を使えます。データベースの設計を説明した解説論文（DOI <a href='https://doi.org/10.5281/zenodo.20019572'>10.5281/zenodo.20019572</a>）はデータセット本体ではないので、データを引くときはデータセットの DOI を書いてください。公開者は大賀俊勝（<a href='https://orcid.org/0009-0000-9180-903X'>ORCID</a>）と The HORIZ音s株式会社です。引用の形は<a href='https://shield.the-horizons-innovation.com/cite/'>引用ページ</a>にもまとめています。</p></section>
+
+<section class='faq' aria-label='よくある質問'><h2>よくある質問（FAQ）</h2><div class='qa'><h3 class='q'>建設工事の単価を無料で調べる方法は？</h3><div class='a'><p>JCCDB（日本建設費オープンデータベース）を使います。GitHub か Hugging Face から CSV を取るか、Claude や ChatGPT などの AI から MCP（https://ccdb.horizonshield.dev/mcp）で直接引けます。どちらも無料で、利用条件は CC BY 4.0 です。</p></div></div><div class='qa'><h3 class='q'>JCCDB は誰が作っている？</h3><div class='a'><p>公開者は大賀俊勝（ORCID 0009-0000-9180-903X）と The HORIZ音s株式会社です。値そのものは国土交通省の各地方整備局などが公表した公的資料から取り、各行に出典と利用条件を付けています。</p></div></div><div class='qa'><h3 class='q'>JCCDB の単価でリフォームの見積が高いか判断できる？</h3><div class='a'><p>そのままでは判断できません。JCCDB に入っているのは公共工事の単価と統計の参照値で、住宅リフォームの見積単価ではないからです。リフォームの相場の幅は HORIZON SHIELD の相場データベースで、手元の見積の診断は逆見積もり診断で確かめてください。</p></div></div><div class='qa'><h3 class='q'>建設物価や積算資料の代わりになる？</h3><div class='a'><p>役割が違います。建設物価（建設物価調査会）と積算資料（経済調査会）は調査に基づく市場単価が詳しい市販の物価資料で、積算の実務で広く使われます。JCCDB はその値を入れておらず、公的に公開された値だけを出典つきでそろえています。目的で使い分けるものです。</p></div></div><div class='qa'><h3 class='q'>論文やレポートで引用してよい？</h3><div class='a'><p>できます。CC BY 4.0 なので出典を明記すれば再利用でき、版ごとの DOI を添えて『JCCDB v5.1（2026-10-04）, DOI 10.5281/zenodo.23133068, CC BY 4.0』の形で引きます。全部の版をまとめた DOI は 10.5281/zenodo.22127751 です。</p></div></div></section>
+
+<section class='eeat' aria-label='監修・出典'><h2>監修者・データ出典（E-E-A-T）</h2><p><strong>監修:</strong> 大賀俊勝（<a href='https://orcid.org/0009-0000-9180-903X'>ORCID</a>）。本ページの数字は JCCDB v5.1（2026-10-04 公開、DOI <a href='https://doi.org/10.5281/zenodo.23133068'>10.5281/zenodo.23133068</a>、CC BY 4.0）のデータセット情報と、観測の層の収録状況（2026-10-07 組み立て時点）に基づきます。</p><p class='disc'>※ 本ページに載せた行数と時点は版によって変わります。最新の値はデータセットの DOI か GitHub で確かめてください。</p></section>
+<section class='cta' aria-label='次のアクション'><h2>手元の見積もりは適正ですか？</h2><p>データベースの読み方が分かっても、自宅の工事の金額が妥当かは別の問いです。契約の前に第三者の目を入れてください。</p><div class='cta-grid'><a class='cta-card primary' href='https://shield.the-horizons-innovation.com/hs-reverse-estimate/'><span class='cta-t'>逆見積もり診断</span><span class='cta-d'>自宅の条件で適正な幅を出し、見積と照らします。結果は SHA-256 で検証できる形で発行。</span></a><a class='cta-card' href='https://shield.the-horizons-innovation.com/hacker/submit/'><span class='cta-t'>EHNに無料で貼る</span><span class='cta-d'>見積もりハッカーニュースに匿名投稿。KIRAが過去の実例と並べて一次解析（無料）。</span></a><a class='cta-card' href='https://shield.the-horizons-innovation.com/'><span class='cta-t'>無料AIチャットで相談</span><span class='cta-d'>JCCDB の引き方も、工事の相場も、KIRAにその場で聞けます。</span></a></div></section>
+<nav class='related' aria-label='関連ページ'><h2>関連ページ</h2><ul><li><a href='https://shield.the-horizons-innovation.com/faq/daisansha-mitsumori-check/'>見積もりを第三者にチェックしてもらうには</a></li><li><a href='https://shield.the-horizons-innovation.com/faq/souba-yori-takai/'>見積もりが相場より高いと感じたら</a></li><li><a href='https://shield.the-horizons-innovation.com/faq/mitsumorisho-doko-miru/'>見積書はどこを見ればいい？</a></li></ul></nav>
+</main>
+</div>
+<footer class="site"><div class="wrap">
+<div class="foot-links">
+<a href="https://shield.the-horizons-innovation.com/souba/">相場データベース</a>
+<a href="https://shield.the-horizons-innovation.com/ehn/">EHN 見積もりハッカーニュース</a>
+<a href="https://shield.the-horizons-innovation.com/hs-reverse-estimate/">逆見積もり診断</a>
+<a href="https://shield.the-horizons-innovation.com/guide/">ガイド</a>
+<a href="https://shield.the-horizons-innovation.com/cite/">引用のしかた</a>
+<a href="https://shield.the-horizons-innovation.com/tokusho">特商法表記</a>
+<a href="https://shield.the-horizons-innovation.com/privacy">プライバシー</a>
+</div>
+<p>© The HORIZ音s株式会社 / HORIZON SHIELD. 建設費の適正価格を、検証可能な形で。データ: JCCDB v5.1 (CC BY 4.0)。</p>
+<p>本コンテンツは一般的な情報であり、特定業者への評価・特定の工事の適正性を保証するものではありません。</p>
+</div></footer>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "5a6009e4bfe34dc8ae92f6fc93506de4"}'></script><!-- End Cloudflare Web Analytics --><!-- Microsoft Clarity --><script>window.clarity=window.clarity||function(){(window.clarity.q=window.clarity.q||[]).push(arguments)};</script><script async src="https://www.clarity.ms/tag/yqxthpuut2"></script><!-- End Microsoft Clarity -->
+</body>
+</html>
