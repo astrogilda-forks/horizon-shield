@@ -1,0 +1,45 @@
+# OpenSSF Scorecard: an outside, automated check of this repository's security practices (branch protection, pinned
+# dependencies, token permissions, signed releases and so on). Added 2026-10-16 because OSTIF asks for the Scorecard
+# result when a project applies for an independent audit, and because a score published by OpenSSF says more than our
+# own description of our practices. Results go to the repository's code scanning tab and to the public Scorecard API
+# (publish_results), where anyone can read them at https://scorecard.dev/viewer/?uri=github.com/ogasurfproject-jpg/horizon-shield.
+# The score is whatever it is: low checks are left visible and fixed one at a time, not hidden.
+name: scorecard
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: "41 2 * * 1"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/scorecard.yml"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  analysis:
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: scorecard-sarif
+          path: results.sarif
+          retention-days: 30
+      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: results.sarif
