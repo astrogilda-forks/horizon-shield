@@ -174,11 +174,28 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
 .foot-in{max-width:840px;margin:0 auto;font-family:var(--mono);font-size:11.5px;color:var(--mut);line-height:2}
 .foot-in a{color:var(--ink2)}
 .hide{display:none!important}
+/* 2026-10-17: 写真を撮る・選ぶの 2 つのボタン、任意の欄はたたむ */
+.pick-row{display:flex;gap:10px;margin-top:14px}
+.pick-btn{flex:1;font-family:var(--sans);font-size:15px;font-weight:600;padding:15px 10px;border:2px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
+.pick-btn.main{background:var(--ink);color:var(--paper)}
+.pick-note{font-size:12px;color:var(--mut);margin-top:10px;line-height:1.8}
+.opt{margin-top:22px;border-top:1px solid var(--rule-soft);padding-top:12px}
+.opt summary{cursor:pointer;font-size:13px;color:var(--ink2);list-style:none}
+.opt summary::-webkit-details-marker{display:none}
+.opt summary::before{content:"+ ";font-family:var(--mono)}
+.opt[open] summary::before{content:"- "}
+.hero-sub{font-size:13px;color:var(--mut);margin-top:10px;font-family:var(--mono)}
+.hero-sub a{color:var(--blue)}
 @media(max-width:680px){
+  .hero{padding:22px 0 16px}
+  .drop{padding:26px 16px}
+  .sec{padding:18px 0}
   .flow{flex-direction:column}
   .flow-step{border-right:none;border-bottom:1px solid var(--rule-soft)}
   .flow-step:last-child{border-bottom:none}
   .pv-actions{flex-direction:column}
+  .tb-code{display:none}
+  .tb-back{white-space:nowrap;padding:0 0 0 12px}
 }
 </style>
 <link rel="alternate" type="text/plain" href="https://shield.the-horizons-innovation.com/llms.txt" title="LLM向けサイト要約">
@@ -218,28 +235,38 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
 
     <div class="hero">
       <div class="eyebrow">SUBMIT YOUR ESTIMATE</div>
-      <h1>あなたの見積もりを、<b>解剖して共有</b>する。</h1>
-      <p class="lead">受け取った見積書をアップロードするだけ。解剖までは無料で、ログインもいりません。KIRAが内容を読み取り、業者名・個人情報を伏せて「どこが過剰か」という構造だけを抽出します。あなたの一枚が、次に同じ工事をする誰かの判断材料になる。</p>
+      <h1>その見積もり、高い？<br><b>写真1枚で解剖</b>します。</h1>
+      <p class="lead">見積書をスマホで撮るだけ。無料、登録もログインもいりません。KIRA が項目ごとに読み、気をつける点を30秒ほどで返します。<b>結果はあなたにだけ表示されます。</b>掲示板に載せるかは、結果を見てから決められます。載せなくても構いません。</p>
+      <div class="hero-sub">建設実務30年の監修 / 業者から紹介料を受け取らない第三者 / <a href="/hacker/kaibou/">解剖の例を見る</a></div>
     </div>
 
-    <div class="flow">
-      <div class="flow-step"><div class="flow-n">STEP 01</div><div class="flow-t">見積書をアップ</div><div class="flow-d">PDF / 画像</div></div>
-      <div class="flow-step"><div class="flow-n">STEP 02</div><div class="flow-t">KIRAが解剖</div><div class="flow-d">匿名化・構造化</div></div>
-      <div class="flow-step"><div class="flow-n">STEP 03</div><div class="flow-t">内容を確認</div><div class="flow-d">あなたが最終確認</div></div>
-      <div class="flow-step"><div class="flow-n">STEP 04</div><div class="flow-t">投稿</div><div class="flow-d">ここで初めてログイン</div></div>
-    </div>
 
     <!-- STEP1+2: アップロード -->
     <div id="stepUpload" class="sec">
-      <div class="sec-h"><span>UPLOAD, 見積書をアップロード</span><span class="n">01</span></div>
+      <div class="sec-h"><span>見積書の写真かPDF</span><span class="n">01</span></div>
       <div id="drop" class="drop">
         <div class="drop-ic">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </div>
-        <div class="drop-t">見積書をドラッグ、またはタップして選択</div>
-        <div class="drop-d">PDF・JPG・PNG / 1ファイル・最大10MB</div>
+        <div class="drop-t">金額の合計が写っている面を1枚</div>
+        <div class="drop-d">写真・スクリーンショット・PDF / 大きい写真はこの画面で縮めて送ります</div>
       </div>
-      <input type="file" id="fileInput" accept="application/pdf,image/jpeg,image/png,image/webp" style="display:none">
+      <input type="file" id="fileInput" accept="application/pdf,image/*" style="display:none">
+      <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none">
+      <div class="pick-row" id="pickRow">
+        <button type="button" class="pick-btn main" onclick="pickCamera()">写真を撮る</button>
+        <button type="button" class="pick-btn" onclick="pickFile()">写真・PDFを選ぶ</button>
+      </div>
+      <div class="pick-note">業者名・電話・住所は掲載しません。見積書の原本も公開しません。</div>
+      <div style="margin-top:18px">
+        <button id="analyzeBtn" class="btn-primary" disabled onclick="analyze()">
+          <span>KIRAで解剖する</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+
+      <details class="opt" id="optBox">
+        <summary>工事の種類・地域を足す(任意、読み取りの精度が上がります)</summary>
 
       <div class="hint-row">
         <span class="hint-label">工事の種類(任意・KIRAの精度が上がります)</span>
@@ -275,12 +302,8 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
         <input id="initialInput" maxlength="8" placeholder="空欄なら「施主」と表示されます" style="font-family:var(--sans);font-size:14px;padding:9px 11px;width:100%;border:1px solid var(--rule);background:var(--paper);color:var(--ink);outline:none;box-sizing:border-box">
       </div>
 
-      <div style="margin-top:26px">
-        <button id="analyzeBtn" class="btn-primary" disabled onclick="analyze()">
-          <span>KIRAで解剖する</span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </button>
-      </div>
+
+      </details>
 
       <div class="privacy">
         <span class="privacy-ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
@@ -301,11 +324,11 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
 
     <!-- STEP3: プレビュー -->
     <div id="stepPreview" class="sec hide">
-      <div class="sec-h"><span>CONFIRM, 掲載内容の確認</span><span class="n">03</span></div>
-      <div class="pv-note">// KIRAはこう読み取りました。このまま掲載候補に出します。気になる表現があれば、懸念点はその場で編集できます。<b>業者名・社名・電話番号は書かないでください</b>(自動チェックが弾きます)。</div>
+      <div class="sec-h"><span>解剖の結果(あなたにだけ表示)</span><span class="n">02</span></div>
+      <div class="pv-note">KIRA はこう読み取りました。この画面はまだ誰にも公開されていません。下の「掲示板に載せる」を押した時だけ、運営の確認を経て匿名で載ります。</div>
       <div class="pv-card" id="pvCard"></div>
       <div class="consent">
-        <div class="consent-h"><span>投稿前の確認</span><span class="req">すべて必須</span></div>
+        <div class="consent-h"><span>次に同じ工事をする人のために、掲示板に載せる(任意)</span><span class="req">載せる時だけ 3 つとも必須</span></div>
         <label class="ck"><input type="checkbox" id="ck1" onchange="updateConsent()"><span>この見積書は、<b>私が実際に受け取ったもの</b>です。第三者が作成・所有する見積書を無断で投稿していません。</span></label>
         <label class="ck"><input type="checkbox" id="ck2" onchange="updateConsent()"><span><b>業者名・担当者名・電話番号・住所</b>など、業者や個人を特定できる情報が残っていないか確認しました。</span></label>
         <label class="ck"><input type="checkbox" id="ck3" onchange="updateConsent()"><span>この内容が<b>匿名化されて公開</b>され、他の施主の判断材料として利用されることに同意します。</span></label>
@@ -314,7 +337,7 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
       <div class="pv-actions">
         <button class="btn-ghost" onclick="backToUpload()">← やり直す</button>
         <button class="btn-primary" id="submitBtn" onclick="submitCard()" disabled>
-          <span>この内容で投稿する</span>
+          <span>匿名で掲示板に載せる(ログイン不要)</span>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </button>
       </div>
@@ -421,20 +444,64 @@ async function loginGoogle(){try{const r=await fetch(API+'/auth/google-login-sta
 /* ===== ファイル選択 ===== */
 const drop=document.getElementById('drop'),fileInput=document.getElementById('fileInput');
 drop.addEventListener('click',()=>{if(!FILE)fileInput.click();});
+const camInput=document.getElementById('camInput');
+function pickCamera(){camInput.click();}
+function pickFile(){fileInput.click();}
+camInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+// 2026-10-17: 数だけ送る(個人を特定する物は送らない)。どこで止まるかを測る。
+function ev(name){try{fetch(API+'/rev-event',{method:'POST',keepalive:true,headers:{'Content-Type':'text/plain'},body:JSON.stringify({event:name})});}catch(e){}}
 drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag');});
 drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
 drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
 
-function handleFile(f){
-  const okTypes=['application/pdf','image/jpeg','image/png','image/webp'];
-  if(!okTypes.includes(f.type)){toast('PDF・JPG・PNG・WebP のみ対応しています');return;}
-  if(f.size>10*1024*1024){toast('ファイルは10MBまでです');return;}
-  FILE=f;FILE_MEDIA=f.type;
-  const reader=new FileReader();
-  reader.onload=()=>{FILE_B64=reader.result.split(',')[1];renderFile();document.getElementById('analyzeBtn').disabled=false;};
-  reader.onerror=()=>toast('ファイルの読み込みに失敗しました');
-  reader.readAsDataURL(f);
+// 2026-10-17: スマホの写真は 5MB を超えることが多く、読み取りの API が受け付けない(以前は「読み取れませんでした」で終わっていた)。
+// 写真はこの画面で長い辺 2000px の JPEG に縮めてから送る。iPhone の HEIC も、端末が開ける形なら JPEG にして送る。
+const IMG_MAX_EDGE=2000, IMG_MAX_BYTES=3.5*1024*1024;
+function loadImage(f){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(f);const im=new Image();
+    im.onload=()=>{URL.revokeObjectURL(url);res(im);};
+    im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('decode'));};
+    im.src=url;
+  });
+}
+function canvasJpeg(im,edge,q){
+  const w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;
+  const k=Math.min(1,edge/Math.max(w,h));
+  const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
+  const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);
+  return new Promise(r=>c.toBlob(b=>r(b),'image/jpeg',q));
+}
+async function shrinkImage(f){
+  const im=await loadImage(f);
+  let edge=IMG_MAX_EDGE,q=0.85,b=await canvasJpeg(im,edge,q);
+  for(let i=0;i<3&&b&&b.size>IMG_MAX_BYTES;i++){edge=Math.round(edge*0.8);q=0.8;b=await canvasJpeg(im,edge,q);}
+  if(!b||b.size>IMG_MAX_BYTES)throw new Error('too_big');
+  return b;
+}
+function blobB64(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=()=>rej(new Error('read'));r.readAsDataURL(b);});}
+async function handleFile(f){
+  const isPdf=f.type==='application/pdf'||/\.pdf$/i.test(f.name||'');
+  const isImg=(f.type||'').startsWith('image/')||/\.(heic|heif|jpe?g|png|webp)$/i.test(f.name||'');
+  if(!isPdf&&!isImg){ev('ehn_pick_ng');toast('写真かPDFを選んでください');return;}
+  try{
+    if(isPdf){
+      if(f.size>20*1024*1024){ev('ehn_pick_ng');toast('PDFは20MBまでです。合計の頁だけを写真で撮ってください');return;}
+      FILE=f;FILE_MEDIA='application/pdf';FILE_B64=await blobB64(f);
+    }else{
+      const drT=document.querySelector('#drop .drop-t');if(drT)drT.textContent='写真を整えています...';
+      const b=await shrinkImage(f);
+      FILE={name:f.name||'photo.jpg',size:b.size};FILE_MEDIA='image/jpeg';FILE_B64=await blobB64(b);
+    }
+  }catch(e){
+    ev('ehn_pick_ng');clearFile();
+    toast('この写真は開けませんでした。スクリーンショットを撮って、それを選んでください');return;
+  }
+  ev('ehn_pick');
+  renderFile();
+  const btn=document.getElementById('analyzeBtn');btn.disabled=false;
+  try{btn.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
 }
 function renderFile(){
   const kb=FILE.size<1024*1024?(FILE.size/1024).toFixed(0)+' KB':(FILE.size/1024/1024).toFixed(1)+' MB';
@@ -447,7 +514,8 @@ function clearFile(e){
   FILE=null;FILE_B64=null;FILE_MEDIA=null;
   fileInput.value='';
   drop.classList.remove('has');
-  drop.innerHTML=`<div class="drop-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="drop-t">見積書をドラッグ、またはタップして選択</div><div class="drop-d">PDF・JPG・PNG / 1ファイル・最大10MB</div>`;
+  drop.innerHTML=`<div class="drop-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="drop-t">金額の合計が写っている面を1枚</div><div class="drop-d">写真・スクリーンショット・PDF / 大きい写真はこの画面で縮めて送ります</div>`;
+  camInput.value='';
   document.getElementById('analyzeBtn').disabled=true;
 }
 
@@ -499,10 +567,11 @@ async function analyze(){
     const d=await r.json();
     stopAnaLog();
     if(r.status===401){toast('ログインの有効期限が切れました');setTimeout(()=>{logout();},1500);return;}
-    if(!d.ok||!d.card){toast(d.error||'解剖に失敗しました。もう一度お試しください');showStep('stepUpload');return;}
+    if(!d.ok||!d.card){ev('ehn_ana_ng');toast(d.error||'解剖に失敗しました。もう一度お試しください');showStep('stepUpload');return;}
     CARD=d.card;ANALYSIS_ID=d.analysis_id||'';CLAIM=d.claim||'';renderPreview();showStep('stepPreview');
   }catch(e){
     clearTimeout(_to);stopAnaLog();
+    ev('ehn_ana_ng');
     if(e&&e.name==='AbortError'){toast('解剖に時間がかかっています。通信の良い場所でもう一度お試しください');}
     else{toast('通信エラーが発生しました。もう一度お試しください');}
     showStep('stepUpload');
@@ -550,7 +619,6 @@ async function submitCard(){
   if(!CARD){toast('解剖結果がありません');return;}
   const agreed=['ck1','ck2','ck3'].every(id=>{const e=document.getElementById(id);return e&&e.checked;});
   if(!agreed){toast('投稿前の確認にすべてチェックしてください');return;}
-  if(!TOKEN){askLogin();return;}
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;btn.querySelector('span').textContent='送信中...';
   // 空traitを除去
@@ -561,14 +629,14 @@ async function submitCard(){
   try{
     const r=await fetch(API+'/hacker/submit-card',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      headers:TOKEN?{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN}:{'Content-Type':'application/json'},
       body:JSON.stringify({analysis_id:ANALYSIS_ID,claim:CLAIM,card:CARD,region:(document.getElementById('regionSelect')||{}).value||'',phase:(document.getElementById('phaseSelect')||{}).value||'archive',agreed:true})
     });
     const d=await r.json();
-    if(d.ok){clearDraft();showStep('stepDone');}
+    if(d.ok){clearDraft();if(!TOKEN){const dp=document.querySelector('#stepDone .done-screen p');if(dp)dp.textContent='運営が内容を確認したうえで、匿名で掲載します。掲載されると一覧に並びます。ありがとうございます。';}showStep('stepDone');}
     else if(r.status===401){toast('ログインの有効期限が切れました');setTimeout(()=>logout(),1500);}
-    else{toast(d.error||'投稿に失敗しました');btn.disabled=false;btn.querySelector('span').textContent='この内容で投稿する';}
-  }catch(e){toast('通信エラーが発生しました');btn.disabled=false;btn.querySelector('span').textContent='この内容で投稿する';}
+    else{toast(d.error||'投稿に失敗しました');btn.disabled=false;btn.querySelector('span').textContent='匿名で掲示板に載せる(ログイン不要)';}
+  }catch(e){toast('通信エラーが発生しました');btn.disabled=false;btn.querySelector('span').textContent='匿名で掲示板に載せる(ログイン不要)';}
 }
 
 /* ===== 券を送る(2026-10-09)。送るのは案内の文とリンクだけ。見積書や結果は送らない ===== */
