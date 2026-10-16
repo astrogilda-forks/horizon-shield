@@ -48,6 +48,22 @@ preferred-citation:
   year: 2026
   url: "https://shield.the-horizons-innovation.com"
 references:
+  - type: article
+    title: "A Demand-Side Benchmark for Consumer-Facing Construction Cost Questions: Price-Figure Span, Output Consistency, and the Case for a Verifiable Reference Layer"
+    authors:
+      - family-names: Oga
+        given-names: Toshikatsu
+        orcid: "https://orcid.org/0009-0000-9180-903X"
+    journal: "Intelligent Infrastructure and Construction"
+    publisher:
+      name: MDPI
+    volume: 2
+    issue: 4
+    start: 15
+    year: 2026
+    doi: "10.3390/iic2040015"
+    url: "https://www.mdpi.com/3042-4720/2/4/15"
+    license: CC-BY-4.0
   - type: software
     title: "NENRIN provenance verifier: normative procedure (VERIFIER.md), interoperability vectors and reference verifiers (nenrin-verify 0.4.4)"
     authors:

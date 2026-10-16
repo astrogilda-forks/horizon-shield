@@ -26,6 +26,8 @@ An [MCP](https://modelcontextprotocol.io) server that lets AI agents check wheth
 
 <!-- /hs-facts-v1 -->
 
+**Peer-reviewed (October 2026).** Toshikatsu Oga, "A Demand-Side Benchmark for Consumer-Facing Construction Cost Questions: Price-Figure Span, Output Consistency, and the Case for a Verifiable Reference Layer", *Intelligent Infrastructure and Construction* 2026, 2(4), 15 (MDPI, open access, CC BY 4.0). DOI [10.3390/iic2040015](https://doi.org/10.3390/iic2040015). Forty Japanese renovation price questions put to frontier LLMs: the going-rate range is a median 2.5x to 3x wide, every price figure inside one answer spans a median 10x, and no answer offered an over-charge threshold. Questions, raw outputs, harnesses and scoring code are public.
+
 <!-- gravity-evidence-readme-v0 -->
 ## Fair-price answers for common buyer questions (Japanese)
 
