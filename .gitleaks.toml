@@ -20,6 +20,8 @@
 # trace_key_thumbprint / nenrin.trace.key_thumbprint / binder_keys に持つ。generic-api-key が名前の key に反応する
 # (a3f0a1aa で 123 件)ので、その欄の形と fixture のファイルだけ許す。binder の秘密鍵は公開の文言から導く試験用で、
 # ファイルには書いてへん。
+# 2026-10-16: kyoka-observe-v0/observed/*/binding.json は GitHub Actions の OIDC token(期限切れ後に upload、5 分の寿命、
+# audience nenrin-kyoka-observe)を含む idp-bind-v0 の束ね記録。real-issuers と同じ理由で許す。
 title = "horizon-shield gitleaks config"
 
 [extend]
@@ -43,4 +45,5 @@ paths = [
   '''workers/hs-ledger/nenrin/(sdk-python/src/nenrin_verify/_repo/)?trace-(intake|bind|span)-v0/fixtures/.*\.json''',
   '''workers/hs-ledger/nenrin/idp-bind-v0/fixtures/.*\.json''',
   '''workers/hs-ledger/nenrin/idp-bind-v0/real-issuers/.*/.*\.json''',
+  '''workers/hs-ledger/nenrin/kyoka-observe-v0/observed/.*/binding\.json''',
 ]

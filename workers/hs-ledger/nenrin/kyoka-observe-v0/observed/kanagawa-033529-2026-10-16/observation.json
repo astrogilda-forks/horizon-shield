@@ -1,0 +1,39 @@
+{
+  "schema": "kyoka-observe-v0/observation",
+  "observer_id": "did:key:z6MkrU6P38wyx8MNCeq2R22BE1UnxJazbMgcsLuKyL3MGHMx",
+  "query": {
+    "kind": "governor",
+    "license_no": "033529",
+    "prefecture": "神奈川県"
+  },
+  "request": {
+    "url": "https://etsuran2.mlit.go.jp/TAKKEN/kensetuKensaku.do",
+    "method": "POST",
+    "body": "CMD=search&caller=KS&rdoSelect=1&rdoSelectJoken=1&licenseNoKbn=01&licenseNoFrom=33529&licenseNoTo=33529&choice=2&kenCode=14&gyosyu=&gyosyuType=&keyWord=&sortValue=1&rdoSelectSort=1&dispCount=50&dispPage=1&resultCount=0&pageCount=0&comNameKanaOnly=&comNameKanjiOnly=",
+    "body_sha256": "866f147c21c3e6f170a0a5081f5ab67da36c510db9a2a803a83c11cda37675b6"
+  },
+  "response": {
+    "sha256": "4f7ca12b3bdbfdd3c514e5df7ca6ad96d43cfb788164a0d9f4e888effb95ffe2",
+    "length": 32614,
+    "charset": "Shift_JIS",
+    "extractor": "mlit-etsuran-list-v0"
+  },
+  "result": {
+    "status": "listed",
+    "rows": [
+      {
+        "authority": "神奈川県",
+        "license_no": "033529",
+        "trade_name": "ミネオトーヨー住器（株）",
+        "office": "主たる営業所",
+        "address": "神奈川県平塚市西八幡３－９－５"
+      }
+    ],
+    "rows_truncated": false,
+    "register_message": ""
+  },
+  "observed_at": "2026-10-16T00:24:28Z",
+  "nonce": "run-38829262688",
+  "observation_id": "31bc7f925c3d904add6dce74287f6718f47f258c34b021462794eafa4771d6b5",
+  "observer_sig": "Lf6ok9BzlvB8GGvNKTXgh6v29FvD8556RAkt0tZv8jprAuBf2AZN9FHnvo/gBRg1YhNMd6ejKJ1A9sFo2C7xCQ=="
+}
