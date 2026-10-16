@@ -1,0 +1,74 @@
+{
+  "schema": "kyoka-observe-v0/observation",
+  "observer_id": "did:key:z6Mki8CuULw9nPkNzBN38AF78q4xs6XpCeYQDsLMi68h1azJ",
+  "query": {
+    "kind": "governor",
+    "license_no": "033529",
+    "prefecture": "神奈川県"
+  },
+  "request": {
+    "url": "https://etsuran2.mlit.go.jp/TAKKEN/kensetuKensaku.do",
+    "method": "POST",
+    "body": "CMD=search&caller=KS&rdoSelect=1&rdoSelectJoken=1&licenseNoKbn=01&licenseNoFrom=33529&licenseNoTo=33529&choice=2&kenCode=14&gyosyu=&gyosyuType=&keyWord=&sortValue=1&rdoSelectSort=1&dispCount=50&dispPage=1&resultCount=0&pageCount=0&comNameKanaOnly=&comNameKanjiOnly=",
+    "body_sha256": "866f147c21c3e6f170a0a5081f5ab67da36c510db9a2a803a83c11cda37675b6"
+  },
+  "response": {
+    "sha256": "4f7ca12b3bdbfdd3c514e5df7ca6ad96d43cfb788164a0d9f4e888effb95ffe2",
+    "length": 32614,
+    "charset": "Shift_JIS",
+    "extractor": "mlit-etsuran-list-v0"
+  },
+  "result": {
+    "status": "listed",
+    "rows": [
+      {
+        "authority": "神奈川県",
+        "license_no": "033529",
+        "trade_name": "ミネオトーヨー住器（株）",
+        "office": "主たる営業所",
+        "address": "神奈川県平塚市西八幡３－９－５"
+      }
+    ],
+    "rows_truncated": false,
+    "register_message": ""
+  },
+  "observed_at": "2026-10-16T01:37:15Z",
+  "nonce": "run-38836053603",
+  "detail": {
+    "request": {
+      "url": "https://etsuran2.mlit.go.jp/TAKKEN/ksGaiyo.do",
+      "method": "POST",
+      "body": "CMD=&caller=KS&sv_licenseNo=14033529",
+      "body_sha256": "1146a6c15aa62d422605556ece51915ad1569d6f7431d2ff9dcb60f4fed3d2b9"
+    },
+    "response": {
+      "sha256": "34890695380966c7fe2da998fd79e4d019601cd5fd9a0fb169fd15d0c6f3ba0c",
+      "length": 12232,
+      "charset": "Shift_JIS",
+      "extractor": "mlit-etsuran-detail-v0"
+    },
+    "result": {
+      "status": "read",
+      "trade_name": "ミネオトーヨー住器（株）",
+      "trades": [
+        {
+          "trade": "ガラス工事",
+          "class": "一般"
+        },
+        {
+          "trade": "建具工事",
+          "class": "一般"
+        }
+      ],
+      "grants": [
+        "2026-11-24"
+      ],
+      "validity": {
+        "from": "2026-11-24",
+        "to": "2031-11-23"
+      }
+    }
+  },
+  "observation_id": "55eef15f8031b84acee04bd92fbe3f115d4fb20f570fb61488d3d6b34f9f4642",
+  "observer_sig": "qIruIFTQQQARugNu5iPFVszM6I4trM2QGm+fWUjzMSkdfSDr6Z7AgHTD2vjAVa/uJvuRfJQb04+fjX3wiEw1Ag=="
+}

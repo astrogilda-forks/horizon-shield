@@ -40,3 +40,6 @@ Not established: that the register served those bytes (TLS does not sign content
 because the page shows a person's name); which trades the licence covers or when it expires (the list page does not
 carry them; the hearing answer says ガラス工事業・建具工事業, and "般-3" suggests a licence granted in 令和3年, which
 would make 2026 its renewal year, a question for the detail page in v0.2); and anything about the quality of the work.
+
+Answered on the same day by [the 0.2.0 lookup with the detail page](../kanagawa-033529-2026-10-16-detail):
+ガラス工事・建具工事, both 一般, renewed for 2026-11-24 to 2031-11-23.
