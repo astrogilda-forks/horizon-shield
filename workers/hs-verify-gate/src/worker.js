@@ -255,6 +255,42 @@ function withCardSignature(card, origin) {
   entries.push({ protected: CARD_SIGNATURE.protected, signature: CARD_SIGNATURE.signature });
   return Object.assign({}, card, { signatures: entries });
 }
+// 2026-10-16. Which signature on the card covers which bytes. The card carries two signatures by one key (0.4.15) and
+// said nothing about which was which, so a reader whose verifier checked the served bytes saw signature 1 fail and had
+// to ask (probityai/agent-evidence-vectors#55, Sankalp Gilda, walking this card with his own verifier and key). This
+// document answers without anyone asking. It is not part of the card and is not signed; every value in it can be
+// recomputed from the card and the JWKS, which is the point. Served only where the card itself carries signatures.
+function cardSignatureForms(origin) {
+  const o = String(origin || "").replace(/\/+$/, "");
+  if (typeof globalThis !== "undefined" && globalThis.CARD_ORIGIN_OVERRIDE) return null;
+  if (o !== CARD_CANONICAL_ORIGIN || !CARD_SIGNATURE || !CARD_SIGNATURE.signature) return null;
+  const forms = [];
+  if (CARD_SIGNATURE.plain && CARD_SIGNATURE.plain.signature) forms.push({
+    index: forms.length,
+    form: "served-rfc8785",
+    payload: "RFC 8785 of the card exactly as served at " + o + "/.well-known/agent-card.json, with the top-level signatures member removed",
+    covers: "every member the card serves, including those outside the A2A AgentCard schema (url, protocolVersion, preferredTransport, securityRequirements, compensation, provider.legalEntity)",
+    payload_sha256: CARD_SIGNATURE.jcs_sha256,
+  });
+  forms.push({
+    index: forms.length,
+    form: "a2a-sdk-proto",
+    payload: "the card with signatures removed, passed through canonicalizeAgentCard in @a2a-js/sdk 1.1.0 (a protobuf fromJSON/toJSON round trip of the AgentCard message), then RFC 8785",
+    covers: "the members the A2A AgentCard schema keeps; members outside the schema, and members at their default value such as required: false, are not covered",
+    payload_sha256: CARD_SIGNATURE.canonical_sha256,
+  });
+  return {
+    kind: "agent-card-signature-forms-v1",
+    card: o + "/.well-known/agent-card.json",
+    jwks: CARD_SIGNATURE.jku,
+    kid: CARD_SIGNATURE.kid,
+    alg: CARD_SIGNATURE.alg,
+    signing_input: "BASE64URL(protected) || '.' || BASE64URL(payload), ES256 (RFC 7518 section 3.4, r || s)",
+    signatures: forms,
+    reading: "Both signatures are by the same key. A verifier that implements the official SDK form accepts the card through the a2a-sdk-proto signature; a verifier that checks the served bytes accepts it through the served-rfc8785 signature. Only the served-rfc8785 signature covers compensation and provider.legalEntity: a card edited in those members after signing still verifies through the other signature, so a reader who relies on them must check the served-rfc8785 one. Order in the card is not part of what is signed.",
+    found_by: "https://github.com/probityai/agent-evidence-vectors/issues/55",
+  };
+}
 function jwksDocument() {
   // 0.4.18. 署名に使うとる鍵(CARD_SIGNATURE.jwk、sign.mjs が書く)を先頭に、鍵の履歴で retired の card 鍵を後ろに足す。
   // revoked は配らん(盗まれた鍵で新しい署名が verify せんように)。今は active 1 本なので、配信バイトは 0.4.17 と同じ。
@@ -3389,6 +3425,7 @@ const OA_ADDED = {
   "/keys/agreement.json": { get: { summary: "The agreement record signing key", description: "a2a-agreement-v1.1 records carry their key inside the signed bytes; this URL only answers whether the key is the one this domain serves." } },
   "/keys/witness.json": { get: { summary: "The witness key this gate signs observations with", description: "Separate from the operator key and the card key." } },
   "/.well-known/did.json": { get: { summary: "DID document for did:web:gate.horizonshield.dev", description: "Binds the card signing key (and the operator key when present) to this domain without any registry." } },
+  "/.well-known/agent-card-signatures.json": { get: { summary: "Which card signature covers which bytes", description: "The card carries two ES256 signatures by one key: one over RFC 8785 of the served card, one over the official A2A SDK form. This names each, with the payload recipe and the payload's SHA-256, so a reader can recompute both without asking." } },
   "/.well-known/jwks.json": { get: { summary: "JWKS for the agent card signature", description: "The key that verifies the A2A section 8.4 signature on /.well-known/agent-card.json." } },
   "/.well-known/key-history.json": { get: { summary: "Every public key this domain has signed with, and its status", description: "key-history-v1: card, agreement, witness and operator keys, when each began, whether it is active, retired or revoked, and the rule under which a revoked key's signature still counts. history_sha256 is anchored on the JIDEC ledger when the list changes." } },
   "/watch": {
@@ -3432,6 +3469,7 @@ const OA_ADDED_IDS = {
   "/keys/agreement.json": ["getAgreementKey", "keys", "application/json"],
   "/keys/witness.json": ["getWitnessKey", "keys", "application/json"],
   "/.well-known/did.json": ["getDidDocument", "keys", "application/json"],
+  "/.well-known/agent-card-signatures.json": ["getCardSignatureForms", "keys", "application/json"],
   "/.well-known/jwks.json": ["getJwks", "keys", "application/json"],
   "/.well-known/key-history.json": ["getKeyHistory", "keys", "application/json"],
   "/watch": ["getWatch", "register", "application/json"]
@@ -6540,6 +6578,10 @@ export default {
     if (path === "/ext/conduct/v1" || path === "/ext/conduct/v1/") return await conductExtResponse(request, url.origin);
     if (path === "/ext/legal-entity/v1" || path === "/ext/legal-entity/v1/") return await legalEntityExtResponse(request);
     if (path === "/.well-known/agent-card.json") return json(withCardSignature(ownAgentCard(url.origin), url.origin));
+    if (path === "/.well-known/agent-card-signatures.json") {
+      const f = cardSignatureForms(url.origin);
+      return f ? json(f) : json({ error: "not_found", reason: "the card served on this origin carries no signatures" }, 404);
+    }
     if (path === "/.well-known/jwks.json") return json(jwksDocument());
     if (path === "/.well-known/key-history.json") return json(await keyHistoryDocument(env, CARD_SIGNATURE));
     if (path === "/.well-known/did.json") return json(didDocument(env));
@@ -6621,7 +6663,7 @@ export default {
       });
     }
 
-    return json({ error: "not_found", path, endpoints: ["/mcp", "/a2a", "/.well-known/agent-card.json", "/.well-known/jwks.json", "/.well-known/key-history.json", "/check", "/is-verified", "/record/<record_sha256>", "/register/lookup", "/spec", "/ext/conduct/v1", "/ext/legal-entity/v1", "/self", "/history", "/changes", "/watchlist", "/watch", "/sweep", "/sweep/last", "/nenrin/window", "/health"] }, 404);
+    return json({ error: "not_found", path, endpoints: ["/mcp", "/a2a", "/.well-known/agent-card.json", "/.well-known/agent-card-signatures.json", "/.well-known/jwks.json", "/.well-known/key-history.json", "/check", "/is-verified", "/record/<record_sha256>", "/register/lookup", "/spec", "/ext/conduct/v1", "/ext/legal-entity/v1", "/self", "/history", "/changes", "/watchlist", "/watch", "/sweep", "/sweep/last", "/nenrin/window", "/health"] }, 404);
   }
 };
 

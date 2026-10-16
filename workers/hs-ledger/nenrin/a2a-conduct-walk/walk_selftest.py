@@ -428,11 +428,11 @@ def main():
         and "does not require" in unsigned["card_signature"]["verified_reason"],
         json.dumps(unsigned["card_signature"], ensure_ascii=False)[:90])
     cs = signed["card_signature"]
-    v11("v13_signed_card_header_is_read_not_verified",
+    v11("v13_signed_card_header_is_read_and_unverifiable_is_null",
         cs["present"] is True and cs["count"] == 1 and cs["alg"] == "ES256" and cs["kid"] == "sel-2026-09"
         and cs["jku_same_host"] is True and cs["protected_readable"] is True and cs["verified"] is None
-        and "not verified" in cs["verified_reason"],
-        json.dumps(cs, ensure_ascii=False)[:120])
+        and cs["verified_reason"].startswith("not established") and "was not fetched" in cs["verified_reason"],
+        json.dumps(cs, ensure_ascii=False)[:160])
     v11("v13_signed_card_record_still_passes_intake",
         ledger_v11_reason(W.canonical(signed)) is None and ledger_shape_ok(W.canonical(signed)),
         str(ledger_v11_reason(W.canonical(signed))))
@@ -452,12 +452,88 @@ def main():
         and not any("card_signature" in a["claim"] for a in unsigned["assertions"]),
         "無署名は assertion にせん。does_not_establish に「この歩きに帰属するだけ」と書くだけ")
     v11("v13_signed_but_unverified_uses_the_other_wording",
-        any("does not verify signatures" in x for x in signed["does_not_establish"])
+        any("could not verify it" in x for x in signed["does_not_establish"])
         and not any("carried no signature" in x for x in signed["does_not_establish"]),
-        "署名ありで検証せんかった時と、そもそも署名が無い時は別の事実。文を分ける")
-    v11("v13_client_never_writes_verified_true",
-        all('"verified": true' not in W.canonical(r) and '"verified":true' not in W.canonical(r) for r in (unsigned, signed)),
-        "a client with no canonicalizer must never accuse an honest agent")
+        "署名ありで検証できんかった時と、そもそも署名が無い時は別の事実。文を分ける")
+    v11("v13_no_verdict_either_way_when_nothing_could_be_checked",
+        all('"verified":true' not in W.canonical(r) and '"verified":false' not in W.canonical(r) for r in (unsigned, signed)),
+        "the mock serves no JWKS: neither true nor false may be written")
+
+    # cs1 (2026-10-16): verify the card signature in the forms this client reproduces. Found by Sankalp Gilda's walk
+    # of gate.horizonshield.dev with his own verifier (probityai/agent-evidence-vectors#55): the record said "signed"
+    # and could not say by whom. The card and JWKS here are the gate's own public bytes (fixtures_live_card).
+    here = os.path.dirname(os.path.abspath(__file__))
+    gfix = os.path.join(here, "..", "..", "..", "hs-verify-gate", "test", "fixtures_live_card")
+    gcard = json.load(open(os.path.join(gfix, "card.json"), encoding="utf-8"))
+    gjwks = open(os.path.join(gfix, "jwks.json"), "rb").read()
+    G = "https://gate.horizonshield.dev"
+    sdk_on = W.sdk_form({"name": "x"}) is not None
+
+    def jfetch(served=gjwks):
+        def f(method, url, headers=None, body=None):
+            return (200, {}, served) if url == G + "/.well-known/jwks.json" else (404, {}, b"")
+        return f
+    live = W.read_card_signature(gcard, G, "full", fetch=jfetch())
+    rows = {r["index"]: r for r in live.get("signatures", [])}
+    v11("cs1_gate_card_signature_0_verifies_over_the_served_bytes",
+        live["verified"] is True and "served-rfc8785" in rows[0]["verified_in"] and live["covers_compensation"] is True
+        and live["form_payload_sha256"]["served-rfc8785"] == "c577d9bbd59c868dd3ad09ea56d97d9ed5990e3ffb356f9716eae6359f95dfac",
+        live["verified_reason"])
+    v11("cs1_gate_card_signature_1_verifies_in_the_sdk_form_when_a2a_sdk_is_present",
+        (not sdk_on) or ("a2a-sdk-proto" in rows[1]["verified_in"] and live["form_payload_sha256"]["a2a-sdk-proto"] ==
+                         "093ed47a1c1d9f559dd4f616d46cf35661c9d166de09372d1495db15b8090b20"),
+        "a2a-sdk present" if sdk_on else "a2a-sdk not installed: the SDK form is not checked, and the record says so")
+    v11("cs1_each_signature_fails_the_other_form",
+        "a2a-sdk-proto" not in rows[0]["verified_in"] and "served-rfc8785" not in rows[1]["verified_in"])
+    tc = json.loads(json.dumps(gcard)); tc["compensation"]["model"] = "edited-after-signing"
+    tamp = W.read_card_signature(tc, G, "full", fetch=jfetch())
+    v11("cs1_compensation_edited_after_signing_is_not_covered",
+        (tamp["verified"] is True and tamp["covers_compensation"] is False) if sdk_on else tamp["verified"] is None,
+        tamp["verified_reason"][:120])
+    tn = json.loads(json.dumps(gcard)); tn["name"] = "edited"
+    tamp2 = W.read_card_signature(tn, G, "full", fetch=jfetch())
+    v11("cs1_schema_field_edited_is_false_only_when_both_forms_were_tried",
+        tamp2["verified"] is (False if sdk_on else None), str(tamp2["verified"]) + " " + tamp2["verified_reason"][:100])
+    other = W.read_card_signature(gcard, G, "full", fetch=jfetch(json.dumps({"keys": []}).encode()))
+    v11("cs1_a_jwks_without_the_kid_is_null_not_false", other["verified"] is None and "no key with this kid" in other["verified_reason"])
+    flip = json.loads(json.dumps(gcard)); s0 = flip["signatures"][0]["signature"]
+    flip["signatures"][0]["signature"] = ("B" if s0[0] == "A" else "A") + s0[1:]
+    rflip = W.read_card_signature(flip, G, "full", fetch=jfetch())
+    v11("cs1_a_flipped_signature_does_not_verify", "served-rfc8785" not in {r["index"]: r for r in rflip["signatures"]}[0]["verified_in"])
+    try:
+        W.rfc8785({"x": 1.5}); refused = False
+    except W.NotReproducible:
+        refused = True
+    v11("cs1_a_non_integer_number_is_refused_not_guessed", refused)
+    try:
+        import rfc8785 as ref
+    except Exception:
+        ref = None
+    corpus = os.path.join(here, "..", "..", "..", "a2a-card-sign", "interop-matrix", "vectors", "a2a-card-sign-v01")
+    man = json.load(open(os.path.join(corpus, "MANIFEST.json"), encoding="utf-8"))
+    tkey = man["test_key"]["jwk"] if isinstance(man.get("test_key"), dict) and isinstance(man["test_key"].get("jwk"), dict) else None
+    agree = verified_n = same_bytes = total_v = 0
+    for item in man["vectors"]:
+        vec = json.load(open(os.path.join(corpus, item["path"]), encoding="utf-8"))
+        bare = {k: v for k, v in vec["served_card"].items() if k != "signatures"}
+        try:
+            mine = W.rfc8785(bare)
+        except W.NotReproducible:
+            continue
+        total_v += 1
+        if ref is not None and ref.dumps(bare) == mine.encode("utf-8"):
+            agree += 1
+        if mine.encode("utf-8").hex() == vec["canonical_utf8_hex"]:
+            same_bytes += 1
+            reject = vec.get("disposition") == "MUST-REJECT"
+            for s in vec["served_card"].get("signatures", []):
+                si = (s["protected"] + "." + W.base64.urlsafe_b64encode(mine.encode("utf-8")).decode().rstrip("=")).encode()
+                ok = bool(tkey) and W.es256_verify(tkey, si, s["signature"]) is True
+                verified_n += 1 if ok != reject else 0
+    v11("cs1_rfc8785_matches_the_rfc8785_package_on_every_corpus_card", ref is None or agree == total_v,
+        "%d/%d" % (agree, total_v) if ref is not None else "rfc8785 package not installed")
+    v11("cs1_es256_answers_every_corpus_signature_over_its_served_bytes_as_disposed", same_bytes > 0 and tkey is not None and verified_n >= same_bytes,
+        "%d vectors whose canonical bytes are the served bytes, %d signatures answer as their disposition says (MUST-REJECT ones fail)" % (same_bytes, verified_n))
 
     salt = "ab" * 32
     cm = W.commitment_record(full, salt)

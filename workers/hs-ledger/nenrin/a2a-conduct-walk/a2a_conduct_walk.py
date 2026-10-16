@@ -263,15 +263,177 @@ def is_https(u):
     return isinstance(u, str) and u.startswith("https://")
 
 
-def read_card_signature(card, origin, privacy):
-    """A2A 1.0 section 8.4 の card 署名を、検証せずに読む(第四波 4a-1、2026-09-10)。
+# ---- card signature verification (2026-10-16) ----------------------------------------------------------------
+# Until today this client read a card's signature header and verified nothing, and said so in the record. Sankalp
+# Gilda walked gate.horizonshield.dev with his own verifier and key (probityai/agent-evidence-vectors#55) and wrote
+# down what that meant: the record says the card was signed and cannot say by whom. The reason for not verifying was
+# sound and still holds: a canonicalizer one rule wrong would accuse an honest agent in an append only ledger. So
+# this client verifies only in forms it reproduces exactly, and never writes false unless every form was tried:
+#   served-rfc8785  RFC 8785 of the card as served, signatures removed. The canonicalizer below handles what a card
+#                   holds (strings, integers, booleans, null, arrays, objects) and refuses anything else, such as a
+#                   non-integer number, rather than guess ECMAScript's number formatting. walk_selftest checks it
+#                   against the rfc8785 package and against every served card in a2a-card-sign-v01.
+#   a2a-sdk-proto   the official form, computed by the official Python SDK (a2a-sdk) when it is installed. Its bytes
+#                   equal @a2a-js/sdk's on the gate card (6,410 bytes, sha256 093ed47a...). Not installed: this form
+#                   is not checked, and the record says so.
+# The signature is ES256, checked with the P-256 code below (standard library; SEC 1 section 4.1.4).
+P256_P = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff
+P256_N = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551
+P256_B = 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b
+P256_G = (0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296,
+          0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5)
 
-    なんで verified を出さんか: 検証には card の正規形(signatures を抜いた proto 形に RFC 8785)を
-    再現せなあかん。扉の JS 実装は公式 SDK の canonicalizeAgentCard と 27 例で一致を証明した上で
-    使うとる。ここで Python の正規化器を書き下ろして規則を 1 つ外したら、**正直な agent に
-    「署名が無効」の濡れ衣**を着せ、それが追記専用の台帳に Bitcoin の錨つきで残る。
-    せやから読んだ物だけ書いて、真偽は null のまま名指しで理由を添える(unmeasured != pass)。
-    verified に真偽を入れてええのは、同じ 27 例で一致を証明した正規化器が入った日だけ。
+
+def _p256_add(P, Q):
+    if P is None:
+        return Q
+    if Q is None:
+        return P
+    p = P256_P
+    if P[0] == Q[0]:
+        if (P[1] + Q[1]) % p == 0:
+            return None
+        lam = (3 * P[0] * P[0] - 3) * pow(2 * P[1], p - 2, p) % p
+    else:
+        lam = (Q[1] - P[1]) * pow((Q[0] - P[0]) % p, p - 2, p) % p
+    x = (lam * lam - P[0] - Q[0]) % p
+    return (x, (lam * (P[0] - x) - P[1]) % p)
+
+
+def _p256_mul(k, P):
+    R = None
+    while k:
+        if k & 1:
+            R = _p256_add(R, P)
+        P = _p256_add(P, P)
+        k >>= 1
+    return R
+
+
+def es256_verify(jwk, signing_input, sig_b64u):
+    """True or False for a P-256 JWK and an r||s signature. None when the key or signature is not ES256-shaped."""
+    try:
+        if not isinstance(jwk, dict) or jwk.get("kty") != "EC" or jwk.get("crv") != "P-256":
+            return None
+        d = lambda s: base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
+        x, y = int.from_bytes(d(jwk["x"]), "big"), int.from_bytes(d(jwk["y"]), "big")
+        raw = d(sig_b64u)
+    except Exception:
+        return None
+    p, n = P256_P, P256_N
+    if not (0 <= x < p and 0 <= y < p) or (y * y - (x * x * x - 3 * x + P256_B)) % p != 0 or len(raw) != 64:
+        return None
+    r, s = int.from_bytes(raw[:32], "big"), int.from_bytes(raw[32:], "big")
+    if not (1 <= r < n and 1 <= s < n):
+        return False
+    e = int.from_bytes(hashlib.sha256(signing_input).digest(), "big")
+    w = pow(s, n - 2, n)
+    X = _p256_add(_p256_mul(e * w % n, P256_G), _p256_mul(r * w % n, (x, y)))
+    return X is not None and X[0] % n == r
+
+
+class NotReproducible(Exception):
+    pass
+
+
+def rfc8785(v):
+    """RFC 8785 for the values an agent card holds. Raises NotReproducible for anything it would have to guess at."""
+    if v is None:
+        return "null"
+    if v is True:
+        return "true"
+    if v is False:
+        return "false"
+    if isinstance(v, int):
+        if abs(v) > 2 ** 53 - 1:
+            raise NotReproducible("an integer outside the IEEE 754 exact range")
+        return str(v)
+    if isinstance(v, float):
+        if v.is_integer() and abs(v) <= 2 ** 53 - 1:
+            return str(int(v))
+        raise NotReproducible("a non-integer number (ECMAScript number formatting is not reproduced here)")
+    if isinstance(v, str):
+        out = json.dumps(v, ensure_ascii=False)
+        try:
+            out.encode("utf-8")
+        except UnicodeEncodeError:
+            raise NotReproducible("a lone surrogate in a string")
+        return out
+    if isinstance(v, list):
+        return "[" + ",".join(rfc8785(e) for e in v) + "]"
+    if isinstance(v, dict):
+        return "{" + ",".join(rfc8785(k) + ":" + rfc8785(v[k]) for k in sorted(v, key=lambda k: k.encode("utf-16-be"))) + "}"
+    raise NotReproducible("a value of type " + type(v).__name__)
+
+
+def sdk_form(bare_card):
+    """The official SDK form via a2a-sdk, or None when a2a-sdk is not installed or will not parse the card."""
+    try:
+        from google.protobuf import json_format
+        from a2a.types import AgentCard
+        from a2a.utils import signing
+    except Exception:
+        return None
+    try:
+        return signing._canonicalize_agent_card(json_format.Parse(json.dumps(bare_card), AgentCard(), ignore_unknown_fields=True))
+    except Exception:
+        return None
+
+
+def verify_card_signatures(card, sigs, jwks):
+    """Per signature: which forms were tried and which held. jwks is the parsed JWKS from the jku, or None."""
+    bare = {k: v for k, v in card.items() if k != "signatures"}
+    forms = {}
+    try:
+        forms["served-rfc8785"] = rfc8785(bare)
+    except NotReproducible as e:
+        forms["served-rfc8785"] = None
+        forms["_served_reason"] = str(e)
+    forms["a2a-sdk-proto"] = sdk_form(bare)
+    keys = jwks.get("keys") if isinstance(jwks, dict) and isinstance(jwks.get("keys"), list) else []
+    rows = []
+    for i, s in enumerate(sigs):
+        row = {"index": i, "kid": None, "forms_tried": [], "verified_in": []}
+        try:
+            prot = s["protected"]
+            hdr = json.loads(base64.urlsafe_b64decode(prot + "=" * (-len(prot) % 4)).decode("utf-8"))
+            row["kid"] = hdr.get("kid") if isinstance(hdr.get("kid"), str) else None
+            alg = hdr.get("alg")
+        except Exception:
+            row["note"] = "protected header unreadable"
+            rows.append(row)
+            continue
+        if alg != "ES256":
+            row["note"] = "alg " + str(alg) + " is not checked by this client"
+            rows.append(row)
+            continue
+        key = next((k for k in keys if isinstance(k, dict) and k.get("kid") == row["kid"]), None)
+        if key is None:
+            row["note"] = "no key with this kid in the JWKS at jku" if jwks is not None else "the JWKS at jku was not fetched"
+            rows.append(row)
+            continue
+        for name in ("served-rfc8785", "a2a-sdk-proto"):
+            payload = forms.get(name)
+            if payload is None:
+                continue
+            si = (prot + "." + base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")).encode("ascii")
+            ok = es256_verify(key, si, s.get("signature", ""))
+            if ok is None:
+                continue
+            row["forms_tried"].append(name)
+            if ok:
+                row["verified_in"].append(name)
+        rows.append(row)
+    return rows, forms
+
+
+def read_card_signature(card, origin, privacy, fetch=None):
+    """A2A 1.0 section 8.4 の card 署名を読み、再現できる形でだけ検証する(第四波 4a-1 2026-09-10、検証は 2026-10-16)。
+
+    verified は 3 値。true = どれか 1 本が、jku の JWKS の鍵で、再現した形のどれかで通った。
+    false = 全部の署名を、両方の形(served-rfc8785 と a2a-sdk-proto)で試して 1 本も通らんかった時だけ。
+    片方の形しか作れん(a2a-sdk が無い、card に再現できん値がある)、鍵が取れん、ES256 やない、の時は null。
+    正直な agent に「署名が無効」の濡れ衣を着せんための規則で、9/10 の判断(読めん物は真偽を書かん)をそのまま守る。
     """
     sigs = card.get("signatures") if isinstance(card, dict) else None
     if not isinstance(sigs, list) or not sigs:
@@ -309,13 +471,42 @@ def read_card_signature(card, origin, privacy):
         "jku_same_host": same_host,
         "protected_readable": bool(hdr),
         "verified": None,
-        "verified_reason": (
-            "read, not verified: checking an A2A card signature means reproducing the card's canonical form "
-            "(RFC 8785 over the proto shape with signatures removed), which this client does not implement. "
-            "A canonicalizer that is one rule wrong would accuse an honest agent in an append only ledger, "
-            "so this client reports what the header says and verifies nothing."
-        ),
+        "verified_reason": ("not checked: no transport was given to fetch the JWKS at jku" if fetch is None
+                            else "not checked: the signature header names no https jku, so no key was fetched"),
     }
+    if fetch is not None and jku and is_https(jku):
+        jwks, jst, jbody = None, 0, b""
+        try:
+            jst, _h, jbody = fetch("GET", jku, {"Accept": "application/json"}, None)
+            if jst == 200:
+                jwks = json.loads(jbody.decode("utf-8"))
+        except Exception:
+            jwks = None
+        out["jwks_status"] = jst
+        out["jwks_sha256"] = sha256_hex(jbody) if jst == 200 else None
+        rows, forms = verify_card_signatures(card, sigs, jwks)
+        out["signatures"] = rows
+        out["forms_reproduced"] = [n for n in ("served-rfc8785", "a2a-sdk-proto") if forms.get(n) is not None]
+        out["form_payload_sha256"] = {n: sha256_hex(forms[n]) for n in out["forms_reproduced"]}
+        held = [r for r in rows if r["verified_in"]]
+        all_tried = bool(rows) and all(set(r["forms_tried"]) == {"served-rfc8785", "a2a-sdk-proto"} for r in rows)
+        if held:
+            out["verified"] = True
+            out["verified_reason"] = "; ".join("signature[%d] verifies in %s" % (r["index"], ", ".join(r["verified_in"])) for r in held)
+            out["covers_compensation"] = any("served-rfc8785" in r["verified_in"] for r in held)
+        elif all_tried:
+            out["verified"] = False
+            out["verified_reason"] = "every signature was checked in both forms with the key at jku and none verifies"
+        else:
+            gaps = []
+            if forms.get("served-rfc8785") is None:
+                gaps.append("served-rfc8785 not reproduced: " + str(forms.get("_served_reason")))
+            if forms.get("a2a-sdk-proto") is None:
+                gaps.append("a2a-sdk-proto not checked: install a2a-sdk to compute the official form")
+            if jwks is None:
+                gaps.append("the JWKS at jku was not fetched (status %s)" % jst)
+            gaps += [r["note"] for r in rows if r.get("note")]
+            out["verified_reason"] = "not established: no signature verified in the forms this client could check; " + "; ".join(gaps)
     if privacy != "full":
         out["jku"] = None  # hash-only と commitment では URL を残さん。ホストが同じかどうかの事実だけ残す
     return out
@@ -506,9 +697,23 @@ def disclaimers(record, privacy, signed, target):
         if cs.get("present") is False:
             dne.append("that the walked operator published this card: it carried no signature, so these bytes "
                        "are attributable to this walk alone and the operator can repudiate them")
-        elif cs.get("verified") is None:
-            dne.append("that the walked operator published this card: a signature is present but this client "
-                       "does not verify signatures, so these bytes are attributable to this walk alone")
+        elif cs.get("verified") is True:
+            # 2026-10-16. A signature verified with the key served at jku. Whose key that is depends on where jku is:
+            # on the walked host it is the operator's own domain; elsewhere it is whoever controls that host.
+            where = "the walked host" if cs.get("jku_same_host") else "a host other than the walked one"
+            est.append("that the card bytes were signed by the key served at its jku on " + where + " (kid " +
+                       str(cs.get("kid")) + "): " + str(cs.get("verified_reason")))
+            if cs.get("jku_same_host") is not True:
+                dne.append("that the walked operator signed this card: the verifying key is served on another host")
+            if not cs.get("covers_compensation"):
+                dne.append("that the compensation declaration as served is covered by a signature: the only verifying "
+                           "signature is over the official SDK form, which leaves members outside the AgentCard schema out")
+        elif cs.get("verified") is False:
+            dne.append("that the walked operator published this card: it carries signatures and none verifies in either "
+                       "form with the key at its jku, so these bytes are attributable to this walk alone")
+        else:
+            dne.append("that the walked operator published this card: a signature is present but this walk could not "
+                       "verify it (" + str(cs.get("verified_reason")) + "), so these bytes are attributable to this walk alone")
     return est, dne
 
 
@@ -587,7 +792,7 @@ def walk(origin, endpoint, mode, witness_name, vantage, fetch=http_fetch, walked
         comp_where, comp_problems = "params.compensation", problems
     elif isinstance(card, dict) and isinstance(card.get("compensation"), dict):
         comp_where, comp_problems = "the card's top-level compensation key", compensation_problems(card["compensation"])
-    card_signature = read_card_signature(card, origin, privacy)
+    card_signature = read_card_signature(card, origin, privacy, fetch=fetch)
     params = ext.get("params") if isinstance(ext, dict) and isinstance(ext.get("params"), dict) else {}
     measured = params.get("measured_endpoints") if isinstance(params.get("measured_endpoints"), list) else []
     target = endpoint or (measured[0] if measured and is_https(measured[0]) else None)
