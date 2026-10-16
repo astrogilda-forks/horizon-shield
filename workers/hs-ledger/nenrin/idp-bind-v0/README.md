@@ -37,3 +37,8 @@ two client-credentials tokens and the tenant's JWKS document; nothing else chang
 (`https://accounts.google.com`, service-account ID tokens) and Microsoft Entra ID (a v2.0 tenant, client-credentials
 access tokens). Both were established by the same reader in both runtimes. The Google run is published in full (tokens expired); the Entra bindings are withheld because GitHub push protection treats Entra tokens as secrets even after expiry, and are pinned by digest. `node real-issuers/check.mjs` rechecks
 them offline, with no credential from either issuer.
+
+Whether a JWKS shipped next to a binding is the issuer's is a separate question, and [`../issuer-keys-v0`](../issuer-keys-v0)
+answers it from a daily, timestamped record of the keys Google, the Entra tenant and GitHub Actions served:
+`node ../issuer-keys-v0/check.mjs --binding <binding> --jwks <jwks>` prints the `--trust` argument for
+`trusted_identity.mjs` when every key in that JWKS was observed at the issuer within seven days of `bound_at`.

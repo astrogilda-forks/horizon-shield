@@ -1,0 +1,60 @@
+name: issuer keys
+
+# Once a day, record which signing keys Google, our Microsoft Entra tenant and GitHub Actions serve, by RFC 7638
+# thumbprint, under the issuer whose discovery document named the jwks_uri. A reader of an idp-bind-v0 binding then
+# asks workers/hs-ledger/nenrin/issuer-keys-v0/check.mjs whether the JWKS shipped with it is one the issuer served,
+# instead of trusting the bundle's own copy (trusted_identity.mjs calls that self-pinned). Each day's file is stamped
+# with OpenTimestamps; earlier pending stamps are upgraded when Bitcoin has confirmed them.
+# Code and tests: workers/hs-ledger/nenrin/issuer-keys-v0/. Run by hand: Actions -> issuer keys -> Run workflow.
+
+on:
+  schedule:
+    - cron: "23 3 * * *"   # daily 03:23 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: issuer-keys
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          package-manager-cache: false
+          node-version: "22"
+      - name: test (fake issuer, no network)
+        run: node workers/hs-ledger/nenrin/issuer-keys-v0/issuer_keys.test.mjs
+      - name: observe the issuers
+        run: node workers/hs-ledger/nenrin/issuer-keys-v0/observe.mjs --out workers/hs-ledger/nenrin/issuer-keys-v0/log | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: stamp today's file, upgrade earlier stamps (a calendar outage does not fail the job)
+        run: |
+          set +e
+          pip install -q opentimestamps-client
+          D=workers/hs-ledger/nenrin/issuer-keys-v0/log/observations
+          F="$D/$(date -u +%Y-%m-%d).json"
+          rm -f "$F.ots"
+          ots stamp "$F" && echo "stamped $F" | tee -a "$GITHUB_STEP_SUMMARY"
+          for p in "$D"/*.json.ots; do [ "$p" = "$F.ots" ] || ots upgrade "$p" >/dev/null 2>&1; done
+          rm -f "$D"/*.json.ots.bak
+          exit 0
+      - name: record
+        run: |
+          git config user.name "nenrin-issuer-keys"
+          git config user.email "contact@the-horizons-innovation.com"
+          git add workers/hs-ledger/nenrin/issuer-keys-v0/log
+          if git diff --cached --quiet; then echo "nothing new" | tee -a "$GITHUB_STEP_SUMMARY"; exit 0; fi
+          git commit -m "issuer-keys-v0: observe $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            sleep 5
+          done

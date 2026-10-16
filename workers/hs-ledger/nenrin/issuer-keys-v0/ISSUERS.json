@@ -1,0 +1,8 @@
+{
+  "note": "Issuers observed daily. Each is fetched at <issuer>/.well-known/openid-configuration, and the document must name the issuer exactly. The Entra entry is the tenant the 2026-10-15 real-issuer run used; another tenant is another issuer string and needs its own entry.",
+  "issuers": [
+    { "name": "google", "issuer": "https://accounts.google.com" },
+    { "name": "entra-defcf0d5", "issuer": "https://login.microsoftonline.com/defcf0d5-8cff-40af-a160-a0aa1bb6a912/v2.0" },
+    { "name": "github-actions", "issuer": "https://token.actions.githubusercontent.com" }
+  ]
+}
