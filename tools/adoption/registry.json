@@ -159,6 +159,51 @@
       "what": "Reran the published NENRIN verifiers on the three VATE S3 cases at bfde94be9d80 with npm nenrin-verify 0.5.1 and PyPI nenrin-verify 0.5.3: all six complete outputs byte-identical to ours, and the generator reproduced the three bundles and the manifest byte for byte. Also implemented and checked locally a crosswalk against VATE b3b6d4f that keeps the target mismatch as separate relationships and the missing receipt as not_assessed (to be published; then refereed on the TSUNAGI board at a pinned commit)",
       "evidence": "https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope/issues/84#issuecomment-6155572648",
       "date": "2026-10-13"
+    },
+    {
+      "who": "kuangmi-bit",
+      "author": "kuangmi-bit",
+      "kind": "implementation",
+      "subject": "nenrin-action-presence",
+      "what": "Froze the section 5 degenerate-action rule of provenance-v0/VERIFIER.md as interop-v0.2/action-presence (missing, null, false, 0 and \"\" fail E1; {} is compared like any other action) and carried an independent reader for it (107e31f5). In pipavlo82's check (horizon-shield#29), that unmodified reader, run on 2026-10-10, refused all three own \"__proto__\" mutations that the JS reference and the Python port accepted: an outside reader was right where the reference was wrong",
+      "evidence": "https://github.com/ogasurfproject-jpg/horizon-shield/pull/40",
+      "date": "2026-10-11"
+    },
+    {
+      "who": "Sankalp Gilda (astrogilda), Probity AI",
+      "author": "astrogilda",
+      "kind": "implementation",
+      "subject": "nenrin-action-presence",
+      "what": "The Atlas action-presence reader (agent-evidence-atlas 51ccbfdc, interop/action-presence), written by Probity: 9/9 against the expected verdict signatures of nenrin-interop-v0.2-action-presence; registered on the TSUNAGI board, which pins the reader and dependency manifest digests and scores it from Atlas's default branch every night",
+      "evidence": "https://github.com/ogasurfproject-jpg/horizon-shield/pull/42",
+      "date": "2026-10-12"
+    },
+    {
+      "who": "Federico Blanco Sánchez-Llanos (babyblueviper1)",
+      "author": "babyblueviper1",
+      "kind": "implementation",
+      "subject": "nenrin-provenance",
+      "what": "A clean-room NENRIN provenance verifier (babyblueviper1/preaction-governance-conformance, code last changed 134c048 on 2026-10-09) scored by the TSUNAGI board: survivors 9/9 and own-proto 7/7 at 9d4cf2c7. It keeps every own non-derived key in the preimage, so it refused the own \"__proto__\" cases before they were reported, the second outside reader to do so",
+      "evidence": "https://github.com/ogasurfproject-jpg/horizon-shield/pull/44",
+      "date": "2026-10-15"
+    },
+    {
+      "who": "Sankalp Gilda (astrogilda), Probity AI",
+      "author": "astrogilda",
+      "kind": "implementation",
+      "subject": "a2a-card-walk",
+      "what": "Walked the gate.horizonshield.dev Agent Card with Probity's own verifier and key in the NENRIN witness envelope (agent-evidence-atlas 47f6b059, interop/a2a-card-walk, key pinned in walk-key.json, offline recheck with walk.py verify): signature 0 (hs-2026-09) verifies over RFC 8785 of the served card with signatures removed, and signature 1 does not verify over that payload. Our walk client had recorded the signature as read, not verified",
+      "evidence": "https://github.com/probityai/agent-evidence-vectors/issues/55#issuecomment-6203981315",
+      "date": "2026-10-15"
+    },
+    {
+      "who": "kuangmi-bit",
+      "author": "kuangmi-bit",
+      "kind": "implementation",
+      "subject": "vate-nenrin-s3-crosswalk",
+      "what": "Read the NENRIN half of the VATE S3 crosswalk (pinned 79a9f91a) with a verifier we did not write (4203123): verdicts, refusal codes and findings agree with npm 0.5.1 and PyPI 0.5.3 on all three cases (6/6), and all 33 relationship rows match tools/tsunagi/expected/vate-nenrin-s3-crosswalk-v0.json; refusal reason strings are the author's own wording. Poke-nushi reproduced the result on macOS arm64, byte-identical to the published SHA-256",
+      "evidence": "https://github.com/ogasurfproject-jpg/horizon-shield/issues/29#issuecomment-6201950453",
+      "date": "2026-10-15"
     }
   ],
   "open_calls": {
