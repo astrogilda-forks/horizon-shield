@@ -74,11 +74,12 @@ Every night the [TSUNAGI board](ops/tsunagi/BOARD.md) runs these outside impleme
 | Rows on the public register that are not ours | 2 of 10: one still pending, one added anonymously with `POST /watch` and not measured yet | `curl -s https://gate.horizonshield.dev/register` |
 
 <!-- adoption-count:start -->
-Counted every week by [`tools/adoption/count_adoption.py`](tools/adoption/count_adoption.py), last on 2026-10-12. Every number comes from a source you can read; one that could not be read says so instead of counting zero. The whole count: [`ops/adoption/latest.json`](ops/adoption/latest.json).
+Counted every week by [`tools/adoption/count_adoption.py`](tools/adoption/count_adoption.py), last on 2026-10-16. Every number comes from a source you can read; one that could not be read says so instead of counting zero. The whole count: [`ops/adoption/latest.json`](ops/adoption/latest.json).
 
 | What | Count | From |
 |---|---|---|
-| Independent implementations that reproduced our bytes or verdicts | 14 rows by 7 authors (a2a-card-canonical-form 1, a2a-card-sign-v01 7, agent-card-signature 1, musubi-approval-v2 1, nenrin-provenance 2, nenrin-witness-reader 1, trace-intake 1) | [`tools/adoption/registry.json`](tools/adoption/registry.json), each row with its public link |
+| Independent implementations that reproduced our bytes or verdicts | 19 rows by 7 authors (a2a-card-canonical-form 1, a2a-card-sign-v01 7, a2a-card-walk 1, agent-card-signature 1, musubi-approval-v2 1, nenrin-action-presence 2, nenrin-provenance 3, nenrin-witness-reader 1, trace-intake 1, vate-nenrin-s3-crosswalk 1) | [`tools/adoption/registry.json`](tools/adoption/registry.json), each row with its public link |
+| Reproductions of our code and integrations of our vectors or records, counted apart from the row above | reproduction 1 row by 1 author, integration 1 row by 1 author | [`tools/adoption/registry.json`](tools/adoption/registry.json), rows with kind `reproduction` or `integration` |
 | Outside domains that signed a walk and filed it to the ledger | 3 (`api.babyblueviper.com`, `kuangmi-bit.github.io`, `pipavlo82.github.io`) | every `nenrin-witness-batch-v1` entry on the ledger |
 | Re-verification pool | 1 member(s) in 1 control cluster(s), 2 clusters needed for a quorum | `workers/hs-ledger/nenrin/recovery-v0/pool_report.json`, clusters from `workers/hs-ledger/nenrin/recovery-v0/witness_diversity_report.json` |
 | MUSUBI contracts signed with an outside party | 3 (with no party from this project: 1) | the signed contracts in `workers/hs-ledger/nenrin/musubi-v0/`, and contracts the parties publish themselves, listed in `registry.json` and signature-checked |
@@ -87,7 +88,7 @@ Counted every week by [`tools/adoption/count_adoption.py`](tools/adoption/count_
 | Outside TRACE signing keys whose records were pinned with trace-pin-v0 | 0 | every `nenrin-trace-pin-batch-v0` entry on the ledger and the pending pool |
 | Public repositories created from conduct-witness-template whose reproduce run succeeded in the last 30 days | 1 | GitHub API |
 
-Open: A NENRIN provenance verifier by a further author, in any language, that reproduces the verdict signatures of interop-v0, interop-v0.1 and interop-v0.2/edge. Two so far, both by kuangmi-bit: workers/hs-ledger/nenrin/interop-v0/INTEROP.md
+Open: A NENRIN provenance verifier by a further author, in any language, that reproduces the verdict signatures of interop-v0, interop-v0.1 and interop-v0.2/edge. Two so far, both by kuangmi-bit: workers/hs-ledger/nenrin/interop-v0/INTEROP.md; Point any NENRIN provenance verifier, in any language, at the nine survivors vectors and post the result: npx nenrin-tsunagi run nenrin-interop-v0.3-survivors -- "<your verifier command> {in} {out}". The reference takes one command after npm install nenrin-verify@0.5.2 (papers/nenrin-stack/README.md, section Rerun it from outside; replication package doi:10.5281/zenodo.23344510)
 <!-- adoption-count:end -->
 
 One external witness is a start, not a network. The re-verification pool below counts it as one control cluster, and a quorum of two independent controls is not met yet. [Issue #27](https://github.com/ogasurfproject-jpg/horizon-shield/issues/27) is the open call for the second.
