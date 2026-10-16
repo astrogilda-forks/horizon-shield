@@ -5,6 +5,8 @@ outcome it bound to, and what independent witnesses observed, as a provenance gr
 with no trust in the operator. It returns evidence and its honest limits, never a trust score and never a
 decision. Other trust or ordering engines read it as an evidence source.
 
+How it sits next to Microsoft Entra Agent ID, SINT and TRACE, and what it does not do: [POSITIONING.md](POSITIONING.md).
+
 ## Start here: verify it yourself, in one file
 sdk/nenrin_verify.mjs is a single file with zero dependencies. Copy it in, or install nenrin-verify from npm, and
 check a NENRIN bundle offline:
