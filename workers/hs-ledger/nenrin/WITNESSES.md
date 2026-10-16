@@ -1,6 +1,6 @@
 # NENRIN witnesses and how they are credited
 
-A witness is anyone outside this project who measured a public agent and filed the record in the NENRIN ledger. A signed witness filed it under a key served from their own domain, so the record is counted under that domain rather than under a name anybody can type.
+A witness is anyone outside this project who measured a public agent and filed the record in the NENRIN ledger. A signed witness filed it under a key served from their own domain, or from a repository their GitHub account owns, so the record is counted under that domain (or `github.com/<account>`) rather than under a name anybody can type.
 
 ## Credit
 
@@ -26,6 +26,7 @@ The table is kept by hand. `tools/adoption/count_adoption.py` reads the signed d
 
 ## How to become one
 
-1. One command, no domain of your own: [conduct-witness-template](https://github.com/ogasurfproject-jpg/conduct-witness-template). Your records are signed under `<you>.github.io`, and once a week your runner recomputes the published evidence with a GitHub attestation under your repository.
-2. One signed walk with the reference client and a key on your own domain: [a2a-conduct-walk](a2a-conduct-walk/README.md), section 4a (`--key` and `--key-url`).
-3. A standing place in the re-verification pool, answering witness requests from your own A2A agent: [BECOME_A_WITNESS.md](recovery-v0/BECOME_A_WITNESS.md).
+1. One file, no domain and no installer: put your public key in a repository you own and sign with `witness.key_url` set to its raw URL on a branch or tag (`https://raw.githubusercontent.com/<you>/<repo>/main/nenrin-witness-key.json`). You are counted as `github.com/<you>`. A commit SHA as the ref is refused. Details: [a2a-conduct-walk](a2a-conduct-walk/README.md), section 4a.
+2. One command, no domain of your own: [conduct-witness-template](https://github.com/ogasurfproject-jpg/conduct-witness-template). Your records are signed under `<you>.github.io`, and once a week your runner recomputes the published evidence with a GitHub attestation under your repository.
+3. One signed walk with the reference client and a key on your own domain: [a2a-conduct-walk](a2a-conduct-walk/README.md), section 4a (`--key` and `--key-url`).
+4. A standing place in the re-verification pool, answering witness requests from your own A2A agent: [BECOME_A_WITNESS.md](recovery-v0/BECOME_A_WITNESS.md).

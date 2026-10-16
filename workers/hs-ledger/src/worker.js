@@ -273,6 +273,53 @@ function witnessHost(u) {
   try { const x = new URL(u); return x.protocol === "https:" ? x.hostname.toLowerCase() : null; } catch (_e) { return null; }
 }
 
+// 2026-10-16. The identity a key_url confers. For an ordinary host it is the host, as before. A host that serves many
+// people's files is not anyone's domain, so it cannot be an identity on its own:
+//   raw.githubusercontent.com/<owner>/<repo>/<branch or tag>/<path> confers github.com/<owner>, because only that account
+//   (or its organisation's members) can change a file on a named branch or tag of its repository. A commit SHA as the
+//   ref is refused: GitHub serves commits pushed to any fork under the parent repository's path, so a SHA path proves
+//   nothing about who wrote the file.
+//   Other shared GitHub hosts are refused outright.
+// Before this, a key served from raw.githubusercontent.com would have counted under the identity
+// "raw.githubusercontent.com", shared by everyone. No ledger record carries that identity (checked 2026-10-16).
+const WITNESS_GITHUB_RAW = "raw.githubusercontent.com";
+// Hosts where many unrelated people publish files under different paths. A key there says nothing about who owns the
+// host, so none of them can be a witness identity. (A host with one owner per subdomain, like <you>.github.io or
+// <project>.pages.dev, is fine: the subdomain is the identity.) Kept as a list because the danger is a known class.
+const WITNESS_SHARED_HOSTS = [
+  "github.com", "gist.github.com", "gist.githubusercontent.com", "objects.githubusercontent.com", "codeload.github.com",
+  "user-images.githubusercontent.com", "camo.githubusercontent.com", "media.githubusercontent.com",
+  "gitlab.com", "bitbucket.org", "codeberg.org", "gitee.com", "git.sr.ht", "huggingface.co",
+  "cdn.jsdelivr.net", "fastly.jsdelivr.net", "unpkg.com", "esm.sh", "raw.githack.com", "rawcdn.githack.com", "cdn.statically.io",
+  "storage.googleapis.com", "storage.cloud.google.com", "firebasestorage.googleapis.com", "s3.amazonaws.com",
+  "drive.google.com", "docs.google.com", "sites.google.com", "dl.dropboxusercontent.com", "www.dropbox.com", "dropbox.com",
+  "onedrive.live.com", "1drv.ms", "pastebin.com", "paste.ee", "hastebin.com", "web.archive.org", "archive.org",
+  "npmjs.com", "www.npmjs.com", "registry.npmjs.org", "pypi.org", "files.pythonhosted.org", "medium.com", "notion.site"
+];
+function witnessSharedHost(host) {
+  if (WITNESS_SHARED_HOSTS.includes(host)) return true;
+  if (/^s3[.-](?:[a-z0-9-]+\.)?amazonaws\.com$/.test(host)) return true;   // path-style S3 endpoints
+  return false;
+}
+const WITNESS_OUR_GITHUB_OWNERS = ["ogasurfproject-jpg"];
+function witnessKeyIdentity(keyUrl) {
+  const host = witnessHost(keyUrl);
+  if (!host) return { ok: false, why: "witness.key_url must be an https URL under the witness's own domain" };
+  if (witnessSharedHost(host)) return { ok: false, why: host + " serves many people's files and is not a witness identity; use raw.githubusercontent.com/<owner>/<repo>/<branch>/<path> or a domain of your own" };
+  if (host !== WITNESS_GITHUB_RAW) return { ok: true, host, identity: host, github_owner: null };
+  let parts;
+  try { const u = new URL(keyUrl); if (u.search || u.hash) return { ok: false, why: "a GitHub key_url takes no query or fragment" }; parts = u.pathname.split("/").filter(Boolean); } catch (_e) { return { ok: false, why: "bad key_url" }; }
+  const owner = parts[0] || "", repo = parts[1] || "";
+  let ref, rest;
+  if (parts[2] === "refs" && (parts[3] === "heads" || parts[3] === "tags")) { ref = parts[4] || ""; rest = parts.slice(5); }
+  else { ref = parts[2] || ""; rest = parts.slice(3); }
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(owner)) return { ok: false, why: "a GitHub key_url must name the owner account: raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>" };
+  if (!repo || !ref || rest.length === 0) return { ok: false, why: "a GitHub key_url must be raw.githubusercontent.com/<owner>/<repo>/<branch or tag>/<path to the key file>" };
+  if (/^[0-9a-fA-F]{7,64}$/.test(ref)) return { ok: false, why: "a commit SHA cannot be the ref of a GitHub key_url: GitHub serves commits from any fork under the parent repository's path, so it proves nothing about who wrote the file; name a branch or a tag" };
+  const lower = owner.toLowerCase();
+  return { ok: true, host, identity: "github.com/" + lower, github_owner: lower };
+}
+
 function witnessEndpointOf(r) {
   // "a2a-conduct-walk-v1: <endpoint>" names the measured endpoint; other purposes fall back to base.
   const m = /^a2a-conduct-walk-v1:\s*(\S+)/.exec(r.purpose || "");
@@ -319,15 +366,16 @@ function witnessValidate(recordCanonical) {
       if (req.method !== undefined && req.method !== "REDACTED") return { ok: false, reason_code: "path_leaks_tool", why: "hash-only mode: request.method must be REDACTED" };
     }
   }
-  let keyUrl = null, keyHost = null;
+  let keyUrl = null, keyHost = null, keyIdentity = null, githubOwner = null;
   if (w.key_url !== undefined) {
-    keyHost = witnessHost(w.key_url);
-    if (!keyHost) return { ok: false, reason_code: "bad_key_url", why: "witness.key_url must be an https URL under the witness's own domain" };
+    const ki = typeof w.key_url === "string" ? witnessKeyIdentity(w.key_url) : { ok: false, why: "witness.key_url must be a string" };
+    if (!ki.ok) return { ok: false, reason_code: "bad_key_url", why: ki.why };
+    keyHost = ki.host; keyIdentity = ki.identity; githubOwner = ki.github_owner;
     keyUrl = w.key_url;
   }
   const endpoint = witnessEndpointOf(r);
   return { ok: true, purpose: r.purpose, witness_name: w.name, vantage: w.vantage, mode, v11, key_url: keyUrl, key_host: keyHost,
-           endpoint, base: r.base, disclaimer_present: v11 };
+           key_identity: keyIdentity, github_owner: githubOwner, endpoint, base: r.base, disclaimer_present: v11 };
 }
 
 // v1.1: the key a signed record presents must also be served from the witness's own domain. That domain,
@@ -572,12 +620,15 @@ function witnessSelfDescription(origin) {
     },
     signature: "Optional Ed25519 over the exact record_canonical bytes (signature_ed25519_b64 + public_key_ed25519_b64). Present and invalid: rejected. Absent: accepted and recorded as signed: false. " +
                "v1.1: when the record carries witness.key_url (https, under the witness's domain), the same public key must be served there as {public_key_ed25519_b64}; " +
-               "the domain then becomes the witness's identity (signed_domain). A key_url under the walked agent's own domain is refused as self_witness.",
+               "the domain then becomes the witness's identity (signed_domain). A key_url under the walked agent's own domain is refused as self_witness. " +
+               "2026-10-16: with no domain of your own, serve the key from a repository you own at raw.githubusercontent.com/<owner>/<repo>/<branch or tag>/<path>; signed_domain is then github.com/<owner>. " +
+               "A commit SHA as the ref is refused (GitHub serves fork commits under the parent's path), and other shared GitHub hosts are refused.",
     conduct_v1_1: {
       spec: "section 11 of https://gate.horizonshield.dev/ext/conduct/v1 (served since gate 0.4.0, 2026-09-07; same URI as conduct-v1, every added field optional; the JSON at that URI carries spec_markdown_sha256)",
       record_fields: "mode (full | hash-only | commitment), establishes[], does_not_establish[] (both required when mode is present), " +
                      "witness.key_url (optional), commitment (required in commitment mode), vantage_limitation (optional)",
       refusals: ["disclaimer_missing", "bad_mode", "bad_commitment", "path_leaks_tool", "bad_key_url", "key_url_mismatch", "key_url_unreachable", "self_witness", "signature_invalid"],
+      github_key_url: "raw.githubusercontent.com/<owner>/<repo>/<branch or tag>/<path> serving {public_key_ed25519_b64}; identity github.com/<owner>; a commit SHA ref is refused",
       counting: "every accepted record is stored; per (witness identity, walked endpoint, UTC day) only the first is counted: true. " +
                 "The identity is signed_domain when the record is domain-signed, else name:<witness.name>. The pool and the batch carry counted for every record; " +
                 "nothing is hidden by the cap, only the ring's counts respect it.",
@@ -1638,11 +1689,13 @@ async function handle(request, env) {
           return json({ error: "self_witness", reason_code: "self_witness", note: "a key served from the walked agent's own domain cannot witness that agent" }, 422);
         if (v.key_host === witnessHost(origin))
           return json({ error: "self_witness", reason_code: "self_witness", note: "the ledger's own domain is not a witness domain" }, 422);
+        if (v.github_owner && WITNESS_OUR_GITHUB_OWNERS.includes(v.github_owner))
+          return json({ error: "self_witness", reason_code: "self_witness", note: "a key served from this project's own GitHub account cannot witness this project's agents" }, 422);
         const dk = await witnessFetchDomainKey(env, v.key_url);
         if (!dk.ok) return json({ error: "key_url_unreachable", reason_code: "key_url_unreachable", why: dk.why, note: "retry later, or omit key_url to file as an address-lane record" }, 503);
         if (dk.key !== b.public_key_ed25519_b64)
           return json({ error: "key_url_mismatch", reason_code: "key_url_mismatch", note: "the key served at witness.key_url is not the key that signed this record" }, 422);
-        signedDomain = v.key_host;
+        signedDomain = v.key_identity;
       }
 
       // Lane cap: per domain for domain-signed records, per address for everything else.

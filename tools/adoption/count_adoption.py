@@ -77,6 +77,22 @@ def get_json(url):
     return json.loads(body.decode("utf-8"))
 
 
+# 2026-10-16. Hosts where many unrelated people publish files under different paths are nobody's identity. The ledger
+# intake refuses them (and maps raw.githubusercontent.com to github.com/<owner>); this count refuses them again, so a
+# record filed before that rule, or by a broken intake, can never make everyone one witness.
+SHARED_HOSTS = {
+    "raw.githubusercontent.com", "github.com", "gist.github.com", "gist.githubusercontent.com", "objects.githubusercontent.com",
+    "codeload.github.com", "gitlab.com", "bitbucket.org", "codeberg.org", "gitee.com", "huggingface.co", "cdn.jsdelivr.net",
+    "unpkg.com", "raw.githack.com", "storage.googleapis.com", "s3.amazonaws.com", "drive.google.com", "docs.google.com",
+    "dl.dropboxusercontent.com", "pastebin.com", "web.archive.org",
+}
+
+
+def shared_host(identity):
+    s = (identity or "").lower()
+    return s in SHARED_HOSTS or (s.startswith("s3.") and s.endswith(".amazonaws.com"))
+
+
 def ours(identity, our):
     s = (identity or "").lower()
     return any(s == o or s.endswith("." + o) for o in our)
@@ -127,7 +143,7 @@ def implementations(reg):
 def ledger_witnesses(our, our_names=()):
     head = get_json(LEDGER + "/ledger/head")
     n = int(head["n"])
-    signed, unsigned, batches, unreadable, trace = {}, {}, 0, [], []
+    signed, unsigned, batches, unreadable, trace, refused = {}, {}, 0, [], [], []
     for i in range(1, n + 1):
         try:
             e = get_json("%s/ledger/%d" % (LEDGER, i))
@@ -157,11 +173,13 @@ def ledger_witnesses(our, our_names=()):
         for r in b.get("records") or []:
             d = r.get("signed_domain")
             if d:
-                if not ours(d, our):
+                if shared_host(d):
+                    refused.append({"entry": i, "signed_domain": d.lower()})
+                elif not ours(d, our):
                     signed.setdefault(d.lower(), []).append(i)
             elif r.get("witness_name") and not ours(r["witness_name"], our) and not any(x in r["witness_name"].lower() for x in our_names):
                 unsigned.setdefault(r["witness_name"], []).append(i)
-    return {"ledger_n": n, "ledger_head": head.get("head"), "witness_batches": batches, "unreadable_entries": unreadable,
+    return {"ledger_n": n, "ledger_head": head.get("head"), "witness_batches": batches, "unreadable_entries": unreadable, "refused_shared_host": refused,
             "signed_domains": {k: sorted(set(v)) for k, v in sorted(signed.items())},
             "unsigned_names": {k: sorted(set(v)) for k, v in sorted(unsigned.items())}, "trace_pins_anchored": trace}
 

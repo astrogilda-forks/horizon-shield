@@ -1019,7 +1019,7 @@ def main(argv=None):
     ap.add_argument("--transport", choices=["urllib", "curl"], default="urllib", help="urllib (default) or curl; use curl when the edge answers 403 to urllib")
     ap.add_argument("--privacy", choices=list(PRIVACY_MODES), default="full", help="conduct-v1.1 record mode: full (default), hash-only, or commitment")
     ap.add_argument("--key", default=None, help="Ed25519 private key PEM to sign the record (needs the cryptography package)")
-    ap.add_argument("--key-url", default=None, help="https URL under your own domain that serves {\"public_key_ed25519_b64\": ...}; required with --key")
+    ap.add_argument("--key-url", default=None, help="https URL under your own domain, or raw.githubusercontent.com/<you>/<repo>/<branch>/<path> in a repository you own, that serves {\"public_key_ed25519_b64\": ...}; required with --key")
     ap.add_argument("--print-public-key", default=None, metavar="KEYFILE", help="print the JSON to serve at --key-url for this key, then exit")
     ap.add_argument("--vantage-limitation", default=None, help="what you could not see from where you stood")
     ap.add_argument("--bind-task", action="store_true", help="a2a mode: also emit a task-bound observation to /witness/task using the real a2a.task.id the agent returned (needs --key)")

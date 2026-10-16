@@ -15,7 +15,9 @@ BATCH1 = {"schema": "nenrin-witness-batch-v1", "records": [
     {"sha": "c2", "signed": False, "witness_name": "HORIZON SHIELD self-witness (github runner)"}]}
 BATCH2 = {"schema": "nenrin-witness-batch-v1", "records": [
     {"sha": "d", "signed": True, "signed_domain": "PIPAVLO82.github.io"},
-    {"sha": "e", "signed": True, "signed_domain": "api.babyblueviper.com"}]}
+    {"sha": "e", "signed": True, "signed_domain": "api.babyblueviper.com"},
+    {"sha": "f", "signed": True, "signed_domain": "raw.githubusercontent.com"},
+    {"sha": "g", "signed": True, "signed_domain": "github.com/Alice"}]}
 ENTRIES = {1: {"record_canonical": "# a plain text claim"}, 2: {"record_canonical": json.dumps(BATCH1)},
            3: {"record_canonical": json.dumps(BATCH2)}}
 
@@ -54,7 +56,8 @@ def main():
 
     our = ["horizonshield.dev", "the-horizons-innovation.com", "ogasurfproject-jpg"]
     w = C.ledger_witnesses(our, ["horizon shield", "toshikatsu oga"])
-    check("outside signed domains, ours left out, case folded", sorted(w["signed_domains"]), ["api.babyblueviper.com", "pipavlo82.github.io"])
+    check("outside signed domains, ours left out, case folded, GitHub owner counted", sorted(w["signed_domains"]), ["api.babyblueviper.com", "github.com/alice", "pipavlo82.github.io"])
+    check("a shared host is never an identity: refused and listed", w["refused_shared_host"], [{"entry": 3, "signed_domain": "raw.githubusercontent.com"}])
     check("a domain that filed twice is one witness", w["signed_domains"]["api.babyblueviper.com"], [2, 3])
     check("unsigned names listed, not counted, our own names left out", list(w["unsigned_names"]), ["someone-unsigned"])
     check("an entry that cannot be read is reported, not skipped silently", w["unreadable_entries"], [4])
