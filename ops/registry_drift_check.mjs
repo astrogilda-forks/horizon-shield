@@ -16,6 +16,13 @@
 // Usage:
 //   node ops/registry_drift_check.mjs             live check (needs network to the registry)
 //   node ops/registry_drift_check.mjs --selftest  offline logic test with a mock registry
+//
+// 2026-10-16: the registry answered http 504 for 3 of 10 servers and the job failed red after 21 minutes, although
+// nothing had drifted. A registry outage is not drift. Each query now has a 20 s timeout and up to 3 attempts
+// (retrying 5xx, 429, timeouts and network errors only). A server the registry still cannot answer for is reported
+// as [UNKNOWN] with a ::warning:: annotation and does not fail the job. The job fails only on a finding: P2 version
+// mismatch, absent from the registry, not isLatest, P1 mismatch or a non-semver server.json. If every query is
+// unknown the job also stays green with a warning; tomorrow's run checks again.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -72,45 +79,82 @@ function republishHint(name, sjPath) {
   return "republish on the operator's Mac (Actions OIDC cannot publish " + ns + "/*): mcp-publisher login dns --domain " + domain + " with the domain key, then cd " + dir + " && mcp-publisher publish";
 }
 
-async function registryLatest(name, fetchFn) {
+const TIMEOUT_MS = 20000;
+const BACKOFF_MS = [5000, 15000];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Retries only what can be the registry's own trouble: 5xx, 429, a timeout or a network error.
+// A 4xx answer (other than 429) is returned at once as a hard error. Transient errors that survive
+// every attempt are marked transient, and run() reports them as unknown instead of drift.
+async function fetchJson(url, fetchFn, sleepFn) {
+  let last = "";
+  for (let attempt = 0; attempt <= BACKOFF_MS.length; attempt++) {
+    if (attempt > 0) await sleepFn(BACKOFF_MS[attempt - 1]);
+    let res;
+    try {
+      res = await fetchFn(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+    } catch (e) {
+      last = e && e.name === "TimeoutError" ? "timeout " + TIMEOUT_MS / 1000 + "s" : "network " + ((e && e.message) || e);
+      continue;
+    }
+    if (res.ok) {
+      try { return await res.json(); } catch (e) { last = "bad json"; continue; }
+    }
+    last = "http " + res.status;
+    if (res.status < 500 && res.status !== 429) { const err = new Error(last); err.transient = false; throw err; }
+  }
+  const err = new Error(last + " after " + (BACKOFF_MS.length + 1) + " attempts");
+  err.transient = true;
+  throw err;
+}
+
+async function registryLatest(name, fetchFn, sleepFn) {
   const url = REGISTRY + "?search=" + encodeURIComponent(name) + "&version=latest";
-  const res = await fetchFn(url);
-  if (!res.ok) throw new Error("http " + res.status);
-  const d = await res.json();
+  const d = await fetchJson(url, fetchFn, sleepFn);
   const hit = (d.servers || []).find((s) => s.server && s.server.name === name);
   if (!hit) return { version: null, isLatest: null, present: false };
   const meta = (hit._meta && hit._meta["io.modelcontextprotocol.registry/official"]) || {};
   return { version: hit.server.version, isLatest: meta.isLatest === true, present: true };
 }
 
-async function run(fetchFn) {
+async function run(fetchFn, sleepFn = sleep) {
   const rows = [];
   for (const sjPath of serverJsonPaths()) {
     const sj = JSON.parse(readFileSync(path.join(REPO, sjPath), "utf8"));
     const name = sj.name, mainVer = sj.version, subfolder = (sj.repository || {}).subfolder;
     const wv = workerVersion(subfolder);
-    let reg, regErr = null;
-    try { reg = await registryLatest(name, fetchFn); } catch (e) { reg = { version: null, isLatest: null, present: false }; regErr = e.message; }
+    let reg, regErr = null, transient = false;
+    try { reg = await registryLatest(name, fetchFn, sleepFn); }
+    catch (e) { reg = { version: null, isLatest: null, present: false }; regErr = e.message; transient = e.transient === true; }
     const issues = [];
     if (!SEMVER.test(mainVer || "")) issues.push("server.json version not semver: " + JSON.stringify(mainVer));
     if (wv && wv.version !== mainVer) issues.push("P1: worker " + wv.version + " (" + wv.file + ") != server.json " + mainVer);
-    if (regErr) issues.push("registry query failed: " + regErr);
+    let unknown = null;
+    if (regErr && transient) unknown = "registry unreachable (" + regErr + "), P2 not checked this run";
+    else if (regErr) issues.push("registry query failed: " + regErr);
     else if (!reg.present) issues.push("P2: not found in registry (never published?)");
     else if (reg.version !== mainVer) issues.push("P2: registry " + reg.version + " != main " + mainVer + "  -> " + republishHint(name, sjPath));
     else if (reg.isLatest !== true) issues.push("P2: registry version matches but not marked isLatest");
-    rows.push({ name, mainVer, worker: wv ? wv.version : "n/a", registry: reg.present ? reg.version : (regErr ? "err" : "absent"), ok: issues.length === 0, issues });
+    rows.push({ name, mainVer, worker: wv ? wv.version : "n/a", registry: reg.present ? reg.version : (regErr ? "err" : "absent"), ok: issues.length === 0, unknown, issues });
   }
   return rows;
 }
 
 function report(rows) {
+  const ci = !!process.env.GITHUB_ACTIONS;
   for (const r of rows) {
-    console.log((r.ok ? "[OK]   " : "[DRIFT]") + " " + r.name.padEnd(50) + " main=" + String(r.mainVer).padEnd(8) + " worker=" + String(r.worker).padEnd(8) + " registry=" + String(r.registry));
-    for (const i of r.issues) console.log("        - " + i);
+    const tag = !r.ok ? "[DRIFT]  " : r.unknown ? "[UNKNOWN]" : "[OK]     ";
+    console.log(tag + " " + r.name.padEnd(50) + " main=" + String(r.mainVer).padEnd(8) + " worker=" + String(r.worker).padEnd(8) + " registry=" + String(r.registry));
+    for (const i of r.issues) console.log("          - " + i);
+    if (r.unknown) {
+      console.log("          - " + r.unknown);
+      if (ci) console.log("::warning title=MCP registry unreachable::" + r.name + ": " + r.unknown);
+    }
   }
   const bad = rows.filter((r) => !r.ok).length;
+  const unk = rows.filter((r) => r.ok && r.unknown).length;
   console.log("");
-  console.log("=== " + (rows.length - bad) + "/" + rows.length + " synced, " + bad + " drift (registry drift check, " + new Date().toISOString().replace(/\.\d{3}Z$/, "Z") + ") ===");
+  console.log("=== " + (rows.length - bad - unk) + "/" + rows.length + " synced, " + bad + " drift, " + unk + " unknown (registry drift check, " + new Date().toISOString().replace(/\.\d{3}Z$/, "Z") + ") ===");
   return bad;
 }
 
@@ -119,8 +163,14 @@ if (process.argv.includes("--selftest")) {
   for (const p of serverJsonPaths()) { const sj = JSON.parse(readFileSync(path.join(REPO, p), "utf8")); mainOf[sj.name] = sj.version; }
   const DRIFT = "io.github.ogasurfproject-jpg/hs-verify-gate";
   const ABSENT = "io.github.ogasurfproject-jpg/hs-hearing";
+  const DOWN = "io.github.ogasurfproject-jpg/horizon-shield";   // 504 on every attempt -> unknown, not drift
+  const FLAKY = "io.github.ogasurfproject-jpg/hs-partner-001-mcp"; // 504 once, then fine -> OK
+  const calls = {};
   const mockFetch = async (url) => {
     const name = new URL(url).searchParams.get("search");
+    calls[name] = (calls[name] || 0) + 1;
+    if (name === DOWN) return { ok: false, status: 504, json: async () => ({}) };
+    if (name === FLAKY && calls[name] === 1) return { ok: false, status: 504, json: async () => ({}) };
     let servers = [];
     if (name !== ABSENT) {
       const v = name === DRIFT ? "0.0.1" : (mainOf[name] || "9.9.9");
@@ -128,15 +178,19 @@ if (process.argv.includes("--selftest")) {
     }
     return { ok: true, json: async () => ({ servers }) };
   };
-  const rows = await run(mockFetch);
+  const rows = await run(mockFetch, async () => {});
   const flagged = rows.filter((r) => !r.ok).map((r) => r.name);
   report(rows);
   console.log("");
   const gateFlagged = flagged.includes(DRIFT);
   const hearingFlagged = flagged.includes(ABSENT);
-  const othersClean = rows.filter((r) => r.name !== DRIFT && r.name !== ABSENT).every((r) => r.ok);
-  const pass = gateFlagged && hearingFlagged && othersClean;
-  console.log("selftest: forced-drift(gate)=" + gateFlagged + " forced-absent(hearing)=" + hearingFlagged + " others-clean=" + othersClean + " => " + (pass ? "PASS" : "FAIL"));
+  const down = rows.find((r) => r.name === DOWN);
+  const flaky = rows.find((r) => r.name === FLAKY);
+  const downUnknown = !!down && down.ok && !!down.unknown && calls[DOWN] === BACKOFF_MS.length + 1;
+  const flakyOk = !!flaky && flaky.ok && !flaky.unknown && calls[FLAKY] === 2;
+  const othersClean = rows.filter((r) => ![DRIFT, ABSENT, DOWN, FLAKY].includes(r.name)).every((r) => r.ok && !r.unknown);
+  const pass = gateFlagged && hearingFlagged && downUnknown && flakyOk && othersClean;
+  console.log("selftest: forced-drift(gate)=" + gateFlagged + " forced-absent(hearing)=" + hearingFlagged + " 504-always(unknown, not drift)=" + downUnknown + " 504-once(retried, ok)=" + flakyOk + " others-clean=" + othersClean + " => " + (pass ? "PASS" : "FAIL"));
   process.exit(pass ? 0 : 1);
 }
 

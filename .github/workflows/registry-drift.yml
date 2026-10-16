@@ -2,6 +2,7 @@ name: MCP registry drift
 
 # C16 detector. Fails red when any server.json version on main disagrees with what the
 # live MCP registry advertises as latest. Always queries with &version=latest.
+# A registry outage (5xx, 429, timeout after 3 attempts) is reported as [UNKNOWN] with a warning, not as drift.
 # Install: cp ops/registry-drift.yml .github/workflows/registry-drift.yml
 # Run on demand: Actions -> MCP registry drift -> Run workflow.
 
@@ -20,11 +21,14 @@ concurrency:
 jobs:
   drift:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           package-manager-cache: false
           node-version: "22"
+      - name: selftest (mock registry, includes a 504 that must not read as drift)
+        run: node ops/registry_drift_check.mjs --selftest
       - name: check registry vs main
         run: node ops/registry_drift_check.mjs
