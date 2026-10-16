@@ -170,6 +170,8 @@
 @media (max-width:980px){.td-hero .wrap{padding-top:32px;padding-bottom:48px}.td-hero .h-text,.td-hero .h-img,.td-hero .h-fine,.td-hero .hero-r{grid-column:1 / -1;grid-row:auto}.td-hero .h-text{order:1}.td-hero .h-img{order:2}.td-hero .hero-r{order:3;margin-top:24px}.td-hero .h-fine{order:4}.td-hero .aeo{margin-bottom:20px}.h-img img{aspect-ratio:2 / 1;object-fit:cover;object-position:66% 55%}.warn-img,.warn-b{grid-column:1 / -1}.warn-b{margin-top:28px}}
 @media (max-width:560px){.h-img img{aspect-ratio:16 / 7}}
 [hidden]{display:none!important}
+/* 2026-10-17 phones: the upload box comes right after the headline, the photo after it */
+@media (max-width:680px){.td-hero .hero-r{order:2;margin-top:16px}.td-hero .h-img{order:3;margin-top:24px}.td-hero .wrap{padding-top:20px}}
 </style>
 </head>
 <body>
@@ -198,8 +200,10 @@
   <form class="drop" id="td-form" novalidate aria-describedby="td-fine">
    <div class="head"><span class="mono">The quote</span><span class="mono">Up to 3 pages</span></div>
    <div class="drop-row">
-    <label class="cta" for="td-file">Choose photo or PDF</label>
-    <input id="td-file" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+    <label class="cta" for="td-cam">Take a photo</label>
+    <input id="td-cam" type="file" accept="image/*" capture="environment">
+    <label class="cta ghost" for="td-file">Choose photo or PDF</label>
+    <input id="td-file" type="file" multiple accept=".pdf,application/pdf,image/*">
     <button class="cta ghost" type="button" id="td-paste-btn" aria-controls="td-paste" aria-expanded="false">Paste text</button>
    </div>
    <ul class="td-files" id="td-files" aria-label="Pages picked"></ul>
@@ -211,7 +215,7 @@
    <button class="cta go" type="submit" id="td-go">Read my quote, free</button>
    <p class="msg" id="td-msg" role="status" aria-live="polite"></p>
   </form>
-  <p class="fine mono" id="td-fine">PDF, JPG or PNG, 5 MB each &nbsp;/&nbsp; iPhone photos: choose JPG if asked, the browser usually converts them &nbsp;/&nbsp; Nothing stored except an anonymous card for 24 hours &nbsp;/&nbsp; <a href="/privacy/">Privacy</a></p>
+  <p class="fine mono" id="td-fine">Phone photos of any size: we shrink them on your phone before sending &nbsp;/&nbsp; PDF up to 5 MB &nbsp;/&nbsp; Nothing stored except an anonymous card for 24 hours &nbsp;/&nbsp; <a href="/privacy/">Privacy</a></p>
  </div>
 </div></section>
 
@@ -451,19 +455,47 @@ function showFiles(){
   li.appendChild(b); list.appendChild(li);
  });
 }
-function addFiles(fl){
- var errs = [];
- for(var i = 0; i < fl.length; i++){
-  var f = fl[i];
-  if(isHeic(f)){ errs.push(f.name + " is a HEIC photo. Pick it again and choose JPG, or send a screenshot of it."); continue; }
-  if(!typeOk(f)){ errs.push(f.name + ": send a PDF, JPG or PNG."); continue; }
-  if(f.size > MAX_BYTES){ errs.push(f.name + " is larger than 5 MB. A smaller photo or a PDF works best."); continue; }
+/* 2026-10-17: phone photos are often over 5 MB, and the reader refuses big images. Shrink every photo here to a JPEG
+   of at most 2000 px on the long side before sending. HEIC opens when the phone can show it; otherwise ask for a screenshot. */
+var IMG_EDGE = 2000, IMG_TARGET = 3000000;
+function loadImg(f){ return new Promise(function(res, rej){ var u = URL.createObjectURL(f), im = new Image(); im.onload = function(){ URL.revokeObjectURL(u); res(im); }; im.onerror = function(){ URL.revokeObjectURL(u); rej(new Error("decode")); }; im.src = u; }); }
+function toJpeg(im, edge, q){
+ var w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, k = Math.min(1, edge / Math.max(w, h));
+ var c = document.createElement("canvas"); c.width = Math.round(w * k); c.height = Math.round(h * k);
+ var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+ return new Promise(function(r){ c.toBlob(function(b){ r(b); }, "image/jpeg", q); });
+}
+function shrink(f){
+ return loadImg(f).then(function(im){
+  var edge = IMG_EDGE, tries = 0;
+  function step(q){ return toJpeg(im, edge, q).then(function(b){ if(b && b.size > IMG_TARGET && tries < 3){ tries++; edge = Math.round(edge * 0.8); return step(0.8); } return b; }); }
+  return step(0.85);
+ }).then(function(b){
+  if(!b || b.size > MAX_BYTES) throw new Error("too_big");
+  var nm = (f.name || "photo").replace(/\.[a-z0-9]+$/i, "") + ".jpg";
+  try{ return new File([b], nm, {type:"image/jpeg"}); }catch(e){ b.name = nm; return b; }
+ });
+}
+function isImg(f){ return /^image\//i.test(f.type || "") || /\.(jpe?g|png|heic|heif|webp)$/i.test(f.name || ""); }
+function isPdf(f){ return f.type === "application/pdf" || /\.pdf$/i.test(f.name || ""); }
+async function addFiles(fl){
+ var errs = [], list0 = Array.prototype.slice.call(fl || []);
+ if(list0.length) setMsg(msg, "Getting the photo ready...");
+ for(var i = 0; i < list0.length; i++){
+  var f = list0[i];
   if(files.length >= MAX_FILES){ errs.push("Up to 3 pages of one quote."); break; }
-  files.push(f);
+  if(isPdf(f)){
+   if(f.size > MAX_BYTES){ errs.push(f.name + " is larger than 5 MB. Take a photo of the page with the totals instead."); continue; }
+   files.push(f); continue;
+  }
+  if(!isImg(f)){ errs.push(f.name + ": send a photo or a PDF."); continue; }
+  try{ files.push(await shrink(f)); }
+  catch(e){ errs.push((f.name || "This photo") + " could not be opened here. Take a screenshot of it and send that."); }
  }
  showFiles(); setMsg(msg, errs.join(" "), errs.length > 0);
 }
-fileIn.addEventListener("change", function(){ addFiles(fileIn.files || []); try{ fileIn.value = ""; }catch(e){} });
+fileIn.addEventListener("change", function(){ var l = Array.prototype.slice.call(fileIn.files || []); try{ fileIn.value = ""; }catch(e){} addFiles(l); });
+var camIn = $("td-cam"); camIn.addEventListener("change", function(){ var l = Array.prototype.slice.call(camIn.files || []); try{ camIn.value = ""; }catch(e){} addFiles(l); });
 ["dragenter","dragover"].forEach(function(t){ form.addEventListener(t, function(e){ e.preventDefault(); form.classList.add("drag"); }); });
 ["dragleave","drop"].forEach(function(t){ form.addEventListener(t, function(e){ e.preventDefault(); form.classList.remove("drag"); }); });
 form.addEventListener("drop", function(e){ if(e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
