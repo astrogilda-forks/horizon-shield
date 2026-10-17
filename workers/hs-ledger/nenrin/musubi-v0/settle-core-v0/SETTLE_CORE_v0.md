@@ -3,6 +3,7 @@
 Status: draft for independent implementation. Written from the reference code, not from intent.
 Date: 2026-10-17. Describes a2a-settlement-v1.16 (settle_v1_16.py).
 Revision 0.1, 2026-10-17: two sentences about approval signatures were unclear (6.0, 10.4). The reference did not change; section 13 lists the clarifications and their vectors.
+Revision 0.2, 2026-10-17: the answers to 25 implementation notes (NOTES.md N14) and the full parent narrowing rule (4.3). The reference did not change; section 13 lists each place and its vector.
 
 ## 0. Why this document exists
 
@@ -36,6 +37,8 @@ Out of scope, and not defined here:
 - binding mode "legacy" (records bound by contract_id only),
 - fetching anything. Settle core v0 never touches the network. Every key it uses is inside the contract.
 
+A key is carried when it is present with a value other than null, with two exceptions. `requirements.spine` and `requirements.convergence` are carried whenever the key is present, null included: their gates then answer `spine_requirement_incomplete` and `convergence_requirement_incomplete`. And `grant.approval_policy.approvers` set to null or `[]` refuses the contract in 4.1 (WRITTEN BEHAVIOUR). Vectors `synth_limits_null`, `synth_admission_null`.
+
 If a contract carries any of the keys above, this document does not define the result.
 An implementation MUST NOT claim core v0 conformance for such an input.
 
@@ -62,6 +65,9 @@ Text nested deeper than 512 levels of `[` or `{` (counted outside strings) is al
 
 Numbers MUST be integers within plus or minus (2^53 - 1). The contract is checked for this in 4.1, records in 6.0, the view in 5.1 and walks in section 11.
 A JSON value with a non-integer number is not "strict" in the sense of 6.0.
+
+The tokens `NaN`, `Infinity` and `-Infinity` are read as numbers that are not integers (WRITTEN BEHAVIOUR of the reference's reader, Python's json module). A value holding one is therefore not strict. It is not a parse error. Vector `synth_nan_in_signed_body`.
+An integer token longer than 4300 digits is an error, and no settlement is produced: the reader raises (WRITTEN BEHAVIOUR). There is no vector, because there is no settlement to compare.
 
 A JSON value is an "integer" in this document only if it is written as an integer token: no fraction, no exponent.
 `true` and `false` are never integers.
@@ -137,7 +143,7 @@ The reference reports a list of refusal codes alongside; those codes are informa
 1. `schema` is `"a2a-contract-v0"`.
 2. `contract_id` and `nonce` are each 32 lowercase hex characters.
 3. `parties` is a list of exactly two objects whose `role` values are exactly one `"principal"` and one `"contractor"`.
-4. Each party's `domain` normalizes to a bare hostname: lowercase, outer spaces and one or more trailing dots removed, no `/`, `@`, `:` or space, at least two labels, each label matching `^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`. The two normalized domains differ.
+4. Each party's `domain` normalizes to a bare hostname: leading and trailing whitespace removed (every character Python's `str.strip()` removes, not only U+0020), then lowercased, then one or more trailing dots removed. The result has no `/`, `@`, `:` or space, at least two labels, each label matching `^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`. The two normalized domains differ.
 5. Each party's `key_url` is an `https://` URL. (Whether its host is under the domain is a finding, not a refusal.)
 6. Each party's `public_key_ed25519_b64` decodes as canonical base64 to 32 bytes. (The point check of 3.2 is applied later, when signatures are verified.)
 7. `task` is an object with a non-empty string `purpose`. `task.payload_digest`, when present and not null, is 64 lowercase hex.
@@ -146,12 +152,12 @@ The reference reports a list of refusal codes alongside; those codes are informa
 10. Typed grant keys, each checked only when present and not null:
     - `data_access`: list of non-empty strings.
     - `max_hops`, `expiry_height`: integer >= 0.
-    - `delegation`: object whose only key is `allowed`, a list of non-empty strings.
+    - `delegation`: object with exactly one key, `allowed`, a list of non-empty strings. `{}` refuses the contract (vector `synth_delegation_empty_object`).
     - `conditional`: list of objects, each with a non-empty string `action`; actions unique; `requires`, when present, a string.
     - `finality`: object with keys only from `depth`, `max_target_bits`. `depth`, when present, integer >= 1. `max_target_bits`, when present, 8 lowercase hex that decodes (5.2) to a positive target.
     - `witnesses`: list of objects, each with a non-empty string `name` and a `public_key_ed25519_b64` that decodes to 32 bytes.
     - `privacy`: non-empty string.
-    - `ordering`: object whose only key is `same_height`, a string or null.
+    - `ordering`: object with no key other than `same_height`, which is optional (`{}` is accepted, vector `synth_ordering_empty_object`); `same_height`, when present, a string or null.
     - `approval_policy`: object with keys only from `allow_unscoped` (boolean) and `approvers` (out of scope, section 1).
     - `revocation`: an object whose `effective_at` is `"anchor"` or `"delivery_ack"`, with keys only from `effective_at`, `ack_window`; `ack_window`, when present, integer >= 1.
 11. No number anywhere in the contract (signatures included) is a non-integer, NaN, an infinity, or an integer outside plus or minus (2^53 - 1).
@@ -195,7 +201,26 @@ Whether or not 4.1 accepts, each of these adds the underspecified reason shown:
 | `parent_contract` is present and not null, and the parent is not an object, or does not pass 4.1 on its own, or the contract does not pass 4.1 with the parent supplied (the reference's door then also checks that `parent_contract.contract_id` equals the parent's `contract_id` and that the child's grant is a subset of the parent's: `contract_v0.grant_subset`) | `parent_narrowing_failed` |
 
 These checks do not stop the walk; the event set and dispositions are still computed (section 2.3).
-The vectors show the subset rule with one widening (an added authorized action). A full statement of `grant_subset` is left to a later version of this document; until then, the reference's `grant_subset` is normative.
+#### 4.3.1 Parent narrowing (grant_subset)
+
+This applies when `parent_contract` is present and not null. The contract passes 4.1 with the parent supplied if and only if it passes 4.1 on its own, `parent_contract` is an object whose `contract_id` equals the parent's `contract_id` (a missing `contract_id` fails), and the child grant C is within the parent grant P. C is within P when none of the following holds. In each rule, a list that is absent or null counts as empty, "has an integer" means the key is present with an integer that is not a boolean, and "the parent sets" a key means the key is present with a value other than null. Both grants have already passed 4.1 rule 10, so every value has its declared type.
+
+1. An entry of `C.authorized_actions` is not in `P.authorized_actions`.
+2. An entry of `P.prohibited_actions` is not in `C.prohibited_actions`.
+3. An entry of `C.data_access` is not in `P.data_access`. A child without `data_access` is narrower, not wider.
+4. P has an integer `max_hops` p, and C has no integer `max_hops` or one above p - 1. A child that copies the parent's `max_hops` is not within (vector `synth_parent_full_identical`), and under a parent with `max_hops` 0 no child is within.
+5. An entry of `C.delegation.allowed` is not in `P.delegation.allowed`.
+6. For each entry of `P.conditional`, with `a` its `action` and r its `requires` (a missing `requires` is null, on either side): skip it when either (i) `a` is in `C.prohibited_actions`, or (ii) `a` is not in `C.authorized_actions` and is not the `action` of any entry of `C.conditional` (the child cannot do `a` at all). Otherwise it is a violation if no entry of `C.conditional` has the action `a`, or the one that has it (actions are unique, 4.1 rule 10) has a `requires` other than r. An action that C both authorizes and makes conditional is judged by this rule like any other.
+7. The `action` of an entry of `C.conditional` is in neither `P.authorized_actions` nor the actions of `P.conditional`.
+8. P has an integer `expiry_height` e, and C has no integer `expiry_height` or one above e.
+9. P has a `revocation` object; let m be its `effective_at`. Then C must have a `revocation` object with an `effective_at`. If m is `"anchor"`, C's must be `"anchor"`. If m is `"delivery_ack"`, C's may be `"anchor"` (authority ends sooner) or `"delivery_ack"`; in the second case, when P has an integer `ack_window` w, C must have an integer `ack_window` of at most w (a child without one is a violation), and when P has none, C's `ack_window` is not compared. Anything else is a violation.
+10. P has a `finality` object. Then C must have one; when P has an integer `depth` d, C must have an integer `depth` of at least d; when P's `max_target_bits` decodes (5.2), C's must be present and decode to a target no larger (absent, or not decoding, is a violation). Both grants passed 4.1 rule 10, so a target that is present is positive.
+11. P has a witness with a string `public_key_ed25519_b64`. Then C must have at least one witness with such a key, and every such key of P must equal, as a string, the key of one of C's witnesses. Witnesses are compared by key; the names are labels (vector `synth_parent_full_witness_renamed`).
+12. For each of `privacy` and `ordering` separately: when the parent sets it, C must set it to an equal JSON value. After 4.1 rule 10 these values hold only strings, objects and null, so equality is exact: `{}` is not equal to `{"same_height": null}`. No order is defined for these two, so they are held equal. An `ordering` of `{"same_height": null}` counts as set (vector `synth_parent_full_without_ordering`).
+13. `C.approval_policy.allow_unscoped` is `true` and `P.approval_policy.allow_unscoped` is not (absent counts as not true). (In core v0 a true `allow_unscoped` already gives `unscoped_approvals_refused`, 4.2.)
+14. The pinned approvers differ. In core v0 neither grant carries them (section 1), so this never applies here.
+
+The parent must also pass 4.1 on its own. Vectors `synth_parent_full_*` take a parent that sets every axis and change one axis per vector.
 
 ## 5. The header view
 
@@ -219,7 +244,7 @@ The tip is the height of the last header.
 The view may start below the checkpoint. The first header's previous-hash field is not checked.
 Consensus rules beyond these (retargeting, timestamps, transactions) are not checked.
 
-9. Separately, every header is an object with an integer `height` and a `hex` of exactly 160 lowercase hex characters, and every string, key and number in the view is strict (6.0, first list). If not, the reason `view_not_strict` is added. A header in upper case therefore gives both `chain_view_rejected` and `view_not_strict`; one that ends in a line feed gives only `view_not_strict`. Rule 9 does not stop the walk.
+9. Separately, when `view` is an object whose `headers` is a list, every header is an object with an integer `height` and a `hex` of exactly 160 lowercase hex characters, and every string, key and number in the view is strict (6.0, first list). If not, the reason `view_not_strict` is added. A header in upper case therefore gives both `chain_view_rejected` and `view_not_strict`; one that ends in a line feed gives only `view_not_strict`. A view that is not an object, or whose `headers` is not a list, gives `chain_view_rejected` only (vectors `synth_view_not_an_object`, `synth_view_headers_not_a_list`). Rule 9 does not stop the walk.
 
 If the view verifies but holds more than 200000 headers, the reason is `input_too_large` instead, and no record is examined.
 
@@ -390,7 +415,7 @@ A hex digest that merely appears somewhere in stamped bytes is not a listing. So
 1. If no op in the proof is `hexlify`, the rule accepts.
 2. If any `hexlify` is not the first op, or there is more than one, refuse (`hexlify_not_leading`).
 3. Rebuild the batch: walk the ops after the first one, up to the first `sha256`. Each must be `append` or `prepend`, else refuse (`batch_leg_malformed`). If there is no `sha256`, refuse (`batch_leg_malformed`). The batch is (all prepend operands, the later one in front) + the ASCII lowercase hex of the body digest + (all append operands, in order).
-4. The batch bytes must be UTF-8 text that parses as strict JSON (2.2) into an object whose `schema` is one of `nenrin-agreement-batch-v1` (typed), `nenrin-witness-batch-v1`, `nenrin-trace-pin-batch-v0`. Else refuse (`batch_not_json` or `batch_schema_unknown`).
+4. The batch bytes must be UTF-8 text that parses as strict JSON (2.2; so `NaN` is read as a number, vector `synth_batch_bytes_with_nan`) into an object whose `schema` is one of `nenrin-agreement-batch-v1` (typed), `nenrin-witness-batch-v1`, `nenrin-trace-pin-batch-v0`. Else refuse (`batch_not_json` or `batch_schema_unknown`).
 5. `records` is a list of objects (else `batch_schema_unknown`). If `count` is present it equals the length of `records` (else `batch_count_mismatch`).
 6. Exactly one `records[i]` has `sha` equal to the hex digest. None: `record_not_listed_in_batch`. More: `record_listed_twice`.
 7. For a typed batch: the record's schema maps to a kind (`a2a-execution-v0` to `execution`; revocations and acknowledgements have no kind, so they are refused with `record_kind_unknown`, WRITTEN BEHAVIOUR). `records[i].kind` equals that kind (else `record_kind_mismatch`). If `records[i].schema` is present it equals the record's schema (else `record_schema_mismatch`).
@@ -434,7 +459,7 @@ A second implementation MUST reproduce these exactly. They are what the vectors'
 
 | field | value |
 |---|---|
-| `contract_sha256` | 3.3, always computed, even for a contract the door refuses |
+| `contract_sha256` | 3.3, computed even for a contract the door refuses; null when the contract is not a JSON object (vector `synth_contract_not_object`) |
 | `verdict` | `within_grant`, `deviation`, `nothing_to_settle` or `underspecified` (section 12) |
 | `status` | `final`, `provisional` or `undetermined` (8.5) |
 | `bond_outcome` | 9.3 |
@@ -484,7 +509,7 @@ For each accepted revocation at height h, its effective height E is:
 - `effective_at` `"anchor"`: E = h.
 - `effective_at` `"delivery_ack"`: E = the smallest of h + `ack_window` and the heights of every accepted acknowledgement whose `revocation_sha256` names this revocation.
 
-An acknowledgement names a revocation if its `revocation_sha256` equals the lowercase hex body digest of the revocation, or the record_sha256 of any bound copy of that revocation (any anchoring, counted before 6.4 drops copies).
+An acknowledgement names a revocation if its `revocation_sha256` equals the lowercase hex body digest of the revocation, or the record_sha256 of a copy of that revocation that is still in the input after 6.4. A copy 6.4 dropped no longer names the revocation (WRITTEN BEHAVIOUR: settle v1.4 collects every anchored copy, but since settle v1.15 the copies of one signed body are reduced before v1.4 sees them). Vector `synth_ack_names_dropped_copy`.
 An acknowledgement anchored before its revocation makes E earlier than h (WRITTEN BEHAVIOUR, see NOTES.md N5).
 
 Sort the revocations by (E, record_sha256). An execution at height h is revoked if some revocation has E <= h. Authority ends at block E inclusive: an act in the same block as an anchor-mode revocation is revoked.
@@ -516,7 +541,7 @@ An outcome (`outcomes`) never excuses an act. An attempt that errored is judged 
 
 Every approval carried by an accepted execution (revoked or not) is classified. With `pk` the principal's key and `csha` this contract's contract_sha256:
 
-1. Not an object, or no principal key: `forged` (10.5).
+1. Not an object, or no principal key: `forged` (10.5). (Once 4.1 accepts, the principal always has a usable key, so in core v0 only "not an object" can apply.)
 2. If `valid_until_height` is an integer >= 0, `nonce` is a string of 32 lowercase hex characters (a nonce with a line feed never gets here, 6.0), `single_use` is a boolean, and `contract_sha256` is 64 lowercase hex: compute
    `b"a2a-approval-v2\n" + canonical({"contract_sha256": <its contract_sha256>, "action": <its action>, "valid_until_height": .., "nonce": .., "single_use": ..})`.
    If `sig_b64` verifies over it with `pk`: `counted` when its contract_sha256 equals csha, else `other_terms`.
@@ -550,7 +575,7 @@ Every approval classified `forged` adds the deviation `forged_approval`, whateve
 
 Only when `nenrin_records` is a non-empty list.
 A walk that is not strict (6.0, first paragraph) is left out. Index every other object in it by its record_sha256 (3.3).
-For each execution kept by 6.0 and not rejected by 6.6, left after 6.4 (once per record_sha256), look up the walk whose record_sha256 equals the execution's `nenrin_ref`.
+For each execution kept by 6.0 and not rejected by 6.6, left after 6.4 (once per record_sha256), whatever section 7 then decides about its anchor (an orphaned execution is still read: WRITTEN BEHAVIOUR, vector `synth_cited_walk_orphaned_execution`), look up the walk whose record_sha256 equals the execution's `nenrin_ref`.
 If found, and the walk's `context` is an object whose `contract_sha256` is present, not null, and not equal to csha: deviation `evidence_names_other_contract`.
 If an execution's `nenrin_ref` names a walk that was left out for not being strict: underspecified reason `walk_not_strict`. The contractor chose what to cite, and leaving the walk out silently could hide a deviation.
 
@@ -604,6 +629,23 @@ Clarified in revision 0.1 of this text. The first separately written implementat
 | an approval signed only under `signature` counts | only `sig_b64` is verified, so such an approval is `forged` (10.4, 10.5) | `synth_approval_signature_key_only` |
 | a strict `sig_b64` makes a malleated `signature` beside it harmless | each key is checked for strictness on its own; the body is not strict (6.0) | `synth_approval_lax_signature_beside_good_sig_b64` |
 | (control) | `sig_b64` and `signature` with the same strict value: counted | `synth_approval_signature_key_same_value` |
+
+Clarified in revision 0.2 of this text, from the 25 implementation notes of the same implementation (NOTES.md N14). The reference did not change:
+
+| note | what the text now says | vector |
+|---|---|---|
+| A1 | `contract_sha256` is null when the contract is not a JSON object (9.1) | `synth_contract_not_object` |
+| A3 | an integer token longer than 4300 digits stops the computation, no settlement (2.2) | none |
+| A6 | domain normalization strips all leading and trailing whitespace (4.1 rule 4) | `synth_domain_leading_tab` |
+| A7 | `delegation` must carry `allowed`; `ordering` may be `{}` (4.1 rule 10) | `synth_delegation_empty_object`, `synth_ordering_empty_object` |
+| A10 | parent narrowing stated in full (4.3.1) | `synth_parent_full_*` (25) |
+| A12, A15 | `NaN`, `Infinity`, `-Infinity` are read as numbers, in records and in batch bytes (2.2, 7.6) | `synth_nan_in_signed_body`, `synth_batch_bytes_with_nan` |
+| A14 | the cross check reads an execution whatever its anchor result (11.1) | `synth_cited_walk_orphaned_execution` |
+| A16 | `view_not_strict` only for a view that is an object with a `headers` list (5.1 rule 9) | `synth_view_not_an_object`, `synth_view_headers_not_a_list` |
+| A20 | what "carries" means for each out of scope key (section 1) | `synth_limits_null`, `synth_admission_null` |
+| A21 | a floor whose mantissa is zero decodes to no target: both the door and the view refuse | `synth_floor_zero_mantissa` |
+| A22 | a copy dropped by 6.4 no longer names its revocation (10.1) | `synth_ack_names_dropped_copy` |
+| A24 | 10.4 step 1 "no principal key" cannot apply once 4.1 accepts | none |
 
 ## 14. What this does not establish
 

@@ -718,6 +718,181 @@ vector("synth_view_header_trailing_newline", "synth", "5",
 
 
 # ----------------------------------------------------------------------------------------------- write
+# ----------------------------------------------------------------------------------------------- revision 0.2 (NOTES.md N14)
+# Each vector below pins one place where the text of revision 0.1 was silent or wrong and a separately written
+# implementation (aeoess/musubi-settle-core-check, horizon-shield Issue #49) took another reading. The reference did not change.
+
+def _resigned(c):
+    c = copy.deepcopy(c)
+    c["signatures"] = []
+    v0.sign_contract(c, KP, PP, DOM_P)
+    v0.sign_contract(c, KC, PC, DOM_C)
+    return c
+
+
+synth("synth_contract_not_object", "9.1",
+      "The contract is a JSON list, not an object. There is nothing to digest: contract_sha256 is null, contract_not_verified. Revision 0.2 (A1).",
+      [1, 2], lambda ch: [])
+
+synth("synth_nan_in_signed_body", "2.2,6.0",
+      "The contractor signs an execution whose body holds the token NaN. The reader takes NaN as a number that is not an integer, so the signed body "
+      "is not strict: record_not_strict. It is not a parse error. Revision 0.2 (A15).",
+      BASE, one(BASE, extra={"score": float("nan")}))
+
+synth("synth_batch_bytes_with_nan", "7.6",
+      "The execution is anchored through a nenrin-agreement-batch-v1 batch whose bytes also carry \"note\":NaN. Batch bytes are read by the same "
+      "reader, which takes NaN as a number: the batch leg is accepted, within_grant. Revision 0.2 (A12).",
+      BASE, lambda ch: [ch.put_in_batch(_rec(), b'{"schema":"nenrin-agreement-batch-v1","count":1,"note":NaN,"records":[{"sha":"',
+                                        b'","kind":"execution","schema":"a2a-execution-v0"}]}')])
+
+_C_TAB = synth_contract(sign=False, label="settle-core-v0 synthetic tab domain")
+_C_TAB["parties"][0]["domain"] = "\t" + DOM_P
+_C_TAB = _resigned(_C_TAB)
+synth("synth_domain_leading_tab", "4.1",
+      "The principal's domain is written with a leading tab. Normalization strips every leading and trailing whitespace character (Python str.strip), "
+      "then lowercases, then removes trailing dots: the domain is the signature's, within_grant. Revision 0.2 (A6).",
+      _C_TAB, one(_C_TAB))
+
+_C_DEL0 = _resigned(dict(synth_contract(sign=False, label="settle-core-v0 synthetic empty delegation"),
+                         grant=dict(BASE["grant"], delegation={})))
+synth("synth_delegation_empty_object", "4.1",
+      "grant.delegation is {}. delegation must carry allowed: contract_not_verified. Revision 0.2 (A7).",
+      _C_DEL0, one(_C_DEL0))
+
+_C_ORD0 = _resigned(dict(synth_contract(sign=False, label="settle-core-v0 synthetic empty ordering"),
+                         grant=dict(BASE["grant"], ordering={})))
+synth("synth_ordering_empty_object", "4.1",
+      "grant.ordering is {}. same_height is optional, so the empty object is accepted: within_grant. Revision 0.2 (A7).",
+      _C_ORD0, one(_C_ORD0))
+
+vector("synth_view_not_an_object", "synth", "5.1",
+       "The view is a JSON list. It is rejected (chain_view_rejected); rule 9 is not applied to a view that is not an object with a headers list, so "
+       "view_not_strict is not added. Revision 0.2 (A16).",
+       BASE, [], [])
+
+vector("synth_view_headers_not_a_list", "synth", "5.1",
+       "view.headers is an object. chain_view_rejected only, as for a view that is not an object. Revision 0.2 (A16).",
+       BASE, [], {"headers": {}})
+
+_C_LIM0 = _resigned(dict(synth_contract(sign=False, label="settle-core-v0 synthetic limits null"), grant=dict(BASE["grant"], limits=None)))
+synth("synth_limits_null", "1",
+      "grant.limits is present with the value null. A null limits is not carried (section 1), so the contract is in core: within_grant. Revision 0.2 (A20).",
+      _C_LIM0, one(_C_LIM0))
+
+_C_ADM0 = _resigned(dict(synth_contract(sign=False, label="settle-core-v0 synthetic admission null"),
+                         requirements=dict(BASE.get("requirements") or {}, admission=None)))
+synth("synth_admission_null", "1",
+      "requirements.admission is present with the value null: not carried, in core, within_grant. Revision 0.2 (A20).",
+      _C_ADM0, one(_C_ADM0))
+
+
+def _cited_orphan(ch):
+    r = copy.deepcopy(ch.put(ex(BASE, extra={"nenrin_ref": W_OTHER_SHA})))
+    r["anchor"]["height"] += 1
+    return [r, ch.put(ex(BASE))]
+
+
+synth("synth_cited_walk_orphaned_execution", "11.1",
+      "An execution cites a walk made under other terms, and its anchor names a height whose block is another: the execution is orphaned and "
+      "leaves the event set, but the cross check reads every execution left after 6.4 whatever its anchor result: evidence_names_other_contract. "
+      "WRITTEN BEHAVIOUR, revision 0.2 (A14).",
+      BASE, _cited_orphan, nenrin=[W_OTHER])
+
+_C_ZT = _resigned(dict(synth_contract(sign=False, label="settle-core-v0 synthetic zero floor"),
+                       grant=dict(BASE["grant"], finality={"depth": DEPTH, "max_target_bits": "20000000"})))
+synth("synth_floor_zero_mantissa", "4.1,5.1",
+      "grant.finality.max_target_bits is 20000000, whose mantissa is zero. 5.2 decodes it to no target, so the door refuses the contract and 5.1 "
+      "rule 1 rejects the view: contract_not_verified and chain_view_rejected. Revision 0.2 (A21).",
+      _C_ZT, one(_C_ZT))
+
+C_ACK10 = synth_contract({"revocation": {"effective_at": "delivery_ack", "ack_window": 10}}, label="settle-core-v0 synthetic ack window 10")
+
+
+def _ack(rev_sha, c):
+    r = {"schema": v1.ACK_SCHEMA,
+         "contract_ref": {"contract_id": c["contract_id"], "contract_sha256": contract_sha256(c), "payload_digest": c["task"]["payload_digest"]},
+         "revocation_sha256": rev_sha, "acked_by": "contractor"}
+    return v12.sign_record(r, KC, "contractor")
+
+
+def _ack_names_dropped_copy(ch):
+    rev = revocation(C_ACK10)
+    first, second = ch.put(rev), ch.put(rev)
+    return [first, second, ch.put(_ack(v1.rec_sha(second), C_ACK10)), ch.put(ex(C_ACK10))]
+
+
+synth("synth_ack_names_dropped_copy", "10.1",
+      "delivery_ack with ack_window 10. The revocation is anchored twice; the later copy is dropped (6.4). An acknowledgement two blocks later names the "
+      "dropped copy's record_sha256. A copy 6.4 dropped no longer names the revocation, so the acknowledgement does not end authority; the window does "
+      "(h + 10), and the act one block after the acknowledgement stands: within_grant. WRITTEN BEHAVIOUR, revision 0.2 (A22).",
+      C_ACK10, _ack_names_dropped_copy)
+
+# Parent narrowing (4.3, grant_subset), one axis per vector, against a parent that sets every axis.
+PARENT_FULL = synth_contract({
+    "authorized_actions": ["read"], "prohibited_actions": ["delete", "payment"],
+    "conditional": [{"action": "refund", "requires": "principal_approval"}],
+    "delegation": {"allowed": ["delegate.synthetic.invalid"]}, "data_access": ["public_endpoint"], "max_hops": 2,
+    "privacy": "no_external_retention", "revocation": {"effective_at": "delivery_ack", "ack_window": 5},
+    "finality": {"depth": DEPTH, "max_target_bits": "207fffff"},
+    "witnesses": [{"name": "synthetic-witness", "public_key_ed25519_b64": PW}],
+    "expiry_height": 1000000, "ordering": {"same_height": None}, "approval_policy": {"allow_unscoped": False}},
+    label="settle-core-v0 synthetic full parent")
+_PREF = {"parent_contract": {"contract_id": PARENT_FULL["contract_id"], "settlement_url": None}}
+
+
+def _child(name, over=None, drop=(), top=None):
+    g = copy.deepcopy(PARENT_FULL["grant"])
+    if name != "identical":
+        g["max_hops"] = 1                                     # parent minus 1, so that each vector tests one axis
+    for k in drop:
+        g.pop(k, None)
+    g.update(over or {})
+    c = synth_contract(sign=False, label="settle-core-v0 synthetic child " + name, top=dict(_PREF, **(top or {})))
+    c["grant"] = g
+    return _resigned(c)
+
+
+_AXES = [
+    ("identical", {}, (), None, "the parent's grant byte for byte, max_hops 2 included. A child must take at most the parent's max_hops minus 1, "
+                                "so an identical grant is not within: parent_narrowing_failed. Every other vector below keeps max_hops 1"),
+    ("baseline", {}, (), None, "the parent's grant with max_hops 1: within, within_grant"),
+    ("drops_prohibited", {"prohibited_actions": ["delete"]}, (), None, "payment is no longer prohibited: parent_narrowing_failed"),
+    ("adds_data_access", {"data_access": ["public_endpoint", "private_records"]}, (), None, "an entry the parent lacks: parent_narrowing_failed"),
+    ("without_data_access", {}, ("data_access",), None, "no data_access at all is narrower: within"),
+    ("max_hops_equal", {"max_hops": 2}, (), None, "max_hops must be at most the parent's minus 1; 2 under 2 fails"),
+    ("without_max_hops", {}, ("max_hops",), None, "the parent limits hops and the child has none: fails"),
+    ("adds_delegate", {"delegation": {"allowed": ["delegate.synthetic.invalid", "other.synthetic.invalid"]}}, (), None, "a delegate the parent does not allow: fails"),
+    ("drops_conditional_action", {"conditional": []}, (), None, "refund neither conditional nor authorized: the child cannot do it at all, within"),
+    ("authorizes_conditional_action", {"conditional": [], "authorized_actions": ["read", "refund"]}, (), None,
+     "refund authorized without the parent's condition: fails"),
+    ("adds_conditional_action", {"conditional": [{"action": "refund", "requires": "principal_approval"},
+                                                 {"action": "export", "requires": "principal_approval"}]}, (), None,
+     "a conditional action the parent neither authorizes nor makes conditional: fails"),
+    ("expiry_later", {"expiry_height": 1000001}, (), None, "expiry above the parent's: fails"),
+    ("expiry_earlier", {"expiry_height": 999999}, (), None, "expiry below the parent's: within"),
+    ("without_expiry", {}, ("expiry_height",), None, "the parent expires and the child does not: fails"),
+    ("revocation_anchor", {"revocation": {"effective_at": "anchor"}}, (), None, "anchor ends authority sooner than delivery_ack: within"),
+    ("revocation_wider_window", {"revocation": {"effective_at": "delivery_ack", "ack_window": 6}}, (), None, "ack_window above the parent's: fails"),
+    ("without_revocation", {}, ("revocation",), None, "the parent can be revoked and the child cannot: fails"),
+    ("finality_shallower", {"finality": {"depth": DEPTH - 1, "max_target_bits": "207fffff"}}, (), None, "depth below the parent's: fails"),
+    ("finality_deeper", {"finality": {"depth": DEPTH + 1, "max_target_bits": "207fffff"}}, (), None, "depth above the parent's: within"),
+    ("drops_witness", {"witnesses": []}, (), None, "the parent's witness key is gone: fails"),
+    ("witness_renamed", {"witnesses": [{"name": "renamed-witness", "public_key_ed25519_b64": PW}]}, (), None,
+     "the same witness key under another name: within (witnesses are compared by key)"),
+    ("privacy_changed", {"privacy": "external_retention_allowed"}, (), None, "privacy differs from the parent's: fails"),
+    ("without_ordering", {}, ("ordering",), None, "the parent sets ordering and the child has none: fails"),
+    ("allow_unscoped", {"approval_policy": {"allow_unscoped": True}}, (), None,
+     "unscoped approvals turned on: fails, and 4.2 also refuses unscoped approvals"),
+    ("names_other_parent", {}, (), {"parent_contract": {"contract_id": "ab" * 16, "settlement_url": None}},
+     "parent_contract.contract_id is not the supplied parent's: fails"),
+]
+for _name, _over, _drop, _top, _why in _AXES:
+    _c = _child(_name, _over, _drop, _top)
+    synth("synth_parent_full_" + _name, "4.3",
+          "Parent narrowing against a parent that sets every axis of 4.3: " + _why + ". Revision 0.2 (A10).",
+          _c, one(_c), parent=PARENT_FULL)
+
+
 def main():
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)

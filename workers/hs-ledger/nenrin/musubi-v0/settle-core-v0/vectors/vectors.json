@@ -1567,6 +1567,769 @@
     "expected.json": "d2b51a33791cf8fbf6acc7c0770554e74acefb6e7d62188d5ef50f7049382c98",
     "view.json": "aa9967c6ef90860231656f1849e17787a87219f0dbc78447dc5650f8b37a0033"
    }
+  },
+  {
+   "id": "synth_contract_not_object",
+   "family": "synth",
+   "spec_section": "9.1",
+   "description": "The contract is a JSON list, not an object. There is nothing to digest: contract_sha256 is null, contract_not_verified. Revision 0.2 (A1).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "49a64717d5d4cb19952e6eac2946415cf6879adacf9908e7d872332d32c6e684",
+    "expected.json": "7712e1b0f879005affe87f2ddd8a30758e0d5ea8b4eb55ea3aa6813f72b342d5",
+    "view.json": "73de01a9a38a271b0925c6bd21673d0be4c0e4f99275858e59f37ca309479cd0"
+   }
+  },
+  {
+   "id": "synth_nan_in_signed_body",
+   "family": "synth",
+   "spec_section": "2.2,6.0",
+   "description": "The contractor signs an execution whose body holds the token NaN. The reader takes NaN as a number that is not an integer, so the signed body is not strict: record_not_strict. It is not a parse error. Revision 0.2 (A15).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "0e9b92394f0660b3efdb60cba7a9b31c18f701501d7e2d80696531c35946cfb5",
+    "expected.json": "9b98befb315459e59fb637ec50e1cc7d21aaa9f731a0f49891de9157c7f2cfb2",
+    "view.json": "44c497f9e3b9eda559c09642002a5364be66abb1e241fe5675dcdbaf881df10f"
+   }
+  },
+  {
+   "id": "synth_batch_bytes_with_nan",
+   "family": "synth",
+   "spec_section": "7.6",
+   "description": "The execution is anchored through a nenrin-agreement-batch-v1 batch whose bytes also carry \"note\":NaN. Batch bytes are read by the same reader, which takes NaN as a number: the batch leg is accepted, within_grant. Revision 0.2 (A12).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "96c0f4c675086571e9669d3c496d6a22d500395a0a6414ad1056783df850760f",
+    "expected.json": "3cc05e96934aa3d16e5a8227cc8b03474b233634063fcd6591a327104023bfb3",
+    "view.json": "1a43e3f98d8fb2f0a716fa455643bde146da24df5bc9526a42f10d6c73c0e1f6"
+   }
+  },
+  {
+   "id": "synth_domain_leading_tab",
+   "family": "synth",
+   "spec_section": "4.1",
+   "description": "The principal's domain is written with a leading tab. Normalization strips every leading and trailing whitespace character (Python str.strip), then lowercases, then removes trailing dots: the domain is the signature's, within_grant. Revision 0.2 (A6).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "4fa6490b6dbb91367ae83f995be67a1f2b2a2cb125ffd34daff20a6cb7c61047",
+    "events/e00.json": "a05ff701fd3e6b953157524e588f91a231f62e04bde2d5f9c5a1396a78118e8d",
+    "expected.json": "e4558b211344289295fa82e641e7711ba7c4579eb3a19c463d76b7b897a35e92",
+    "view.json": "aa3ba60765f1f279d23c94b868f71ada9f46b67c8ce26e5945588fc5cab3e877"
+   }
+  },
+  {
+   "id": "synth_delegation_empty_object",
+   "family": "synth",
+   "spec_section": "4.1",
+   "description": "grant.delegation is {}. delegation must carry allowed: contract_not_verified. Revision 0.2 (A7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "b0d3deb796820305f66f71afae2726632017e00d7a6b19990e1856cf68bd257f",
+    "events/e00.json": "502706de9082d89e4dc719bab310624a24744fc40ba4f5ca472f00fae4afb461",
+    "expected.json": "b56e9a51aadb729fabf928489764e221a3cbfbadd02db770cf2f3654ed7da186",
+    "view.json": "f834b12b14d93b0432d493bdcffc24dd58c6960ccb614bd60deff83ea980b9c9"
+   }
+  },
+  {
+   "id": "synth_ordering_empty_object",
+   "family": "synth",
+   "spec_section": "4.1",
+   "description": "grant.ordering is {}. same_height is optional, so the empty object is accepted: within_grant. Revision 0.2 (A7).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "6fe3d02056d580d995b1241825cd9c9aa478a5259bd0dd73011959d1dd03e1c7",
+    "events/e00.json": "174bf8776ca0174bc2002d57fb4e1e1335ec17ef45432a20ec914c4c413e1b0b",
+    "expected.json": "8eeb339bae3ed3e217d14f24b17d98bb19cc9f7a3edc45c0820a3eaee7d4cbc9",
+    "view.json": "0675b38b47e119b8d6adb7617ded8ca16f0cfc49e95e11920563d73e4fcfa1bb"
+   }
+  },
+  {
+   "id": "synth_view_not_an_object",
+   "family": "synth",
+   "spec_section": "5.1",
+   "description": "The view is a JSON list. It is rejected (chain_view_rejected); rule 9 is not applied to a view that is not an object with a headers list, so view_not_strict is not added. Revision 0.2 (A16).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "expected.json": "85664eaf8b67bf4502826570c34e9619c3db6f09310e260bfeee986f70fa89b4",
+    "view.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+   }
+  },
+  {
+   "id": "synth_view_headers_not_a_list",
+   "family": "synth",
+   "spec_section": "5.1",
+   "description": "view.headers is an object. chain_view_rejected only, as for a view that is not an object. Revision 0.2 (A16).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "expected.json": "85664eaf8b67bf4502826570c34e9619c3db6f09310e260bfeee986f70fa89b4",
+    "view.json": "6483b69eec05dc560278666d103ecb5bec1dc5617645dc10aa33c9f310fea818"
+   }
+  },
+  {
+   "id": "synth_limits_null",
+   "family": "synth",
+   "spec_section": "1",
+   "description": "grant.limits is present with the value null. A null limits is not carried (section 1), so the contract is in core: within_grant. Revision 0.2 (A20).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "bc7c8c2961a29c0e381305a21c53a9c87a2f794d424c9aff6864eab204108690",
+    "events/e00.json": "3bcfe5387dc517a866702b92ed63666830353d4564ed5d6a429ba1e113bb8678",
+    "expected.json": "ad4661fcadc49e571cd985db311c58c5ef6595a3c36cb1208a1da6e5ab62220f",
+    "view.json": "2b469284a17c47a53c6b1407c511db62831b6be9acf9d9667842deb2cd85745a"
+   }
+  },
+  {
+   "id": "synth_admission_null",
+   "family": "synth",
+   "spec_section": "1",
+   "description": "requirements.admission is present with the value null: not carried, in core, within_grant. Revision 0.2 (A20).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "24eb060425903b69e0c1be41b17dfbe73ba408c6a7a791e49f8ff02f97e6ed07",
+    "events/e00.json": "b68563be1679b0fe9e1873d5097358c02982411c12f5ab6f2e209b4bcf01af30",
+    "expected.json": "2cb5af0b562f2f1d539b97eab8a2b61a191765d401756b93c3d79019bc11ec87",
+    "view.json": "b5385fa725fdcf66e0bccdafb2a966ad8f2e8304050454880b1b3239d335dbb7"
+   }
+  },
+  {
+   "id": "synth_cited_walk_orphaned_execution",
+   "family": "synth",
+   "spec_section": "11.1",
+   "description": "An execution cites a walk made under other terms, and its anchor names a height whose block is another: the execution is orphaned and leaves the event set, but the cross check reads every execution left after 6.4 whatever its anchor result: evidence_names_other_contract. WRITTEN BEHAVIOUR, revision 0.2 (A14).",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "evidence_names_other_contract"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "ac19534326c05db90fa873dd81ec160f449247a01c152aa837623f56619c28aa",
+    "events/e01.json": "b84036d2da7247fd750b6b7261c0c0414fa8025fb9bc8738c2145dc61ea91c1b",
+    "expected.json": "383a779d489e575ab255726f39a6e7bc25181cd1969a27a4bca8bd4bbd0ccdd1",
+    "nenrin/n00.json": "8a6de46b81cb4ee0b1e6fb0308dea7709ba948f4e951053c29b41e219a3bdb54",
+    "view.json": "ca082416b815b060653c049aac262423c166947ba9eb2d25b502d36c0588f62d"
+   }
+  },
+  {
+   "id": "synth_floor_zero_mantissa",
+   "family": "synth",
+   "spec_section": "4.1,5.1",
+   "description": "grant.finality.max_target_bits is 20000000, whose mantissa is zero. 5.2 decodes it to no target, so the door refuses the contract and 5.1 rule 1 rejects the view: contract_not_verified and chain_view_rejected. Revision 0.2 (A21).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected",
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "eb767741760ac4d5aa742a5a98544fddae7b7d9c319353bac31abb5f1b5e4107",
+    "events/e00.json": "2aea5d74006864b61b0bd2f6a73c6a2524a760184cf7bc3c422464acdf0049a1",
+    "expected.json": "28f4beb983ad9a9fb08f8dfe639b72f7ac6937bc759ac0967c978c16f36035fa",
+    "view.json": "7e34011074cee98676848457d4beed4f649ea98a41ec429d4efc502978b745c2"
+   }
+  },
+  {
+   "id": "synth_ack_names_dropped_copy",
+   "family": "synth",
+   "spec_section": "10.1",
+   "description": "delivery_ack with ack_window 10. The revocation is anchored twice; the later copy is dropped (6.4). An acknowledgement two blocks later names the dropped copy's record_sha256. A copy 6.4 dropped no longer names the revocation, so the acknowledgement does not end authority; the window does (h + 10), and the act one block after the acknowledgement stands: within_grant. WRITTEN BEHAVIOUR, revision 0.2 (A22).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "4307d447f1ecf92b1df87e3fd7cda3797dad3c245d7a3996aa9e80c4b71d22fb",
+    "events/e00.json": "9a79c99cc0045c0551611c352b1af024f579636712f9360b8c1a3f9276eb3c2a",
+    "events/e01.json": "a6838cff0dd7ae94c04e35ac32d7ba6e60c0ad01ef7b464ee67e3ae29d0ca481",
+    "events/e02.json": "6b49b93ca6da8c78c519efcb78e7382f9019ed42ddfb1f9a65fb119e7b3aa996",
+    "events/e03.json": "94034af9bc394f7b09737d5839234a93bfc268359438ae9a5f78113673aa8374",
+    "expected.json": "92d163b6bec643a2707c77f29708f43116954180bdfcc73f1b529fee7e8e99a0",
+    "view.json": "f1aba809d4925031654cf55d8e1299d1605b97ac1858b4b37b1516e90ad848ea"
+   }
+  },
+  {
+   "id": "synth_parent_full_identical",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent's grant byte for byte, max_hops 2 included. A child must take at most the parent's max_hops minus 1, so an identical grant is not within: parent_narrowing_failed. Every other vector below keeps max_hops 1. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "25d1c711e3b0c4c15f3ed243a649cd5dfea459dd81964b4ee79f4d1f9f0d102f",
+    "events/e00.json": "4ee452c47993c18f2677d0fa9993d8ec7ff93619c81abb44a50f2587510b83e6",
+    "expected.json": "8aff86f2f66fc5180b1dffbd9fd446b3319a248ef80c4e5415a49f3d8b8ca678",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "4da55a6fc86993f4aaf4a4f6c9b05d5c7bf98cb661eb579554b347d70747aef9"
+   }
+  },
+  {
+   "id": "synth_parent_full_baseline",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent's grant with max_hops 1: within, within_grant. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "cdb4dec79829e033f481a09c4104003920dd89b90eb5de66f52eff077c58981e",
+    "events/e00.json": "dab5c5862188217643b3a2a8bcf538714ade551956d892fa9f71374842ac8210",
+    "expected.json": "423e8cef663ec8ac2ab55ede86d48f884e8b66f907f0f0fbc1c431bf7163474e",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "5f73a753f9897b10c6b665993f8edb9adeb3f2f077f7c59625c4833a7405dc61"
+   }
+  },
+  {
+   "id": "synth_parent_full_drops_prohibited",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: payment is no longer prohibited: parent_narrowing_failed. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "66a0529d806481df1452c7c17bcd1843a84059356273aa0f711249a7802de8b1",
+    "events/e00.json": "b2d492e99ff78a7200023fec25976c353edc5930c67d77478688ee32f550bfe4",
+    "expected.json": "e21dae7addf8afb2db61ea084a01b0ed5ae580a8eeec2261293c1e0dd6ee9e07",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "3a789ed74c58cdc137d4baab221ce992d2cefb88c8a32caaa8292b9a2023b4c4"
+   }
+  },
+  {
+   "id": "synth_parent_full_adds_data_access",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: an entry the parent lacks: parent_narrowing_failed. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "e4adfcac4e2c5867cc2c40ea26739b23580966979c2575187d5eaa77e25670de",
+    "events/e00.json": "71f0b1fe08d3e323eadc756f37b96e5ce70d95767da2cd88ddb8f7218fdaf016",
+    "expected.json": "9dc82c097b13430302e651866a089c49d5f16fb1395a61a7d44e371646fc9eca",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "f4aac5b14a0cfa17cf5da922988fc8a7d567148bba917793a0f1dabf6d436e5e"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_data_access",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: no data_access at all is narrower: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "f83e517d7b28fd1cfb5da59b72b98f1bf605d8257b1c814a915c6a746ca5e782",
+    "events/e00.json": "4773283e847c9b0160daf1d5fd23aa4f05d0fd28c26a774f8a08a5f74893fc40",
+    "expected.json": "30cf12c90ce0b964451df3e892891e2cb5ea0f04058a87a55640ab9078ac89ab",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "e19607df5c98596a8198d5265b7c86478fe6cb0a6b3b5c3a51784f0d716d0bc5"
+   }
+  },
+  {
+   "id": "synth_parent_full_max_hops_equal",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: max_hops must be at most the parent's minus 1; 2 under 2 fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "909977a3bd39d6db1e72275fc9cb4f0abd046f9c86030b0da43cc7420310cb20",
+    "events/e00.json": "cfb77bc721485fbdfd57ef61487f0f7ca83298e646b97efcb4d17889dc8c51fc",
+    "expected.json": "efdb28a5608af886de7b8e5261f8fcbc36c9a55b889c55d6b96b0a8229a907a7",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "f2c5690c07ceb3dc059654bd0a7443520e495bdb6fa7fe3adcc862aef315bd49"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_max_hops",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent limits hops and the child has none: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "9dd376b47429704155d2f89eec92ceb45411b9c4a187d83a3120c12dff1b14f2",
+    "events/e00.json": "9a682ba57d04b7b7d65d7d60dd1183838960f7e763617b2000b76e264514c883",
+    "expected.json": "c4f6736fc6f38cd64407b1ea5682e2b6dfd93d4b85ef38b63ee79792bacd0464",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "d56390afcc8617dc911b178661c04f18d4f7a3673fed84f587fb1666e8ecac80"
+   }
+  },
+  {
+   "id": "synth_parent_full_adds_delegate",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: a delegate the parent does not allow: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "13fc403c53dc0f1c22d92576afdd5aecafd4b35ccdd3f4e4690e0aaa0e611f68",
+    "events/e00.json": "d7c15596ee3ce34eeccdc85e1916816e3ba8c3ed5d48eae5d6b65b507e7cf515",
+    "expected.json": "1fbdb6d4e14a3556987cee12d231fd0c0d7c2931436a37e17ea921aed4907bcd",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "c1731356a0981ccb7505a7a689ce75c8819374d32607e2e55ca34bc7db4aa627"
+   }
+  },
+  {
+   "id": "synth_parent_full_drops_conditional_action",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: refund neither conditional nor authorized: the child cannot do it at all, within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "7af3eaad5d0b65549df67e0d8c797889377b549dc4789111cdf4f236fd0c1ca4",
+    "events/e00.json": "96bd26c81f788e8345a35f88712cd6117e411363b86d7adb8d350a5f0a7b8a22",
+    "expected.json": "aea774ed14c169ed7188b9ea5ce646cf92ff36c9130449983ab0a0aba2d11195",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "14ed45c8929f07250991021441e249ae61691d9cb564827f45cdb3bad6a65b94"
+   }
+  },
+  {
+   "id": "synth_parent_full_authorizes_conditional_action",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: refund authorized without the parent's condition: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "ac4455c1bbd8a6355aac8f6430d4c638002b1d0e00bb017c9efbbecef0ca39a6",
+    "events/e00.json": "4cef69ac1e3a8ac65b4b7d05419c0c6afcfae563845718b4cf4a12d1b499c9ef",
+    "expected.json": "3d0c36308814211de40b2f9f98998bb79d9b40cc9569813239755e4fe580a154",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "204d6677d70e81740cb576db983d2e47254a5fbc863ed9a1c77e0c7c08f504d4"
+   }
+  },
+  {
+   "id": "synth_parent_full_adds_conditional_action",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: a conditional action the parent neither authorizes nor makes conditional: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "213b1aecdb52a1da8a05ca47970b8f23992ecc9dc592caf0522dc7aa15556a8f",
+    "events/e00.json": "0c657aa52b4be6d4b48bcf44006f2d66b0db200e6b4c5b47c2cea6ad2219be19",
+    "expected.json": "ad0efa7c2e0a26417ae8de8333ffa8d406d14288cc0f6d78f6b141b06f1b6cf9",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "d34b40fed8417d39378ca3bfbce2e5375fd7e0b01299497aebd409e06e38959b"
+   }
+  },
+  {
+   "id": "synth_parent_full_expiry_later",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: expiry above the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "d885c352dcaa7212cd8eeacab6310735cbb8bc1c178aaa0c064bc6977526c087",
+    "events/e00.json": "ac53aa69bf21266045c897af21b09ccbdbdcb2370704793371a4d109e9216ef8",
+    "expected.json": "1192fc6346540c93a55b4e252ba6e40884d41ffe11f7f44e840bb3e247b675dc",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "2c0627314d69fab3add36d17ea753b87327e4e915f0123655db9def2834a5b9d"
+   }
+  },
+  {
+   "id": "synth_parent_full_expiry_earlier",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: expiry below the parent's: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "c60be450078bbdc3ea5e6aec0a46d4a4752ceb5930ca2e549a102094348c5590",
+    "events/e00.json": "40e0842eb116746328d0696bc7f2ebda5e72d0e4fdafd2f893589de9f534ca89",
+    "expected.json": "494bbe1c77a4f57429f4e66a3e922df048640ca0e7834821931f5baadd03101c",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "ed6605b5f49c45c08470d63672ebf205f1aacf391ff8d287ed2e95d5b2055968"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_expiry",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent expires and the child does not: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "2e5dd10b697f749f79bb704ed68e999cfa054d6bb00c2dc6ed8bfcf912f495e9",
+    "events/e00.json": "f4cf2f44e05f13200e8c74d31d65154d5841e3daa27c66d9726c7ff0c711a722",
+    "expected.json": "730704af23d6989faa37fb9d72dd0f3b6975b9b81ed73b9fff9f23bf61d4b5ea",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "ce467202a2603c2434303dfff53a1dcbdb7b764ff13f323ac5f0b7f8010eb9bc"
+   }
+  },
+  {
+   "id": "synth_parent_full_revocation_anchor",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: anchor ends authority sooner than delivery_ack: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "d7b29dc3797c36b0d69dfbacca1f4c42a069135dc094611ac9af83cce611a0d8",
+    "events/e00.json": "cba09b86a0cf94d55feae70024caa30246ed1219aba97fbfcd321e935916b3ef",
+    "expected.json": "ad0732d1afe1f05bd4ad5af4ad50949c823ac5bc2c9a33be952fd4de047e7d5e",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "642131afd3adcedda2a6ae18b980dca37ca6ed1881163526e98afddf4944b716"
+   }
+  },
+  {
+   "id": "synth_parent_full_revocation_wider_window",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: ack_window above the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "33c1d1729d2d6211fa47b39ce41c24cf10c78e386b39a9fc57a79ea7343f4aa8",
+    "events/e00.json": "8fb7b175aeda3903350372ca4735c6e71c6e99248d49fe1cc780859c2a989f37",
+    "expected.json": "cbe287ec6b487da9b64ca1e4ac662151e0e966d0932347a3084e00a34899fe21",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "d79c6bae9136b2b75ed588b311bd3c5fd23f1d8178a478aebaee0771a20d1b96"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_revocation",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent can be revoked and the child cannot: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "3f9e8a78465620d8f51838c74ee563638eb73e13c97a1e6b6b9ce212d58ecdf6",
+    "events/e00.json": "3774093ce40803a77a4bc41f4393a5e2bc04f704f34e31c0edb898ed44d0130a",
+    "expected.json": "0c32503398dfc643de09cde43984cdaf67f8d5d62567c6d264b93a3fe79d83f4",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "b6c87bfa28cf6b4e47d4c60f19c1a7ab517c5ba42105c64451dfd884d4c7e3da"
+   }
+  },
+  {
+   "id": "synth_parent_full_finality_shallower",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: depth below the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "bbc69b167fd917cd4964248b9e619ae3d736fc36df523f666466f0ceda3cb65b",
+    "events/e00.json": "4482d19e499bc82852f45f2212b8f05b5a363329ae3bfef697010447d83dddcc",
+    "expected.json": "69e8624e05928eeafbed10320d577bde13342e99270032b900f24f31d169932c",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "b8738087b2b0c3165b495dbe7ec91c0adf5920dafe7961f19fd4bc9b5706a85b"
+   }
+  },
+  {
+   "id": "synth_parent_full_finality_deeper",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: depth above the parent's: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "fc07dd7b4433968c6fc23abff9b22e7960a9d27d83cab18b93b9456ba51b78af",
+    "events/e00.json": "3e04a5a83fe333188d5e40dc4c09eaecd4b39bfba6fc10d135feefc51f12e7d3",
+    "expected.json": "b97cd1d5e0b50da9e3ebeb5930643bc6fd0d6ca740495741c4581773f7e618fa",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "245fa59cae3df23104ecb78d4aa502a93e7548de9d56d53a177a0c3af4995333"
+   }
+  },
+  {
+   "id": "synth_parent_full_drops_witness",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent's witness key is gone: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "3fedec438674c6b7b8291fc3be7b2f5c8b379b1ef4e5424774cc77669e8c89cb",
+    "events/e00.json": "1b40fafc320a3e14408dbdfeb0bc3a4bdff3f5fedcd9b67a458f538093087312",
+    "expected.json": "d864e245ff338c8761c05aae179c3436a197ef3dc943b23748f05498e58ab8e2",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "b25286084d9328d6472a44a4b522d410972940b130e86e1d31bf6d6c4bd42e19"
+   }
+  },
+  {
+   "id": "synth_parent_full_witness_renamed",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the same witness key under another name: within (witnesses are compared by key). Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "4af887e5fd0f22a2b7511953a7852462d4eca9e098b8cfc4ec844ecb6ebfd0f2",
+    "events/e00.json": "47b643b4c4596f8235939ef29fee1c80a098ce27fcc5e7981affbf05fb4dd7c8",
+    "expected.json": "8308b8589a0627aa91c4e41d2d26f09fdebac50c916a328284e54c4ebb3603b5",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "65a0282bd7c148323bcaf575e77f68e438b8be1506a2f0c9ca88aa9648fc23c1"
+   }
+  },
+  {
+   "id": "synth_parent_full_privacy_changed",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: privacy differs from the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "1e606446ccea38b69cbce5dd803bbc97c7cabc200924d2e3ce3329b86e8d4f29",
+    "events/e00.json": "d40cd9c19b76dc355ef98a96d96d53ea120e0d874fadc3248bc79ecfa9598016",
+    "expected.json": "1d17fb54c8a898ce636c149a4225138609ee9f2b661f61d26075d04e2998f38f",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "daf94c696f98287e0f18e2c62eb4136823d0d13d886dc286d307f92f49dbf70d"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_ordering",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent sets ordering and the child has none: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "a1dcc851eef7de97119ec4a643491b79de8569d782e659edf45ed21e19c3c4ab",
+    "events/e00.json": "bec6e3cb4edd9cb3d9372bf282f5ea0192c96355e19b9849e2a1c0af4bf2c603",
+    "expected.json": "7df98a4fe54a26f6b751137c038908023e73f35033c7eb3909a159b2b1fbcbbc",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "5166f0fc886e2a1800c47c08298bb276e380f285a68c4cb2ca97cb8773d195f3"
+   }
+  },
+  {
+   "id": "synth_parent_full_allow_unscoped",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: unscoped approvals turned on: fails, and 4.2 also refuses unscoped approvals. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed",
+     "unscoped_approvals_refused"
+    ]
+   },
+   "files": {
+    "contract.json": "e32e98d31ff9100898b17fc32586a5cab19bd0a534e38a97030d5a777b172f3f",
+    "events/e00.json": "b3502d1f1e3172b0f664d0950d93dc8723ea1eb163e2686260ba21a2d71fb3a5",
+    "expected.json": "5a0b743c24db96e4c986719fc391fd90edc62d41be6197e390885a0942586a3c",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "fc346027ce7381a1f4dc6b858c801cd45839a17635bbebaf9425a51a88d6cb04"
+   }
+  },
+  {
+   "id": "synth_parent_full_names_other_parent",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: parent_contract.contract_id is not the supplied parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "350668901f5c908f0eb6c019c881a897f11f302225babe3cbc8d7d7f4981e5e4",
+    "events/e00.json": "27863e2659d59246ef05c9370ed3718bc413ef15063ec2b976d29f6272711e31",
+    "expected.json": "ea6926c312019aac522e75f21e9489a79b3aba4810105155211e33028e1a5aea",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "30b92b72e2fc49ae0274b77410a5ea7850158f84f58d18fc5bfec0b12af225f7"
+   }
   }
  ]
 }

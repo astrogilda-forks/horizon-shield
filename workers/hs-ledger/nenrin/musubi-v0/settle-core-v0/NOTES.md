@@ -146,6 +146,22 @@ Found by the first separately written implementation (aeoess/musubi-settle-core-
 
 Both disagreements were in the text, not in that implementation. 6.0 and 10.4 now say what the reference does. Vectors synth_approval_signature_key_only, synth_approval_lax_signature_beside_good_sig_b64 and synth_approval_signature_key_same_value (control).
 
+## N14. Twenty-five implementation notes, answered by the reference
+
+Status: closed in revision 0.2 of SETTLE_CORE_v0.md. The reference did not change.
+
+The same implementation (aeoess/musubi-settle-core-check at 7f9a224) recorded 25 places where the text left it a choice (impl/AMBIGUITIES.md, A1 to A25). Each was settled by building an input with gen_vectors.py and running the reference and that implementation side by side, or, where no input could isolate it, by reading the reference. The answers were posted in horizon-shield Issue #49.
+
+- The implementation's reading was the reference's: A2, A4, A5, A8, A11, A13, A17, A18, A19, A23, A25 (A9 was N13).
+- The reference did something the text did not say: A1 (contract_sha256 of a contract that is not an object is null), A3 (an integer over 4300 digits stops the reader), A6 (all whitespace is stripped from a domain), A7 (`delegation: {}` refuses, `ordering: {}` does not), A12 and A15 (`NaN` is a number), A16 (`view_not_strict` needs an object view with a headers list), A20 (what "carries" means), A22 (a copy dropped by 6.4 no longer names its revocation). The last one the text had stated wrongly: it described settle v1.4's intent, which v1.15's collapse of signed bodies changed before v1.4 runs.
+- The text matched the reference but no vector showed it: A14, A21. Each now has one.
+- A24 cannot apply once 4.1 accepts.
+- A10: the text left `grant_subset` to the reference. 4.3.1 now states it, and 25 vectors change one axis each against a parent that sets every axis. Two consequences a reader is unlikely to guess: a child must take at most the parent's `max_hops` minus 1, so a child that copies its parent's grant is not within it when the parent has `max_hops`; and an `ordering` of `{"same_height": null}` counts as set and must be copied.
+
+Before release, 4.3.1 was implemented once more from the text alone, by a reader that saw only 4.3.1, 4.1 rule 10 and 5.2 and none of the code. It agreed with all 27 parent vectors. Its recorded guesses (a child without `requires`, a child without `ack_window`, a child without `max_target_bits`, how witness keys and `ordering` values are compared) were not contradicted by any vector, so each is now written out in 4.3.1.
+
+One practical trap found on the way: that implementation calls `sys.set_int_max_str_digits(0)` when it is imported, which lifts the limit of A3 for every module in the same Python process, the reference included. Run the two in separate processes.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.
