@@ -1157,6 +1157,65 @@
    }
   },
   {
+   "id": "synth_approval_signature_key_only",
+   "family": "synth",
+   "spec_section": "10.4,10.5",
+   "description": "The refund carries a principal-signed a2a-approval-v2 whose signature is under the key signature instead of sig_b64. Only sig_b64 is verified: forged_approval, and the refund is unapproved (conditional). Revision 0.1, NOTES.md N13.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional",
+     "forged_approval"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "8da5e910366aec10c75863f0190e30e1fe5a73203201a792b472c8a1e24f9eb2",
+    "expected.json": "91dee04fdf5c0d795e037642bcef9a64870e1116d43acfa9ea36cddf8312649b",
+    "view.json": "7f8fb54cfac9ef4b4375f95cd0a20159284d6211f285169576e8d37624980f61"
+   }
+  },
+  {
+   "id": "synth_approval_lax_signature_beside_good_sig_b64",
+   "family": "synth",
+   "spec_section": "6.0",
+   "description": "The approval's sig_b64 is a strict, valid principal signature; beside it, signature holds the same signature with S + L. Each key is checked for strictness on its own: the contractor-signed body is not strict, record_not_strict. Revision 0.1, NOTES.md N13.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "d4a29e4b13e81f9bdc23b95459628e3e3083ba10b785432b03d2440c3b7aeec3",
+    "expected.json": "18fea2bab2f0f3a77d1ceb705599567081af008aebc4166c7863478215e64859",
+    "view.json": "4d505ecc944dbafae5a179af2727ac40500c58a644ad507a389d661000fbc33a"
+   }
+  },
+  {
+   "id": "synth_approval_signature_key_same_value",
+   "family": "synth",
+   "spec_section": "6.0,10.4",
+   "description": "Control: sig_b64 and signature hold the same strict, valid principal signature. The approval is counted: within_grant. Revision 0.1, NOTES.md N13.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "a0a4e3b365f25ff224a3352cc14082ea74d747a07d96e86e1db47c5075b4a9e4",
+    "expected.json": "e28b0c3bf8d51325e94c8ca60b7094ab9624a8404d04b50704b35d4c53afb130",
+    "view.json": "f1be855a62ebfba95f488d5f4623df9afef49533b13391ee18cef83c32aeee35"
+   }
+  },
+  {
    "id": "synth_nothing_to_settle",
    "family": "synth",
    "spec_section": "9",

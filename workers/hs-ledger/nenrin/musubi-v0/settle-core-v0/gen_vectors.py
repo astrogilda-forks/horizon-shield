@@ -566,6 +566,32 @@ def ex_without(c, field, **kw):
     return v12.sign_record(r, KC, "contractor")
 
 
+def _appr_keys(mode):
+    a = appr()
+    if mode == "signature_only":
+        a["signature"] = a.pop("sig_b64")
+    elif mode == "lax_beside_good":
+        a["signature"] = malleate(a["sig_b64"])
+    else:
+        a["signature"] = a["sig_b64"]
+    return a
+
+
+synth("synth_approval_signature_key_only", "10.4,10.5",
+      "The refund carries a principal-signed a2a-approval-v2 whose signature is under the key signature instead of sig_b64. Only sig_b64 is verified: "
+      "forged_approval, and the refund is unapproved (conditional). Revision 0.1, NOTES.md N13.",
+      C_CO, lambda ch: [ch.put(ex(C_CO, actions=["refund"], approvals=[_appr_keys("signature_only")]))])
+
+synth("synth_approval_lax_signature_beside_good_sig_b64", "6.0",
+      "The approval's sig_b64 is a strict, valid principal signature; beside it, signature holds the same signature with S + L. Each key is checked for "
+      "strictness on its own: the contractor-signed body is not strict, record_not_strict. Revision 0.1, NOTES.md N13.",
+      C_CO, lambda ch: [ch.put(ex(C_CO, actions=["refund"], approvals=[_appr_keys("lax_beside_good")]))])
+
+synth("synth_approval_signature_key_same_value", "6.0,10.4",
+      "Control: sig_b64 and signature hold the same strict, valid principal signature. The approval is counted: within_grant. Revision 0.1, NOTES.md N13.",
+      C_CO, lambda ch: [ch.put(ex(C_CO, actions=["refund"], approvals=[_appr_keys("same")]))])
+
+
 synth("synth_nothing_to_settle", "9",
       "No record at all. Nothing was executed, so nothing is within the grant or outside it: nothing_to_settle, final, the bond held.",
       BASE, lambda ch: [])

@@ -135,6 +135,17 @@ Status: closed in v1.16 (anchor_below_lower_bound, parent checks, evidence_missi
 
 settle_v1_10.py's command line runs fork choice (`compare_views_v1_4`) before settling. For a view that does not verify, it prints `{"fork_choice": ...}`, writes no settlement, and exits 2. The library returns an underspecified settlement with chain_view_rejected. The vectors use the library; run_reference.py calls it directly. The fork choice also refuses a view over 200000 headers before settle sees it.
 
+## N13. Which key carries an approval's signature
+
+Status: closed in revision 0.1 of SETTLE_CORE_v0.md. The reference did not change.
+
+Found by the first separately written implementation (aeoess/musubi-settle-core-check at 7f9a224, horizon-shield Issue #49), which read 6.0's "`sig_b64` (or `signature`)" as two names for one field and accepted `signature` as a fallback in 10.4 too. The reference verifies only `sig_b64` (settle_v1_6 and every layer above it), and its strictness triage (settle_v1_16 body_problem) checks both keys, each on its own. Run on three new vectors, the two readings disagree on two:
+
+- an approval with a valid signature only under `signature`: the reference gives `forged_approval` and `conditional`; the fallback reading gives `within_grant`.
+- a strict `sig_b64` beside a malleated `signature`: the reference gives `record_not_strict`; the fallback reading checks only the key it uses and gives `within_grant`.
+
+Both disagreements were in the text, not in that implementation. 6.0 and 10.4 now say what the reference does. Vectors synth_approval_signature_key_only, synth_approval_lax_signature_beside_good_sig_b64 and synth_approval_signature_key_same_value (control).
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.

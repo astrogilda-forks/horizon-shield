@@ -2,6 +2,7 @@
 
 Status: draft for independent implementation. Written from the reference code, not from intent.
 Date: 2026-10-17. Describes a2a-settlement-v1.16 (settle_v1_16.py).
+Revision 0.1, 2026-10-17: two sentences about approval signatures were unclear (6.0, 10.4). The reference did not change; section 13 lists the clarifications and their vectors.
 
 ## 0. Why this document exists
 
@@ -240,7 +241,7 @@ A record's parts:
 - the anchor: `anchor`. Nobody signed it.
 - the signatures list: `signatures`. Nobody signed it either.
 
-The body is not strict when the body as a value is not strict, or (when present) `nenrin_ref` is neither null nor 64 lowercase hex, or `contract_ref.contract_sha256` or `contract_ref.payload_digest` is present and not 64 lowercase hex, or, for an execution: `performed_actions` or `delegated_to` is present and not a list of strings; `approvals` is present and not a list of objects; or an approval's `sig_b64` (or `signature`) decodes to 64 bytes and is not strict (3.4).
+The body is not strict when the body as a value is not strict, or (when present) `nenrin_ref` is neither null nor 64 lowercase hex, or `contract_ref.contract_sha256` or `contract_ref.payload_digest` is present and not 64 lowercase hex, or, for an execution: `performed_actions` or `delegated_to` is present and not a list of strings; `approvals` is present and not a list of objects; or an approval has a `sig_b64` or a `signature` that decodes to 64 bytes and is not strict (3.4). Each of the two keys is checked on its own, whichever are present: a strict `sig_b64` does not excuse a `signature` that is not strict. This is the only place an approval's `signature` is read; 10.4 never verifies it.
 
 The anchor is not strict when it is present and: it is not strict as a value; or its `block_hash` is present and not exactly 64 lowercase hex; or a proof operation's `hex` is present and is not exactly pairs of lowercase hex digits (the empty string is allowed).
 
@@ -525,6 +526,7 @@ Every approval carried by an accepted execution (revoked or not) is classified. 
 4. Otherwise `forged`.
 
 A missing field is canonicalized as null. The approval's `by` field is not read.
+Only `sig_b64` is verified. An approval whose signature is only under another key, such as `signature`, is `forged` (10.5), even when that value would verify.
 `label_bound` and `other_terms` approvals are listed (informative) and never count. They are not deviations.
 
 A conditional action `a` in an execution at height h with record sha s is approved if some counted approval, taken in event set order (records by 8.1, approvals in list order within a record), satisfies all of:
@@ -594,6 +596,14 @@ Changed in settle v1.16 (each was written behaviour of settle v1.10 to v1.15; NO
 | Signatures were checked by OpenSSL alone (N9) | strict signatures (3.4) | `synth_signature_s_plus_l`, `synth_strict_signature_beside_malleated`, `real_p31_contract_bad_principal_signature` |
 | A copy with a junk signatures entry was a second body that blocked the verdict (N10, fixed in v1.15) | copies of one signed body collapse (6.4) | `real_p31_copy_with_junk_signature_entry` |
 | An anchor below the checkpoint was dropped without a word; `parent_contract` and `requirements.evidence` were never read; an empty event set was `within_grant` (N11) | `anchor_below_lower_bound`; 4.3; 11.2; `nothing_to_settle` | `real_p31_anchor_below_checkpoint`, `synth_parent_not_supplied`, `synth_parent_supplied_narrows`, `synth_parent_widened`, `synth_nenrin_required_without_ref`, `synth_nothing_to_settle` |
+
+Clarified in revision 0.1 of this text. The first separately written implementation (aeoess/musubi-settle-core-check, horizon-shield Issue #49) asked which reading was meant; the reference did not change, the text had not said what it does:
+
+| a reader could take the text to mean | what the reference does | vector |
+|---|---|---|
+| an approval signed only under `signature` counts | only `sig_b64` is verified, so such an approval is `forged` (10.4, 10.5) | `synth_approval_signature_key_only` |
+| a strict `sig_b64` makes a malleated `signature` beside it harmless | each key is checked for strictness on its own; the body is not strict (6.0) | `synth_approval_lax_signature_beside_good_sig_b64` |
+| (control) | `sig_b64` and `signature` with the same strict value: counted | `synth_approval_signature_key_same_value` |
 
 ## 14. What this does not establish
 
