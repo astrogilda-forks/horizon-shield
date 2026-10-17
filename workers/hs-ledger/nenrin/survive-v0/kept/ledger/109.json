@@ -1,0 +1,13 @@
+{
+  "n": 109,
+  "work": "NENRIN slot witness batch (2 observations)",
+  "claim_sha256": "da3f27dfce14704eb6355e57225ac8b2fc96c08a00c3ad9f55b66f935baf3cfa",
+  "record_canonical": "{\"schema\":\"nenrin-slot-witness-batch-v0\",\"anchored_at\":\"2026-10-17T00:30:21.056Z\",\"count\":2,\"records\":[{\"sha\":\"bb0ad58eb1961cb1d6e35779fcc9a49b9242645d4af91313be600e1c6a835b54\",\"request_slot\":\"1343edffe85ba9bd26e7bb3b5a58776625dd4b7cd12a758c1418bc69f030377b\",\"receipt_event_id\":\"8f3ca2eccf690d2221345f151196bff838f673ac02f6bbafcad12b8f30fd67fa\",\"verdict\":\"unique\",\"observed_at\":\"2026-10-17T00:30:16Z\",\"response_sha256\":\"a16e8b266b2e2a5e31e39965b1bad0f6fcdff5fcb9ef31e977fc684a15b1143d\"},{\"sha\":\"efe7c68f01189d6cdf15c4478eb828dcd54e9c6594d53d36d7951e61651e96d2\",\"request_slot\":null,\"receipt_event_id\":null,\"verdict\":\"slot_log_copy\",\"observed_at\":\"2026-10-17T00:30:17Z\",\"response_sha256\":\"f584b6e444472e6ee5e3482bef336b2b8bb0ea7599103c99e9d63394cca9aa29\"}]}",
+  "schema": "v0-plain",
+  "created_at": "2026-10-17T00:30:21.056Z",
+  "ots_status": "confirmed",
+  "bitcoin_block": 971785,
+  "block_time": "2026-10-17 00:52 UTC",
+  "stamped_at": "2026-10-17T02:41:23.377Z",
+  "anchored_by": "schedule"
+}
