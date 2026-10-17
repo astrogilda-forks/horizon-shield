@@ -1,0 +1,15 @@
+$ cd decision-bound-output-v1 && python3 -B verify_decision_bound.py   # the author's verifier, at 062faff640e0800730f2fe47338f90dcfdef9ef6, opened after the readers ran
+DECISION-BOUND-OK            COMMITMENT_AFTER_DECISION  output_hash recomputes as SHA-256(JCS({content_sha256, decision_id})); the write could not
+DECISION-BOUND-LEGACY        ORDERING_UNVERIFIABLE      output_hash is the legacy content-only commitment (no decision folded in) -- this write ca
+DECISION-BOUND-FORGED-CITATION FORGED_DECISION_CITATION   claimed decision_id sha256:000000000000000000000000000000000000000000000000000000000000000
+DECISION-BOUND-SUBSTITUTED   BINDING_MISMATCH           recorded_output_hash sha256:327606a446a7d61707f15c09cc2dd27b60e2b2944fad0bc11e355ff970fdca
+DECISION-BOUND-DENIED        UNAUTHORIZED_BINDING       output is correctly bound to decision_id sha256:2bcf3244d4f04243562ff1672fbea3bc7ee2224475
+KNOWN-LIMITATION-COMMITMENT-NOT-WRITE COMMITMENT_AFTER_DECISION  output_hash recomputes as SHA-256(JCS({content_sha256, decision_id})); the write could not
+DECISION-BOUND-FORGED-CITATION-LEGACY FORGED_DECISION_CITATION   claimed decision_id sha256:000000000000000000000000000000000000000000000000000000000000000
+DECISION-BOUND-DENIED-LEGACY ORDERING_UNVERIFIABLE      output_hash is the legacy content-only commitment (no decision folded in) -- this write ca
+DECISION-BOUND-DENIED-MISMATCH BINDING_MISMATCH           recorded_output_hash sha256:327606a446a7d61707f15c09cc2dd27b60e2b2944fad0bc11e355ff970fdca
+AR-00-REAL-AS-OBSERVED       ORDERING_UNVERIFIABLE      output_hash is the legacy content-only commitment (no decision folded in) -- this write ca
+AR-00-REAL-DECISION-BOUND    COMMITMENT_AFTER_DECISION  output_hash recomputes as SHA-256(JCS({content_sha256, decision_id})); the write could not
+
+ALL 11 CHECKS PASS
+exit=0

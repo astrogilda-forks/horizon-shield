@@ -112,3 +112,27 @@ Run a re-run:
     git checkout 4cbf5c85a22659ebd13bb5aa2f4fb7e924b3c207
     python3 -I -B <this dir>/tools/make_blind_copy.py decision-bound-output-v1/vectors_decision_bound.json blind.json
     python3 -I -B <this dir>/rerun-4cbf5c8/C/reader.py blind.json out.json
+
+### `rerun-062faff/` (author's commit `062faff640e0800730f2fe47338f90dcfdef9ef6`)
+
+The author added one sentence (the outcome check applies only after a bound match, and a legacy hash is tested only
+after the citation recomputes) and three cases that pin it: `DECISION-BOUND-FORGED-CITATION-LEGACY`,
+`DECISION-BOUND-DENIED-LEGACY` and `DECISION-BOUND-DENIED-MISMATCH` (probityai/agent-evidence-atlas#76).
+
+- `B/`: reader B from `rerun-7125f55d/B/reader.py` (sha256 `5c0a685b...`), unchanged. Same groups as the author's
+  `expected_code` on all 11 cases (9 synthetic, 2 real), under its own names.
+- `C/`: reader C from `rerun-4cbf5c8/C/reader.py` (sha256 `3fbfeade...`), unchanged. The author's `expected_code` on
+  all 11 cases, name for name.
+- `VERIFIER.txt`: the author's `verify_decision_bound.py`, opened after the readers ran: `ALL 11 CHECKS PASS`.
+- Neither reader was rewritten after the new sentence, so this does not test whether the sentence alone is enough for
+  a fresh reader. It shows that the three new cases are checkable and that the vectors now pin what both readers had
+  chosen at `4cbf5c85`.
+
+The results were first posted on #76 on 2026-10-15 (issuecomment-6191084912). This directory was produced on
+2026-10-17 by running the same two readers again on the same commit (Python 3.13.16); the blind copies have the
+sha256 posted then (written without the final newline, `--no-final-newline`), and every verdict is the one posted.
+
+    git checkout 062faff640e0800730f2fe47338f90dcfdef9ef6
+    python3 -I -B <this dir>/tools/make_blind_copy.py decision-bound-output-v1/vectors_decision_bound.json blind.json --no-final-newline
+    python3 -I -B <this dir>/rerun-4cbf5c8/C/reader.py blind.json out.json
+    python3 -I -B <this dir>/rerun-7125f55d/B/reader.py blind.json out_b.json

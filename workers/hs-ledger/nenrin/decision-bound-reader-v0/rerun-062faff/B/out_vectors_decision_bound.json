@@ -1,0 +1,206 @@
+{
+  "input": "../fence/vectors_decision_bound.json",
+  "profile_label_not_hashed": "decision-bound-output-v1",
+  "results": [
+    {
+      "bound_output_hash_from_claimed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_output_hash_from_recomputed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "case_id": "DECISION-BOUND-OK",
+      "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "recorded_equals_bound_from_claimed_id": true,
+      "recorded_equals_bound_from_recomputed_id": true,
+      "recorded_equals_legacy": false,
+      "recorded_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "rule": "C2+C3+C4",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_output_hash_from_recomputed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "case_id": "DECISION-BOUND-LEGACY",
+      "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "recorded_equals_bound_from_claimed_id": false,
+      "recorded_equals_bound_from_recomputed_id": false,
+      "recorded_equals_legacy": true,
+      "recorded_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "rule": "C5",
+      "verdict": "UNVERIFIABLE_LEGACY"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:2e54729f8c9e947e556eeae602d98cf773a7cf96af111bdd69b34bfeab246f45",
+      "bound_output_hash_from_recomputed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "case_id": "DECISION-BOUND-FORGED-CITATION",
+      "claimed_decision_id": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "decision_id_matches": false,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "recorded_equals_bound_from_claimed_id": true,
+      "recorded_equals_bound_from_recomputed_id": false,
+      "recorded_equals_legacy": false,
+      "recorded_output_hash": "sha256:2e54729f8c9e947e556eeae602d98cf773a7cf96af111bdd69b34bfeab246f45",
+      "rule": "C1+C3",
+      "verdict": "DECISION_ID_MISMATCH"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_output_hash_from_recomputed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "case_id": "DECISION-BOUND-SUBSTITUTED",
+      "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "recorded_equals_bound_from_claimed_id": false,
+      "recorded_equals_bound_from_recomputed_id": false,
+      "recorded_equals_legacy": false,
+      "recorded_output_hash": "sha256:327606a446a7d61707f15c09cc2dd27b60e2b2944fad0bc11e355ff970fdca86",
+      "rule": "C2+C3",
+      "verdict": "OUTPUT_HASH_MISMATCH"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "bound_output_hash_from_recomputed_id": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "case_id": "DECISION-BOUND-DENIED",
+      "claimed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "deny",
+      "recomputed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+      "recorded_equals_bound_from_claimed_id": true,
+      "recorded_equals_bound_from_recomputed_id": true,
+      "recorded_equals_legacy": false,
+      "recorded_output_hash": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "rule": "C4",
+      "verdict": "UNAUTHORIZED_BINDING"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "bound_output_hash_from_recomputed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "case_id": "KNOWN-LIMITATION-COMMITMENT-NOT-WRITE",
+      "claimed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "recorded_equals_bound_from_claimed_id": true,
+      "recorded_equals_bound_from_recomputed_id": true,
+      "recorded_equals_legacy": false,
+      "recorded_output_hash": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "rule": "C2+C3+C4",
+      "verdict": "ACCEPTED"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:2e54729f8c9e947e556eeae602d98cf773a7cf96af111bdd69b34bfeab246f45",
+      "bound_output_hash_from_recomputed_id": "sha256:208f698590a323f7788a49ac6a3b7db0609c093c4b7d0bc2edbc89abb6ef3415",
+      "case_id": "DECISION-BOUND-FORGED-CITATION-LEGACY",
+      "claimed_decision_id": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "decision_id_matches": false,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "permit",
+      "recomputed_decision_id": "sha256:859776cc760f7932069da3dfe3f82400c68fcc3ab007c2941ab21a4514b05f63",
+      "recorded_equals_bound_from_claimed_id": false,
+      "recorded_equals_bound_from_recomputed_id": false,
+      "recorded_equals_legacy": true,
+      "recorded_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "rule": "C1+C3",
+      "verdict": "DECISION_ID_MISMATCH"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "bound_output_hash_from_recomputed_id": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "case_id": "DECISION-BOUND-DENIED-LEGACY",
+      "claimed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "deny",
+      "recomputed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+      "recorded_equals_bound_from_claimed_id": false,
+      "recorded_equals_bound_from_recomputed_id": false,
+      "recorded_equals_legacy": true,
+      "recorded_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "rule": "C5",
+      "verdict": "UNVERIFIABLE_LEGACY"
+    },
+    {
+      "bound_output_hash_from_claimed_id": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "bound_output_hash_from_recomputed_id": "sha256:db24c78457dacf697a4b282ac1a03ef965e65c03eb0dd17a712aad29c04f0232",
+      "case_id": "DECISION-BOUND-DENIED-MISMATCH",
+      "claimed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+      "decision_id_matches": true,
+      "informational_not_used_in_verdict": {
+        "claimed_decision_id_has_sha256_prefix": true,
+        "content_sha256_is_bare_hex": true,
+        "decision_preimage_keys_are_the_declared_five": true
+      },
+      "legacy_output_hash": "sha256:7f353fcc5bd01b84b3d7fb209f62246e2c05e2f913afdc68584a1e6c47776b91",
+      "outcome": "deny",
+      "recomputed_decision_id": "sha256:2bcf3244d4f04243562ff1672fbea3bc7ee22244756d9f38d2a09c697d098c3f",
+      "recorded_equals_bound_from_claimed_id": false,
+      "recorded_equals_bound_from_recomputed_id": false,
+      "recorded_equals_legacy": false,
+      "recorded_output_hash": "sha256:327606a446a7d61707f15c09cc2dd27b60e2b2944fad0bc11e355ff970fdca86",
+      "rule": "C2+C3",
+      "verdict": "OUTPUT_HASH_MISMATCH"
+    }
+  ],
+  "summary": {
+    "by_verdict": {
+      "ACCEPTED": 2,
+      "DECISION_ID_MISMATCH": 2,
+      "OUTPUT_HASH_MISMATCH": 2,
+      "UNAUTHORIZED_BINDING": 1,
+      "UNVERIFIABLE_LEGACY": 2
+    },
+    "cases": 9
+  },
+  "version_constant": "decision-bound-output-v1"
+}
