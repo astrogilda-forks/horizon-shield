@@ -1,0 +1,12 @@
+{
+ "bond_outcome": "n/a",
+ "contract_sha256": "14474983d760126e1a918ab1cd9f750985f7ee7c97a1c0c235bf450f7718f9f8",
+ "deviation_codes": [],
+ "dispositions": {
+  "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34": "foreign"
+ },
+ "event_set": [],
+ "status": "final",
+ "underspecified_reasons": [],
+ "verdict": "nothing_to_settle"
+}

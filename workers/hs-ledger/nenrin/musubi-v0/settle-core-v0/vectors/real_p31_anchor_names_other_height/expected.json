@@ -1,0 +1,12 @@
+{
+ "bond_outcome": "n/a",
+ "contract_sha256": "d7118f285250241513db1ce244a7ec4b4fbfd9160123ba466abdfad727b70f81",
+ "deviation_codes": [],
+ "dispositions": {
+  "748e66a9c8639aac21d911940dafb8f4fb8ebb6e0f72b3797d9e18bce4e549a2": "orphaned"
+ },
+ "event_set": [],
+ "status": "final",
+ "underspecified_reasons": [],
+ "verdict": "nothing_to_settle"
+}
