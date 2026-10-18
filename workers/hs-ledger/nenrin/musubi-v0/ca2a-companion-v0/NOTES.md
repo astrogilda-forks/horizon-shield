@@ -5,6 +5,8 @@
     pip install ca2a-runtime==0.4.0     # brings rfc8785 and cryptography; Python 3.11 or later
     python companion_v0.py --selftest   # 57/57 vectors agree
     python gen_vectors.py               # rebuilds vectors/vectors.json byte for byte
+    python companion_v0_1.py --selftest # 33/33 (profile v0.1, the witnessed lane; see COMPANION_v0_1.md)
+    python gen_vectors_v0_1.py          # rebuilds vectors/vectors_v0_1.json, then the surrogate checks
 
 The verifier imports `settle_v1_1.py` from the directory above for the Bitcoin header view and the anchor proof, unchanged.
 
@@ -36,3 +38,25 @@ cA2A's delegation rules are theirs to change. If this profile reimplemented them
 2026-10-17, second round: 2 high, 2 medium and 2 low. A single-use credential could still run once per responder, and a re-issued ancestor started a fresh count (now counted per credential, at any position, per request and responder: CA43, CA44). A revocation logged early lost to its own later issued_at (now in force by log order, cA2A's audit verdict beside it: CA45). A short checkpoint could hide a promised entry (now operator_withheld: EV11). Use ranks are computed once (1,000 uses and 1,000 receipts settle in about 3 s). Deep nesting is an input error (EV12).
 
 vectors/vectors.json sha256: 4b4e2362ab6dda3743e5ba1cd76285a0872344f40086bc95b18b3bd34490d2a2 (57 vectors).
+
+## Profile v0.1: the witnessed lane (2026-10-18)
+
+v0 could prove that the operator dropped an entry it had signed, not that it refused one. v0.1 (`COMPANION_v0_1.md`, `companion_v0_1.py`) lets revocations and use limits take effect through threshold many independent witnesses, ordered against receipts by Bitcoin blocks, with omission by the operator reported from signatures. v0 is unchanged apart from two hardening fixes below; a v0.1 bundle with no witnessed records settles exactly as v0 on all 45 v0 settlement vectors.
+
+2026-10-18, third round (adversarial review of v0.1 before publishing): 3 high, 1 medium, 3 low.
+- The lower bound on publication was taken only from acknowledgements with a deep anchor, so a witness whose acknowledgement was anchored slowly, or a shorter view, turned a possible revocation into a definite absence and a `within` verdict (fixed: the signature and the seen block give the lower bound, the anchor only the upper one; WV31, WV32, and WV10 and WV21 now give unresolved).
+- The omission finding compared the checkpoint's anchor height, which anyone can raise by anchoring the signed checkpoint again (fixed: the rule is on the checkpoint's own `as_of` against the due block's time; WV29, WV30; the test chain now spaces blocks ten minutes apart so this can be shown).
+- Nothing bound the bundle to what the witnesses published (spec: the verdict is relative to the relying party's own collection, section 7; the settlement names the witnesses counted).
+- A lone UTF-16 surrogate in an unsigned request or credential raised out of `settle` in v0 and v0.1 (fixed in v0's `strict_value`, shared: `lone_surrogate`; and `--settle` now refuses an unreadable file with a code instead of a traceback).
+- One signed acknowledgement could be repeated 16,384 times with different anchors, each proof run before failing (fixed: a signed acknowledgement is checked once, 512 acknowledgements per bundle; WV33).
+- Threshold honesty was described in one direction only (spec section 7 now covers witnesses that sign junk, and a threshold of 1).
+- The v0.1 vector digest was not recorded here (below).
+
+2026-10-18, fourth round (adversarial review of the fixes): 2 high, 2 medium, 7 low.
+- The one-check rule from the third round was first-copy-wins on the signature, so an unanchored copy of an acknowledgement listed before its anchored copy removed the upper bound, and the verdict depended on the order of honestly collected copies (fixed: identical bytes are checked once, anything else on its own; WV34).
+- An acknowledgement whose `signature` was a list or an object raised out of `settle` at that same check (fixed; WV35).
+- A seen block the view could not check discarded the whole acknowledgement, anchor included, so two honest witnesses naming a block below the relying party's lower bound made a published revocation vanish (fixed: the lower and the upper bound are counted on their own; WV36, WV11).
+- Anyone holding the operator's signed checkpoint could anchor it again later and turn an honest responder's `after` into unresolved (fixed: `log.extra_anchors`, the earliest valid anchor bounds the receipts; WV37).
+- Low: a restriction anchored in the block the responder then names is before the receipt (spec: fix S first); the omission rule is on exact bytes (spec: log what the witnesses publish); a view ending before the due block reported nothing (now `omission_check: due_block_not_in_view`, WV38); `revocation_published_late` is not listed beside `revocation_order_unresolved` (information only, unchanged); `--settle` exit codes were inconsistent (now 0, 2, 3 in both profiles); the module docstring still gave the anchor-height rule (fixed); cost is quadratic in receipts and revocations (spec section 7).
+
+vectors/vectors_v0_1.json sha256: 9b4e83e9c1484ce100de67c50f3220aacfb330415393d1d6b48696a64dcda046 (38 vectors).

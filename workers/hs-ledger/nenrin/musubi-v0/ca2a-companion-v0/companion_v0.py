@@ -99,7 +99,13 @@ def strict_value(v, path="$", depth=0):
     """Only the JSON types cA2A signs: object, array, string, safe integer, bool, null."""
     if depth > 64:
         raise Bad("too_deep", path)
-    if v is None or isinstance(v, (bool, str)):
+    if v is None or isinstance(v, bool):
+        return
+    if isinstance(v, str):
+        try:
+            v.encode("utf-8")          # a lone surrogate parses as JSON but has no bytes: JCS would raise
+        except UnicodeEncodeError:
+            raise Bad("lone_surrogate", path)
         return
     if isinstance(v, int):
         if not -MAX_SAFE <= v <= MAX_SAFE:
@@ -703,10 +709,17 @@ def main():
         print("%d/%d vectors agree" % (n - bad, n))
         sys.exit(1 if bad else 0)
     if a.settle:
-        with open(a.settle, "rb") as f:
-            b = load_strict(f.read())
-        sys.stdout.write(jcs(settle(b)).decode("utf-8") + "\n")
-        return
+        # exit 0: a settlement with receipts; 2: refused or the log did not verify; 3: the file is unreadable
+        try:
+            with open(a.settle, "rb") as f:
+                b = load_strict(f.read())
+        except (Bad, ValueError, RecursionError, OSError) as exc:
+            code = exc.code if isinstance(exc, Bad) else "unreadable_input"
+            sys.stdout.write(jcs({"type": T_SETTLEMENT, "profile": PROFILE, "refused": code}).decode("utf-8") + "\n")
+            sys.exit(3)
+        out = settle(b)
+        sys.stdout.write(jcs(out).decode("utf-8") + "\n")
+        sys.exit(2 if "refused" in out or not out.get("log", {}).get("verified") else 0)
     ap.print_help()
 
 

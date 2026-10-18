@@ -174,6 +174,12 @@ The same implementation, updated to revision 0.2 (aeoess/musubi-settle-core-chec
 - B7: the reference refuses any `approvers` value that is not a well formed list, so `{}`, `""` and `0` refuse in 4.1 rather than making the input out of scope. 4.1 rule 10 now states what well formed means.
 - B5: rule 14 is not empty in core v0. A parent may pin approvers; a child without them fails narrowing (the reference compares the two lists as sets of canonical entries, absent as empty). A child with them is out of scope.
 
+## N16. Revision 0.3 rerun: 123 of 123
+
+The same implementation, updated to revision 0.3 (aeoess/musubi-settle-core-check at c0f8f4f), agrees with all 123 vectors on the eight core fields with no UNASSESSED field; the 117 earlier outputs are unchanged, and a fresh-clone rerun reproduced everything byte for byte (horizon-shield Issue #49).
+
+One more note (C3): rule 14 compares canonical approver entries, so the order of `actions` inside an entry matters, and no vector shows it. The reference does exactly that (contract_v0.grant_subset sorts the entries, not the arrays inside them). A child that keeps pinned approvers is out of scope in core v0, so no core input reaches it; 4.3.1 now says so in one sentence. No vector and no code changed.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.

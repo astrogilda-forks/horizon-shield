@@ -222,7 +222,7 @@ This applies when `parent_contract` is present and not null. The contract passes
 11. P has a witness with a string `public_key_ed25519_b64`. Then C must have at least one witness with such a key, and every such key of P must equal, as a string, the key of one of C's witnesses. Witnesses are compared by key; the names are labels (vector `synth_parent_full_witness_renamed`).
 12. For each of `privacy` and `ordering` separately: when the parent sets it, C must set it to an equal JSON value. After 4.1 rule 10 these values hold only strings, objects and null, so equality is exact: `{}` is not equal to `{"same_height": null}`. No order is defined for these two, so they are held equal. An `ordering` of `{"same_height": null}` counts as set (vector `synth_parent_full_without_ordering`).
 13. `C.approval_policy.allow_unscoped` is `true` and `P.approval_policy.allow_unscoped` is not (absent counts as not true). (In core v0 a true `allow_unscoped` already gives `unscoped_approvals_refused`, 4.2.)
-14. The pinned approvers differ: the parent's `approval_policy.approvers` and the child's, each taken as the empty list when absent, compared as sets of canonical entries. A child that carries approvers is out of scope (section 1), so in core v0 this applies when the parent pins approvers and the child has none: a violation (vector `synth_parent_approvers_child_drops`).
+14. The pinned approvers differ: the parent's `approval_policy.approvers` and the child's, each taken as the empty list when absent, compared as sets of canonical entries. The order of the entries does not matter; each entry is compared as its canonical bytes (3.1), so the order of the strings in its `actions` does, as for any array. A child that carries approvers is out of scope (section 1), so in core v0 this applies when the parent pins approvers and the child has none: a violation (vector `synth_parent_approvers_child_drops`). No core v0 input can reach the order of `actions`.
 
 The parent must also pass 4.1 on its own. Vectors `synth_parent_full_*` take a parent that sets every axis and change one axis per vector.
 
@@ -658,6 +658,7 @@ Clarified in revision 0.3, from 10 more notes of the same implementation (impl/A
 | B2 | non-finite numbers are written `NaN`, `Infinity`, `-Infinity` in canonical form (3.1 item 6) | `synth_infinity_in_signed_body`, `synth_negative_infinity_in_signed_body` |
 | B7 | only a well formed approver list is carried; `{}`, `""`, `0`, null and `[]` refuse in 4.1 (section 1, 4.1 rule 10) | `synth_approvers_object`, `synth_approvers_string`, `synth_approvers_zero` |
 | B5 | rule 14 applies when the parent pins approvers and the child has none (4.3.1) | `synth_parent_approvers_child_drops` |
+| C3 | rule 14 compares each approver entry as canonical bytes, so the order of `actions` inside an entry counts; core v0 cannot reach it (4.3.1) | none (out of scope) |
 | B8 | exactly three spellings; `nan` and `+Infinity` stop the reader; `1e400` is an infinity (2.2) | none (no settlement to compare) |
 
 ## 14. What this does not establish

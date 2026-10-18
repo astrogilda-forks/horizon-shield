@@ -296,12 +296,14 @@ cA2A (agentrust-io/ca2a) checks a delegation chain at the moment of a call. Its 
 
     pip install ca2a-runtime==0.4.0                          # Python 3.11 or later
     python3 ca2a-companion-v0/companion_v0.py --selftest     # expect: 57/57 vectors agree
+    python3 ca2a-companion-v0/companion_v0_1.py --selftest   # expect: 38/38 (profile v0.1, below)
 
 - An operator-signed log with Bitcoin-anchored checkpoints. An entry the operator accepted and later dropped or changed is shown by the operator's own signatures.
 - Credential-use items that carry their chain and name their responder. A use limit on any hop counts every request made under it, so delegating onward, re-issuing an ancestor or sending one request to two responders does not reset it.
 - Ed25519 execution receipts naming the lineage, the capability, the request occurrence, a Bitcoin block the responder had seen, and the outcome.
 - Two rounds of adversarial review before release found 17 holes; each is now a vector ([NOTES.md](ca2a-companion-v0/NOTES.md)).
 - What it does not give: anything about where a key lives or which workload signed (that is cA2A's attestation), or that a result is true.
+- Profile v0.1 (2026-10-18), [COMPANION_v0_1.md](ca2a-companion-v0/COMPANION_v0_1.md): the case v0 left open. An operator that refused to log a revocation left nothing behind and the revocation never took effect. v0.1 lets revocations and use limits reach threshold many independent witnesses, whose signed and Bitcoin-anchored acknowledgements make the restriction take effect whatever the operator does; a receipt is ordered against it by blocks only (before, after, or unresolved, which is never within); and an operator that leaves it out of a checkpoint whose as_of is past the due block is reported from signatures. Only restrictions use the lane, so nothing from it can widen what is allowed. Two more adversarial rounds before release; 38 vectors. Independent witness operators do not exist yet.
 
 ## a2a-approval-v3 and settle v1.13: an approval that names its amount (2026-10-10, Issue #29)
 An a2a-approval-v2 approval carries no amount, so one approval covers any amount up to the cap in `grant.limits`. v3 puts `max_amount` (an integer string in the unit's smallest denomination) and `unit` into the signed bytes, under its own domain tag `a2a-approval-v3`. v2 stays frozen as @babyblueviper1's reference. The format, the bytes and the reasons are in [APPROVAL_V3.md](APPROVAL_V3.md).
