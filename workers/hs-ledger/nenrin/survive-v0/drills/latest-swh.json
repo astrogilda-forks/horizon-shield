@@ -1,19 +1,19 @@
 {
   "anchors": {
-    "confirmed": 106,
+    "confirmed": 110,
     "explorers": [
       "blockstream.info",
       "mempool.space"
     ],
     "failed": [],
     "first_block": 959118,
-    "last_block": 971642,
+    "last_block": 971785,
     "pending": []
   },
   "chain": {
     "broken_at": null,
-    "head": "7f0d48f7b057b9985c977a3c449225c8ab32093f2ccdcfff704f7021211579f2",
-    "rebuilt_through": 106,
+    "head": "1735e5ee0321f63f6b56252692b49d6b4c76495bdd816d9fce1f592457f3ebdd",
+    "rebuilt_through": 110,
     "stamped_heads": [
       {
         "carried_by": 58,
@@ -144,13 +144,23 @@
         "carried_by": 106,
         "head_n": 102,
         "result": "match"
+      },
+      {
+        "carried_by": 107,
+        "head_n": 106,
+        "result": "match"
+      },
+      {
+        "carried_by": 110,
+        "head_n": 109,
+        "result": "match"
       }
     ],
-    "stamped_heads_matched": 26
+    "stamped_heads_matched": 28
   },
   "digests": {
     "failed": [],
-    "ok": 106
+    "ok": 110
   },
   "does_not_establish": [
     "that any claim in the ledger is true",
@@ -158,8 +168,8 @@
     "that two explorers agreeing is Bitcoin consensus; check headers against your own node for that",
     "anything about entries whose proofs are still pending; they are listed, not counted"
   ],
-  "drill_at": "2026-10-17T07:52:41Z",
-  "entries": 106,
+  "drill_at": "2026-10-18T08:06:50Z",
+  "entries": 110,
   "establishes": [
     "these ledger bytes were rebuilt from the named custodian without connecting to any operator host",
     "every digest, the jidec-chain-v1 head, the stamped heads and the Bitcoin anchors were recomputed from the copy and two public explorers"
@@ -172,18 +182,18 @@
   "outcome": "rebuilt",
   "range": [
     1,
-    106
+    110
   ],
-  "report_sha256": "1673688588d8767c56c2a04f6d5b40ef62439d64aa4a920a9e183d0c33725b46",
+  "report_sha256": "ad1b4593c7d96372f32f11d656451fb3698f0c38dae04eecfc4c6ae5c2a46b83",
   "schema": "nenrin-survive-drill-v0",
   "source": {
-    "archive_sha256": "f6026340dee99ada9731f3d61de7c790517cb081017cdf35e9b821da895192f7",
+    "archive_sha256": "d9ddd48eeb162fa9d828e4f99af3e1e02eef6378cf42c64b0423b2c0175969dd",
     "custodian": "software-heritage",
-    "directory": "swh:1:dir:7ef4ecbdcb20c606da1de8f0bfed711544426598",
+    "directory": "swh:1:dir:7ef6c1abdae319d5557b07ee342a8ddaac5618ef",
     "operator_controlled": false,
-    "revision": "48b2955786d895c48fcda30ce843a5bba2c9ac70",
-    "snapshot": "e3d5d0bd7c1ba070aa5760faea57919261f2c178",
-    "visit_date": "2026-10-16T21:41:43.127000+00:00"
+    "revision": "bd63314617da54d9c49e465a312d68ab2fe6241a",
+    "snapshot": "706ee7be137c72cbdd2f9ebc01c0dc5a13ec03d2",
+    "visit_date": "2026-10-17T20:55:16.753000+00:00"
   },
   "version": "0.1.0"
 }
