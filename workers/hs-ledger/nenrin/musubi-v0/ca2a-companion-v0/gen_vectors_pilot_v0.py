@@ -46,6 +46,30 @@ def payment(req_sha, amount, seen, payer_k=G.B, payer=G.B_PUB, payee=G.X_PUB, ch
                   payer_k)
 
 
+K, K_PUB = G.key("checker")          # invinoveritas's role in the rehearsal: a key that is neither payer nor payee
+
+
+def criteria(req_sha, crit_sha, seen, buyer_k=G.B, buyer=G.B_PUB, checker=K_PUB):
+    return C.sign({"type": P.T_CRITERIA, "buyer": buyer, "request_sha256": req_sha, "criteria_sha256": crit_sha,
+                   "checker": checker, "seen_block": seen}, buyer_k)
+
+
+K2, K2_PUB = G.key("checker-2")
+Z, Z_PUB = G.key("puppet")           # a fresh key nobody named
+Y, Y_PUB = G.key("other-responder")
+CRIT2 = C.sha256_hex(b"criteria: the audit's total equals the fixture's total")
+
+
+def acceptance(req_sha, crit_sha, receipt_item, payment_item, verdict, seen, checker_k=K, checker=K_PUB):
+    return C.sign({"type": P.T_ACCEPT, "checker": checker, "request_sha256": req_sha, "criteria_sha256": crit_sha,
+                   "record_sha256": C.sha256_hex(("record:" + req_sha + verdict).encode()), "verdict": verdict,
+                   "execution_receipt_sha256": C1.item_sha256(receipt_item),
+                   "payment_sha256": C1.item_sha256(payment_item) if payment_item else None,
+                   "seen_block": seen}, checker_k)
+
+
+CRIT = C.sha256_hex(b"criteria: the audit names every line of the fixture and prices each against JCCDB")
+
 VECTORS = []
 
 
@@ -321,6 +345,139 @@ def main():
     b.update(tasks=[t], requests=[junk, r])
     vec("PL28_request_with_a_junk_task_digest", "a supplied request whose task_sha256 is a list is skipped, not raised", b)
 
+    # acceptance, the fifth step (babyblueviper1, 2026-10-18)
+    def accepted_call(verdict="pass", checker=(K, K_PUB), crit_before=True, with_payment=True, commit_crit=True):
+        s = GV.Sc(); s.mine()
+        t = task(7000, 0); r = request("occ-0", t); rs = C.request_sha256(r)
+        seen = s.tip()
+        pay = payment(rs, 7000, seen)
+        rcpt = G.receipt(rs, seen=seen)
+        items = [budget(30000), G.use(rs)]
+        if commit_crit and crit_before:
+            items.append(criteria(rs, CRIT, seen))
+        items += [pay, rcpt]
+        if commit_crit and not crit_before:
+            items.append(criteria(rs, CRIT, seen))
+        items.append(acceptance(rs, CRIT, rcpt, pay if with_payment else None, verdict, seen, *checker))
+        b = s.finish(items); b.update(tasks=[t], requests=[r])
+        return b
+    vec("PL29_accepted_call",
+        "criteria committed by the buyer before the work, the call paid and executed, a checker that is neither "
+        "party signs pass naming the execution receipt and the payment: the execution is accepted",
+        accepted_call())
+    vec("PL30_acceptance_fails", "the same, with the checker's verdict fail: within, paid, and rejected by the buyer's criteria",
+        accepted_call(verdict="fail"))
+    vec("PL31_checker_is_the_payee", "the responder signs its own acceptance: not counted",
+        accepted_call(checker=(G.X, G.X_PUB)))
+    vec("PL32_criteria_fixed_after_the_work", "the criteria commitment is logged after the execution receipt: not counted",
+        accepted_call(crit_before=False))
+    vec("PL33_no_criteria_committed", "no commitment by the buyer at all: not counted",
+        accepted_call(commit_crit=False))
+    vec("PL34_acceptance_without_payment_digest", "an acceptance that names no payment still counts; the execution shows it",
+        accepted_call(with_payment=False))
+
+    s = GV.Sc(); s.mine()
+    t = task(7000, 0); r = request("occ-0", t); rs = C.request_sha256(r)
+    t1 = task(7000, 1); r1 = request("occ-1", t1); rs1 = C.request_sha256(r1)
+    seen = s.tip()
+    pay, rcpt = payment(rs, 7000, seen), G.receipt(rs, seen=seen)
+    pay1, rcpt1 = payment(rs1, 7000, seen), G.receipt(rs1, seen=seen)
+    wrong = acceptance(rs, CRIT, rcpt1, pay, "pass", seen)           # names the other call's receipt
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen), pay, rcpt, G.use(rs1), pay1, rcpt1, wrong])
+    b.update(tasks=[t, t1], requests=[r, r1])
+    vec("PL35_acceptance_names_another_execution",
+        "the record names the execution receipt of a different call: execution_receipt_not_found, nothing accepted",
+        b)
+
+    s = GV.Sc(); s.mine()
+    t = task(7000, 0); r = request("occ-0", t); rs = C.request_sha256(r)
+    seen = s.tip()
+    pay, rcpt = payment(rs, 7000, seen), G.receipt(rs, seen=seen)
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen), pay, rcpt,
+                  acceptance(rs, CRIT, rcpt, pay, "pass", seen), acceptance(rs, CRIT, rcpt, pay, "fail", seen)])
+    b.update(tasks=[t], requests=[r])
+    vec("PL36_second_acceptance_for_one_execution", "a second record for the same execution is reported and does not replace the first", b)
+
+    # second adversarial round on the acceptance step
+    def one_call(s):
+        t = task(7000, 0); r = request("occ-0", t); rs = C.request_sha256(r)
+        seen = s.tip()
+        return t, r, rs, seen, payment(rs, 7000, seen), G.receipt(rs, seen=seen)
+
+    s = GV.Sc(); s.mine()
+    t, r, rs, seen, pay, rcpt = one_call(s)
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen), pay, rcpt,
+                  acceptance(rs, CRIT, rcpt, pay, "pass", seen, Z, Z_PUB), acceptance(rs, CRIT, rcpt, pay, "fail", seen)])
+    b.update(tasks=[t], requests=[r])
+    vec("PL37_puppet_checker_logged_first",
+        "a fresh key signs pass and is logged before the named checker's fail: checker_not_named_by_buyer, the "
+        "named checker's record counts, the execution is accepted fail", b)
+
+    s = GV.Sc(); s.mine()
+    t, r, rs, seen, pay, _ = one_call(s)
+    rcpt_y = G.receipt(rs, seen=seen, resp_k=Y, resp=Y_PUB)       # another key produces the result
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen, checker=Y_PUB), pay, rcpt_y,
+                  acceptance(rs, CRIT, rcpt_y, pay, "pass", seen, Y, Y_PUB)])
+    b.update(tasks=[t], requests=[r])
+    vec("PL38_checker_signed_the_receipt",
+        "the buyer named as checker the key that signed the execution receipt: checker_is_party, even though it "
+        "is not the request's responder", b)
+
+    s = GV.Sc(); s.mine()
+    t, r, rs, seen, pay, rcpt = one_call(s)
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen), pay, rcpt, rcpt,
+                  acceptance(rs, CRIT, rcpt, pay, "pass", seen)])
+    b.update(tasks=[t], requests=[r])
+    vec("PL39_receipt_logged_twice",
+        "the same execution receipt bytes logged twice: the acceptance attaches to the first, the duplicate stays "
+        "unaccepted", b)
+
+    s = GV.Sc(); s.mine()
+    t = task(7000, 0); r = request("occ-0", t); rs = C.request_sha256(r)
+    w = s.witness(criteria(rs, CRIT, s.tip()), GV.TWO)
+    s.mine()
+    seen = s.tip()
+    pay, rcpt = payment(rs, 7000, seen), G.receipt(rs, seen=seen)
+    b = s.finish([budget(30000), G.use(rs), pay, rcpt, acceptance(rs, CRIT, rcpt, pay, "fail", seen)], [w])
+    b.update(tasks=[t], requests=[r])
+    vec("PL40_criteria_witnessed_not_logged",
+        "the operator never logs the buyer's commitment, but two witnesses published it before the block the "
+        "receipt had seen: fixed before the work, the fail counts", b)
+
+    s = GV.Sc(); s.mine()
+    t = task(7000, 0); r = request("occ-0", t); rs = C.request_sha256(r)
+    w = s.witness(criteria(rs, CRIT, G.SEEN), GV.TWO, seen=G.SEEN)
+    pay, rcpt = payment(rs, 7000, G.SEEN), G.receipt(rs, seen=G.SEEN)
+    b = s.finish([budget(30000), G.use(rs), pay, rcpt, acceptance(rs, CRIT, rcpt, pay, "fail", G.SEEN)], [w])
+    b.update(tasks=[t], requests=[r])
+    vec("PL41_criteria_witnessed_order_unresolved",
+        "the witnessed commitment and the receipt saw the same block: nothing fixes which came first, the "
+        "acceptance is not counted and says criteria_order_unresolved", b)
+
+    s = GV.Sc(); s.mine()
+    t, r, rs, seen, pay, rcpt = one_call(s)
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen), rcpt, acceptance(rs, CRIT, rcpt, pay, "pass", seen), pay])
+    b.update(tasks=[t], requests=[r])
+    vec("PL42_payment_logged_after_acceptance",
+        "the acceptance names a payment that is logged only after it: payment_not_before_acceptance, not counted", b)
+
+    s = GV.Sc(); s.mine()
+    t, r, rs, seen, pay, rcpt = one_call(s)
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen), criteria(rs, CRIT2, seen, checker=K2_PUB), pay, rcpt,
+                  acceptance(rs, CRIT, rcpt, pay, "pass", seen), acceptance(rs, CRIT2, rcpt, pay, "fail", seen, K2, K2_PUB)])
+    b.update(tasks=[t], requests=[r])
+    vec("PL43_two_commitments_two_checkers",
+        "the buyer committed two criteria with two checkers before the work; both records count, each marked "
+        "multiple_criteria_commitments, and the execution's acceptance is conflicting", b)
+
+    s = GV.Sc(); s.mine()
+    t, r, rs, seen, pay, rcpt = one_call(s)
+    b = s.finish([budget(30000), G.use(rs), criteria(rs, CRIT, seen, checker=G.A_PUB), pay, rcpt,
+                  acceptance(rs, CRIT, rcpt, pay, "pass", seen, G.A, G.A_PUB)])
+    b.update(tasks=[t], requests=[r])
+    vec("PL44_checker_is_the_budget_issuer",
+        "the buyer named the issuer of its own credential as checker: a key in the verified chain is a party", b)
+
     out = {"profile": P.PROFILE, "note": "credentials signed by ca2a_runtime; headers are regtest difficulty, ten minutes apart",
            "vectors": VECTORS}
     with open(os.path.join(HERE, "vectors", "vectors_pilot_v0.json"), "wb") as f:
@@ -331,7 +488,8 @@ def main():
             print(v["id"], "REFUSED", e["refused"]); continue
         pl = e["pilot"]
         print(v["id"], "pay", [(p["seq"], p["amount"], p["reasons"], p.get("unexecuted", False)) for p in pl["payments"]],
-              "exec", [(x["seq"], x["disposition"], x.get("payment_seq"), x.get("reasons", [])) for x in pl["executions"]],
+              "exec", [(x["seq"], x["disposition"], x.get("payment_seq"), x.get("reasons", []), x.get("accepted")) for x in pl["executions"]],
+              "acc", [(a["seq"], a["verdict"], a["counted"], a["reasons"]) for a in pl.get("acceptances", [])] or "",
               "rej", [(r["seq"], r["reason"]) for r in e["companion"]["items_rejected"]] or "")
 
 

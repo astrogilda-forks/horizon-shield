@@ -26,6 +26,26 @@ This profile adds, on top of the companion (profile v0.1, including its witnesse
                                  x402 the salted commitment receipt). The chain settles the money; this record
                                  settles the authorization.
 
+  A fifth gap was named from outside (babyblueviper1, 2026-10-18): after payment and execution, nothing recorded
+  whether what came back met what the buyer asked for, by a party that is neither payer nor payee. That is the
+  step a dispute weighs. Two items carry it:
+
+  musubi.ca2a.criteria-commitment.v0  buyer-signed, before the work: request_sha256, criteria_sha256, the checker
+                                      key, seen_block. A restriction, so the witnessed lane carries it: an operator
+                                      that sequences it after the receipt does not unfix it.
+  musubi.ca2a.acceptance-record.v0    checker-signed, after it: request_sha256, criteria_sha256, the digest of the
+                                      external acceptance record (for invinoveritas, the work-acceptance record of
+                                      x402-foundation/tsc#4 profile 1.2.1), the verdict, the digests of the
+                                      execution receipt and of the payment it accepts (or null), and a seen block.
+  An acceptance counts only when its checker is the key the buyer named in a commitment to the same criteria
+  for the same request, that commitment is fixed before the execution receipt (logged before it, or witnessed
+  before the block the receipt had seen), the checker is none of the parties (caller, responder, the receipt's
+  signer and caller, the operator, any key in a verified chain), the execution receipt digest names a
+  companion-accepted result receipt for the request, and the payment digest, when given, names a counted
+  payment for the same request and payee logged before the acceptance. One record counts per (execution,
+  commitment); whether the buyer named a trustworthy checker is the relying party's reading of the commitment.
+  The record itself stays in its own format; this profile binds it to the call and checks who signed it and when.
+
   Two more gaps appeared while assembling. A payment without a block it had seen cannot be ordered against a
   budget published through the witnessed lane, so a refused budget could never be shown to precede a payment:
   every statement that is ordered against the lane carries a seen block, and the payment receipt now does. And
@@ -72,6 +92,9 @@ PROFILE = "musubi.ca2a.pilot.v0"
 T_TASK = "musubi.ca2a.task.v0"
 T_BUDGET = "musubi.ca2a.budget-policy.v0"
 T_PAYMENT = "musubi.ca2a.payment-receipt.v0"
+T_CRITERIA = "musubi.ca2a.criteria-commitment.v0"
+T_ACCEPT = "musubi.ca2a.acceptance-record.v0"
+VERDICTS = ("pass", "fail", "not_evaluated")
 T_SETTLEMENT = "musubi.ca2a.pilot-settlement.v0"
 UNIT = TEXT
 MAX_AMOUNT = c0.MAX_SAFE
@@ -106,8 +129,35 @@ def _payment(item):
     return "payment", item
 
 
-EXTENSIONS = {T_BUDGET: _budget, T_PAYMENT: _payment}
-RESTRICTIONS = frozenset(set(c1.RESTRICTIONS) | {"budget-policy"})
+def _criteria(item):
+    _fields(item, ("type", "buyer", "request_sha256", "criteria_sha256", "checker", "seen_block", "signature"), (),
+            T_CRITERIA)
+    _need(HEX32, item["request_sha256"], "bad_request_sha256")
+    _need(HEX32, item["criteria_sha256"], "bad_criteria_sha256")
+    _need(HEX32, item["checker"], "bad_key")
+    c0._block(item["seen_block"], "seen_block")
+    check_sig(item, "buyer")
+    return "criteria", item
+
+
+def _acceptance(item):
+    _fields(item, ("type", "checker", "request_sha256", "criteria_sha256", "record_sha256", "verdict",
+                   "execution_receipt_sha256", "payment_sha256", "seen_block", "signature"), (), T_ACCEPT)
+    _need(HEX32, item["request_sha256"], "bad_request_sha256")
+    _need(HEX32, item["criteria_sha256"], "bad_criteria_sha256")
+    _need(HEX32, item["record_sha256"], "bad_record_sha256")
+    if item["verdict"] not in VERDICTS:
+        raise Bad("bad_verdict")
+    _need(HEX32, item["execution_receipt_sha256"], "bad_execution_receipt_sha256")
+    if item["payment_sha256"] is not None:
+        _need(HEX32, item["payment_sha256"], "bad_payment_sha256")
+    c0._block(item["seen_block"], "seen_block")
+    check_sig(item, "checker")
+    return "acceptance", item
+
+
+EXTENSIONS = {T_BUDGET: _budget, T_PAYMENT: _payment, T_CRITERIA: _criteria, T_ACCEPT: _acceptance}
+RESTRICTIONS = frozenset(set(c1.RESTRICTIONS) | {"budget-policy", "criteria"})
 
 
 def task_sha256(task):
@@ -163,7 +213,7 @@ def settle(bundle):
             continue
     entries = bundle["log"]["entries"]
     rejected = {x["seq"] for x in comp["items_rejected"]}
-    budgets, payments, uses = [], [], []
+    budgets, payments, uses, criteria, acceptances = [], [], [], [], []
     for e in entries:
         if e["seq"] in rejected:
             continue
@@ -174,14 +224,19 @@ def settle(bundle):
             payments.append((e["seq"], it))
         elif it.get("type") == c0.T_USE:
             uses.append((e["seq"], it))
+        elif it.get("type") == T_CRITERIA:
+            criteria.append((e["seq"], it))
+        elif it.get("type") == T_ACCEPT:
+            acceptances.append((e["seq"], it))
     wit = {w["item_sha256"]: w for w in comp["witnessed"] if w["kind"] == "budget-policy"}
+    wit_crit = {w["item_sha256"]: w for w in comp["witnessed"] if w["kind"] == "criteria"}
     wit_items = {}
     for rec in bundle.get("witnessed", []):
         try:
             d = c1.item_sha256(rec["item"])
         except Exception:
             continue
-        if d in wit and d not in wit_items:
+        if (d in wit or d in wit_crit) and d not in wit_items:
             wit_items[d] = rec["item"]
     A = comp["log"].get("earliest_anchor_height", comp["log"]["anchor_height"])
     pseudo = {"grant": {"finality": {"max_target_bits": bundle["trust"]["max_target_bits"]}},
@@ -192,7 +247,7 @@ def settle(bundle):
 
     # the issuer of each credential, and the lineages that have a verified chain: from the chains the
     # companion used, that is the accepted uses (their chain passed cA2A) and the supplied chains
-    issuers, verified_lineages = {}, set()
+    issuers, verified_lineages, chain_keys = {}, set(), set()
 
     def learn(raw_chain, trusted):
         try:
@@ -208,6 +263,8 @@ def settle(bundle):
         for c in creds:
             d = credential_digest(c)
             issuers.setdefault(d, c.issuer)
+            chain_keys.add(c.issuer)
+            chain_keys.add(c.subject)
             lin.append(d)
         if trusted:
             verified_lineages.add(tuple(lin))
@@ -338,6 +395,7 @@ def settle(bundle):
         ts = req["task_sha256"] if req else None
         task = tasks.get(ts) if isinstance(ts, str) else None
         S = it["seen_block"]["height"] if hashes.get(it["seen_block"]["height"]) == it["seen_block"]["hash"] else None
+        e["seen_height"] = S
         sure_any = unresolved_any = False
         for d in it["lineage"]:
             # without a task the unit is unknown: a budget on the lineage in any unit prices the call
@@ -370,7 +428,172 @@ def settle(bundle):
         if row["counted"] and (row["request_sha256"], row["payee"]) not in executed:
             row["unexecuted"] = True
 
-    out["pilot"] = {"payments": rows, "executions": exec_rows,
+    # acceptance: the buyer fixes, before the work, what is checked and who checks it (criteria-commitment: the
+    # criteria digest and the checker key). An acceptance counts when its checker is the one the buyer named,
+    # that commitment is fixed before the execution receipt (logged before it, or witnessed before the block
+    # the receipt had seen), the checker is none of the parties, and the execution receipt and payment it
+    # names are the companion-accepted ones for this request. One counted record per (execution, commitment).
+    receipt_digest = {}            # item digest -> (seq, request, responder, caller, outcome), first logged
+    for r in comp["receipts"]:
+        it = entries[r["seq"]]["item"]
+        receipt_digest.setdefault(c1.item_sha256(it), (r["seq"], it["request_sha256"], it["responder"], it["caller"],
+                                                       r["outcome"]))
+    payment_digest = {}
+    for q in sorted(by_seq):
+        if by_seq[q]["counted"]:
+            payment_digest.setdefault(c1.item_sha256(entries[q]["item"]), q)
+    exec_by_seq = {e["seq"]: e for e in exec_rows}
+    operator = bundle["trust"]["operator"]
+
+    def commitment_row(key, c, seq=None, w=None):
+        row = {"request_sha256": c["request_sha256"], "buyer": c["buyer"], "criteria_sha256": c["criteria_sha256"],
+               "checker": c["checker"], "usable": False}
+        reasons = []
+        if seq is not None:
+            row["seq"] = seq
+            t = entries[seq]["logged_at"]
+        else:
+            row["item_sha256"] = key
+            row["published_height"] = w["published_height"]
+            t = None
+        sb = c["seen_block"]
+        S = sb["height"] if hashes.get(sb["height"]) == sb["hash"] else None
+        if S is None:
+            reasons.append("seen_block_not_in_view")
+        else:
+            if S >= A:
+                reasons.append("seen_block_not_before_anchor")
+            if t is not None and t + c0.TIME_SLACK < times[S]:
+                reasons.append("logged_before_seen_block")
+        req = requests.get(c["request_sha256"])
+        if req is None:
+            reasons.append("request_unknown")
+        elif c["buyer"] != req["caller"]:
+            reasons.append("buyer_is_not_caller")
+        elif c["checker"] in (req["caller"], req["responder"]):
+            reasons.append("checker_is_party")
+        row["reasons"] = sorted(set(reasons))
+        row["usable"] = not (set(reasons) & {"seen_block_not_in_view", "seen_block_not_before_anchor",
+                                               "request_unknown", "buyer_is_not_caller", "checker_is_party"})
+        return row
+    crows = [commitment_row(None, c, seq=q) for q, c in criteria]
+    wcrows = [commitment_row(d, wit_items[d], w=w) for d, w in sorted(wit_crit.items()) if d in wit_items]
+
+    def fixed_before(ex_seq, ex_S, req_sha, crit_sha, checker):
+        """The buyer's usable commitments to (criteria, checker) for the request that are fixed before the
+        execution at ex_seq, which saw block ex_S. Returns (sure list, unresolved list) of commitment ids."""
+        sure, unresolved = [], []
+        for row in crows:
+            if row["usable"] and (row["request_sha256"], row["criteria_sha256"], row["checker"]) == \
+                    (req_sha, crit_sha, checker) and row["seq"] < ex_seq:
+                sure.append(row["seq"])
+        for row in wcrows:
+            if not (row["usable"] and (row["request_sha256"], row["criteria_sha256"], row["checker"]) ==
+                    (req_sha, crit_sha, checker)):
+                continue
+            w = wit_crit[row["item_sha256"]]
+            o = c1.order({"published": w["published_height"], "earliest": w["earliest_height"]}, ex_S, A) \
+                if ex_S is not None else "unresolved"
+            if o == "before":
+                sure.append(row["item_sha256"])
+            elif o == "unresolved":
+                unresolved.append(row["item_sha256"])
+        return sure, unresolved
+
+    accepted = {}                  # (execution seq, criteria, checker) -> first counted acceptance seq
+    arows = []
+    for seq, a in acceptances:
+        row = {"seq": seq, "request_sha256": a["request_sha256"], "checker": a["checker"], "verdict": a["verdict"],
+               "criteria_sha256": a["criteria_sha256"], "record_sha256": a["record_sha256"], "counted": False}
+        reasons = []
+        t = entries[seq]["logged_at"]
+        sb = a["seen_block"]
+        S = sb["height"] if hashes.get(sb["height"]) == sb["hash"] else None
+        if S is None:
+            reasons.append("seen_block_not_in_view")
+        else:
+            if S >= A:
+                reasons.append("seen_block_not_before_anchor")
+            if t + c0.TIME_SLACK < times[S]:
+                reasons.append("logged_before_seen_block")
+        req = requests.get(a["request_sha256"])
+        row["request_known"] = req is not None
+        ex = receipt_digest.get(a["execution_receipt_sha256"])
+        if ex is None or ex[1] != a["request_sha256"] or ex[0] >= seq:
+            reasons.append("execution_receipt_not_found")
+            ex = None
+        elif ex[4] != "result":
+            reasons.append("execution_not_a_result")
+        parties = {operator} | chain_keys
+        if req is not None:
+            parties |= {req["caller"], req["responder"]}
+        if ex is not None:
+            parties |= {ex[2], ex[3]}
+        if req is None:
+            reasons.append("request_unknown")
+        elif a["checker"] in parties:
+            reasons.append("checker_is_party")
+        if req is not None and ex is not None:
+            ex_S = exec_by_seq[ex[0]].get("seen_height")
+            sure, unresolved = fixed_before(ex[0], ex_S, a["request_sha256"], a["criteria_sha256"], a["checker"])
+            if sure:
+                row["commitment"] = sure[0]
+            else:
+                named = [r for r in crows + wcrows if r["usable"] and r["request_sha256"] == a["request_sha256"]
+                         and r["criteria_sha256"] == a["criteria_sha256"]]
+                if not named:
+                    reasons.append("criteria_not_committed_by_buyer")
+                elif not any(r["checker"] == a["checker"] for r in named):
+                    reasons.append("checker_not_named_by_buyer")
+                else:
+                    reasons.append("criteria_not_fixed_before_work")
+                if unresolved:
+                    reasons.append("criteria_order_unresolved")
+            others = {(r["criteria_sha256"], r["checker"]) for r in crows + wcrows
+                      if r["usable"] and r["request_sha256"] == a["request_sha256"]}
+            if len(others) > 1:
+                reasons.append("multiple_criteria_commitments")
+        if a["payment_sha256"] is not None:
+            pq = payment_digest.get(a["payment_sha256"])
+            if pq is None or by_seq[pq]["request_sha256"] != a["request_sha256"] or \
+                    (ex is not None and by_seq[pq]["payee"] != ex[2]):
+                reasons.append("payment_not_found")
+            elif pq >= seq:
+                reasons.append("payment_not_before_acceptance")
+            else:
+                row["payment_seq"] = pq
+                if ex is not None and exec_by_seq[ex[0]].get("payment_seq") != pq:
+                    reasons.append("payment_not_the_executions")
+        if ex is not None:
+            row["execution_seq"] = ex[0]
+            k = (ex[0], a["criteria_sha256"], a["checker"])
+            if k in accepted:
+                reasons.append("another_acceptance_for_execution")
+                row["first_acceptance_seq"] = accepted[k]
+        hard = {"seen_block_not_in_view", "seen_block_not_before_anchor", "request_unknown", "checker_is_party",
+                "execution_receipt_not_found", "execution_not_a_result", "criteria_not_committed_by_buyer",
+                "checker_not_named_by_buyer", "criteria_not_fixed_before_work", "payment_not_found",
+                "payment_not_before_acceptance", "another_acceptance_for_execution"}
+        row["reasons"] = sorted(set(reasons))
+        if not (set(reasons) & hard):
+            row["counted"] = True
+            accepted[(ex[0], a["criteria_sha256"], a["checker"])] = seq
+            e = exec_by_seq[ex[0]]
+            e.setdefault("acceptance_seqs", []).append(seq)
+            verdicts = {ar["verdict"] for ar in arows if ar["counted"] and ar.get("execution_seq") == ex[0]}
+            verdicts.add(a["verdict"])
+            e["accepted"] = a["verdict"] if len(verdicts) == 1 else "conflicting"
+            if reasons:
+                e.setdefault("acceptance_reasons", []).extend(x for x in row["reasons"]
+                                                             if x not in e.get("acceptance_reasons", []))
+        arows.append(row)
+    for e in exec_rows:
+        e.pop("seen_height", None)
+        if "accepted" not in e:
+            e["accepted"] = None
+
+    out["pilot"] = {"payments": rows, "executions": exec_rows, "criteria_commitments": crows,
+                    "witnessed_criteria_commitments": wcrows, "acceptances": arows,
                     "totals": {d: book for d, book in sorted(counted.items())},
                     "budget_policies": len(budgets), "witnessed_budget_policies": len(wit), "tasks_known": len(tasks)}
     return out

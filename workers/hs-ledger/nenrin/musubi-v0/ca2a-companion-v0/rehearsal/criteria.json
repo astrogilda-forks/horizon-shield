@@ -1,0 +1,1 @@
+{"criteria":["every line of the fixture appears in the audit with a JCCDB reference","each unit price is compared against the JCCDB range for the region","the audit's total equals the fixture's total"],"fixture_sha256":"51623476cf3ebe24d64cab4e5a34234cb2ddc96e7bbdb6be4513610b2c41df9f","type":"horizon-shield.acceptance-criteria.v0"}

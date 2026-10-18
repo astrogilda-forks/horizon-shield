@@ -1,0 +1,17 @@
+{
+  // hs-pilot: the responder side of horizon-shield Issue #51 (one metered call of the estimate audit, testnet).
+  // No bindings, no state. The audit is fetched from the public MCP server; the block from mempool.space.
+  "name": "hs-pilot",
+  "main": "src/pilot.mjs",
+  "compatibility_date": "2026-08-01",
+  "preview_urls": false,
+  "workers_dev": true,
+  "observability": { "enabled": true, "logs": { "enabled": true } },
+  "vars": {
+    "PRICE": "7000",
+    "UNIT": "JPY-testnet",
+    "MCP_URL": "https://mcp.horizonshield.dev/mcp",
+    "BLOCKS_URL": "https://mempool.space/api"
+  }
+  // secret, set by hand and never written here:  wrangler secret put RESPONDER_SEED   (64 hex, a fresh Ed25519 seed)
+}
