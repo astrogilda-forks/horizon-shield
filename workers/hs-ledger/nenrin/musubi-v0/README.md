@@ -290,6 +290,19 @@ Writing it down found defects in settle v1.10 to v1.15 ([NOTES.md](settle-core-v
 - `python3 settle_v1_16.py --settle contract.json --event e.json --view view.json [--nenrin walk.json] [--parent parent.json]`
 - A second implementation, aeoess/musubi-settle-core-check, written from the text alone, agrees with all 76 vectors of the first release (Issue #49). Its question about approval signatures led to revision 0.1 of the text (NOTES.md N13) and three more vectors; its 25 implementation notes led to revision 0.2 (N14), which states parent narrowing (grant_subset) in full, with 38 more vectors. More implementations are wanted: run yours over `settle-core-v0/vectors/` and report any disagreement as section 15 of the specification says.
 
+## A companion for cA2A (2026-10-17)
+
+cA2A (agentrust-io/ca2a) checks a delegation chain at the moment of a call. Its own documents list what it leaves out: no protocol for publishing revocations, no record of credential use across requests, no receipts a third party can verify, and no commitment step for simultaneous attestation. [ca2a-companion-v0/COMPANION_v0.md](ca2a-companion-v0/COMPANION_v0.md) is an evidence profile for those four. It takes cA2A's DelegationCredential and RevocationStatement unchanged and judges every chain with cA2A's own `verify_chain`.
+
+    pip install ca2a-runtime==0.4.0                          # Python 3.11 or later
+    python3 ca2a-companion-v0/companion_v0.py --selftest     # expect: 57/57 vectors agree
+
+- An operator-signed log with Bitcoin-anchored checkpoints. An entry the operator accepted and later dropped or changed is shown by the operator's own signatures.
+- Credential-use items that carry their chain and name their responder. A use limit on any hop counts every request made under it, so delegating onward, re-issuing an ancestor or sending one request to two responders does not reset it.
+- Ed25519 execution receipts naming the lineage, the capability, the request occurrence, a Bitcoin block the responder had seen, and the outcome.
+- Two rounds of adversarial review before release found 17 holes; each is now a vector ([NOTES.md](ca2a-companion-v0/NOTES.md)).
+- What it does not give: anything about where a key lives or which workload signed (that is cA2A's attestation), or that a result is true.
+
 ## a2a-approval-v3 and settle v1.13: an approval that names its amount (2026-10-10, Issue #29)
 An a2a-approval-v2 approval carries no amount, so one approval covers any amount up to the cap in `grant.limits`. v3 puts `max_amount` (an integer string in the unit's smallest denomination) and `unit` into the signed bytes, under its own domain tag `a2a-approval-v3`. v2 stays frozen as @babyblueviper1's reference. The format, the bytes and the reasons are in [APPROVAL_V3.md](APPROVAL_V3.md).
 
