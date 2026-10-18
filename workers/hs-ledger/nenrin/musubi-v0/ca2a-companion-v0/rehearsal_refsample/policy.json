@@ -1,0 +1,1 @@
+{"checkers":["efc6509657ae84b590c187e71d940079f0862ebf6db8e1f3c39e54f81c358cea","0323b2c2200e5e6aae8004eaaeacd23ac471af1c1306471bae045ab37858b925"],"lower_bound":{"hash":"138918d54bb732c50ff921fe59a146673b1c7abb2c19665c4b039f3f78f5fce9","height":95,"kind":"bitcoin_block"},"max_target_bits":"207fffff","min_depth":6,"min_sampled":10,"quorum":1,"type":"musubi.refsample.policy.v0"}

@@ -1,0 +1,3959 @@
+{
+ "type": "horizon-shield.souba-basis.v0",
+ "souba_db": {
+  "url": "https://shield.the-horizons-innovation.com/data/souba-db.json",
+  "sha256": "85418e4af9d3d727af2eb1c95566aa56f21d8ae1046601bc259baa302515680d",
+  "version": "2.2.0"
+ },
+ "kind": "corroboration",
+ "checked_on": "2026-10-18",
+ "reading": "Per row of souba-db: public pages found on the date above that state a price for comparable work, with the figure quoted as the page writes it, and whether the souba range agrees with it (consistent, partly, inconsistent, none). These are corroborating sources found afterwards, not the material the ranges were originally set from. A row with sources can be checked by anyone: open the page and compare. 'none' means no comparable public figure was found, not that the range is wrong; 'inconsistent' means the public figures found do not overlap the range.",
+ "counts": {
+  "consistent": 88,
+  "inconsistent": 8,
+  "none": 29,
+  "partly": 64
+ },
+ "rows": [
+  {
+   "id": "gaiheki_silicon_sqm",
+   "work": "外壁塗装 シリコン塗料 単価",
+   "unit": "㎡",
+   "min": 2300,
+   "avg": 3000,
+   "max": 3500,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "シリコン塗料 約2,100～3,500円(㎡あたり相場)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/outdoor-wall-painting/media/91130",
+     "as_of": "2024-06-28",
+     "quoted": "シリコン 約2,500～2,800円/㎡",
+     "unit_matches": true
+    }
+   ],
+   "note": "金額帯は一致。ただし出典の㎡単価は塗装のみ(ミツモアは足場等を別計上)で、souba の「足場込み」表記とは範囲が異なる可能性"
+  },
+  {
+   "id": "gaiheki_radical_sqm",
+   "work": "外壁塗装 ラジカル塗料 単価",
+   "unit": "㎡",
+   "min": 2800,
+   "avg": 3400,
+   "max": 4000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "ラジカル塗料 約2,200～4,000円(㎡あたり相場)",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 2,800〜4,000 は出典帯の上半分に収まる"
+  },
+  {
+   "id": "gaiheki_fluorine_sqm",
+   "work": "外壁塗装 フッ素塗料 単価",
+   "unit": "㎡",
+   "min": 3800,
+   "avg": 4300,
+   "max": 5000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "フッ素塗料 約2,000～5,000円(㎡あたり相場)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/outdoor-wall-painting/media/91130",
+     "as_of": "2024-06-28",
+     "quoted": "フッ素 約4,000～5,000円/㎡",
+     "unit_matches": true
+    }
+   ],
+   "note": "ミツモアの帯とほぼ一致"
+  },
+  {
+   "id": "gaiheki_inorganic_sqm",
+   "work": "外壁塗装 無機塗料 単価",
+   "unit": "㎡",
+   "min": 4500,
+   "avg": 5500,
+   "max": 6500,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "無機塗料 約3,500～5,500円(㎡あたり相場)",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 4,500〜6,500 は出典より上にずれ、上限6,500は出典上限5,500を超える"
+  },
+  {
+   "id": "gaiheki_20tsubo",
+   "work": "外壁塗装 20坪 一式（シリコン）",
+   "unit": "一式",
+   "min": 500000,
+   "avg": 650000,
+   "max": 800000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "20坪: 40～90万円(外壁塗装の坪数別費用相場)",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典は塗料種別を問わない総額"
+  },
+  {
+   "id": "gaiheki_30tsubo",
+   "work": "外壁塗装 30坪 一式（シリコン）",
+   "unit": "一式",
+   "min": 700000,
+   "avg": 900000,
+   "max": 1150000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "30坪: 60～100万円",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/outdoor-wall-painting/media/91130",
+     "as_of": "2024-06-28",
+     "quoted": "「シリコン塗料で塗装した場合は90万円」(30坪・外壁120㎡の試算、付帯工事約60万円込み)",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 平均90万はミツモアのシリコン試算と一致"
+  },
+  {
+   "id": "gaiheki_40tsubo",
+   "work": "外壁塗装 40坪 一式（シリコン）",
+   "unit": "一式",
+   "min": 950000,
+   "avg": 1200000,
+   "max": 1400000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "40坪: 80～130万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 上限140万は出典上限をやや超えるが大半が重なる"
+  },
+  {
+   "id": "gaiheki_yane_set_30tsubo",
+   "work": "外壁＋屋根塗装セット 30坪",
+   "unit": "一式",
+   "min": 900000,
+   "avg": 1100000,
+   "max": 1300000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/2711/",
+     "as_of": "2024-01-22",
+     "quoted": "30坪(約119㎡): 80～140万円(屋根塗装＋外壁塗装)",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/?p=1734",
+     "as_of": "2025-12-18",
+     "quoted": "屋根と外壁の塗装(30坪): 100万円 ～ 180万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "くらしのマーケットの帯に収まる。CREX はやや高め"
+  },
+  {
+   "id": "yane_tosou_30tsubo",
+   "work": "屋根塗装 30坪（シリコン）",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 500000,
+   "max": 600000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/roof-painting/media/110945",
+     "as_of": "2024-12-17",
+     "quoted": "30坪: 40万〜80万円程度(本文) / 25万～65万円(比較表) / シリコン塗料 40～50万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "同一ページ内で本文と表の金額が食い違う。souba 25〜60万は表の帯と一致"
+  },
+  {
+   "id": "yane_cover_30tsubo",
+   "work": "屋根カバー工法 30坪（ガルバリウム）",
+   "unit": "一式",
+   "min": 700000,
+   "avg": 1100000,
+   "max": 1500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/roof-reform/roof-re-roofing-cost/",
+     "as_of": "2026-02-04",
+     "quoted": "カバー工法(30坪): 600,000〜1,400,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/roof-changing/media/246809",
+     "as_of": "2024-12-17",
+     "quoted": "カバー工法(30坪): 70〜100万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典は材料別でない総額"
+  },
+  {
+   "id": "yane_fukikae_slate",
+   "work": "屋根葺き替え スレート 30坪",
+   "unit": "一式",
+   "min": 900000,
+   "avg": 1400000,
+   "max": 1800000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/roof-reform/roof-re-roofing-cost/",
+     "as_of": "2026-02-04",
+     "quoted": "スレート 葺き替え(30坪): 800,000〜1,500,000円(㎡あたり4,500〜8,000円)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/roof-changing/media/246809",
+     "as_of": "2024-12-17",
+     "quoted": "スレート(葺き替え・30坪): 120〜180万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "2出典の帯にまたがって重なる"
+  },
+  {
+   "id": "yane_fukikae_galv",
+   "work": "屋根葺き替え ガルバリウム 30坪",
+   "unit": "一式",
+   "min": 1000000,
+   "avg": 1500000,
+   "max": 2000000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/roof-reform/roof-re-roofing-cost/",
+     "as_of": "2026-02-04",
+     "quoted": "ガルバリウム鋼板 葺き替え(30坪): 1,000,000〜1,800,000円(㎡あたり6,000〜12,000円)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/roof-changing/media/246809",
+     "as_of": "2024-12-17",
+     "quoted": "ガルバリウム鋼板(葺き替え・30坪): 100〜160万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 上限200万は出典上限をやや超える"
+  },
+  {
+   "id": "yane_munaiban",
+   "work": "棟板金交換・修理",
+   "unit": "一式",
+   "min": 50000,
+   "avg": 200000,
+   "max": 450000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/roof-changing/media/246809",
+     "as_of": "2024-12-17",
+     "quoted": "棟板金の補修・交換: 20〜35万円(単価: 棟板金の交換 7,000〜12,000円/㎡、釘打ちコーキング 15,000〜30,000円/1軒、足場は別途)",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典帯は souba 5〜45万の内側。足場別途の点に注意"
+  },
+  {
+   "id": "yane_amamori_buzai",
+   "work": "雨漏り修理 部分補修",
+   "unit": "一式",
+   "min": 30000,
+   "avg": 120000,
+   "max": 300000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "iタウンページ くらしのコラム (itp.ne.jp)",
+     "url": "https://itp.ne.jp/kurashi-column/reform/article093/",
+     "as_of": "2026-01-13",
+     "quoted": "屋根の部分修理「1万円以下で収まる場合もあります」/ 外壁「ひび割れ・コーキングの補修 2万〜20万円」/ 天井「2万〜20万円が相場」/ ベランダ「3万〜25万円が相場」",
+     "unit_matches": true
+    }
+   ],
+   "note": "部位別の部分補修の帯が souba 3〜30万と重なる"
+  },
+  {
+   "id": "shiroari_kujo_sqm",
+   "work": "シロアリ駆除 バリア工法 ㎡単価",
+   "unit": "㎡",
+   "min": 1500,
+   "avg": 1867,
+   "max": 2500,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "スムタノ (sunrefre.jp)",
+     "url": "https://www.sunrefre.jp/sumutano/?p=11119",
+     "as_of": "2024-10-03",
+     "quoted": "バリア工法 1平方メートルあたり 約1,000円〜2,500円",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/underfloor-renovation-type-cost-average/",
+     "as_of": "2026-02-04",
+     "quoted": "バリア工法 10万円～25万円（1坪あたり約6,000円～10,000円）",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 1,500〜2,500 はスムタノの㎡帯に収まる。CREX は坪単価で単位違い"
+  },
+  {
+   "id": "shiroari_kujo_20tsubo",
+   "work": "シロアリ駆除 20坪 一式",
+   "unit": "一式",
+   "min": 99000,
+   "avg": 150000,
+   "max": 200000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/termite-control/media/126686",
+     "as_of": "2025-07-23",
+     "quoted": "20坪: 44,000円～110,000円(ミツモア 駆除費用・税込)",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 9.9〜20万はミツモアの帯より上にずれ、重なりは9.9〜11万のみ。ミツモアの20坪が1階床面積かは不明"
+  },
+  {
+   "id": "shiroari_kujo_30tsubo",
+   "work": "シロアリ駆除 30坪 一式",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 220000,
+   "max": 300000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "スムタノ (sunrefre.jp)",
+     "url": "https://www.sunrefre.jp/sumutano/?p=11126",
+     "as_of": "2026-03-17",
+     "quoted": "30坪（約99㎡）: 約9万円〜30万円",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/termite-control/media/126686",
+     "as_of": "2025-07-23",
+     "quoted": "30坪: 66,000円～165,000円(ミツモア 駆除費用・税込)",
+     "unit_matches": true
+    }
+   ],
+   "note": "スムタノの帯と一致。ミツモアは低め"
+  },
+  {
+   "id": "shiroari_tenkenguchi",
+   "work": "床下点検口設置 1箇所",
+   "unit": "1箇所",
+   "min": 20000,
+   "avg": 35000,
+   "max": 50000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/?p=1824",
+     "as_of": "2025-12-18",
+     "quoted": "点検口がない場合、設置費用として3万円～5万円程度かかります。",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/underfloor-renovation-type-cost-average/",
+     "as_of": "2026-02-04",
+     "quoted": "床下点検口 費用は3万円〜5万円程度が追加でかかります",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典帯は souba 2〜5万の内側"
+  },
+  {
+   "id": "shiroari_kankiouji",
+   "work": "床下換気扇設置 1台",
+   "unit": "1台",
+   "min": 80000,
+   "avg": 150000,
+   "max": 250000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "東急リバブル L-note (livable.co.jp)",
+     "url": "https://www.livable.co.jp/l-note/?p=17263",
+     "as_of": "2023-11",
+     "quoted": "本体価格と取付工事費を合わせて1台あたり約5万円(30坪以下・3台で約15万円)",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/underfloor-renovation-type-cost-average/",
+     "as_of": "2026-02-04",
+     "quoted": "15万円～35万円（2～4台設置）",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 1台8〜25万は出典の1台約5万を大きく上回る(訪問販売の価格帯を載せている可能性)"
+  },
+  {
+   "id": "yukashita_chouyu_tsubo",
+   "work": "床下調湿剤散布 坪単価",
+   "unit": "坪",
+   "min": 4000,
+   "avg": 6500,
+   "max": 8000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/underfloor-renovation-type-cost-average/",
+     "as_of": "2026-02-04",
+     "quoted": "5万円～15万円（1坪あたり約5,000円～15,000円）",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは5,000〜8,000円。出典の帯は souba より上に広い"
+  },
+  {
+   "id": "yukashita_bouhuboukabi",
+   "work": "床下防腐・防カビ処理 坪単価",
+   "unit": "坪",
+   "min": 3500,
+   "avg": 5000,
+   "max": 7000,
+   "verdict": "none",
+   "sources": [],
+   "note": "床下防腐・防カビ処理の単独の坪単価を示す公開ページは見つからず(シロアリ駆除の基本料金に含む例のみ)"
+  },
+  {
+   "id": "kitchen_low",
+   "work": "キッチン交換 ローグレード",
+   "unit": "一式",
+   "min": 500000,
+   "avg": 650000,
+   "max": 800000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/kitchen-reform-cost-examples/",
+     "as_of": "2026-02-04",
+     "quoted": "50万円～100万円: 既存のキッチンと同じ場所、同じサイズで新しいシステムキッチンに交換 / I型 工事費込みで50万円～120万円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "同位置交換・I型の帯と一致"
+  },
+  {
+   "id": "kitchen_mid",
+   "work": "キッチン交換 ミドルグレード",
+   "unit": "一式",
+   "min": 800000,
+   "avg": 1200000,
+   "max": 1500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/kitchen-reform-cost-examples/",
+     "as_of": "2026-02-04",
+     "quoted": "ペニンシュラ(対面式) 工事費込みで80万円～180万円程度 / 100万円～150万円の価格帯",
+     "unit_matches": true
+    }
+   ],
+   "note": "対面型の帯に収まる"
+  },
+  {
+   "id": "kitchen_high",
+   "work": "キッチン交換 ハイグレード",
+   "unit": "一式",
+   "min": 1800000,
+   "avg": 2500000,
+   "max": 3500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/kitchen-reform-cost-examples/",
+     "as_of": "2026-02-04",
+     "quoted": "アイランド 工事費込みで120万円～250万円以上 / 150万円以上: セラミックトップ等の最高級",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なるが souba 180〜350万は出典より上にずれる(出典上限は「以上」で開いている)"
+  },
+  {
+   "id": "kitchen_idou",
+   "work": "キッチン位置移動を伴う工事",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 2200000,
+   "max": 3000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/kitchen-relocation-reform-cost/",
+     "as_of": "2026-02-04",
+     "quoted": "壁付けから対面式: 50万円～100万円(キッチン本体費用を除く、給排水管・ガス管・電気配線の移設) / 本体 スタンダード50万円～100万円程度、ミドル80万円～150万円程度",
+     "unit_matches": false
+    },
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/renovation/kitchen-reform-cost-examples/",
+     "as_of": "2026-02-04",
+     "quoted": "壁付けI型からアイランド 150万円～ / ペニンシュラ 120万円～",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典は移設費と本体を分けて示す。合算すると概ね130〜250万で souba と重なるが範囲の取り方が違う"
+  },
+  {
+   "id": "bath_unit_replace_low",
+   "work": "ユニットバス交換 ロー（1216）",
+   "unit": "一式",
+   "min": 600000,
+   "avg": 850000,
+   "max": 1100000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/bath-reform/unit-bath-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "スタンダードグレード: 50万～80万円(工事費込み)",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/bath-reform/house-bathroom-reform-cost/",
+     "as_of": "2025-10-27",
+     "quoted": "ユニットバス→ユニットバス: おおよそ60万円～120万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典はサイズ別でなくグレード別"
+  },
+  {
+   "id": "bath_unit_replace_mid",
+   "work": "ユニットバス交換 ミドル（1616）",
+   "unit": "一式",
+   "min": 900000,
+   "avg": 1200000,
+   "max": 1500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/bath-reform/unit-bath-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "ミドルグレード: 70万～120万円(工事費込み)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/bathroom-remodel/media/100064",
+     "as_of": "2024-06-28",
+     "quoted": "1616(1.0坪) 本体代 73万円~",
+     "unit_matches": false
+    }
+   ],
+   "note": "重なりは90〜120万。ミツモアは本体代のみで工事費別"
+  },
+  {
+   "id": "bath_unit_replace_high",
+   "work": "ユニットバス交換 ハイ（1620）",
+   "unit": "一式",
+   "min": 1400000,
+   "avg": 1800000,
+   "max": 2200000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/bath-reform/unit-bath-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "ハイグレード: 100万～150万円以上(工事費込み)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア (meetsmore.com)",
+     "url": "https://meetsmore.com/services/bathroom-remodel/media/100064",
+     "as_of": "2024-06-28",
+     "quoted": "1618(1.25坪) 本体代 86万円~ (1620は記載なし)",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 140〜220万は出典のハイグレード帯より上にずれる(出典上限は「以上」)"
+  },
+  {
+   "id": "bath_zairai_to_unit",
+   "work": "在来工法→ユニットバス変更",
+   "unit": "一式",
+   "min": 1000000,
+   "avg": 1400000,
+   "max": 1800000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/bath-reform/house-bathroom-reform-cost/",
+     "as_of": "2025-10-27",
+     "quoted": "在来浴室→ユニットバス: 80万円～150万円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは100〜150万。souba 上限180万は出典より高い"
+  },
+  {
+   "id": "toilet_replace_basic",
+   "work": "トイレ交換 組み合わせ便器",
+   "unit": "一式",
+   "min": 70000,
+   "avg": 150000,
+   "max": 220000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/767/",
+     "as_of": "2024-05-14",
+     "quoted": "組み合わせトイレ 4〜7万円(まとめ表) / 7万～20万円(交換工事込みの別表)",
+     "unit_matches": true
+    }
+   ],
+   "note": "同一ページ内で2つの帯が食い違う。souba 7〜22万は別表の帯とほぼ一致"
+  },
+  {
+   "id": "toilet_replace_tankless",
+   "work": "トイレ交換 タンクレス",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 280000,
+   "max": 400000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット (curama.jp)",
+     "url": "https://curama.jp/magazine/767/",
+     "as_of": "2024-05-14",
+     "quoted": "タンクレストイレ 12〜23万円(まとめ表) / 15万～40万円(交換工事込みの別表)",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/toilet-reform/toilet-construction-cost-patterns/",
+     "as_of": "2026-02-04",
+     "quoted": "本体価格の相場は15万円〜40万円程度 / 手洗い器 10万円～30万円（手洗い器本体＋工事費）",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 20〜40万は別表の帯に収まる"
+  },
+  {
+   "id": "toilet_full_renov",
+   "work": "トイレ交換＋内装フルリフォーム",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 400000,
+   "max": 550000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX リフォーム (crexgroup.com)",
+     "url": "https://crexgroup.com/ja/reform/toilet-reform/toilet-construction-cost-patterns/",
+     "as_of": "2026-02-04",
+     "quoted": "便器交換＋内装リフォーム: 20万円～50万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 25〜55万とほぼ一致"
+  },
+  {
+   "id": "toilet_washiki_to_youshiki",
+   "work": "和式→洋式トイレ変更",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 450000,
+   "max": 600000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/1189/",
+     "as_of": "2024-05-14",
+     "quoted": "和式トイレ→洋式トイレ（トイレと工事一式）30万～40万円",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/toilet-remodel/media/102137",
+     "as_of": "2024-06-28",
+     "quoted": "10万～30万円（床や壁の張り替えを含めると総額およそ30万円）",
+     "unit_matches": true
+    }
+   ],
+   "note": "くらしのマーケットの30万～40万円は souba 下半分と一致。ミツモアは低め(上限30万で接する)"
+  },
+  {
+   "id": "floor_harikae_sqm",
+   "work": "フローリング張り替え 単価",
+   "unit": "㎡",
+   "min": 8000,
+   "avg": 11000,
+   "max": 15000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/floor-exchange/media/91229",
+     "as_of": "2025-04-22",
+     "quoted": "複合フローリング（張り替え）1㎡あたり平均単価 10,897円",
+     "unit_matches": true
+    }
+   ],
+   "note": "平均単価が souba 8,000～15,000 の内側"
+  },
+  {
+   "id": "floor_harikae_6jo",
+   "work": "フローリング張り替え 6畳（10㎡）",
+   "unit": "一式",
+   "min": 90000,
+   "avg": 140000,
+   "max": 200000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/floor-exchange/media/91229",
+     "as_of": "2025-04-22",
+     "quoted": "複合フローリング 6畳 張り替え 115,000～165,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/734/",
+     "as_of": "2026-09-18",
+     "quoted": "フローリング（張替え）6畳（10㎡）14.6万円〜19.5万円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "両出典とも souba 9万～20万の内側"
+  },
+  {
+   "id": "floor_kasanebari_6jo",
+   "work": "フローリング重ね張り 6畳",
+   "unit": "一式",
+   "min": 80000,
+   "avg": 130000,
+   "max": 200000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/floor-exchange/media/91229",
+     "as_of": "2025-04-22",
+     "quoted": "複合フローリング 6畳 上張り 70,000～120,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/734/",
+     "as_of": "2026-09-18",
+     "quoted": "フローリング（上張り）6畳 4.9万〜9.72万円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは8万～12万。souba の上限20万は出典上限より高い側にずれる"
+  },
+  {
+   "id": "floor_mugen_6jo",
+   "work": "無垢フローリング張り替え 6畳",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 250000,
+   "max": 350000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/floor-exchange/media/91229",
+     "as_of": "2025-04-22",
+     "quoted": "無垢フローリング 6畳 張り替え 150,000～220,000円（6畳あたり平均費用 123,785円）",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは15万～22万。souba 平均25万・上限35万は出典上限より高い"
+  },
+  {
+   "id": "cloth_sqm",
+   "work": "クロス張り替え 単価",
+   "unit": "㎡",
+   "min": 900,
+   "avg": 1200,
+   "max": 1600,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/wall-paper-exchange/media/101268",
+     "as_of": "2025-07-23",
+     "quoted": "量産タイプ 1㎡あたり 1,000～1,200円",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/732/",
+     "as_of": "2026-09-09",
+     "quoted": "スタンダードクロス：1,000円／㎡",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典値が souba 900～1,600 の内側"
+  },
+  {
+   "id": "cloth_6jo",
+   "work": "クロス張り替え 6畳（全壁＋天井）",
+   "unit": "一式",
+   "min": 45000,
+   "avg": 60000,
+   "max": 80000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/wall-paper-exchange/media/101268",
+     "as_of": "2025-07-23",
+     "quoted": "6畳 施工面積40㎡程度 量産タイプ 40,000～48,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/732/",
+     "as_of": "2026-09-09",
+     "quoted": "6畳 スタンダード（量産）クロス 4万〜4.9万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは4.5万～4.9万のみ。souba 平均6万・上限8万は量産の出典上限より高い(出典の標準タイプ帯に近い)"
+  },
+  {
+   "id": "cloth_12jo",
+   "work": "クロス張り替え 12畳（全壁＋天井）",
+   "unit": "一式",
+   "min": 75000,
+   "avg": 95000,
+   "max": 115000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/wall-paper-exchange/media/101268",
+     "as_of": "2025-07-23",
+     "quoted": "12畳 施工面積60㎡程度 量産タイプ 60,000～72,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/732/",
+     "as_of": "2026-09-09",
+     "quoted": "12畳 スタンダード（量産）クロス 5.7万〜6.8万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 下限7.5万が両出典の量産上限(7.2万/6.8万)を上回る。souba は高い側"
+  },
+  {
+   "id": "mansion_renov_sqm",
+   "work": "マンション全面リノベ 平米単価",
+   "unit": "㎡",
+   "min": 150000,
+   "avg": 180000,
+   "max": 200000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX GROUP リフォームガイド",
+     "url": "https://crexgroup.com/ja/reform/renovation/full-renovation-cost-4/",
+     "as_of": "2026-02-04",
+     "quoted": "単価は1㎡あたり10万円〜20万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 15万～20万が出典幅の上半分に収まる"
+  },
+  {
+   "id": "mansion_renov_70",
+   "work": "マンション全面リノベ 70㎡",
+   "unit": "一式",
+   "min": 10500000,
+   "avg": 12500000,
+   "max": 14000000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX GROUP リフォームガイド",
+     "url": "https://crexgroup.com/ja/reform/renovation/full-renovation-cost-4/",
+     "as_of": "2026-02-04",
+     "quoted": "マンション 70㎡（3LDK）700万円〜1,400万円程度",
+     "unit_matches": true
+    },
+    {
+     "source": "SUUMO",
+     "url": "https://suumo.jp/remodel/soba/rm_skeleton/",
+     "as_of": "2022-11-29",
+     "quoted": "スケルトンリフォーム 60～70平米 約600万円～1000万円 / 70～80平米 約800万円～2000万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 1,050万～1,400万は出典幅の上半分。SUUMO は2019年調査で古い"
+  },
+  {
+   "id": "mansion_renov_skeleton_70",
+   "work": "マンションスケルトンリノベ 70㎡",
+   "unit": "一式",
+   "min": 12500000,
+   "avg": 13000000,
+   "max": 13500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "SUUMO",
+     "url": "https://suumo.jp/remodel/soba/rm_skeleton/",
+     "as_of": "2022-11-29",
+     "quoted": "70～80平米 約800万円～2000万円、マンションの場合900～1200万円（中心費用帯）",
+     "unit_matches": true
+    }
+   ],
+   "note": "広さ別の幅には入るが中心費用帯900万～1,200万より上。出典は2019年調査で古い"
+  },
+  {
+   "id": "kodate_renov_sqm",
+   "work": "戸建て全面リノベ 平米単価",
+   "unit": "㎡",
+   "min": 100000,
+   "avg": 160000,
+   "max": 220000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX GROUP リフォームガイド",
+     "url": "https://crexgroup.com/ja/reform/renovation/full-renovation-cost-4/",
+     "as_of": "2026-02-04",
+     "quoted": "単価は1㎡あたり10万円〜20万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "ほぼ同幅。ただし出典の単価が戸建て専用かは明記なし"
+  },
+  {
+   "id": "kodate_renov_100",
+   "work": "戸建て全面リノベ 100㎡",
+   "unit": "一式",
+   "min": 10000000,
+   "avg": 15000000,
+   "max": 22000000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "SUUMO",
+     "url": "https://suumo.jp/remodel/soba/rm_skeleton/",
+     "as_of": "2022-11-29",
+     "quoted": "一戸建て スケルトンリフォーム 80～100平米 約800万円～2000万円 / 100～120平米 約1500万円～3000万円",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX GROUP リフォームガイド",
+     "url": "https://crexgroup.com/ja/reform/renovation/full-renovation-cost-4/",
+     "as_of": "2026-02-04",
+     "quoted": "戸建て：一般的に1,000万円〜2,500万円以上",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 1,000万～2,200万は SUUMO の100平米前後の幅と重なる"
+  },
+  {
+   "id": "shinchiku_wood_tsubo",
+   "work": "木造住宅新築 坪単価",
+   "unit": "坪",
+   "min": 650000,
+   "avg": 750000,
+   "max": 900000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "オリコン顧客満足度 ハウスメーカー",
+     "url": "https://life.oricon.co.jp/rank-house-maker/special/cost/calculate-tsubo-price/",
+     "as_of": "2025-11",
+     "quoted": "木造 坪単価 72.6万円（2024年度建築着工統計調査）",
+     "unit_matches": true
+    },
+    {
+     "source": "アットホーム",
+     "url": "https://www.athome.co.jp/contents/custom/build-cost/price-per-tsubo/",
+     "as_of": "2024-08-22",
+     "quoted": "木造 約67.49万円（坪単価、令和5年計分）",
+     "unit_matches": true
+    }
+   ],
+   "note": "両出典とも souba 65万～90万の内側"
+  },
+  {
+   "id": "shinchiku_wood_lowcost_tsubo",
+   "work": "木造住宅 ローコスト 坪単価",
+   "unit": "坪",
+   "min": 400000,
+   "avg": 500000,
+   "max": 650000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "オリコン顧客満足度 ハウスメーカー",
+     "url": "https://life.oricon.co.jp/rank-house-maker/special/cost/calculate-tsubo-price/",
+     "as_of": "2025-11",
+     "quoted": "ローコスト住宅メーカー 30万円〜50万円",
+     "unit_matches": true
+    },
+    {
+     "source": "アットホーム",
+     "url": "https://www.athome.co.jp/contents/custom/build-cost/price-per-tsubo/",
+     "as_of": "2024-08-22",
+     "quoted": "ローコスト住宅の建築が得意なハウスメーカー 坪単価30万～50万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは40万～50万。souba 上限65万は出典より高い側にずれる"
+  },
+  {
+   "id": "shinchiku_steel_tsubo",
+   "work": "鉄骨造住宅新築 坪単価",
+   "unit": "坪",
+   "min": 850000,
+   "avg": 1100000,
+   "max": 1250000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "アットホーム",
+     "url": "https://www.athome.co.jp/contents/custom/build-cost/price-per-tsubo/",
+     "as_of": "2024-08-22",
+     "quoted": "鉄骨造 約92.93万円（坪単価、令和5年計分）",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典値が souba 85万～125万の内側(出典は2023年の統計)"
+  },
+  {
+   "id": "shinchiku_rc_tsubo",
+   "work": "RC造住宅新築 坪単価",
+   "unit": "坪",
+   "min": 1100000,
+   "avg": 1350000,
+   "max": 1500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "オリコン顧客満足度 ハウスメーカー",
+     "url": "https://life.oricon.co.jp/rank-house-maker/special/cost/calculate-tsubo-price/",
+     "as_of": "2025-11",
+     "quoted": "鉄筋コンクリート造 坪単価 128.7万円（2024年度建築着工統計調査）",
+     "unit_matches": true
+    },
+    {
+     "source": "アットホーム",
+     "url": "https://www.athome.co.jp/contents/custom/build-cost/price-per-tsubo/",
+     "as_of": "2024-08-22",
+     "quoted": "RC造 約103.91万円（坪単価、令和5年計分）",
+     "unit_matches": true
+    }
+   ],
+   "note": "2024年度値128.7万は内側。2023年値103.91万は souba 下限より低い"
+  },
+  {
+   "id": "tenpo_izakaya_tsubo",
+   "work": "居酒屋・バー内装 坪単価（スケルトン）",
+   "unit": "坪",
+   "min": 300000,
+   "avg": 500000,
+   "max": 700000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "マネーフォワード クラウド",
+     "url": "https://biz.moneyforward.com/restaurant/basic/?p=2974",
+     "as_of": "2026-04-01",
+     "quoted": "飲食店 坪単価 30万円～70万円（スケルトン物件 30万円～80万円）",
+     "unit_matches": true
+    },
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/office-relocation/article/interior-work",
+     "as_of": "2025-01-08",
+     "quoted": "レストラン・居酒屋 30万～50万円／坪",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 30万～70万と同幅"
+  },
+  {
+   "id": "tenpo_cafe_tsubo",
+   "work": "カフェ・レストラン内装 坪単価",
+   "unit": "坪",
+   "min": 300000,
+   "avg": 550000,
+   "max": 800000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "マネーフォワード クラウド",
+     "url": "https://biz.moneyforward.com/restaurant/basic/?p=2974",
+     "as_of": "2026-04-01",
+     "quoted": "飲食店 坪単価 30万円～70万円",
+     "unit_matches": true
+    },
+    {
+     "source": "飲食店.COM",
+     "url": "https://www.inshokuten.com/foodist/article/4795",
+     "as_of": "2026-10-18",
+     "quoted": "1坪あたりの工事費は30~60万円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 30万～80万に出典幅が収まる。アイミツはカフェ・喫茶店15万～40万円／坪と低め"
+  },
+  {
+   "id": "tenpo_cafe_10tsubo",
+   "work": "カフェ・レストラン 10坪スケルトン",
+   "unit": "一式",
+   "min": 3500000,
+   "avg": 6000000,
+   "max": 8000000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "飲食店.COM",
+     "url": "https://www.inshokuten.com/foodist/article/4795",
+     "as_of": "2026-10-18",
+     "quoted": "10坪の店だと300~600万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは350万～600万。souba 上限800万は出典より高い"
+  },
+  {
+   "id": "tenpo_salon_tsubo",
+   "work": "美容室・サロン内装 坪単価",
+   "unit": "坪",
+   "min": 200000,
+   "avg": 400000,
+   "max": 700000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "マネーフォワード クラウド",
+     "url": "https://biz.moneyforward.com/restaurant/basic/?p=2974",
+     "as_of": "2026-04-01",
+     "quoted": "美容室・サロン 坪単価 25万円～60万円",
+     "unit_matches": true
+    },
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/office-relocation/article/interior-work",
+     "as_of": "2025-01-08",
+     "quoted": "美容院・サロン 20万～50万円／坪",
+     "unit_matches": true
+    }
+   ],
+   "note": "両出典とも souba 20万～70万の内側"
+  },
+  {
+   "id": "tenpo_clinic_tsubo",
+   "work": "クリニック・医療内装 坪単価",
+   "unit": "坪",
+   "min": 400000,
+   "avg": 600000,
+   "max": 900000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "2nd Labo",
+     "url": "https://2ndlabo.com/article/354/",
+     "as_of": "2023-08-25",
+     "quoted": "クリニック内装工事の坪単価は約40万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典値は souba 下限40万に一致。souba 平均60万は出典より高い側"
+  },
+  {
+   "id": "tenpo_apparel_tsubo",
+   "work": "物販・アパレル内装 坪単価",
+   "unit": "坪",
+   "min": 150000,
+   "avg": 250000,
+   "max": 400000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "マネーフォワード クラウド",
+     "url": "https://biz.moneyforward.com/restaurant/basic/?p=2974",
+     "as_of": "2026-04-01",
+     "quoted": "物販店 坪単価 20万円～50万円",
+     "unit_matches": true
+    },
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/office-relocation/article/interior-work",
+     "as_of": "2025-01-08",
+     "quoted": "アパレルショップ 15万円／坪",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 15万～40万と物販店の幅が大きく重なる"
+  },
+  {
+   "id": "kyutoki_16",
+   "work": "給湯器交換 16号",
+   "unit": "一式",
+   "min": 130000,
+   "avg": 180000,
+   "max": 250000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-heater-exchange/media/106467",
+     "as_of": "2025-05-29",
+     "quoted": "16号 ガス給湯器 給湯専用 5万円～11万円 / オート 10万円～18万円 / フルオート 12万円～19万円（工事費込み）",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/1054/",
+     "as_of": "2025-01",
+     "quoted": "16号 ガス給湯専用 5.2万円〜 / ガス給湯＋追い焚き 10.2万円〜（本体＋工事費込み）",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは13万～19万。souba 上限25万は出典上限より高い側"
+  },
+  {
+   "id": "kyutoki_20",
+   "work": "給湯器交換 20号",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 220000,
+   "max": 300000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-heater-exchange/media/106467",
+     "as_of": "2025-05-29",
+     "quoted": "20号 ガス給湯器 給湯専用 6万円～12万円 / オート 11万円～18万円 / フルオート 13万円～20万円（工事費込み）",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは15万～20万。souba 平均22万・上限30万は出典上限より高い"
+  },
+  {
+   "id": "kyutoki_24",
+   "work": "給湯器交換 24号",
+   "unit": "一式",
+   "min": 180000,
+   "avg": 270000,
+   "max": 380000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-heater-exchange/media/106467",
+     "as_of": "2025-05-29",
+     "quoted": "24号 ガス給湯器 給湯専用 6万円～15万円 / オート 11万円～22万円 / フルオート 13万円～25万円（工事費込み）",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは18万～25万。souba 平均27万・上限38万は出典上限より高い"
+  },
+  {
+   "id": "kyutoki_ecojozu_20",
+   "work": "エコジョーズ交換 20号",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 280000,
+   "max": 380000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-heater-exchange/media/106467",
+     "as_of": "2025-05-29",
+     "quoted": "20号 エコジョーズ 給湯専用 13万円～17万円 / オート 15万円～21万円 / フルオート 18万円～24万円（工事費込み）",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは20万～24万。souba 平均28万・上限38万は出典上限より高い"
+  },
+  {
+   "id": "kyutoki_ecojozu_24",
+   "work": "エコジョーズ交換 24号",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 350000,
+   "max": 450000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-heater-exchange/media/106467",
+     "as_of": "2025-05-29",
+     "quoted": "24号 エコジョーズ 給湯専用 14万円～18万円 / オート 16万円～23万円 / フルオート 19万円～26万円（工事費込み）",
+     "unit_matches": true
+    }
+   ],
+   "note": "重なりは25万～26万のみで境界的。souba 平均35万は出典上限26万より大きく高い"
+  },
+  {
+   "id": "bousui_veranda_10sqm",
+   "work": "ベランダ防水 10㎡（FRP）",
+   "unit": "一式",
+   "min": 60000,
+   "avg": 90000,
+   "max": 120000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/rooftop-waterproofing/magazine/2540/",
+     "as_of": "2024-09-06",
+     "quoted": "FRP防水の費用相場は10平米で40,000〜97,000円程度",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-proofing-work/media/76157",
+     "as_of": "2024-06-28",
+     "quoted": "4～10㎡程度のベランダ 4～10万円程度",
+     "unit_matches": false
+    }
+   ],
+   "note": "重なりは6万～9.7万。souba 上限12万はやや高い"
+  },
+  {
+   "id": "bousui_okujo_frp_sqm",
+   "work": "屋上防水 FRP ㎡単価",
+   "unit": "㎡",
+   "min": 4500,
+   "avg": 6500,
+   "max": 8000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-proofing-work/media/76157",
+     "as_of": "2024-06-28",
+     "quoted": "FRP防水 4,000～8,000円/㎡（施工単価・トップコート含む）",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 4,500～8,000 とほぼ同幅"
+  },
+  {
+   "id": "bousui_urethane_sqm",
+   "work": "屋上防水 ウレタン ㎡単価",
+   "unit": "㎡",
+   "min": 3500,
+   "avg": 5500,
+   "max": 7500,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/water-proofing-work/media/76157",
+     "as_of": "2024-06-28",
+     "quoted": "ウレタン防水 3,000～7,500円/㎡（施工単価・トップコート含む）",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 3,500～7,500 とほぼ同幅"
+  },
+  {
+   "id": "ashiba_sqm",
+   "work": "足場設置 ㎡単価",
+   "unit": "㎡",
+   "min": 700,
+   "avg": 900,
+   "max": 1200,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "マネーフォワード クラウド",
+     "url": "https://biz.moneyforward.com/construction/basic/70098/",
+     "as_of": "2026-04-01",
+     "quoted": "枠組足場 800円/㎡～1,500円/㎡程度 / 単管足場 700円/㎡～1,300円/㎡程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 700～1,200 が出典幅の内側。メッシュシート込みかは出典に明記なし"
+  },
+  {
+   "id": "ashiba_30tsubo",
+   "work": "足場設置 30坪住宅一式",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 200000,
+   "max": 250000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/outdoor-wall-painting/media/73725",
+     "as_of": "2025-05-28",
+     "quoted": "30坪前後の目安（2階建て）: 16〜22万円前後 / 25〜30坪は15〜20万円、30〜35坪は18〜23万円 / 1㎡あたり600〜1,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケット マガジン",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "足場 800～1,200円/㎡ 166㎡（30坪） 132,800～199,200円",
+     "unit_matches": true
+    }
+   ],
+   "note": "30坪一式 16〜22万が souba 15〜25万の内側"
+  },
+  {
+   "id": "kousetsu_cleaning_sqm",
+   "work": "高圧洗浄 ㎡単価",
+   "unit": "㎡",
+   "min": 100,
+   "avg": 180,
+   "max": 250,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "くらしのマーケット マガジン",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "高圧洗浄 250円〜450円/㎡",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/outdoor-wall-painting/media/93293",
+     "as_of": "2025-05-28",
+     "quoted": "150～300円/㎡",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 100〜250円は下寄り。ミツモアとは150〜250で重なるが、くらしのマーケットとは250の一点のみ"
+  },
+  {
+   "id": "cauking_m",
+   "work": "コーキング打ち替え m単価",
+   "unit": "m",
+   "min": 800,
+   "avg": 1200,
+   "max": 1500,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット マガジン",
+     "url": "https://curama.jp/magazine/2063/",
+     "as_of": "2026-08-28",
+     "quoted": "シーリング（打ち換え） 700～1,500円/m",
+     "unit_matches": true
+    },
+    {
+     "source": "ビズトップ",
+     "url": "https://www.biz.ne.jp/matome/2002795/",
+     "as_of": "2025-01-17",
+     "quoted": "打ち替え工事の単価相場は、1mあたり900円〜1,200円です。",
+     "unit_matches": true
+    }
+   ],
+   "note": "ほぼ一致"
+  },
+  {
+   "id": "exterior_carport",
+   "work": "カーポート設置 1台",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 350000,
+   "max": 500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/carport-garage-reform/carport-reform-cost-examples/",
+     "as_of": "2026-02-04",
+     "quoted": "費用相場（1台用の場合）: カーポート全体交換 20万円～60万円、新設・後付け 15万円～50万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 20〜50万は出典の範囲内"
+  },
+  {
+   "id": "exterior_fence_m",
+   "work": "フェンス設置 m単価",
+   "unit": "m",
+   "min": 15000,
+   "avg": 25000,
+   "max": 35000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/fence-reform/fence-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "スチールフェンス（メッシュタイプ） 1mあたり8,000～25,000円 ※上記の費用は、基礎工事費を含んだ目安です。",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX（クレックス）家づくり",
+     "url": "https://crexgroup.com/ja/home-building/cost/new-house-exterior-cost-tips/",
+     "as_of": "2025-11-17",
+     "quoted": "塀・フェンス：5,000～30,000円/m",
+     "unit_matches": true
+    }
+   ],
+   "note": "15,000〜25,000(30,000)で重なる。souba はやや上寄り"
+  },
+  {
+   "id": "exterior_kanto_full",
+   "work": "外構フルセット 関東",
+   "unit": "一式",
+   "min": 1000000,
+   "avg": 1400000,
+   "max": 1800000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/t/exterior/media/127834",
+     "as_of": "2024-06-28",
+     "quoted": "新築外構（全体）: 100万~300万円程度 / オープン外構 50万~150万円程度 / クローズ外構 150万~300万円程度",
+     "unit_matches": true
+    },
+    {
+     "source": "CREX（クレックス）家づくり",
+     "url": "https://crexgroup.com/ja/home-building/cost/new-house-exterior-cost-tips/",
+     "as_of": "2025-11-17",
+     "quoted": "外構工事にかかる費用は100万円から300万円の範囲に収まるのが一般的",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 100〜180万は出典範囲の下半分。出典に地域(関東)の区分はない"
+  },
+  {
+   "id": "denki_haisen",
+   "work": "電気配線工事 分電盤交換含む",
+   "unit": "一式",
+   "min": 100000,
+   "avg": 200000,
+   "max": 300000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/?p=11388",
+     "as_of": "2026-02-04",
+     "quoted": "分電盤交換 40,000円～100,000円 / 回路増設 15,000円～30,000円",
+     "unit_matches": false
+    },
+    {
+     "source": "エネチェンジ",
+     "url": "https://enechange.jp/articles/breaker-exchange-cost",
+     "as_of": "2024-11-27",
+     "quoted": "分電盤の交換費用の目安は2万円〜です。",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は分電盤単体。回路追加を数口足すと souba 10〜30万の下側に届くが、同一範囲の一式相場は見つからず"
+  },
+  {
+   "id": "denki_aircon",
+   "work": "エアコン取付工事 1台",
+   "unit": "1台",
+   "min": 15000,
+   "avg": 22000,
+   "max": 30000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケット マガジン",
+     "url": "https://curama.jp/magazine/594/",
+     "as_of": "2026-09-18",
+     "quoted": "主に6畳〜14畳（冷房能力2.2〜4.0kW）：13,000円〜20,000円 / 主に16畳以上（冷房能力5kW以上）：18,000円〜33,000円",
+     "unit_matches": true
+    }
+   ],
+   "note": "標準工事の範囲が一致、souba 1.5〜3万は出典内"
+  },
+  {
+   "id": "suidou_kyuhaisui",
+   "work": "給排水管交換 戸建て",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 500000,
+   "max": 800000,
+   "verdict": "none",
+   "sources": [
+    {
+     "source": "ビズトップ",
+     "url": "https://www.biz.ne.jp/matome/2003330/",
+     "as_of": "2026-10-14",
+     "quoted": "屋外給排水工事の一般的な費用相場は30万円〜60万円です",
+     "unit_matches": false
+    }
+   ],
+   "note": "見つかったのは新築時の屋外給排水の新設のみ。戸建ての給排水管交換の相場は見つからず"
+  },
+  {
+   "id": "dannetsu_yuka_30tsubo",
+   "work": "床断熱材施工 30坪",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 450000,
+   "max": 600000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/underfloor-insulation-renovation-cost-effect/",
+     "as_of": "2026-02-04",
+     "quoted": "30坪（約99㎡） 30万円 ～ 60万円（床を剥がさない工法）",
+     "unit_matches": true
+    }
+   ],
+   "note": "30坪 30〜60万で完全一致"
+  },
+  {
+   "id": "dannetsu_uchimado",
+   "work": "窓断熱 内窓設置 1箇所",
+   "unit": "1箇所",
+   "min": 30000,
+   "avg": 60000,
+   "max": 80000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/inner-window-reform-cost-effect/",
+     "as_of": "2025-12-18",
+     "quoted": "小窓 約4万円 〜 8万円 / 腰高窓 約6万円 〜 12万円 / 掃き出し窓 約10万円 〜 20万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 3〜8万は小窓相当。腰高窓・掃き出し窓では出典が上(souba は下寄り)"
+  },
+  {
+   "id": "kaitai_wood_tsubo",
+   "work": "木造住宅解体 坪単価",
+   "unit": "坪",
+   "min": 30000,
+   "avg": 45000,
+   "max": 60000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/house-demolition/media/92772",
+     "as_of": "2024-06-28",
+     "quoted": "木造：40,000〜50,000円／坪",
+     "unit_matches": true
+    },
+    {
+     "source": "野村不動産ソリューションズ ノムコム",
+     "url": "https://www.nomu.com/seller/column/20240610.html",
+     "as_of": "2024-06-10",
+     "quoted": "木造：4～5万円/坪",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典 4〜5万が souba 3〜6万の内側"
+  },
+  {
+   "id": "kiso_hosyu",
+   "work": "基礎補修 ひび割れ",
+   "unit": "一式",
+   "min": 100000,
+   "avg": 300000,
+   "max": 500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "アシストオール",
+     "url": "https://lifestyle.assist-all.co.jp/?p=52517",
+     "as_of": "2025-10-03",
+     "quoted": "基礎のひび割れ（専門業者依頼）：15,000円/m～ / 低圧注入工法（エポキシ樹脂で注入）：1ヶ所2万円前後 / 業者に依頼した場合のひび割れ補修：30,000円～100,000円程度",
+     "unit_matches": false
+    },
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/outdoor-wall-painting/media/88475",
+     "as_of": "2025-05-28",
+     "quoted": "エポキシ樹脂の注入 4,000円～/1m",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は m・箇所単価が中心で、一式の目安 3〜10万は souba 10〜50万の下端。規模次第で範囲が届く"
+  },
+  {
+   "id": "asbestos_removal_ume",
+   "work": "レベル3：成形板（ケイカル板等）部分撤去",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 380000,
+   "max": 600000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/reform-asbestos-inspection-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "レベル3（成形板など） 3,000円～20,000円（1㎡あたり）※足場、廃棄物処理、現場管理費などの諸経費は別途",
+     "unit_matches": false
+    }
+   ],
+   "note": "㎡単価。souba の想定10〜30㎡で換算すると3〜60万(諸経費別)で souba 20〜60万を含む"
+  },
+  {
+   "id": "asbestos_removal",
+   "work": "レベル3：戸建30坪 解体時の全面撤去",
+   "unit": "一式",
+   "min": 600000,
+   "avg": 1000000,
+   "max": 1500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/reform-asbestos-inspection-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "戸建てのレベル3建材（スレート屋根や外壁など）の除去は「数十万円単位の費用がかかるのが一般的」 / レベル3 3,000円～20,000円（1㎡あたり）",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典の総額は定性的(数十万円単位)。souba 60〜150万はその上側で、一式の数値根拠は見つからず"
+  },
+  {
+   "id": "asbestos_removal_matsu",
+   "work": "レベル1：吹付アスベスト除去（最高難度）",
+   "unit": "一式",
+   "min": 3000000,
+   "avg": 5000000,
+   "max": 8000000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/reform-asbestos-inspection-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "レベル1（吹付け石綿など） 20,000円～85,000円（1㎡あたり）",
+     "unit_matches": false
+    }
+   ],
+   "note": "㎡単価。souba の想定100㎡で換算すると200〜850万で souba 300〜800万を含む"
+  },
+  {
+   "id": "bouon_shaon_ume",
+   "work": "壁1面の部分防音（吸音+遮音）",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 280000,
+   "max": 400000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/house-soundproofing-cost/",
+     "as_of": "2026-02-04",
+     "quoted": "遮音シート＋吸音材の施工 15万円～50万円（6畳の壁一面）",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 15〜40万は出典内"
+  },
+  {
+   "id": "bouon_shaon_work",
+   "work": "床防音（浮き床工法）",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 500000,
+   "max": 700000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/soundproof-room-remodel-cost/",
+     "as_of": "2025-11-04",
+     "quoted": "床の浮き床工法 費用相場は約20万円～80万円（6畳の場合）",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は6畳、souba は10畳。souba 30〜70万は出典の範囲内だが広さの差で souba はやや安め側"
+  },
+  {
+   "id": "bouon_shaon_matsu",
+   "work": "ドラム・大音量楽器対応防音室",
+   "unit": "一式",
+   "min": 4000000,
+   "avg": 6000000,
+   "max": 8000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/house-soundproofing-cost/",
+     "as_of": "2026-02-04",
+     "quoted": "グランドピアノ、ドラム、サックスなど 250万円～500万円以上（6畳～8畳の部屋）",
+     "unit_matches": false
+    },
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/renovation/soundproof-room-remodel-cost/",
+     "as_of": "2025-11-04",
+     "quoted": "6畳以上: 約250万円～600万円以上（オーダーメイドは300万円～600万円以上）",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は6〜8畳。10畳・D-75の souba 400〜800万は重なるが上寄り"
+  },
+  {
+   "id": "builtin_dishwasher_ume",
+   "work": "Panasonic 45cm深型・既設食洗機交換",
+   "unit": "一式",
+   "min": 180000,
+   "avg": 230000,
+   "max": 280000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "交換できるくん",
+     "url": "https://www.sunrefre.jp/kitchen/built_in/panasonic/NP-45MD9S/",
+     "as_of": "2026-10-18",
+     "quoted": "工事費込み価格 168,928円（税込）（本体128,128円＋まるごとサービスパック40,800円）、メーカー希望小売価格 246,400円（税込）※取扱い終了",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/dishwasher-installation/media/118066",
+     "as_of": "2025-07-31",
+     "quoted": "ビルトイン全体 本体5～15万円 合計 約10～25万円 / 既存品の交換 工事費 約3～8万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "深型の工事費込み実売 約17万は souba 18〜28万の下。ミツモア総額とは18〜25万で重なる。souba は上寄り"
+  },
+  {
+   "id": "builtin_dishwasher",
+   "work": "リンナイ フロントオープン",
+   "unit": "一式",
+   "min": 350000,
+   "avg": 430000,
+   "max": 550000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/dishwasher-installation/media/118066",
+     "as_of": "2025-07-31",
+     "quoted": "フロントオープン（リンナイ RSW-F402C-SV） 本体12万円程度 設置工事込み 170,000～230,000円 / 後付け（給排水分岐とコンセント工事の両方） 追加 約3～5万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典は後付け追加込みでも約20〜28万。souba 35〜55万は明確に上。キャビネット改造費の有無で差の一部は説明可能"
+  },
+  {
+   "id": "builtin_dishwasher_matsu",
+   "work": "Miele 60cm 大容量",
+   "unit": "一式",
+   "min": 1000000,
+   "avg": 1300000,
+   "max": 1600000,
+   "verdict": "none",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/dishwasher-installation/media/118066",
+     "as_of": "2025-07-31",
+     "quoted": "海外製（ミーレ等） 本体約30万円～ 合計の記載なし",
+     "unit_matches": false
+    }
+   ],
+   "note": "Miele 60cm の工事費込み総額を記す公開ページは見つからず"
+  },
+  {
+   "id": "carpoort_single_ume",
+   "work": "LIXIL ネスカR・1台用（標準）",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 350000,
+   "max": 450000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/carport-garage-reform/carport-reform-cost-examples/",
+     "as_of": "2026-02-04",
+     "quoted": "費用相場（1台用の場合）: 新設・後付け 15万円～50万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "機種別(ネスカR)の工事費込み価格は取得できず、1台用一般相場との比較"
+  },
+  {
+   "id": "carpoort_single",
+   "work": "三協 セルフィ・2台用（標準）",
+   "unit": "一式",
+   "min": 450000,
+   "avg": 580000,
+   "max": 750000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX（クレックス）リフォーム",
+     "url": "https://crexgroup.com/ja/reform/carport-garage-reform/carport-reform-cost-examples/",
+     "as_of": "2026-02-04",
+     "quoted": "2台用 全体交換 総額で30万円～80万円程度が相場 / 本体価格のみでは25万円～70万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 45〜75万は出典内。機種別(セルフィ)の価格は未取得"
+  },
+  {
+   "id": "carpoort_single_matsu",
+   "work": "積雪地仕様・折板屋根（2台用）",
+   "unit": "一式",
+   "min": 800000,
+   "avg": 1100000,
+   "max": 1500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "コメリ リフォーム",
+     "url": "https://www.komeri.com/contents/reform/details/carport_06.html",
+     "as_of": "2026-10-18",
+     "quoted": "YKKAP ジーポートPro 積雪200cm 2台用 本体価格（税込）638,000円〜909,000円 / 組立工事費（税込・最低額） 2台用 6本柱 120,000円～／8本柱 140,000円～",
+     "unit_matches": false
+    }
+   ],
+   "note": "本体と工事費が別記。合算で約76〜105万円〜となり souba 80〜150万と重なる(出典は積雪200cm)"
+  },
+  {
+   "id": "chikyu_chunetsu_ume",
+   "work": "井戸利用空調（簡易型）",
+   "unit": "一式",
+   "min": 800000,
+   "avg": 1400000,
+   "max": 2500000,
+   "verdict": "none",
+   "sources": [],
+   "note": "井戸利用空調の費用を記す公開ページは見つからず(検索上限に到達)"
+  },
+  {
+   "id": "chikyu_chunetsu",
+   "work": "戸建40坪・地中熱フル（上位）",
+   "unit": "一式",
+   "min": 5500000,
+   "avg": 8000000,
+   "max": 11000000,
+   "verdict": "none",
+   "sources": [],
+   "note": "県・環境省・国交省資料は費用構成の定性記述のみで金額なし(検索上限に到達)"
+  },
+  {
+   "id": "chikyu_chunetsu_matsu",
+   "work": "オフィス・商業施設地中熱",
+   "unit": "一式",
+   "min": 8000000,
+   "avg": 12000000,
+   "max": 18000000,
+   "verdict": "none",
+   "sources": [],
+   "note": "事業所規模の地中熱の金額を記す公開ページは見つからず"
+  },
+  {
+   "id": "erebata_shuzen_ume",
+   "work": "制御盤一部更新（リレー基盤等）",
+   "unit": "一式",
+   "min": 500000,
+   "avg": 1000000,
+   "max": 1500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ファイナンシャルフィールド",
+     "url": "https://financial-field.com/living/entry-514982",
+     "as_of": "2026-08-14",
+     "quoted": "部分更新（制御盤、巻き上げ機、操作盤などの交換）：1基当たり500万円程度から",
+     "unit_matches": false
+    },
+    {
+     "source": "横浜市 マンション管理コラム",
+     "url": "https://www.city.yokohama.lg.jp/kurashi/sumai-kurashi/jutaku/manportal/info/column20260721.html",
+     "as_of": "2026-09-09",
+     "quoted": "制御リニューアル（制御盤・モーター等の交換）：約400～700万円/基",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は制御盤一式の更新で範囲が違う。souba の部品単位の一部更新(50〜150万)を直接裏づける数値はなし"
+  },
+  {
+   "id": "erebata_shuzen",
+   "work": "耐震強化（地震時管制運転装置設置）",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 2500000,
+   "max": 4000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "港区 昇降機防災対策 計算例（マンション）",
+     "url": "https://www.city.minato.tokyo.jp/documents/59094/keisanrei_mansyon.pdf",
+     "as_of": "2026-10-18",
+     "quoted": "地震時等管制運転装置 80 万円 / 地震時等管制運転装置 200 万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "自治体の計算例 80万・200万。souba 150〜400万とは150〜200で重なるが souba は上寄り"
+  },
+  {
+   "id": "erebata_shuzen_matsu",
+   "work": "完全リニューアル（フル撤去・新設）",
+   "unit": "一式",
+   "min": 12000000,
+   "avg": 18000000,
+   "max": 25000000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "横浜市 マンション管理コラム",
+     "url": "https://www.city.yokohama.lg.jp/kurashi/sumai-kurashi/jutaku/manportal/info/column20260721.html",
+     "as_of": "2026-09-09",
+     "quoted": "全撤去新設リニューアル：約1,200～1,500万円/基",
+     "unit_matches": true
+    },
+    {
+     "source": "ファイナンシャルフィールド",
+     "url": "https://financial-field.com/living/entry-514982",
+     "as_of": "2026-08-14",
+     "quoted": "全面更新：1基当たり1500万～2500万円程度かかることがあります",
+     "unit_matches": true
+    }
+   ],
+   "note": "両出典を合わせると1,200〜2,500万で souba と一致"
+  },
+  {
+   "id": "gyomu_chubo_ume",
+   "work": "業務用冷凍冷蔵庫 単体交換",
+   "unit": "一式",
+   "min": 600000,
+   "avg": 880000,
+   "max": 1200000,
+   "verdict": "none",
+   "sources": [],
+   "note": "ホシザキ HRF-150 の価格・交換工事費を記す取得可能なページなし(販売ページは価格非表示、検索上限に到達)"
+  },
+  {
+   "id": "gyomu_chubo",
+   "work": "居酒屋・標準厨房（30席）",
+   "unit": "一式",
+   "min": 4500000,
+   "avg": 6500000,
+   "max": 9000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "飲食店ドットコム",
+     "url": "https://www.inshokuten.com/kitchen/magazine/17",
+     "as_of": "2020-09-15",
+     "quoted": "10~15坪の店舗なら100~200万円程度の費用が掛かると言われています。(厨房機器)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は厨房機器のみ・坪基準・業態区別なしで souba の下限より低い。souba はグリストラップ・排気フード等の工事込みで範囲が別。直接の居酒屋30席の公開相場は見つからず"
+  },
+  {
+   "id": "gyomu_chubo_matsu",
+   "work": "焼肉店・無煙ロースター・強力排気",
+   "unit": "一式",
+   "min": 8000000,
+   "avg": 12500000,
+   "max": 18000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "マネーフォワード クラウド",
+     "url": "https://biz.moneyforward.com/restaurant/basic/2068/",
+     "as_of": "2025-06-30",
+     "quoted": "焼肉 厨房設備費の目安としては、270万円〜1,300万円程度とされています。",
+     "unit_matches": true
+    },
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/office-relocation/article/yakiniku-duct-construction",
+     "as_of": "2025-01-08",
+     "quoted": "屋上排気工事 100万〜300万円(ダクト工事全体 3万円～300万円)",
+     "unit_matches": false
+    }
+   ],
+   "note": "厨房設備費 270-1,300万の上半分と重なる。排気は出典では内装工事費側の扱いで範囲が違う"
+  },
+  {
+   "id": "hikkoshi_renkei_ume",
+   "work": "単身・引越し+新居軽リフォーム",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 350000,
+   "max": 500000,
+   "verdict": "none",
+   "sources": [],
+   "note": "引越し+軽リフォーム+不用品処分の複合パッケージの公開相場は見つからず"
+  },
+  {
+   "id": "hikkoshi_renkei",
+   "work": "高齢者・住み替え（生前整理連動）",
+   "unit": "一式",
+   "min": 800000,
+   "avg": 1500000,
+   "max": 2500000,
+   "verdict": "none",
+   "sources": [],
+   "note": "生前整理+引越し+バリアフリー化の複合パッケージの公開相場は見つからず"
+  },
+  {
+   "id": "hikkoshi_renkei_matsu",
+   "work": "長距離引越し+新居全面リフォーム",
+   "unit": "一式",
+   "min": 2500000,
+   "avg": 3800000,
+   "max": 6000000,
+   "verdict": "none",
+   "sources": [],
+   "note": "長距離引越し+全面リフォームの複合パッケージの公開相場は見つからず"
+  },
+  {
+   "id": "idoseichi_ume",
+   "work": "既存井戸ポンプ交換",
+   "unit": "一式",
+   "min": 100000,
+   "avg": 200000,
+   "max": 400000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ビズトリー(biz.ne.jp)",
+     "url": "https://www.biz.ne.jp/matome/2003037/",
+     "as_of": "2024-05-02",
+     "quoted": "電動ポンプ 100,000円程度〜（消費電力による）／ポンプ おおよそ6万円から15万円程度",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典はポンプ本体の目安で交換工事費の明示なし。souba 下限10万は重なるが上限40万は出典より高い"
+  },
+  {
+   "id": "idoseichi",
+   "work": "古井戸再生（清掃・改修）",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 450000,
+   "max": 800000,
+   "verdict": "none",
+   "sources": [],
+   "note": "古井戸の清掃・改修の公開相場は見つからず(見つかったのは埋め戻し 1基5万～10万円のみで範囲違い)"
+  },
+  {
+   "id": "idoseichi_matsu",
+   "work": "深井戸（80m・飲料水）",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 2500000,
+   "max": 4000000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "ビズトリー(biz.ne.jp)",
+     "url": "https://www.biz.ne.jp/matome/2003037/",
+     "as_of": "2024-05-02",
+     "quoted": "深い(50m以上) 約60〜100万円程度／掘削単価 50m以上 15,000円〜(1mあたり)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典の深井戸総額60-100万に対し souba 150-400万は上。ただし同ページの m単価15,000円〜と基本料20-50万で80mを積むと140万超になり、出典自体が粗い。飲料適合・水質検査は出典外"
+  },
+  {
+   "id": "ih_gas_conversion_ume",
+   "work": "ガス→ガス 同等品交換",
+   "unit": "一式",
+   "min": 100000,
+   "avg": 150000,
+   "max": 200000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/489/",
+     "as_of": "2025-01-22",
+     "quoted": "工事費込みの費用 5万円〜19万円(ビルトインガスコンロ)",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 10-20万は出典 5-19万の中上位と重なる"
+  },
+  {
+   "id": "ih_gas_conversion",
+   "work": "ガス→IH変更（フル工事）",
+   "unit": "一式",
+   "min": 220000,
+   "avg": 310000,
+   "max": 400000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "交換できるくん すむたす",
+     "url": "https://www.sunrefre.jp/sumutano/?p=11942",
+     "as_of": "2025-03-23",
+     "quoted": "合計 13万円〜40万円前後が相場です(IH本体 約6〜30万円、200V工事 約5〜7万円、ガス栓処理 約1万円前後)",
+     "unit_matches": true
+    },
+    {
+     "source": "交換できるくん",
+     "url": "https://www.sunrefre.jp/ih/guide/cost/",
+     "as_of": "2026-10-18",
+     "quoted": "工事費合計(税込) 23,100 / 60,900 / 78,500(ガスからIH、本体別)",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 22-40万は出典 13-40万の中に収まる"
+  },
+  {
+   "id": "ih_gas_conversion_matsu",
+   "work": "上位IH（オーブン機能付）",
+   "unit": "一式",
+   "min": 320000,
+   "avg": 430000,
+   "max": 550000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "交換できるくん すむたす",
+     "url": "https://www.sunrefre.jp/sumutano/?p=11942",
+     "as_of": "2025-03-23",
+     "quoted": "合計 13万円〜40万円前後が相場です(IH本体 約6〜30万円)",
+     "unit_matches": true
+    }
+   ],
+   "note": "オーブン付き上位機の個別相場は見つからず。souba 32-55万は出典上限40万と一部重なるが上にずれる"
+  },
+  {
+   "id": "ihinseiri_seizen_ume",
+   "work": "遺品整理・1R/1K（標準）",
+   "unit": "一式",
+   "min": 50000,
+   "avg": 100000,
+   "max": 150000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ファイナンシャルフィールド",
+     "url": "https://financial-field.com/living/entry-488815",
+     "as_of": "2026-02-11",
+     "quoted": "1K・1DK：3～10万円",
+     "unit_matches": true
+    },
+    {
+     "source": "日本郵便",
+     "url": "https://www.post.japanpost.jp/life/inheriting/column7/",
+     "as_of": "2026-10-18",
+     "quoted": "1R・1K 費用相場: 10万円~15万円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 5-15万は2出典の範囲にまたがる"
+  },
+  {
+   "id": "ihinseiri_seizen",
+   "work": "遺品整理・2DK（標準）",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 220000,
+   "max": 300000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ファイナンシャルフィールド",
+     "url": "https://financial-field.com/living/entry-488815",
+     "as_of": "2026-02-11",
+     "quoted": "2LDK・3DK：10～30万円",
+     "unit_matches": false
+    },
+    {
+     "source": "日本郵便",
+     "url": "https://www.post.japanpost.jp/life/inheriting/column7/",
+     "as_of": "2026-10-18",
+     "quoted": "1LDK/2DK・3K 費用相場: 30万円~50万円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "FF の 10-30万と重なり、日本郵便の 30-50万よりは低め。出典間で幅が大きい"
+  },
+  {
+   "id": "ihinseiri_seizen_matsu",
+   "work": "遺品整理・5LDK戸建+蔵（上位）",
+   "unit": "一式",
+   "min": 600000,
+   "avg": 950000,
+   "max": 1500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "日本郵便",
+     "url": "https://www.post.japanpost.jp/life/inheriting/column7/",
+     "as_of": "2026-10-18",
+     "quoted": "一軒家/3LDK以上 費用相場: 50万円~100万円以上",
+     "unit_matches": true
+    },
+    {
+     "source": "ファイナンシャルフィールド",
+     "url": "https://financial-field.com/living/entry-488815",
+     "as_of": "2026-02-11",
+     "quoted": "4LDK以上：25～60万円以上",
+     "unit_matches": true
+    }
+   ],
+   "note": "日本郵便の一軒家 50-100万以上と重なる。蔵・骨董査定込みの区分は出典になし"
+  },
+  {
+   "id": "iwa_ishigumi_ume",
+   "work": "飛び石・延段（5m）",
+   "unit": "一式",
+   "min": 80000,
+   "avg": 150000,
+   "max": 250000,
+   "verdict": "none",
+   "sources": [],
+   "note": "飛び石5m施工の公開相場は見つからず"
+  },
+  {
+   "id": "iwa_ishigumi",
+   "work": "石組み（小規模・3-5石）",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 380000,
+   "max": 600000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "クレックス(CREX)",
+     "url": "https://crexgroup.com/ja/reform/garden-reform/garden-reform-cost-guide/",
+     "as_of": "2026-02-04",
+     "quoted": "景石(中庭・坪庭) 費用は20万～80万円程度。(石・白砂・苔の組み合わせ一式)",
+     "unit_matches": false
+    }
+   ],
+   "note": "範囲は重なるが出典は坪庭一式で石組み単独ではない"
+  },
+  {
+   "id": "iwa_ishigumi_matsu",
+   "work": "和風庭園・石組みフル（中規模）",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 2800000,
+   "max": 4500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "クレックス(CREX)",
+     "url": "https://crexgroup.com/ja/reform/garden-reform/garden-reform-cost-guide/",
+     "as_of": "2026-02-04",
+     "quoted": "費用相場：50万円～300万円以上(庭全体のデザイン・水景含む)",
+     "unit_matches": false
+    }
+   ],
+   "note": "和風庭園石組みフルの個別相場はなく、庭全体の相場と上側で重なるのみ"
+  },
+  {
+   "id": "jutaku_kaitai_partial_ume",
+   "work": "内部間仕切り壁撤去（非耐力壁）",
+   "unit": "一式",
+   "min": 50000,
+   "avg": 95000,
+   "max": 150000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "クレックス(CREX)",
+     "url": "https://crexgroup.com/ja/reform/?p=1642",
+     "as_of": "2025-12-18",
+     "quoted": "非耐力壁 解体のみ 3万円～8万円(3.6m壁)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/removing-wall/osaka",
+     "as_of": "2026-10-18",
+     "quoted": "ドア約2枚分（1.8m）の壁撤去で12,000～15,000円／3.6m 19,000〜23,000円",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 5-15万は出典より上にずれる(CREX 3-8万と一部重なる、ミツモアは2万前後)"
+  },
+  {
+   "id": "jutaku_kaitai_partial",
+   "work": "浴室解体・撤去のみ",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 270000,
+   "max": 400000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "クレックス(CREX)",
+     "url": "https://crexgroup.com/ja/reform/bath-reform/tile-bathroom-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "解体・撤去・下地工事の費用 費用相場は約20万円～40万円",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は下地工事込みだが範囲はほぼ一致"
+  },
+  {
+   "id": "jutaku_kaitai_partial_matsu",
+   "work": "増築準備の部分解体（外壁開口）",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 380000,
+   "max": 600000,
+   "verdict": "none",
+   "sources": [],
+   "note": "増築接続のための外壁開口・部分解体の公開相場は見つからず"
+  },
+  {
+   "id": "kaki_seko_ume",
+   "work": "小型池（2×1m・観賞用）",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 400000,
+   "max": 600000,
+   "verdict": "none",
+   "sources": [],
+   "note": "小型池施工の日本の公開相場は見つからず"
+  },
+  {
+   "id": "kaki_seko",
+   "work": "噴水・水景オブジェ",
+   "unit": "一式",
+   "min": 500000,
+   "avg": 1100000,
+   "max": 2000000,
+   "verdict": "none",
+   "sources": [],
+   "note": "噴水・水景オブジェの公開相場は見つからず(CREX は水景を庭デザイン一式 50-300万に含めるのみ)"
+  },
+  {
+   "id": "kaki_seko_matsu",
+   "work": "錦鯉池（本格・5×3m+滝）",
+   "unit": "一式",
+   "min": 2500000,
+   "avg": 3800000,
+   "max": 6000000,
+   "verdict": "none",
+   "sources": [],
+   "note": "本格錦鯉池の日本の公開相場は見つからず"
+  },
+  {
+   "id": "kanban_sign_ume",
+   "work": "立て看板（A型・スタンド）",
+   "unit": "一式",
+   "min": 15000,
+   "avg": 40000,
+   "max": 80000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/billboard-design/article/storesign",
+     "as_of": "2025-01-08",
+     "quoted": "スタンドA型看板は、3万～4万円程度／スタンド看板 5,000円～10万円",
+     "unit_matches": true
+    },
+    {
+     "source": "@SOHO",
+     "url": "https://atsoho.com/blog/signboard-production-cost",
+     "as_of": "2026-08-26",
+     "quoted": "A型看板（スタンド看板） 5,000円〜10万円(製作費)",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 1.5-8万は出典範囲内"
+  },
+  {
+   "id": "kanban_sign_work",
+   "work": "ファサード・カルプ切文字",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 350000,
+   "max": 500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "@SOHO",
+     "url": "https://atsoho.com/blog/signboard-production-cost",
+     "as_of": "2026-08-26",
+     "quoted": "カルプ文字 5万円〜15万円／切り文字（ステンレス） 10万円〜30万円(製作費のみ、デザイン費・設置費別)",
+     "unit_matches": false
+    },
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/list/billboard-design/culp-character/",
+     "as_of": "2026-07-22",
+     "quoted": "大きさ100mm・厚さ10mmの英数字で1文字1,000〜1,500円ほど",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は LED なし製作費のみで souba 20-50万より低い。LED内蔵・設置込みの相場は見つからず"
+  },
+  {
+   "id": "kanban_sign_matsu",
+   "work": "屋上ポール看板",
+   "unit": "一式",
+   "min": 800000,
+   "avg": 1500000,
+   "max": 2500000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/billboard-design/article/storesign",
+     "as_of": "2025-01-08",
+     "quoted": "屋上看板 20～50万円",
+     "unit_matches": false
+    },
+    {
+     "source": "クラウドワークス",
+     "url": "https://crowdworks.jp/times/know-how/11838/",
+     "as_of": "2025-01-03",
+     "quoted": "屋上看板 制作費用相場は20～50万円(表は 20～50万円以上)",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 80-250万は出典の屋上看板 20-50万を大きく上回る。出典は制作費で両面LED・構造・設置費を含むか不明"
+  },
+  {
+   "id": "karinosumai_ume",
+   "work": "単身者・1ヶ月（小規模リフォーム）",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 350000,
+   "max": 500000,
+   "verdict": "none",
+   "sources": [],
+   "note": "単身1ヶ月の仮住まい総額の公開相場は見つからず"
+  },
+  {
+   "id": "karinosumai",
+   "work": "夫婦・2ヶ月（中規模リフォーム）",
+   "unit": "一式",
+   "min": 500000,
+   "avg": 750000,
+   "max": 1100000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "クレックス(CREX)",
+     "url": "https://crexgroup.com/ja/reform/renovation/reform-temporary-housing-guide/",
+     "as_of": "2025-12-18",
+     "quoted": "短期賃貸では月額18万円〜22万円程度(3LDK)／1回あたりの引っ越し費用は5万円〜15万円程度(3〜4人家族)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は3LDK・家族向けの部品単価のみで夫婦2ヶ月の総額ではない。積むと souba 範囲内には入る"
+  },
+  {
+   "id": "karinosumai_matsu",
+   "work": "ファミリー・6ヶ月（建替え/フルリノベ）",
+   "unit": "一式",
+   "min": 2000000,
+   "avg": 3000000,
+   "max": 5000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "クレックス(CREX)",
+     "url": "https://crexgroup.com/ja/reform/renovation/reform-temporary-housing-guide/",
+     "as_of": "2025-12-18",
+     "quoted": "家族3人、リフォーム期間3ヶ月、家賃20万円の短期賃貸物件 合計：178万円",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は3ヶ月の例で souba は6ヶ月。期間を倍にすると souba 200-500万と重なる見込み"
+  },
+  {
+   "id": "mado_glass_ume",
+   "work": "フロートガラス小窓交換（0.5㎡以下）",
+   "unit": "一式",
+   "min": 12000,
+   "avg": 18000,
+   "max": 25000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/window-exchange/media/254234",
+     "as_of": "2025-05-09",
+     "quoted": "透明ガラス（フロートガラス） 90cm×90cm 13,600円～19,900円",
+     "unit_matches": false
+    },
+    {
+     "source": "ビズトリー(biz.ne.jp)",
+     "url": "https://www.biz.ne.jp/matome/2003339/",
+     "as_of": "2025-03-04",
+     "quoted": "フロートガラス 90×90cm 6,000円〜9,000円",
+     "unit_matches": false
+    }
+   ],
+   "note": "0.81㎡ の出典でもミツモア値は souba 1.2-2.5万に入る。ビズトリーは低め"
+  },
+  {
+   "id": "mado_glass_work",
+   "work": "浴室強化ガラス交換",
+   "unit": "一式",
+   "min": 35000,
+   "avg": 55000,
+   "max": 80000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/window-exchange/media/254234",
+     "as_of": "2025-05-09",
+     "quoted": "強化ガラス 90cm×90cm 24,600円～39,900円／190cm×90cm 37,400円～57,000円",
+     "unit_matches": false
+    },
+    {
+     "source": "ビズトリー(biz.ne.jp)",
+     "url": "https://www.biz.ne.jp/matome/2003339/",
+     "as_of": "2025-03-04",
+     "quoted": "強化ガラス 90×90cm 1万5,000円〜2万3,000円／90×180cm 1万6,000円〜2万4,000円",
+     "unit_matches": false
+    }
+   ],
+   "note": "ミツモアの大判とは重なるが、souba 上限8万は両出典より高く、ビズトリーとは重ならない"
+  },
+  {
+   "id": "mado_glass_matsu",
+   "work": "真空ガラス交換（最高断熱）",
+   "unit": "一式",
+   "min": 100000,
+   "avg": 150000,
+   "max": 200000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "クレックス(CREX)",
+     "url": "https://crexgroup.com/ja/reform/?p=12068",
+     "as_of": "2026-02-04",
+     "quoted": "真空ガラス: 約8万円～15万円(ガラスのみ交換)",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 10-20万は出典 8-15万と重なる(やや上寄り)。なおスペーシアは日本板硝子(NSG)の製品で AGC ではない"
+  },
+  {
+   "id": "manshion_kyoyou_shuzen_ume",
+   "work": "外壁タイル部分補修",
+   "unit": "一式",
+   "min": 800000,
+   "avg": 1600000,
+   "max": 2500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "リフォーム比較なび(CREX)",
+     "url": "https://crexgroup.com/ja/reform/exterior-wall-reform/exterior-wall-tile-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "タイルの部分張り替え 1㎡あたり 約15,000円～25,000円 / 部分補修 約5万円～30万円程度 / 浮き補修(エポキシ樹脂注入)1箇所あたり 約2,000円～5,000円 / 足場が必要な場合 別途15万～30万円程度",
+     "unit_matches": false
+    }
+   ],
+   "note": "30㎡なら張替え45万〜75万円+足場15万〜30万円で約60万〜105万円。souba 80万〜250万円は上寄り、重なりは下端のみ。出典は戸建前提"
+  },
+  {
+   "id": "manshion_kyoyou_shuzen",
+   "work": "屋上防水改修（ウレタン or シート）",
+   "unit": "一式",
+   "min": 5000000,
+   "avg": 9000000,
+   "max": 15000000,
+   "verdict": "none",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/water-proofing-work/media/69971",
+     "as_of": "2024-06-28",
+     "quoted": "ウレタン防水 3,000〜8,000円/㎡、シート防水 4,000〜8,000円/㎡(冒頭の表)",
+     "unit_matches": false
+    },
+    {
+     "source": "ハウスケアラボ",
+     "url": "https://lifestyle.assist-all.co.jp/?p=4948",
+     "as_of": "2025-06-08",
+     "quoted": "100㎡の屋上・改修ケース 初回施工費 シート防水60万円、ウレタン防水70万円(シート5,000～7,000円/㎡、ウレタン5,500～8,000円/㎡)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は㎡単価か100㎡の例のみ。souba は面積不明の一式で比較できない"
+  },
+  {
+   "id": "manshion_kyoyou_shuzen_matsu",
+   "work": "給排水縦管更新（築30年以上）",
+   "unit": "一式",
+   "min": 30000000,
+   "avg": 50000000,
+   "max": 80000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "現代ビジネス(講談社)",
+     "url": "https://gendai.media/articles/-/125751",
+     "as_of": "2024-07-22",
+     "quoted": "戸あたり40～80万円 / 築30年・50戸で2000万円かかるそうです",
+     "unit_matches": false
+    }
+   ],
+   "note": "40戸換算で1,600万〜3,200万円。souba 3,000万〜8,000万円は上寄りで重なりは下端のみ"
+  },
+  {
+   "id": "monoki_setchi_ume",
+   "work": "小型物置（イナバ シンプリー級・ブロック基礎）",
+   "unit": "一式",
+   "min": 80000,
+   "avg": 130000,
+   "max": 180000,
+   "verdict": "none",
+   "sources": [
+    {
+     "source": "ミツモア(石川県 物置設置)",
+     "url": "https://meetsmore.com/services/storage-room-remodel/ishikawa",
+     "as_of": "2026-10-18",
+     "quoted": "小(〜400cm) 10,650〜12,000円 ※本体代は含みません / 基礎ブロック・傾斜調整・転倒防止工事込み 30,600円〜58,000円(業者例)",
+     "unit_matches": false
+    },
+    {
+     "source": "くらしのマーケット(物置設置 出品)",
+     "url": "https://curama.jp/storage/installation/SER829353677/",
+     "as_of": "2026-10-18",
+     "quoted": "小(〜400cm) 15,000円(本体・ブロックは依頼者支給)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は設置工賃のみで本体代を含まず、本体込み総額と比べられない"
+  },
+  {
+   "id": "monoki_setchi",
+   "work": "中型物置（イナバナイソー級・コンクリート基礎）",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 290000,
+   "max": 400000,
+   "verdict": "none",
+   "sources": [
+    {
+     "source": "ミツモア(石川県 物置設置)",
+     "url": "https://meetsmore.com/services/storage-room-remodel/ishikawa",
+     "as_of": "2026-10-18",
+     "quoted": "大(501〜600cm) 12,000〜26,000円 ※本体代は含みません / 転倒防止工事(コンクリート) 5,400〜9,000円",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は設置工賃のみ(本体・コンクリート基礎の総額なし)"
+  },
+  {
+   "id": "monoki_setchi_matsu",
+   "work": "収納庫（住宅型・1坪以上）",
+   "unit": "一式",
+   "min": 700000,
+   "avg": 1000000,
+   "max": 1500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "家づくり比較なび (CREX GROUP) 工務店に小屋の建築を頼む費用は？6畳などのサイズ別相場を解説",
+     "url": "https://crexgroup.com/ja/home-building/cost/builder-shed-cost/",
+     "as_of": "2025-11-16",
+     "quoted": "4.5畳（約7.4㎡）：70万円～150万円 / 6畳（約9.9㎡）：100万円～250万円 / 50万～100万円：シンプルな物置・作業小屋 / 電気工事 10万円～30万円 / 独立基礎（束石基礎）5万円～15万円、布基礎 15万円～30万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "Souba 70万..150万 equals the source's smallest band (4.5畳 70万～150万円) and overlaps its 50万～100万円 simple shed band. Caveat: 1坪 is about 2畳, smaller than the source's 4.5畳 band; souba says 1坪以上 with insulation and wiring, so scope is close. Source covers 工務店-built 小屋, not a steel 収納庫 product."
+  },
+  {
+   "id": "ofuro_kanso_oidaki_ume",
+   "work": "浴室乾燥機 同等品交換",
+   "unit": "一式",
+   "min": 80000,
+   "avg": 110000,
+   "max": 150000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/bathroom-dryer-installation/media/115346",
+     "as_of": "2025-03-24",
+     "quoted": "本体交換 電気式 80,000〜100,000円、ガス式 100,000〜150,000円(工事込みで電気式100,000円以下、ガス式100,000円以上)",
+     "unit_matches": true
+    },
+    {
+     "source": "東京ガス すむたす",
+     "url": "https://www.sunrefre.jp/sumutano/?p=17346",
+     "as_of": "2026-07-24",
+     "quoted": "既存からの交換 基本工事費(税込) 電気式30,800円、温水式(ガス式)37,400円",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典の8万〜15万円は souba 8万〜15万円とほぼ一致"
+  },
+  {
+   "id": "ofuro_kanso_oidaki",
+   "work": "給湯器交換（追い焚き対応へ）",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 290000,
+   "max": 400000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/1054/",
+     "as_of": "2026-09-18",
+     "quoted": "ガス給湯＋追い焚き(24号) 10.3万円〜(本体+工事、2025年1月時点) / オート・フルオート 9.7万円〜19.5万円(2026年9月時点)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は同型の交換で9.7万〜19.5万円、souba 20万〜40万円は上。給湯専用からの追い焚き配管新設を含む分だけ範囲が違う"
+  },
+  {
+   "id": "ofuro_kanso_oidaki_matsu",
+   "work": "ガス温水式浴室乾燥機 後付け（高出力）",
+   "unit": "一式",
+   "min": 350000,
+   "avg": 480000,
+   "max": 650000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/bathroom-dryer-installation/media/105791",
+     "as_of": "2025-07-31",
+     "quoted": "後付け(本体+工事) ガス式 壁掛け 約9万円～20万円、天井埋め込み 約9.8万円～20万円。熱源機との接続工事が別途必要になることがあります",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は熱源機の交換・連携を含まない。souba 35万〜65万円は熱源機込みの範囲で数値の重なりなし"
+  },
+  {
+   "id": "sec_camera_total_ume",
+   "work": "戸建・防犯カメラ1台（自社運用）",
+   "unit": "一式",
+   "min": 80000,
+   "avg": 130000,
+   "max": 200000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/electrical_work/article/trader-surveillancecamera",
+     "as_of": "2026-10-05",
+     "quoted": "屋内用は10万〜20万円、屋外用は15万〜30万円が1台あたりの設置費用相場(周辺機器と工事費込み)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/security-camera-installation/media/215351",
+     "as_of": "2024-06-28",
+     "quoted": "防犯カメラの設置にかかる費用の相場は、1台当たり15万～40万円です",
+     "unit_matches": true
+    }
+   ],
+   "note": "屋外1台の出典は15万〜40万円で souba 8万〜20万円は下寄り、重なりは15万〜20万円"
+  },
+  {
+   "id": "sec_camera_total",
+   "work": "戸建・防犯カメラ4台（自社運用）",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 400000,
+   "max": 600000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/cost/electrical_work/article/trader-surveillancecamera",
+     "as_of": "2026-10-05",
+     "quoted": "B社 コンビニ設置 19万円(税込)(カメラ4台、録画機、工事費など) / 台数が少ないほど1台あたりの設置単価は高額になる傾向",
+     "unit_matches": true
+    }
+   ],
+   "note": "4台の総額は事例1件(19万円)のみで souba 25万〜60万円の下。範囲として示す出典なし"
+  },
+  {
+   "id": "sec_camera_total_matsu",
+   "work": "店舗・8台フル防犯（飲食/小売）",
+   "unit": "一式",
+   "min": 600000,
+   "avg": 950000,
+   "max": 1500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "アイミツ",
+     "url": "https://imitsu.jp/matome/electrical_work/4459511169322293",
+     "as_of": "2026-08-28",
+     "quoted": "業務用本体 1台あたり2万～10万円程度 / 録画機器 2万〜20万円 / 屋内作業費用 10万~50万円程度、屋外工事 50万～70万円程度",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は項目別のみ。8台で足すと概ね28万〜150万円(当方の計算)で souba 60万〜150万円と重なるが総額の記載はない"
+  },
+  {
+   "id": "shisetsu_pool_ume",
+   "work": "ジャグジー・室内スパ（小型）",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 2500000,
+   "max": 4000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "現代ビジネス(講談社)",
+     "url": "https://gendai.media/articles/-/129349",
+     "as_of": "2024-05-24",
+     "quoted": "ジャグジーの浴槽そのものと、周囲の囲み、そして浴槽に上がっていくステップなどを含めてだいたい100万円くらいです",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典の約100万円は souba 150万〜400万円の下限より下"
+  },
+  {
+   "id": "shisetsu_pool",
+   "work": "屋外プール（コンパクト・5×3m）",
+   "unit": "一式",
+   "min": 4000000,
+   "avg": 6500000,
+   "max": 9000000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "家づくりのとびら(CREX)",
+     "url": "https://crexgroup.com/ja/home-building/planning/custom-home-pool-cost-pros-cons/",
+     "as_of": "2025-11-17",
+     "quoted": "初期費用の合計(一般的な家庭用サイズ 3m×7m程度) 350万円～1,500万円以上 / FRP製本体 200万円～500万円程度",
+     "unit_matches": true
+    },
+    {
+     "source": "家づくりのとびら(CREX)",
+     "url": "https://crexgroup.com/ja/home-building/planning/my-home-pool-regret-cost/",
+     "as_of": "2025-11-16",
+     "quoted": "置き型(ユニット)プール 150万円～500万円(工事費込み) / 埋め込み式 300万円～1,000万円以上",
+     "unit_matches": true
+    }
+   ],
+   "note": "souba 400万〜900万円は出典の範囲内"
+  },
+  {
+   "id": "shisetsu_pool_matsu",
+   "work": "室内プール（建屋込み）",
+   "unit": "一式",
+   "min": 25000000,
+   "avg": 40000000,
+   "max": 60000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "Fixr, How much does it cost to install an indoor swimming pool?",
+     "url": "https://fixr.com/costs/indoor-swimming-pool-installation",
+     "as_of": "2025-01-31",
+     "quoted": "Indoor pool costs range from $40,000 to $200,000, with a national average of $95,000. (12' x 24' pool with an existing structure; higher-end projects with a new structure can reach about $350,000)",
+     "unit_matches": true
+    },
+    {
+     "source": "家づくり比較なび (CREX GROUP) 注文住宅のプール費用",
+     "url": "https://crexgroup.com/ja/home-building/planning/custom-home-pool-cost-pros-cons/",
+     "as_of": "2025-11-17",
+     "quoted": "初期費用(合計): 350万円～1,500万円以上 / プール本体: 200万円～1,000万円以上 / 施工費用: 150万円～500万円以上 / 年間維持費: 15万円～40万円以上（3m×7m程度の家庭用プール）",
+     "unit_matches": false
+    }
+   ],
+   "note": "No Japanese source with an indoor pool including its building was found. The US source is in USD: souba ¥2,500万..¥6,000万 is roughly $165k..$400k at about 150 JPY/USD (conversion is ours, not on the page), which overlaps only the top of Fixr's $40k..$200k and its about $350,000 new-structure case. The Japanese source covers an outdoor 3m×7m pool without building (350万～1,500万円以上), a different scope; its 年間維持費 15万～40万円以上 sits inside the note's ¥30-150万 only at the low end."
+  },
+  {
+   "id": "shoji_fusuma_ume",
+   "work": "障子・強化紙張替え（標準4枚）",
+   "unit": "一式",
+   "min": 12000,
+   "avg": 18000,
+   "max": 24000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/shoji-exchange/media/258623",
+     "as_of": "2025-05-21",
+     "quoted": "専門業者 障子1枚あたり2,700円～9,400円 / ホームセンター 強力紙 中・腰高 6,000円前後、大・掃き出し 6,500円前後",
+     "unit_matches": false
+    }
+   ],
+   "note": "4枚換算で約1.1万〜3.8万円、souba 1.2万〜2.4万円は内側"
+  },
+  {
+   "id": "shoji_fusuma_work",
+   "work": "ふすま・上等紙張替え（標準4枚）",
+   "unit": "一式",
+   "min": 24000,
+   "avg": 36000,
+   "max": 48000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/fusuma-exchange/media/133861",
+     "as_of": "2025-07-31",
+     "quoted": "上新鳥の子 2,000～3,000円/枚、鳥の子 2,000～4,000円/枚、中級織物 4,500円～6,000円/枚、上級織物 15,000～25,000円/枚",
+     "unit_matches": false
+    }
+   ],
+   "note": "souba 1枚6,000〜12,000円相当。中級は出典4,500〜6,000円で souba は上寄り。上等紙の区分が出典にない"
+  },
+  {
+   "id": "shoji_fusuma_matsu",
+   "work": "ふすま・鳥の子紙張替え（4枚・高級）",
+   "unit": "一式",
+   "min": 60000,
+   "avg": 90000,
+   "max": 120000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/fusuma-exchange/media/133861",
+     "as_of": "2025-07-31",
+     "quoted": "本鳥の子 10,000～25,000円/枚",
+     "unit_matches": false
+    }
+   ],
+   "note": "4枚換算4万〜10万円、souba 6万〜12万円(1枚1.5万〜3万円)と大きく重なる"
+  },
+  {
+   "id": "shokusai_zoen_ume",
+   "work": "庭木剪定・1本単位",
+   "unit": "一式",
+   "min": 5000,
+   "avg": 12000,
+   "max": 25000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/gardener/magazine/281/",
+     "as_of": "2026-08-19",
+     "quoted": "中木(3〜5m) 5,000〜9,000円(1本あたり、2024年9月時点)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア(横浜市磯子区 庭の手入れ)",
+     "url": "https://meetsmore.com/t/gardening/kanagawa/yokohama/isogo",
+     "as_of": "2026-10-18",
+     "quoted": "中木(3〜5m) 5,000〜10,000円、高木(5m以上) 10,000〜25,000円",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典の5,000〜10,000円は souba 5,000〜25,000円の内側(souba 上限は高木寄り)"
+  },
+  {
+   "id": "shokusai_zoen",
+   "work": "年間管理契約・標準（年4回剪定）",
+   "unit": "一式",
+   "min": 80000,
+   "avg": 150000,
+   "max": 250000,
+   "verdict": "none",
+   "sources": [
+    {
+     "source": "くらしのマーケットマガジン 庭木の剪定料金",
+     "url": "https://curama.jp/magazine/281/",
+     "as_of": "2026-08-19",
+     "quoted": "中木（高さ3～5m未満）：5,000円～9,000円 / 高木（高さ5～7m未満）：1.3万円～2万円（1本あたり、2024年9月時点）",
+     "unit_matches": false
+    },
+    {
+     "source": "ミツモア 庭木の剪定料金相場レポート",
+     "url": "https://meetsmore.com/services/tree-trimming/media/271251",
+     "as_of": "2026-08-25",
+     "quoted": "立ち木 3〜4m 4,473円 / 4〜5m 5,979円 / 5〜6m 8,774円；マツ 2〜3m 16,944円 / 3〜4m 27,182円 / 4〜5m 41,646円（1本あたり平均）",
+     "unit_matches": false
+    }
+   ],
+   "note": "No fetched page states a price for an annual garden management contract (年間管理契約); curama and crowdworks pages mention such contracts without a figure. Only per-tree pruning prices were found, which are not comparable to the souba row. Side finding on the note text: its per-tree figures (中木 ¥1-2.5万, 高木 ¥3-10万, 松 ¥5-20万) sit well above the fetched per-tree prices (中木 5,000～9,000円, 高木 1.3万～2万円, マツ 2～5m 平均 16,944～41,646円)."
+  },
+  {
+   "id": "shokusai_zoen_matsu",
+   "work": "和風庭園（茶庭・坪庭）",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 3000000,
+   "max": 5000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "リフォーム比較なび(CREX)",
+     "url": "https://crexgroup.com/ja/reform/garden-reform/garden-reform-cost-guide/",
+     "as_of": "2026-02-04",
+     "quoted": "庭をおしゃれにデザイン(和風庭園を含む) 50万円～300万円以上 / 中庭・坪庭 20万円～100万円程度、和風の坪庭 20万～80万円程度、水盤・蹲 30万円～",
+     "unit_matches": true
+    }
+   ],
+   "note": "坪庭は出典20万〜100万円で souba 150万〜500万円は上。和風庭園の50万〜300万円以上とは150万〜300万円で重なる"
+  },
+  {
+   "id": "shomei_design_ume",
+   "work": "ダウンライト配列（リビング）",
+   "unit": "一式",
+   "min": 150000,
+   "avg": 270000,
+   "max": 400000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "リフォーム比較なび(CREX)",
+     "url": "https://crexgroup.com/ja/reform/renovation/downlight-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "12畳リビングに8箇所増設し調光スイッチも設置 約191,000円～ / 1箇所増設 約15,000円～30,000円程度",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典の約19.1万円〜は souba 15万〜40万円の内側"
+  },
+  {
+   "id": "shomei_design",
+   "work": "コーブ照明（建築化照明）",
+   "unit": "一式",
+   "min": 400000,
+   "avg": 750000,
+   "max": 1200000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "at home(アットホーム)",
+     "url": "https://www.athome.co.jp/contents/custom/build-design/light/",
+     "as_of": "2025-07-21",
+     "quoted": "ライン照明(建築化照明) 一般的には10万円～30万円程度、60万円以上になることも",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典10万〜30万円(〜60万円超)に対し souba 40万〜120万円は上寄り。souba は天井造作込み"
+  },
+  {
+   "id": "shomei_design_matsu",
+   "work": "戸建全室の照明デザイン（建築設計連動）",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 2800000,
+   "max": 5000000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "比較ビズ まとめ 照明デザインの費用相場",
+     "url": "https://www.biz.ne.jp/matome/2008523/",
+     "as_of": "2025-05-13",
+     "quoted": "小規模プロジェクト：10万円〜50万円 / 中規模プロジェクト：50万円〜200万円（レストランやギャラリー） / 大規模プロジェクト：200万円以上（大型商業施設や高級住宅）",
+     "unit_matches": true
+    },
+    {
+     "source": "リフォーム比較プロ (CREX GROUP) ダウンライトリフォームの費用",
+     "url": "https://crexgroup.com/ja/reform/renovation/downlight-reform-cost/",
+     "as_of": "2025-12-18",
+     "quoted": "増設（1箇所）約15,000円～30,000円 / 12畳に8箇所増設＋調光スイッチ設置：約191,000円～",
+     "unit_matches": false
+    }
+   ],
+   "note": "Souba ¥150万..¥500万 overlaps the source's 大規模 200万円以上 band, the only band naming 高級住宅, and the top of 中規模 50万～200万円; but the bands are for lighting design projects in general, not a whole-house residential scope, and give no upper bound. No fetched page states a whole-house residential lighting total. Downlight per-spot costs are context only."
+  },
+  {
+   "id": "smart_home_iot_ume",
+   "work": "スマートロック追加（玄関）",
+   "unit": "一式",
+   "min": 60000,
+   "avg": 110000,
+   "max": 200000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/lock-exchange/media/84690",
+     "as_of": "2024-06-28",
+     "quoted": "商品本体の価格帯は10,000〜50,000円くらい / シリンダーや穴あけなどの工事が必要な場合はおよそ3,000〜5,000円が相場",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/locksmith/magazine/2991/",
+     "as_of": "2026-08-27",
+     "quoted": "SwitchBot ¥11,980、SwitchBot ロック Pro ¥22,980、AEGIS GATE ¥36,980(本体価格)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は本体+工事で約1.3万〜5.5万円。souba 6万〜20万円は上(後付け型の想定なら明確に高い)"
+  },
+  {
+   "id": "smart_home_iot",
+   "work": "全室スマートエアコン化",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 380000,
+   "max": 600000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "家づくり比較なび (CREX GROUP) 注文住宅でスマートホームを実現",
+     "url": "https://crexgroup.com/ja/home-building/planning/custom-home-smart-home-guide/",
+     "as_of": "2025-12-18",
+     "quoted": "防犯・省エネなど目的を絞った導入：10万円～50万円程度 / スマートリモコンは1万円前後",
+     "unit_matches": true
+    },
+    {
+     "source": "ハウスケアラボ エアコンをスマホで操作する最新アプリ＆主要メーカー対応徹底比較ガイド",
+     "url": "https://lifestyle.assist-all.co.jp/aircon-smartphone-apps-comparison-guide/",
+     "as_of": "2026-04-27",
+     "quoted": "Wi-Fi内蔵エアコン（本体）: 約10万～25万円程度 / スマートリモコンの後付け: 約5,000～13,000円前後 / 後付けスマートリモコンの設置（機器取付とアプリ初期設定）: 8,000～25,000円（税込） / Wi-Fi対応エアコンの新設（既設撤去と新規設置）: 20,000～50,000円（税込）",
+     "unit_matches": false
+    }
+   ],
+   "note": "Souba ¥20万..¥60万 overlaps the source's purpose-limited band 10万～50万円. Per-unit figures bracket the row depending on scope: four smart remotes with install would be roughly 5万..15万 (below souba), four Wi-Fi aircon replacements roughly 48万..120万 (above); these products are our arithmetic, not on the page. Souba scope (remotes only vs new units) is not stated, so partly."
+  },
+  {
+   "id": "smart_home_iot_matsu",
+   "work": "戸建全室スマートホーム化",
+   "unit": "一式",
+   "min": 1000000,
+   "avg": 1900000,
+   "max": 3500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "家づくり比較なび (CREX GROUP) 注文住宅でスマートホームを実現",
+     "url": "https://crexgroup.com/ja/home-building/planning/custom-home-smart-home-guide/",
+     "as_of": "2025-12-18",
+     "quoted": "家全体のフルスマートホーム化：100万円以上、場合により300万円～500万円以上 / スタンダードプラン：80万円 ～ 200万円 / プレミアムプラン：200万円 ～ 500万円以上",
+     "unit_matches": true
+    }
+   ],
+   "note": "Souba ¥100万..¥350万 (avg ¥190万) sits inside the source's 100万円以上 full-home figure and spans its スタンダード 80万～200万円 and lower プレミアム 200万～500万円以上 bands. Source is a new-build guide; retrofit may cost more."
+  },
+  {
+   "id": "toko_shuri_ume",
+   "work": "床鳴り部分注入補修",
+   "unit": "一式",
+   "min": 30000,
+   "avg": 55000,
+   "max": 80000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "くらしのマーケット(床鳴り補修)",
+     "url": "https://curama.jp/floor-noise-repair/",
+     "as_of": "2026-08",
+     "quoted": "床鳴り補修 8,000円〜25,000円程度、最高35,000円(単位の記載なし)",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は掲載1件あたり0.8万〜2.5万円。1〜3箇所でも souba 3万〜8万円は上寄り"
+  },
+  {
+   "id": "toko_shuri",
+   "work": "フローリング部屋全体張替（重ね張り）",
+   "unit": "一式",
+   "min": 120000,
+   "avg": 200000,
+   "max": 280000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/floor-exchange/media/91229",
+     "as_of": "2025-04-22",
+     "quoted": "6畳 上張り(重ね張り) 複合 70,000〜120,000円、無垢 105,000〜175,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "リフォーム比較なび(CREX)",
+     "url": "https://crexgroup.com/ja/reform/livingroom-reform/floor-renovation-cost-average/",
+     "as_of": "2026-02-04",
+     "quoted": "6畳 重ね張り 約6万円～20万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典6万〜20万円に対し souba 12万〜28万円は上寄り、重なりは12万〜20万円"
+  },
+  {
+   "id": "toko_shuri_matsu",
+   "work": "フローリング全面張替（既存撤去・床下対応）",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 350000,
+   "max": 500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/floor-exchange/media/91229",
+     "as_of": "2025-04-22",
+     "quoted": "6畳 張り替え 複合 115,000〜165,000円、無垢 150,000〜220,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "リフォーム比較なび(CREX)",
+     "url": "https://crexgroup.com/ja/reform/livingroom-reform/floor-renovation-cost-average/",
+     "as_of": "2026-02-04",
+     "quoted": "6畳 張り替え 約8万円～25万円(下地の補修が必要な場合は別途)",
+     "unit_matches": true
+    }
+   ],
+   "note": "出典8万〜25万円は下地補修別。souba 20万〜50万円は下地込みで上寄り、重なりは20万〜25万円"
+  },
+  {
+   "id": "tokushuseiso_ume",
+   "work": "消臭のみ（オゾン処理）",
+   "unit": "一式",
+   "min": 50000,
+   "avg": 90000,
+   "max": 150000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモアメディア",
+     "url": "https://meetsmore.com/services/special-cleaning/media/185863",
+     "as_of": "2024-06-28",
+     "quoted": "オゾン脱臭 1日3万円～ / 消臭・除菌処理 1万円～",
+     "unit_matches": false
+    }
+   ],
+   "note": "出典は日額。数日で souba 5万〜15万円に届くが1部屋一式の範囲ではない"
+  },
+  {
+   "id": "tokushuseiso",
+   "work": "ゴミ屋敷清掃（1K・腰高ゴミ）",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 450000,
+   "max": 800000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/hoarding-cleanup/magazine/373/",
+     "as_of": "2024-09-30",
+     "quoted": "1R、1K 3万円〜5万円(床から約50cm(ひざ)まで) / ワンルームで天井まで埋まっている場合 5万円〜20万円",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/hoarding-cleanup/media/113297",
+     "as_of": "2025-07-16",
+     "quoted": "1Rの事例 料金7万円 / 20㎡～(2tトラック約3台分) 117,000円～150,000円",
+     "unit_matches": true
+    }
+   ],
+   "note": "1K腰高は出典で数万〜20万円(天井までで上限20万円)。souba 20万〜80万円は明確に上"
+  },
+  {
+   "id": "tokushuseiso_matsu",
+   "work": "事件現場清掃（警察検証後）",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 700000,
+   "max": 1500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "アシストライフスタイル",
+     "url": "https://lifestyle.assist-all.co.jp/?p=9722",
+     "as_of": "2025-06-25",
+     "quoted": "事故物件 約80,000～300,000円(血液・体液の除去・消毒)",
+     "unit_matches": true
+    },
+    {
+     "source": "いえーる(e-estate)",
+     "url": "https://e-estate.jp/media/?p=7623",
+     "as_of": "2026-09-11",
+     "quoted": "費用の目安は5万〜60万円(特殊清掃全般、事件現場の区分なし)",
+     "unit_matches": true
+    }
+   ],
+   "note": "公開相場は事故物件で8〜30万、特殊清掃全般で5〜60万。soubaは30〜150万と上振れ、重なりは30〜60万のみ。事件現場に限った公開相場は見つからず"
+  },
+  {
+   "id": "uri_riyo_ume",
+   "work": "簡易雨水タンク（200L・庭散水用）",
+   "unit": "一式",
+   "min": 50000,
+   "avg": 90000,
+   "max": 150000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "調布市 雨水浸透ます・雨水タンク設置助成 概要",
+     "url": "https://www.city.chofu.lg.jp/documents/12075/gaiyou.pdf",
+     "as_of": "2026-10-18",
+     "quoted": "例2 タンク・接続部品・架台を購入、業者が設置 購入・設置費用83,000円(税抜)",
+     "unit_matches": true
+    },
+    {
+     "source": "杉並区 雨水タンク案内",
+     "url": "https://www.city.suginami.tokyo.jp/_res/projects/default_project/_page_/001/093/677/r060401_usuitank.pdf",
+     "as_of": "2026-10-18",
+     "quoted": "価格は１万円～１０万円ほどです。(本体、設置費の記載なし)",
+     "unit_matches": false
+    }
+   ],
+   "note": "業者設置例8.3万円がsouba 5〜15万(平均9万)の中。調布例は容量の明記なし"
+  },
+  {
+   "id": "uri_riyo",
+   "work": "災害時用備蓄雨水タンク",
+   "unit": "一式",
+   "min": 250000,
+   "avg": 450000,
+   "max": 700000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "三栄(SANEI) 雨水利用ガイド",
+     "url": "https://www.sanei.ltd/library/products/usui/usui-guide-bcf.pdf",
+     "as_of": "2023-05",
+     "quoted": "EC2011S-1000L(水道水補給なし) 1000L ¥680,000(税別、別途工事費・送料が必要)",
+     "unit_matches": false
+    }
+   ],
+   "note": "メーカー1000L地上型は本体定価だけで68万円とsouba上限70万に近い。工事込みならsoubaは低め。安価な汎用タンク構成の公開相場は見つからず"
+  },
+  {
+   "id": "uri_riyo_matsu",
+   "work": "大型雨水タンク（1500L・地中埋設）",
+   "unit": "一式",
+   "min": 500000,
+   "avg": 900000,
+   "max": 1500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "三栄(SANEI) 雨水利用ガイド",
+     "url": "https://www.sanei.ltd/library/products/usui/usui-guide-bcf.pdf",
+     "as_of": "2023-05",
+     "quoted": "EC2101HS-1200L 1200L 雨水タンク ¥1,500,000(税別、地下埋設型・水道水併用型)",
+     "unit_matches": false
+    }
+   ],
+   "note": "メーカー地下埋設1200Lの本体定価がsouba上限150万と同額、工事費は別途。soubaは本メーカー基準では低い。メーカー1社の定価のみで市場相場ではない"
+  },
+  {
+   "id": "wine_cellar_ume",
+   "work": "30本収納コンパクト・据置設置",
+   "unit": "一式",
+   "min": 130000,
+   "avg": 220000,
+   "max": 320000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ENECHANGE",
+     "url": "https://enechange.jp/articles/wine-cellar-cost",
+     "as_of": "2018-04-05",
+     "quoted": "通常2～8万円程度の価格帯で販売されています。(本数別の内訳なし、設置費なし)",
+     "unit_matches": false
+    },
+    {
+     "source": "ユーロカーブ 2024カタログ(delivery-wine.net)",
+     "url": "https://www.delivery-wine.net/wc/eurocave/eurocave2024.pdf",
+     "as_of": "2024-02-15",
+     "quoted": "Compact59 V059M 38本 ¥561,000(税込)",
+     "unit_matches": false
+    }
+   ],
+   "note": "量販品(2〜8万)はsouba下限13万より下、輸入高級機38本(56.1万)は上限32万より上。グレード次第で両側に外れる。設置費込みの公開相場はなし"
+  },
+  {
+   "id": "wine_cellar",
+   "work": "300本収納・据置（上位機）",
+   "unit": "一式",
+   "min": 600000,
+   "avg": 950000,
+   "max": 1500000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ユーロカーブ 2024カタログ(delivery-wine.net)",
+     "url": "https://www.delivery-wine.net/wc/eurocave/eurocave2024.pdf",
+     "as_of": "2024-02-15",
+     "quoted": "La Première-L-T-STD 213本 ¥738,100(税込) / La Première-L-T-PTHF 213本 ¥771,100(税込)",
+     "unit_matches": false
+    }
+   ],
+   "note": "カタログ最大は213本で300本機の掲載なし。213本上位機74〜77万はsouba 60〜150万の中だが本数と設置費の範囲が異なる"
+  },
+  {
+   "id": "wine_cellar_matsu",
+   "work": "本格ワインセラールーム（1500本・8畳）",
+   "unit": "一式",
+   "min": 4000000,
+   "avg": 6500000,
+   "max": 9000000,
+   "verdict": "none",
+   "sources": [],
+   "note": "ワインセラールーム(1500本・8畳)の造作費用を示す公開ページは見つからず(SUUMO収納リフォーム、LIFULL HOME'S等に記載なし)"
+  },
+  {
+   "id": "zenkanki_jokuki_ume",
+   "work": "業務用除湿機（地下室・倉庫）",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 600000,
+   "max": 1000000,
+   "verdict": "none",
+   "sources": [
+    {
+     "source": "価格.com ダイキン JKT10VS-W",
+     "url": "https://search.kakaku.com/jkt10vs-w/",
+     "as_of": "2026-10-18",
+     "quoted": "最安価格 ¥61,800、価格帯 ¥61,800 ～ ¥107,359(住まい向け除湿乾燥機)",
+     "unit_matches": false
+    }
+   ],
+   "note": "見つかったのは住宅用除湿乾燥機の本体価格のみで、業務用除湿機の設置工事込み一式とは比較不可"
+  },
+  {
+   "id": "zenkanki_jokuki",
+   "work": "戸建30坪・全館空調（スタンダード）",
+   "unit": "一式",
+   "min": 1800000,
+   "avg": 2500000,
+   "max": 3500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX(クレックス)",
+     "url": "https://crexgroup.com/ja/home-building/cost/builder-whole-house-ac-guide/",
+     "as_of": "2025-11-16",
+     "quoted": "30坪(約99㎡) 150万円～250万円(初期費用の目安、新築時)",
+     "unit_matches": true
+    }
+   ],
+   "note": "30坪150〜250万とsouba 180〜350万が180〜250万で重なる。出典は新築時導入で後付けはより高いと記載"
+  },
+  {
+   "id": "zenkanki_jokuki_matsu",
+   "work": "オフィス全館空調（業務用）",
+   "unit": "一式",
+   "min": 4000000,
+   "avg": 6500000,
+   "max": 10000000,
+   "verdict": "inconsistent",
+   "sources": [
+    {
+     "source": "ダイキン 業務用エアコン ご購入価格の目安",
+     "url": "https://www.ac.daikin.co.jp/customercenter/price/sa",
+     "as_of": "2026-03",
+     "quoted": "8馬力以上 110㎡以上 100～200万円(機器代金＋工事代金、1セット)",
+     "unit_matches": true
+    }
+   ],
+   "note": "メーカー公表の成約価格は110㎡級で100〜200万。souba 400〜1000万は明らかに上。ダクト式全館空調なら差は縮むが公開相場は未発見"
+  },
+  {
+   "id": "ashiyu_unit_danran_set",
+   "work": "業務用足湯 セット完成品（浴槽＋ろ過保温ユニット・最高級だんらんクラス）本体",
+   "unit": "台",
+   "min": 850000,
+   "avg": 1571000,
+   "max": 2100000,
+   "verdict": "none",
+   "sources": [],
+   "note": "業務用足湯セット完成品の公開価格は見つからず(メーカー仕切り価格表は非公開資料)"
+  },
+  {
+   "id": "ashiyu_roka_heater_unit",
+   "work": "業務用足湯 ろ過保温ユニット単体（浴槽含まず・ハイエンド）",
+   "unit": "台",
+   "min": 1300000,
+   "avg": 2028000,
+   "max": 2090000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ノーリツ ニュースリリース(digitalpr.jp)",
+     "url": "https://digitalpr.jp/r/73583",
+     "as_of": "2023-09-01",
+     "quoted": "ろ過昇温ポンプユニット(PSU-400ST) 価格 880,000円(税別)",
+     "unit_matches": true
+    }
+   ],
+   "note": "浴場向けの昇温ポンプユニット(ろ過ユニットは別)で足湯専用機ではない。souba 130〜209万より低いが範囲が異なる"
+  },
+  {
+   "id": "ashiyu_full_construction",
+   "work": "業務用足湯 工事一式（本体＋搬入据付＋給排水＋電源＋試運転＋防水）1基",
+   "unit": "一式",
+   "min": 1500000,
+   "avg": 3500000,
+   "max": 6500000,
+   "verdict": "none",
+   "sources": [],
+   "note": "業務用足湯の工事一式の公開相場は見つからず"
+  },
+  {
+   "id": "kagami_studio_5mm_sqm",
+   "work": "大型スタジオミラー 5mm厚 クリアミラー 単価（鏡本体・㎡）",
+   "unit": "㎡",
+   "min": 13000,
+   "avg": 18000,
+   "max": 24000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "楽天 かがみや(kagamiyasan)",
+     "url": "https://www.rakuten.co.jp/kagamiyasan/",
+     "as_of": "2026-10-18",
+     "quoted": "鏡 玄関 長方形 300mm×1500mm 5mm 12,100円 / 鏡 壁貼りミラー 450×1750mm 21,800円",
+     "unit_matches": false
+    }
+   ],
+   "note": "枚単価のみ。㎡換算(番人計算)で約2.7万/㎡とsouba上限2.4万をやや上回る。小型小売品で大型スタジオ鏡とは別物"
+  },
+  {
+   "id": "kagami_studio_per_sheet",
+   "work": "大型スタジオミラー 1000×1500前後 1枚（鏡本体・施工別）",
+   "unit": "枚",
+   "min": 40000,
+   "avg": 49350,
+   "max": 60000,
+   "verdict": "none",
+   "sources": [],
+   "note": "1000×1500前後のスタジオ鏡1枚の公開価格は見つからず(楽天かがみやは最大450×1750)"
+  },
+  {
+   "id": "kagami_studio_full_construction",
+   "work": "大型スタジオミラー 壁面施工一式（鏡＋金物＋施工＋映像調整＋運搬）",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 600000,
+   "max": 1200000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "くらしのマーケット 鏡の取り付け",
+     "url": "https://curama.jp/mirror-install/SER022547363/",
+     "as_of": "2026-10-18",
+     "quoted": "基本料金（税込）1枚あたり¥11,000(鏡は顧客用意、大型は2名〜別途対応)",
+     "unit_matches": false
+    }
+   ],
+   "note": "取付工賃のみの比較。souba内訳の施工60,000円/5枚(1.2万/枚)とは整合するが、一式の公開相場はなし"
+  },
+  {
+   "id": "ecocute_370",
+   "work": "エコキュート交換 370L フルオート",
+   "unit": "一式",
+   "min": 350000,
+   "avg": 480000,
+   "max": 580000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア",
+     "url": "https://meetsmore.com/services/eco-cute-exchange/media/194160",
+     "as_of": "2025-05-21",
+     "quoted": "エコキュートを交換する際の費用は40万円～60万円が相場です。/ パナソニック HE-S37LQ：369,000円～（工事費込み）",
+     "unit_matches": true
+    }
+   ],
+   "note": "相場40〜60万、370Lフルオートの工事込み例36.9〜46.5万がsouba 35〜58万と重なる"
+  },
+  {
+   "id": "ih_cooking_heater",
+   "work": "IHクッキングヒーター交換 ビルトイン3口",
+   "unit": "一式",
+   "min": 50000,
+   "avg": 130000,
+   "max": 220000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "交換できるくん すむたの",
+     "url": "https://www.sunrefre.jp/sumutano/ih/12998/",
+     "as_of": "2026-07-31",
+     "quoted": "本体＋設置費込みで8万円〜30万円程度 / KZ-N1H6AK 商品＋交換工事＋10年保証 83,270円",
+     "unit_matches": true
+    }
+   ],
+   "note": "公開相場8〜30万とsouba 5〜22万が8〜22万で重なる。口数の明記なし"
+  },
+  {
+   "id": "inner_window_ume",
+   "work": "内窓設置 腰窓・小窓 1箇所",
+   "unit": "1箇所",
+   "min": 40000,
+   "avg": 70000,
+   "max": 100000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX(クレックス) インプラス",
+     "url": "https://crexgroup.com/ja/reform/renovation/lixil-inplus-price-subsidy/",
+     "as_of": "2026-02-04",
+     "quoted": "腰高窓 約40,000円～80,000円(商品代、単板ガラス)、工事費 1窓あたり約25,000円～40,000円、腰高窓170×110複層ガラス例 合計約90,000円",
+     "unit_matches": true
+    }
+   ],
+   "note": "工事込み例9万円がsouba 4〜10万の中"
+  },
+  {
+   "id": "inner_window_matsu",
+   "work": "内窓設置 掃き出し窓(大) 1箇所",
+   "unit": "1箇所",
+   "min": 100000,
+   "avg": 150000,
+   "max": 200000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX(クレックス) インプラス",
+     "url": "https://crexgroup.com/ja/reform/renovation/lixil-inplus-price-subsidy/",
+     "as_of": "2026-02-04",
+     "quoted": "掃き出し窓 約70,000円～120,000円(商品代、単板ガラス)、工事費 1窓あたり約25,000円～40,000円",
+     "unit_matches": true
+    }
+   ],
+   "note": "商品代＋工事費で約9.5〜16万(番人合算)がsouba 10〜20万と重なる"
+  },
+  {
+   "id": "genkan_door_cover_ume",
+   "work": "玄関ドア カバー工法 片開き標準",
+   "unit": "一式",
+   "min": 200000,
+   "avg": 300000,
+   "max": 380000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX(クレックス) 玄関ドア",
+     "url": "https://crexgroup.com/ja/reform/entrance-reform/entrance-door-reform-cost-tips/",
+     "as_of": "2026-02-04",
+     "quoted": "カバー工法 20万円～50万円（ドア本体価格＋工事費）/ 断熱仕様の片開き 20万円～30万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "標準片開き20〜30万がsouba 20〜38万の中"
+  },
+  {
+   "id": "genkan_door_cover",
+   "work": "玄関ドア カバー工法 中級(断熱・採風)",
+   "unit": "一式",
+   "min": 300000,
+   "avg": 400000,
+   "max": 500000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX(クレックス) 玄関ドア",
+     "url": "https://crexgroup.com/ja/reform/entrance-reform/entrance-door-reform-cost-tips/",
+     "as_of": "2026-02-04",
+     "quoted": "30万円～40万円の価格帯(高断熱K2仕様など) / 通風機能で5万円～10万円程度高くなる",
+     "unit_matches": true
+    }
+   ],
+   "note": "中級30〜40万＋採風5〜10万がsouba 30〜50万と一致。カバー工法前提かは出典で明記なし"
+  },
+  {
+   "id": "genkan_door_cover_matsu",
+   "work": "玄関ドア カバー工法 高断熱・親子ドア",
+   "unit": "一式",
+   "min": 400000,
+   "avg": 550000,
+   "max": 700000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "CREX(クレックス) 玄関ドア",
+     "url": "https://crexgroup.com/ja/reform/entrance-reform/entrance-door-reform-cost-tips/",
+     "as_of": "2026-02-04",
+     "quoted": "親子ドア 30万円～60万円",
+     "unit_matches": true
+    }
+   ],
+   "note": "親子ドア30〜60万とsouba 40〜70万が40〜60万で重なる"
+  },
+  {
+   "id": "mengoushi_ume",
+   "work": "面格子 取り付け 小窓 アルミ 1箇所 工事費込み",
+   "unit": "1箇所",
+   "min": 18000,
+   "avg": 26000,
+   "max": 40000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア 埼玉県の面格子取り付け",
+     "url": "https://meetsmore.com/services/surface-grid-installation/saitama",
+     "as_of": "2026-10-17",
+     "quoted": "小窓（70cm×70cm） 18,400～30,000円(面格子本体代、取り付け作業、簡易清掃込み)",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア 福岡県の面格子取り付け",
+     "url": "https://meetsmore.com/services/surface-grid-installation/fukuoka",
+     "as_of": "2026-10-18",
+     "quoted": "小窓（70cm×70cm） 17,000～20,400円",
+     "unit_matches": true
+    }
+   ],
+   "note": "埼玉1.84〜3万、福岡1.7〜2.04万。souba 1.8〜4万と重なり、福岡はsouba平均より安い"
+  },
+  {
+   "id": "mengoushi_take",
+   "work": "面格子 取り付け 腰高窓・出窓 アルミ 1箇所 工事費込み",
+   "unit": "1箇所",
+   "min": 25000,
+   "avg": 38000,
+   "max": 55000,
+   "verdict": "consistent",
+   "sources": [
+    {
+     "source": "ミツモア 埼玉県の面格子取り付け",
+     "url": "https://meetsmore.com/services/surface-grid-installation/saitama",
+     "as_of": "2026-10-17",
+     "quoted": "腰高窓（120cm×150cm） 31,150～52,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "ミツモア 福岡県の面格子取り付け",
+     "url": "https://meetsmore.com/services/surface-grid-installation/fukuoka",
+     "as_of": "2026-10-18",
+     "quoted": "腰高窓（120cm×150cm） 27,000～32,400円",
+     "unit_matches": true
+    }
+   ],
+   "note": "両県ともsouba 2.5〜5.5万の中"
+  },
+  {
+   "id": "mengoushi_matsu",
+   "work": "面格子 取り付け ステンレス・目隠し・防犯強化 1箇所 工事費込み",
+   "unit": "1箇所",
+   "min": 40000,
+   "avg": 75000,
+   "max": 120000,
+   "verdict": "none",
+   "sources": [],
+   "note": "ステンレス・目隠し・防犯強化面格子の工事込み公開相場は見つからず(ミツモア埼玉ページにステンレスの記載なし)"
+  },
+  {
+   "id": "mengoushi_koji",
+   "work": "面格子 施工費のみ 1箇所 製品代別",
+   "unit": "1箇所",
+   "min": 8000,
+   "avg": 12000,
+   "max": 18000,
+   "verdict": "none",
+   "sources": [],
+   "note": "面格子の施工費のみ(製品代別)の公開相場は見つからず"
+  },
+  {
+   "id": "mengoushi_shuri",
+   "work": "面格子 修理・建付け調整 1箇所",
+   "unit": "1箇所",
+   "min": 8000,
+   "avg": 15000,
+   "max": 25000,
+   "verdict": "partly",
+   "sources": [
+    {
+     "source": "ミツモア 埼玉県の面格子取り付け(口コミ)",
+     "url": "https://meetsmore.com/services/surface-grid-installation/saitama",
+     "as_of": "2026-10-18",
+     "quoted": "面格子のネジの留め直しと補強で8,000円(利用者の口コミ1件)",
+     "unit_matches": true
+    }
+   ],
+   "note": "口コミ1件の8,000円がsouba下限と同額。市場相場ではなく単一事例"
+  },
+  {
+   "id": "tategu_panel_kokan",
+   "work": "建具パネル交換 室内ドア 1枚 0.5㎡以下",
+   "unit": "枚",
+   "min": 10000,
+   "avg": 18000,
+   "max": 30000,
+   "verdict": "none",
+   "sources": [],
+   "note": "建具パネル交換の公開相場は見つからず(ミツモアのドア記事は表面張り替え4〜6万で範囲が異なる)"
+  }
+ ]
+}
