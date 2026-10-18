@@ -893,6 +893,45 @@ for _name, _over, _drop, _top, _why in _AXES:
           _c, one(_c), parent=PARENT_FULL)
 
 
+# ----------------------------------------------------------------------------------------------- revision 0.3 (NOTES.md N15)
+# The second round of notes from the same implementation (impl/AMBIGUITIES.md B1 to B10, at aeoess 4ca508f). The reference did not change.
+
+synth("synth_infinity_in_signed_body", "2.2,3.1,6.0",
+      "The contractor signs an execution whose body holds Infinity. Canonical form writes the token Infinity (3.1 item 6), so the signature verifies; "
+      "the body is not strict: record_not_strict. Revision 0.3 (B2).",
+      BASE, one(BASE, extra={"score": float("inf")}))
+
+synth("synth_negative_infinity_in_signed_body", "2.2,3.1,6.0",
+      "The same with -Infinity: the signature verifies over the token -Infinity, record_not_strict. Revision 0.3 (B2).",
+      BASE, one(BASE, extra={"score": float("-inf")}))
+
+for _nm, _v in (("object", {}), ("string", ""), ("zero", 0)):
+    _c = synth_contract(sign=False, label="settle-core-v0 synthetic approvers " + _nm)
+    _c["grant"]["approval_policy"] = {"allow_unscoped": False, "approvers": _v}
+    _c = _resigned(_c)
+    synth("synth_approvers_" + _nm, "1,4.1",
+          "grant.approval_policy.approvers is %s. Only a well formed approver list (4.1 rule 10) is carried and out of scope; any other value refuses "
+          "the contract: contract_not_verified. Revision 0.3 (B7)." % json.dumps(_v),
+          _c, one(_c))
+
+
+def _approvers_contract(label, approvers, top=None):
+    c = synth_contract(sign=False, label=label, top=top)
+    c["grant"]["conditional"] = [{"action": "refund", "requires": "principal_approval"}]
+    c["grant"]["approval_policy"] = {"allow_unscoped": False} if approvers is None else {"allow_unscoped": False, "approvers": approvers}
+    return _resigned(c)
+
+
+PARENT_APPROVERS = _approvers_contract("settle-core-v0 synthetic parent with approvers",
+                                       [{"name": "synthetic-approver", "public_key_ed25519_b64": PW, "actions": ["refund"]}])
+_C_DROPS = _approvers_contract("settle-core-v0 synthetic child without approvers", None,
+                               top={"parent_contract": {"contract_id": PARENT_APPROVERS["contract_id"], "settlement_url": None}})
+synth("synth_parent_approvers_child_drops", "4.3.1",
+      "The parent pins approvers and the child has none. Rule 14 applies to the parent: a child must keep the parent's approvers exactly, so "
+      "parent_narrowing_failed. (A child that keeps them carries approvers itself and is out of scope.) Revision 0.3 (B5).",
+      _C_DROPS, one(_C_DROPS), parent=PARENT_APPROVERS)
+
+
 def main():
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)

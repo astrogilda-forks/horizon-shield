@@ -5,6 +5,8 @@ Date: 2026-10-17. Describes a2a-settlement-v1.16 (settle_v1_16.py).
 Revision 0.1, 2026-10-17: two sentences about approval signatures were unclear (6.0, 10.4). The reference did not change; section 13 lists the clarifications and their vectors.
 Revision 0.2, 2026-10-17: the answers to 25 implementation notes (NOTES.md N14) and the full parent narrowing rule (4.3). The reference did not change; section 13 lists each place and its vector.
 
+Revision 0.3, 2026-10-18: the answers to 10 more implementation notes (NOTES.md N15): how non-finite numbers are spelled, which approver values are carried, and pinned approvers on a parent. The reference did not change; section 13 lists each place and its vector.
+
 ## 0. Why this document exists
 
 Until now the MUSUBI settle function was defined only by Python code (settle_v1.py to settle_v1_16.py, each layer importing the ones below it).
@@ -37,7 +39,7 @@ Out of scope, and not defined here:
 - binding mode "legacy" (records bound by contract_id only),
 - fetching anything. Settle core v0 never touches the network. Every key it uses is inside the contract.
 
-A key is carried when it is present with a value other than null, with two exceptions. `requirements.spine` and `requirements.convergence` are carried whenever the key is present, null included: their gates then answer `spine_requirement_incomplete` and `convergence_requirement_incomplete`. And `grant.approval_policy.approvers` set to null or `[]` refuses the contract in 4.1 (WRITTEN BEHAVIOUR). Vectors `synth_limits_null`, `synth_admission_null`.
+A key is carried when it is present with a value other than null, with two exceptions. `requirements.spine` and `requirements.convergence` are carried whenever the key is present, null included: their gates then answer `spine_requirement_incomplete` and `convergence_requirement_incomplete`. And `grant.approval_policy.approvers` is carried only when it is a well formed approver list (4.1 rule 10); any other value that is present, null and `[]` included, refuses the contract in 4.1 (WRITTEN BEHAVIOUR). Vectors `synth_limits_null`, `synth_admission_null`, `synth_approvers_object`, `synth_approvers_string`, `synth_approvers_zero`.
 
 If a contract carries any of the keys above, this document does not define the result.
 An implementation MUST NOT claim core v0 conformance for such an input.
@@ -66,7 +68,8 @@ Text nested deeper than 512 levels of `[` or `{` (counted outside strings) is al
 Numbers MUST be integers within plus or minus (2^53 - 1). The contract is checked for this in 4.1, records in 6.0, the view in 5.1 and walks in section 11.
 A JSON value with a non-integer number is not "strict" in the sense of 6.0.
 
-The tokens `NaN`, `Infinity` and `-Infinity` are read as numbers that are not integers (WRITTEN BEHAVIOUR of the reference's reader, Python's json module). A value holding one is therefore not strict. It is not a parse error. Vector `synth_nan_in_signed_body`.
+The tokens `NaN`, `Infinity` and `-Infinity` are read as numbers that are not integers (WRITTEN BEHAVIOUR of the reference's reader, Python's json module). A value holding one is therefore not strict. It is not a parse error. Vectors `synth_nan_in_signed_body`, `synth_infinity_in_signed_body`, `synth_negative_infinity_in_signed_body`.
+Exactly these three spellings, case sensitive. `nan`, `+Infinity` or `infinity` is a parse error, and no settlement is produced. A number token whose value is too large for a double (for example `1e400`) is read as an infinity, so it too is a non-integer number.
 An integer token longer than 4300 digits is an error, and no settlement is produced: the reader raises (WRITTEN BEHAVIOUR). There is no vector, because there is no settlement to compare.
 
 A JSON value is an "integer" in this document only if it is written as an integer token: no fraction, no exponent.
@@ -100,6 +103,7 @@ Everything else the reference writes is informative.
 3. Strings: written between `"`. Escape only `"` as `\"`, `\` as `\\`, and U+0000 to U+001F. Of those, U+0008 is `\b`, U+000C is `\f`, U+000A is `\n`, U+000D is `\r`, U+0009 is `\t`, and the rest are `\u00xx` with lowercase hex. Every other character is written as itself, including U+007F, U+2028, U+2029 and all non-ASCII. A lone surrogate code unit (U+D800 to U+DFFF not part of a valid pair) is written `\udxxx` with lowercase hex.
 4. Integers: decimal, `-` only for negatives, no leading zeros, no fraction, no exponent.
 5. `true`, `false`, `null` as literals.
+6. A number that is not an integer can only occur in a value that is not strict, but such a value can still be signed (6.0 needs its signing bytes). It is written as Python's json module writes it: `NaN`, `Infinity`, `-Infinity`, and a finite float as Python's `repr` (`1.5`, `1e+16`, `1.0`). Not `nan`, not `null`. A signature over a body holding one verifies only over these spellings (vectors `synth_nan_in_signed_body`, `synth_infinity_in_signed_body`, `synth_negative_infinity_in_signed_body`).
 
 The reference ships fixed inputs for this rule (musubi-v0/canonical_vectors.json) and a Node twin (canonical_v0.mjs).
 
@@ -158,7 +162,7 @@ The reference reports a list of refusal codes alongside; those codes are informa
     - `witnesses`: list of objects, each with a non-empty string `name` and a `public_key_ed25519_b64` that decodes to 32 bytes.
     - `privacy`: non-empty string.
     - `ordering`: object with no key other than `same_height`, which is optional (`{}` is accepted, vector `synth_ordering_empty_object`); `same_height`, when present, a string or null.
-    - `approval_policy`: object with keys only from `allow_unscoped` (boolean) and `approvers` (out of scope, section 1).
+    - `approval_policy`: object with keys only from `allow_unscoped` (boolean) and `approvers`. `approvers`, when present, must be a list of 1 to 16 objects, each with keys only from `name`, `public_key_ed25519_b64` and `actions`: a non-empty string `name`, a canonical 32 byte `public_key_ed25519_b64`, names and keys unique across the list, and `actions` a non-empty list of distinct non-empty strings, each the `action` of an entry of `conditional`. Anything else refuses. A list that passes is carried and out of scope (section 1).
     - `revocation`: an object whose `effective_at` is `"anchor"` or `"delivery_ack"`, with keys only from `effective_at`, `ack_window`; `ack_window`, when present, integer >= 1.
 11. No number anywhere in the contract (signatures included) is a non-integer, NaN, an infinity, or an integer outside plus or minus (2^53 - 1).
 12. Every object key anywhere in the contract is printable ASCII (U+0020 to U+007E).
@@ -218,7 +222,7 @@ This applies when `parent_contract` is present and not null. The contract passes
 11. P has a witness with a string `public_key_ed25519_b64`. Then C must have at least one witness with such a key, and every such key of P must equal, as a string, the key of one of C's witnesses. Witnesses are compared by key; the names are labels (vector `synth_parent_full_witness_renamed`).
 12. For each of `privacy` and `ordering` separately: when the parent sets it, C must set it to an equal JSON value. After 4.1 rule 10 these values hold only strings, objects and null, so equality is exact: `{}` is not equal to `{"same_height": null}`. No order is defined for these two, so they are held equal. An `ordering` of `{"same_height": null}` counts as set (vector `synth_parent_full_without_ordering`).
 13. `C.approval_policy.allow_unscoped` is `true` and `P.approval_policy.allow_unscoped` is not (absent counts as not true). (In core v0 a true `allow_unscoped` already gives `unscoped_approvals_refused`, 4.2.)
-14. The pinned approvers differ. In core v0 neither grant carries them (section 1), so this never applies here.
+14. The pinned approvers differ: the parent's `approval_policy.approvers` and the child's, each taken as the empty list when absent, compared as sets of canonical entries. A child that carries approvers is out of scope (section 1), so in core v0 this applies when the parent pins approvers and the child has none: a violation (vector `synth_parent_approvers_child_drops`).
 
 The parent must also pass 4.1 on its own. Vectors `synth_parent_full_*` take a parent that sets every axis and change one axis per vector.
 
@@ -646,6 +650,15 @@ Clarified in revision 0.2 of this text, from the 25 implementation notes of the 
 | A21 | a floor whose mantissa is zero decodes to no target: both the door and the view refuse | `synth_floor_zero_mantissa` |
 | A22 | a copy dropped by 6.4 no longer names its revocation (10.1) | `synth_ack_names_dropped_copy` |
 | A24 | 10.4 step 1 "no principal key" cannot apply once 4.1 accepts | none |
+
+Clarified in revision 0.3, from 10 more notes of the same implementation (impl/AMBIGUITIES.md B1 to B10, NOTES.md N15). The reference did not change:
+
+| note | what the text now says | vector |
+|---|---|---|
+| B2 | non-finite numbers are written `NaN`, `Infinity`, `-Infinity` in canonical form (3.1 item 6) | `synth_infinity_in_signed_body`, `synth_negative_infinity_in_signed_body` |
+| B7 | only a well formed approver list is carried; `{}`, `""`, `0`, null and `[]` refuse in 4.1 (section 1, 4.1 rule 10) | `synth_approvers_object`, `synth_approvers_string`, `synth_approvers_zero` |
+| B5 | rule 14 applies when the parent pins approvers and the child has none (4.3.1) | `synth_parent_approvers_child_drops` |
+| B8 | exactly three spellings; `nan` and `+Infinity` stop the reader; `1e400` is an infinity (2.2) | none (no settlement to compare) |
 
 ## 14. What this does not establish
 

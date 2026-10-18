@@ -2330,6 +2330,127 @@
     "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
     "view.json": "30b92b72e2fc49ae0274b77410a5ea7850158f84f58d18fc5bfec0b12af225f7"
    }
+  },
+  {
+   "id": "synth_infinity_in_signed_body",
+   "family": "synth",
+   "spec_section": "2.2,3.1,6.0",
+   "description": "The contractor signs an execution whose body holds Infinity. Canonical form writes the token Infinity (3.1 item 6), so the signature verifies; the body is not strict: record_not_strict. Revision 0.3 (B2).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "4dd0fa1bfc0ecfab8b4f53359884c47f208b43929033d31637ffe0b49bf92585",
+    "expected.json": "ba0351cb8add8aabf1601d34c0fbeecb5fa65a29aedf90affed4c381fa1d1f45",
+    "view.json": "ad3788f34ae36676ae1dbfd353ab4cfc046878996ae642fb5ddead1302f335aa"
+   }
+  },
+  {
+   "id": "synth_negative_infinity_in_signed_body",
+   "family": "synth",
+   "spec_section": "2.2,3.1,6.0",
+   "description": "The same with -Infinity: the signature verifies over the token -Infinity, record_not_strict. Revision 0.3 (B2).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "3ede2a52f213df226fd28920f41d33abd6de1bd4a3e4be538ef29a434d98b157",
+    "expected.json": "adb364693921958e30aae0ca7da22f3cc3b4b0d7e90a84b9d10f5dd09d52c8af",
+    "view.json": "2e6191bd8da2f28454d5a6ebca8b07af733303e96679dca8d83dd96c2b27d50f"
+   }
+  },
+  {
+   "id": "synth_approvers_object",
+   "family": "synth",
+   "spec_section": "1,4.1",
+   "description": "grant.approval_policy.approvers is {}. Only a well formed approver list (4.1 rule 10) is carried and out of scope; any other value refuses the contract: contract_not_verified. Revision 0.3 (B7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "59fc93db72a64f244dd6307b0a31d4c88d9d2edc0f29b4b91e348c7ef5e060e7",
+    "events/e00.json": "2b3f4271c0ffa434f0050271d16435fdc92831e4ff56ee99fb90ae95d3bf9204",
+    "expected.json": "a34642cc510a77b7e7ac05b4fe0806c598e17cfce75dd86655ecf88563cce7b9",
+    "view.json": "f7d204332dd02f2e24e0b3818b46da3d15f1afb8492626f2cf787c78f4ddce9b"
+   }
+  },
+  {
+   "id": "synth_approvers_string",
+   "family": "synth",
+   "spec_section": "1,4.1",
+   "description": "grant.approval_policy.approvers is \"\". Only a well formed approver list (4.1 rule 10) is carried and out of scope; any other value refuses the contract: contract_not_verified. Revision 0.3 (B7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "aa1ccbc97d7db1f4011c4f49ed2809695cdba6d7ad0da5b78f1834e3a4658799",
+    "events/e00.json": "a6b43164c6bdd157196d78a511408dcc34906e639df1ba8447971dd6fda437f2",
+    "expected.json": "fc270752e6a35e995b9a5102328c2c18fd21c3b34e814b490e803e5482e9b301",
+    "view.json": "b6a021845016d06b5b0aec997715f7fee7fef3f4aba13468a58af625530bd769"
+   }
+  },
+  {
+   "id": "synth_approvers_zero",
+   "family": "synth",
+   "spec_section": "1,4.1",
+   "description": "grant.approval_policy.approvers is 0. Only a well formed approver list (4.1 rule 10) is carried and out of scope; any other value refuses the contract: contract_not_verified. Revision 0.3 (B7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "166ddbf04df7a33920b877924e2c63d575d767bc43cb798c5eaf081c5cd4ad89",
+    "events/e00.json": "4426bee592ce21dc7a950c1f5cf2943b9b7457260d7b398f7bdec62142c8c859",
+    "expected.json": "2dd7974f08403ceddd6b5312441d28673896909120c92c3ba3f61219ea96131b",
+    "view.json": "3e87d585d879f4761738e160621d13e848772ef1422551b47ba63e5ffb13506d"
+   }
+  },
+  {
+   "id": "synth_parent_approvers_child_drops",
+   "family": "synth",
+   "spec_section": "4.3.1",
+   "description": "The parent pins approvers and the child has none. Rule 14 applies to the parent: a child must keep the parent's approvers exactly, so parent_narrowing_failed. (A child that keeps them carries approvers itself and is out of scope.) Revision 0.3 (B5).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "9c53ecc0ff007918d63daed0851c11f12f182bb714cfc3205596dc28b5d22095",
+    "events/e00.json": "e8c986a31a57238fbd355325c48bdbd23632e33f148d2962fbe2c4d98a1b2a9a",
+    "expected.json": "03f83b60f20f9ef88d1b79f1c2b4d9ed6447c0cc750d6910a8b522a05988d43b",
+    "parent.json": "268077bdff3cc51eff7fcfbf548b8b2be5e821073de512db868b34c9165e9155",
+    "view.json": "af208d07a609d8da366535be360a9cfdebf4d43db8fc8c31e7be542dc09f3c4c"
+   }
   }
  ]
 }

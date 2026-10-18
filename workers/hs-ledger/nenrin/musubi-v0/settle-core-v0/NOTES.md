@@ -162,6 +162,18 @@ Before release, 4.3.1 was implemented once more from the text alone, by a reader
 
 One practical trap found on the way: that implementation calls `sys.set_int_max_str_digits(0)` when it is imported, which lifts the limit of A3 for every module in the same Python process, the reference included. Run the two in separate processes.
 
+## N15. Ten more implementation notes, answered by the reference
+
+Status: closed in revision 0.3 of SETTLE_CORE_v0.md. The reference did not change.
+
+The same implementation, updated to revision 0.2 (aeoess/musubi-settle-core-check at 4ca508f), agrees with all 117 vectors on the eight core fields with no UNASSESSED field. Its new notes (impl/AMBIGUITIES.md, B1 to B10) were each settled by a probe through the reference and the implementation side by side.
+
+- The implementation's reading was the reference's: B1 (the 4300 digit limit counts digits, not the sign), B3 (`delegation: {"allowed": null}` refuses), B4 (`requires` compared by exact equality, `""` is not null), B9 (strip, then lowercase, then trailing dots), B10 (`{}` is not `{"same_height": null}`).
+- B6 (a revocation is named by the copies kept by 6.0 and not dropped by 6.4, itself included) agrees with every vector, including `synth_ack_names_dropped_copy`, but no vector has a copy set aside in 6.0 or rejected in 6.6 naming a revocation, so that part is not separated yet.
+- B2 and B8: its spellings were the reference's (`NaN`, `Infinity`, `-Infinity`; `nan` and `+Infinity` stop the reader; `1e400` is an infinity). N4 said floats are written with Python `repr`; that is true of finite floats only. 3.1 now has item 6, and the two infinities have vectors.
+- B7: the reference refuses any `approvers` value that is not a well formed list, so `{}`, `""` and `0` refuse in 4.1 rather than making the input out of scope. 4.1 rule 10 now states what well formed means.
+- B5: rule 14 is not empty in core v0. A parent may pin approvers; a child without them fails narrowing (the reference compares the two lists as sets of canonical entries, absent as empty). A child with them is out of scope.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.
