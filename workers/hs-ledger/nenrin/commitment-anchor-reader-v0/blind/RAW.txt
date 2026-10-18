@@ -1,0 +1,11 @@
+anchor-before-outcome result=conformant precedence_established=true ceiling=time:1782661839(anchor_time 1782654639 + tolerance 7200)
+anchor-after-outcome-declared result=conformant precedence_established=false ceiling=time:1782661839(anchor_time 1782654639 + tolerance 7200)
+control-claims-precedence-after-outcome result=unsupported_claim+undeclared_limitation precedence_established=false ceiling=time:1782661839(anchor_time 1782654639 + tolerance 7200)
+control-late-anchor-silent result=undeclared_limitation precedence_established=false ceiling=time:1782661839(anchor_time 1782654639 + tolerance 7200)
+control-outcome-inside-tolerance result=unsupported_claim+undeclared_limitation precedence_established=false ceiling=time:1782661839(anchor_time 1782654639 + tolerance 7200)
+control-anchor-does-not-cover-record result=unsupported_claim+undeclared_limitation precedence_established=false ceiling=time:1782661839(anchor_time 1782654639 + tolerance 7200) notes=no_anchor_digest_mismatch(recomputed=f037e4d43c62c3a06334a584c5dfe5e1cc07f9a286e2e0d4dd05bd51a0c4c64b),ceiling_would_establish_but_no_anchor
+later-median-outcome-inside-old-tolerance result=conformant precedence_established=true ceiling=time:1782657732(anchor_ceiling_time)
+control-later-median-ceiling-after-outcome result=unsupported_claim+undeclared_limitation precedence_established=false ceiling=time:1782657732(anchor_ceiling_time)
+control-later-median-ceiling-missing result=unsupported_claim+undeclared_limitation precedence_established=false ceiling=none notes=inputs_missing
+height-outcome-in-later-block result=conformant precedence_established=true ceiling=height:anchor 955810 vs outcome 955811
+control-height-same-block result=unsupported_claim+undeclared_limitation precedence_established=false ceiling=height:anchor 955810 vs outcome 955810

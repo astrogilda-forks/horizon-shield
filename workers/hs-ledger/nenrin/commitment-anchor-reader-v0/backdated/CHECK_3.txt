@@ -1,0 +1,4 @@
+ok   control-backdated-header-moves-the-ceiling CONFORMING                                   established=True
+ok   control-honest-header-same-outcome       NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM   established=False
+ok   later-median-independent-of-the-header-field CONFORMING                                   established=True
+3/3 agree

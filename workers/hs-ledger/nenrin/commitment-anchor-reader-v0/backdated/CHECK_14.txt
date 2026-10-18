@@ -1,0 +1,15 @@
+ok   anchor-before-outcome                    CONFORMING                                   established=True
+ok   anchor-after-outcome-declared            CONFORMING                                   established=False
+ok   control-claims-precedence-after-outcome  NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM   established=False
+ok   control-late-anchor-silent               NONCONFORMING_UNDECLARED_LIMITATION          established=False
+ok   control-outcome-inside-tolerance         NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM   established=False
+ok   control-anchor-does-not-cover-record     ANCHOR_DOES_NOT_COVER_RECORD                 established=False
+ok   later-median-outcome-inside-old-tolerance CONFORMING                                   established=True
+ok   control-later-median-ceiling-after-outcome NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM   established=False
+ok   control-later-median-ceiling-missing     NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM   established=False
+ok   height-outcome-in-later-block            CONFORMING                                   established=True
+ok   control-height-same-block                NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM   established=False
+ok   control-backdated-header-moves-the-ceiling CONFORMING                                   established=True
+ok   control-honest-header-same-outcome       NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM   established=False
+ok   later-median-independent-of-the-header-field CONFORMING                                   established=True
+14/14 agree

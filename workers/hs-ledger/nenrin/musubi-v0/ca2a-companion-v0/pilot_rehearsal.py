@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Rehearsal of horizon-shield Issue #51: the three cases of the pilot, end to end, with every role played by test
+Rehearsal of horizon-shield Issue #51: the cases of the pilot (A, B, C and, since 2026-10-18, D), end to end, with every role played by test
 keys of this repository. Nothing here is the run. It exists so that the other parties can check the bindings
 (request occurrence, criteria and checker key fixed before the work, digests of execution receipt and payment
 inside the acceptance record) against real bytes before the first call, and so that the MUSUBI side of the run has nothing left to
@@ -142,6 +142,24 @@ def main():
     emit("C", "budget exceeded: three calls at 7,000 under a budget of 20,000; the third payment is budget_exceeded, "
               "its execution and acceptance stand on their own and say so",
          bundle_for(items, ws, [t0, t1, t2], [r0, r1, r2], s))
+
+    # D, proposed by astrogilda on #51: the same call content under another request occurrence. The responder's
+    # receipt answers the first occurrence; a payment and an acceptance name the second and point at that receipt.
+    s = GV.Sc()
+    p0 = prepare(0)
+    t0, r0, rs0, crit0 = p0
+    r_other = GV2.request("pilot-call-0-elsewhere", t0)            # same task_sha256, another occurrence_id
+    rs_other = C.request_sha256(r_other)
+    crit_other = GV2.criteria(rs_other, CRITERIA_SHA, G.SEEN)
+    ws, seen = before_work(s, [p0, (None, None, None, crit_other)])
+    i0, t0, r0, rs0, pay0, rcpt0 = call(s, 0, seen, p0)
+    pay_other = GV2.payment(rs_other, PRICE, seen, unit=UNIT, rail="signed-test-transfer",
+                            rail_sha=stub_rail_receipt(rs_other, PRICE, UNIT))
+    items = [budget] + i0 + [G.use(rs_other), crit_other, pay_other,
+                             GV2.acceptance(rs_other, CRITERIA_SHA, rcpt0, pay_other, "pass", seen)]
+    emit("D", "occurrence link: the same task content under a second request occurrence; the receipt of the first is "
+              "presented for the second, and the acceptance naming the second does not count (execution_receipt_not_found)",
+         bundle_for(items, ws, [t0], [r0, r_other], s))
 
     with open(os.path.join(OUT, "INDEX.json"), "wb") as f:
         f.write(C.jcs({"issue": "ogasurfproject-jpg/horizon-shield#51", "profile": P.PROFILE,
