@@ -21,3 +21,11 @@ Three vectors, each the draft's `anchor-before-outcome` with only the anchor tim
 - `later-median-independent-of-the-header-field`: the same outcome under `later_median` (ceiling 1782657732, the median time of blocks 955811 to 955821). Established, whatever the anchor block's own time field says.
 
 So under `header_time_plus_tolerance` the verdict turns on a field the miner chose, within consensus, and it moves by 3558 s. The draft's own `check.py` gives 14 of 14 with the three added (`CHECK_14.txt`; combined file sha256 in `COMBINED_SHA256`). The header times were read from mempool.space and blockstream.info, which agree; block 955810's header hashes to the hash the vectors name, and its merkle root is the result of the Bitcoin leg of `38.ots`.
+
+## blind_17bb5ad/
+
+After the draft adopted the points above (17bb5ad: four named results in a stated order, record-level fields, `height` ignores time, the digest recompute rule, the three backdated vectors), a new reader was written the same way, in a separate session, from three files only: the README at 17bb5ad with its table of expected results cut out, `vectors.json` with every `expect` removed, and `38.ots` (`blind_17bb5ad/BLIND_COPY_SHA256SUMS`; upstream files in `blind_17bb5ad/FENCE_SHA256SUMS`). The bd70521 reader was not reused, because it could not know names that text did not have.
+
+    python3 -I -B blind_17bb5ad/reader17.py <blind copy of vectors.json>
+
+`RAW.txt` is its output as it ran, posted on #32 before the comparison; the reader was run once and not changed. `GAPS.md` has 29 notes. Comparison with the draft's `expect`, by name (`COMPARE.txt`): results 14 of 14, `precedence_established` 14 of 14. Two notes are about the vectors: every `content` is ASCII, so ordinary JSON escaping and the stated NIP-01 escaping give the same 13 matches and 1 mismatch (note 4); and no vector exercises an absent `anchor_time_rule`, an unknown `digest_rule`, a record without `commitment_anchor`, or a record that both asserts precedence and declares the limitation (notes 6, 7, 10, 19). GAPS.md was corrected once after the run, in notes 4 and 5 only, where the writer had turned literal backslash-u text into the characters it names (note 29); reader17.py and RAW.txt were not touched.

@@ -1,0 +1,15 @@
+ok   anchor-before-outcome CONFORMING true | expect CONFORMING true
+ok   anchor-after-outcome-declared CONFORMING false | expect CONFORMING false
+ok   control-claims-precedence-after-outcome NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false | expect NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false
+ok   control-late-anchor-silent NONCONFORMING_UNDECLARED_LIMITATION false | expect NONCONFORMING_UNDECLARED_LIMITATION false
+ok   control-outcome-inside-tolerance NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false | expect NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false
+ok   control-anchor-does-not-cover-record ANCHOR_DOES_NOT_COVER_RECORD false | expect ANCHOR_DOES_NOT_COVER_RECORD false
+ok   later-median-outcome-inside-old-tolerance CONFORMING true | expect CONFORMING true
+ok   control-later-median-ceiling-after-outcome NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false | expect NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false
+ok   control-later-median-ceiling-missing NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false | expect NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false
+ok   height-outcome-in-later-block CONFORMING true | expect CONFORMING true
+ok   control-height-same-block NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false | expect NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false
+ok   control-backdated-header-moves-the-ceiling CONFORMING true | expect CONFORMING true
+ok   control-honest-header-same-outcome NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false | expect NONCONFORMING_UNSUPPORTED_PRECEDENCE_CLAIM false
+ok   later-median-independent-of-the-header-field CONFORMING true | expect CONFORMING true
+result 14/14 agree, precedence_established 14/14 agree
