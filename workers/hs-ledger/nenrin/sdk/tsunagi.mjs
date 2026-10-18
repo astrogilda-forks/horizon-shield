@@ -257,7 +257,10 @@ function printResult(name, res) {
   if (res.problem) console.log("problem: " + res.problem);
   // 2026-10-17 (#48): when the command failed, show the end of its stderr; it usually names the cause.
   if (res.problem && res.stderr_tail) console.log("stderr (last 300 chars):\n" + res.stderr_tail);
-  console.log(name + ": " + res.reproduced + "/" + res.of + " verdict signatures reproduced (refereed by nenrin-tsunagi)");
+  // 2026-10-18 (aeoess/agent-governance-vocabulary#177): the count alone read as a pass when the command exited non zero;
+  // the last line, the one agents read, now says so.
+  const tail = res.exit === undefined || res.exit === 0 ? "" : "; not a pass: the command exited " + res.exit;
+  console.log(name + ": " + res.reproduced + "/" + res.of + " verdict signatures reproduced (refereed by nenrin-tsunagi)" + tail);
 }
 
 const asciiJson = (o) => JSON.stringify(o, null, 2).replace(/[\u007f-\uffff]/g, (c) => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"));

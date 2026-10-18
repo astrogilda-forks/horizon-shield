@@ -172,7 +172,10 @@ def _print(name, res):
         # 2026-10-17 (#48): when the command failed, show the end of its stderr; it usually names the cause.
         if res.get("stderr_tail"):
             print("stderr (last 300 chars):\n" + res["stderr_tail"])
-    print("%s: %d/%d verdict signatures reproduced (refereed by nenrin-tsunagi)" % (name, res["reproduced"], res["of"]))
+    # 2026-10-18 (aeoess/agent-governance-vocabulary#177): the count alone read as a pass when the command exited non zero;
+    # the last line, the one agents read, now says so.
+    tail = "" if res.get("exit", 0) == 0 else "; not a pass: the command exited %s" % res["exit"]
+    print("%s: %d/%d verdict signatures reproduced (refereed by nenrin-tsunagi)%s" % (name, res["reproduced"], res["of"], tail))
 
 
 def main(argv=None):

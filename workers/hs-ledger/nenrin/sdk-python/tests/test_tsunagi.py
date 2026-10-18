@@ -86,6 +86,24 @@ def test_a_command_that_writes_nothing_scores_zero(tmp_path):
     assert res["reproduced"] == 0 and "no readable output" in res["problem"]
 
 
+def test_cli_last_line_says_not_a_pass_when_the_command_exits_non_zero(tmp_path):
+    # aeoess/agent-governance-vocabulary#177 (2026-10-18): "36/36 reproduced" with exit 1 read as a pass to anyone who only read the last line
+    script = tmp_path / "impl.py"
+    script.write_text(
+        "import json,sys\n"
+        "import nenrin_verify as nv\n"
+        "o={}\n"
+        "for c in json.load(open(sys.argv[1])):\n"
+        "    b=dict(c['bundle']); b['resolve']=nv.did_key_resolver; p=nv.verify_provenance(b)\n"
+        "    o[c['name']]={'verdict':p['verdict'],'refusals':[r['code'] for r in p['refusals']],'findings':[f['code'] for f in p['findings']]}\n"
+        "json.dump(o,open(sys.argv[2],'w'))\n"
+        "sys.exit(1)\n")
+    p = subprocess.run([sys.executable, "-m", "nenrin_verify.tsunagi", "run", "nenrin-interop-v0", "--", sys.executable, str(script), "{in}", "{out}"],
+                       capture_output=True, text=True)
+    assert p.returncode == 1
+    assert p.stdout.strip().splitlines()[-1] == "nenrin-interop-v0: 5/5 verdict signatures reproduced (refereed by nenrin-tsunagi); not a pass: the command exited 1"
+
+
 def test_cli_row_prints_the_board_entry():
     p = subprocess.run([sys.executable, "-m", "nenrin_verify.tsunagi", "row", "nenrin-interop-v0.1", "--", "python3 my.py {in} {out}"],
                        capture_output=True, text=True)

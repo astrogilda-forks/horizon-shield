@@ -48,6 +48,12 @@ const rn = T.run("nenrin-interop-v0", [process.execPath, "-e", "0", "{in}", "{ou
 chk("run: a command that writes nothing scores 0 with the reason", rn.reproduced === 0 && /no readable output file \(FileNotFoundError\)/.test(rn.problem));
 const re = T.run("nenrin-interop-v0", [process.execPath, "-e", "process.stderr.write('ImportError: no module named atlas\\n'); process.exit(1)", "{in}", "{out}"]);
 chk("run: a failing command keeps its stderr tail for the report (#48)", re.reproduced === 0 && /ImportError: no module named atlas/.test(re.stderr_tail || ""), JSON.stringify(re).slice(0, 300));
+{
+  // aeoess/agent-governance-vocabulary#177 (2026-10-18): a full count with a non zero exit must not read as a pass on the last line
+  const cli = spawnSync(process.execPath, [join(HERE, "tsunagi.mjs"), "run", "nenrin-interop-v0", "--", process.execPath, "-e", "require('child_process').execFileSync(process.execPath, [" + JSON.stringify(join(HERE, "tsunagi_reference_batch.mjs")) + ", process.argv[1], process.argv[2]]); process.exit(1)", "{in}", "{out}"], { encoding: "utf8" });
+  const last = cli.stdout.trim().split("\n").pop();
+  chk("run CLI: the last line says not a pass when the command exited 1", cli.status === 1 && last === "nenrin-interop-v0: 5/5 verdict signatures reproduced (refereed by nenrin-tsunagi); not a pass: the command exited 1", last);
+}
 const rm = T.run("nenrin-interop-v0", ["/nonexistent/verifier-binary", "{in}", "{out}"]);
 chk("run: a command that does not exist exits 127", rm.exit === 127 && rm.reproduced === 0);
 {
