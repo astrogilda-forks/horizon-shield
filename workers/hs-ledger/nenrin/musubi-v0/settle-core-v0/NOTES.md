@@ -192,6 +192,15 @@ Prompted by draft-he-agentproto-verifier-evidence-00 (EXR-1 and EXR-2: a rejecti
 
 Every unexercised path was on the refusal side. A verifier that never returns `underspecified` for a malformed policy goes on to compute a verdict it has no basis for, so these paths are the ones worth pinning.
 
+## N18. Two wrong statements about the reference (revision 0.5)
+
+Status: closed in revision 0.5 of SETTLE_CORE_v0.md. No rule, reason or vector changed.
+
+Found while carrying revision 0.4 into draft-oga-musubi-settlement-01:
+
+- Section 16 gave agreement_verify.py as `72990326ac4a0a65`. That is the copy vendored into sdk-python. settle_v1_16.py imports `agreement-v0/agreement_verify.py`, whose sha256 begins `fd8c34ce8a11cf42` (the same at 4100d52a and dd64d0e2). The other prefixes match what the reference loads.
+- Section 12 said settle_v1_15.py gives the same core fields on every vector section 13 does not list. Run over the 128 vectors of revision 0.4 (called as `settle_v1_15(contract, events, view, nenrin_records=...)`, core fields as in `run_reference.core_fields`, dispositions set aside), v1.15 differs on 51 and raises on 3 (`synth_delegated_to_object` TypeError, `synth_revocation_irrevocable_grant` TypeError, `synth_contract_not_object` AttributeError). 23 of the 51 are not named anywhere in the specification, for example `synth_exec_signed_by_stranger`, `synth_payload_digest_mismatch`, `real_cross_record_names_other_contract`. The sentence now says only that earlier layers do not agree. The bullet on v1.15 under "What I could not pin down" below was written for the vectors of the first draft.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.

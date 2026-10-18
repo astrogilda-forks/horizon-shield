@@ -9,6 +9,8 @@ Revision 0.3, 2026-10-18: the answers to 10 more implementation notes (NOTES.md 
 
 Revision 0.4, 2026-10-18: every underspecified reason was checked against the expected results of the vectors (NOTES.md N17). Ten were produced by no vector. Four are reachable and have vectors now; two need inputs the vector layout cannot carry and are driven by `exercise_inputs.py`; four can never fire, because 4.1 refuses the same inputs first (4.2). 6.2 now says records are counted after identical bytes are merged. The reference did not change; section 13 lists each place.
 
+Revision 0.5, 2026-10-19: two statements about the reference were wrong and are corrected (NOTES.md N18): the sha256 of agreement_verify.py in section 16 named the vendored copy in sdk-python, not the agreement-v0 copy the reference imports; and section 12 said settle_v1_15.py gives the same core fields outside the vectors of section 13, which it does not. No rule, reason or vector changed.
+
 ## 0. Why this document exists
 
 Until now the MUSUBI settle function was defined only by Python code (settle_v1.py to settle_v1_16.py, each layer importing the ones below it).
@@ -690,7 +692,7 @@ Checked in revision 0.4 (NOTES.md N17): which underspecified reasons the vectors
 - That the walk cited by `nenrin_ref` is correct. Section 11 only compares the contract it names.
 - That anyone judged liability or fault, or that this is a legal contract. The verdict is a function anyone can recompute from the same bytes.
 - That the parts out of scope (section 1) hold. A contract that relies on the spine gate, convergence, pinned approvers or limits must be settled by a settler that reads them.
-- That settle layers before v1.16 agree. They do not on the vectors listed in section 13; on every other vector settle_v1_15.py gives the same core fields.
+- That settle layers before v1.16 agree. They do not. Over the 128 vectors, settle_v1_15.py gives different core fields (dispositions aside) on 51 and stops with an exception on 3, including vectors section 13 does not list (NOTES.md N18). This document specifies v1.16 only.
 - That a record set aside or rejected is false. Only that it was not strictly signed, or not readable strictly, so it was not settled here.
 
 ## 15. How to report a disagreement
@@ -724,7 +726,7 @@ Synthetic vectors use keys named synthetic-principal, synthetic-contractor, synt
 `exercise_inputs.py` builds in memory the inputs the vector layout cannot carry (events that are not a list, 10001 records) and the inputs of the four rows of 4.2 that cannot fire, runs the reference on them, and compares its lines with `EXERCISE.txt` (`--check`).
 
 The reference, as run for these vectors (first 16 hex digits of each file's sha256):
-settle_v1.py 0e51350331c8931c, settle_v1_1.py a2391a5db199bcda, settle_v1_10.py 34beeebaa1397059, settle_v1_11.py fb03687cbacd2713, settle_v1_12.py 40a8fbb82a8e7680, settle_v1_13.py eb02b3a6544b1bf1, settle_v1_14.py 7d0704fa060adafd, settle_v1_15.py a2be5de8ba60656e, settle_v1_16.py ec332ecb387e9b56, settle_v1_2.py 6c674fd54a1a5c89, settle_v1_3.py 17119bbc7802647f, settle_v1_4.py ef3779d05fc98e40, settle_v1_5.py f9b313566713cdc4, settle_v1_6.py 6752a748ed7b6e3b, settle_v1_7.py 878a3a3697775d3a, settle_v1_8.py fe61f67c1593c776, settle_v1_9.py 7a84302be1ec38a1, admission_verify_v0.py aa889e542ff40e25, agreement_verify.py 72990326ac4a0a65, anchor_compose.py a661f673c05dbe6e, approval_v3.py e8dde985dbe6fbf4, clause_eval_v0.py fee48c3a66c28fe1, contract_v0.py 211a568783705e11, convergence_v0.py 65a267380fa623f5, corroboration_v0.py 62ae1d6c27a92228, independence_v0.py 50964883c27896de, recovery_verify.py e9bc9c11dd7d9aef, spine_verify.py ad2076d49be6763e, terms_v0.py 6532d5c6160a3974. Python 3.13.16, cryptography 50.0.1.
+settle_v1.py 0e51350331c8931c, settle_v1_1.py a2391a5db199bcda, settle_v1_10.py 34beeebaa1397059, settle_v1_11.py fb03687cbacd2713, settle_v1_12.py 40a8fbb82a8e7680, settle_v1_13.py eb02b3a6544b1bf1, settle_v1_14.py 7d0704fa060adafd, settle_v1_15.py a2be5de8ba60656e, settle_v1_16.py ec332ecb387e9b56, settle_v1_2.py 6c674fd54a1a5c89, settle_v1_3.py 17119bbc7802647f, settle_v1_4.py ef3779d05fc98e40, settle_v1_5.py f9b313566713cdc4, settle_v1_6.py 6752a748ed7b6e3b, settle_v1_7.py 878a3a3697775d3a, settle_v1_8.py fe61f67c1593c776, settle_v1_9.py 7a84302be1ec38a1, admission_verify_v0.py aa889e542ff40e25, agreement_verify.py fd8c34ce8a11cf42 (agreement-v0/agreement_verify.py, the copy settle_v1_16.py imports), anchor_compose.py a661f673c05dbe6e, approval_v3.py e8dde985dbe6fbf4, clause_eval_v0.py fee48c3a66c28fe1, contract_v0.py 211a568783705e11, convergence_v0.py 65a267380fa623f5, corroboration_v0.py 62ae1d6c27a92228, independence_v0.py 50964883c27896de, recovery_verify.py e9bc9c11dd7d9aef, spine_verify.py ad2076d49be6763e, terms_v0.py 6532d5c6160a3974. Python 3.13.16, cryptography 50.0.1.
 The reference is called as a library, `settle_v1_16.settle_v1_16(contract, events, view, parent=..., nenrin_records=...)`. Its command line (`--settle`, `--event`, `--view`, `--nenrin`, `--parent`) first checks each view's strict form and runs fork choice, and for a view that does not pass prints why and writes no settlement.
 
 ## Appendix A. Codes
