@@ -2,17 +2,21 @@
  "type": "horizon-shield.souba-basis.v0",
  "souba_db": {
   "url": "https://shield.the-horizons-innovation.com/data/souba-db.json",
+  "sha256": "7b16600e50ed73b844ff5b2718f04a6dd4d9ace0367982fb8d139db509d023fd",
+  "version": "2.3.0"
+ },
+ "previous_souba_db": {
+  "version": "2.2.0",
   "sha256": "85418e4af9d3d727af2eb1c95566aa56f21d8ae1046601bc259baa302515680d",
-  "version": "2.2.0"
+  "url": "https://shield.the-horizons-innovation.com/data/souba-db-2.2.0.json"
  },
  "kind": "corroboration",
  "checked_on": "2026-10-18",
  "reading": "Per row of souba-db: public pages found on the date above that state a price for comparable work, with the figure quoted as the page writes it, and whether the souba range agrees with it (consistent, partly, inconsistent, none). These are corroborating sources found afterwards, not the material the ranges were originally set from. A row with sources can be checked by anyone: open the page and compare. 'consistent': figures for the same work and unit fall within or match the range. 'partly': the figures overlap the range only in part, or are for a related or partial scope (another size, depth or tier, equipment without installation, or parts the note adds up); the note says which, and a partly row is not evidence that the range is right. 'inconsistent': figures for the same work and unit do not overlap the range. 'none': no comparable public figure was found, which is not a finding that the range is wrong.",
  "counts": {
-  "consistent": 91,
-  "inconsistent": 11,
-  "none": 12,
-  "partly": 75
+  "consistent": 101,
+  "none": 11,
+  "partly": 77
  },
  "rows": [
   {
@@ -431,27 +435,69 @@
    "id": "shiroari_kankiouji",
    "work": "床下換気扇設置 1台",
    "unit": "1台",
-   "min": 80000,
-   "avg": 150000,
-   "max": 250000,
-   "verdict": "inconsistent",
+   "min": 30000,
+   "avg": 60000,
+   "max": 100000,
+   "verdict": "consistent",
    "sources": [
     {
-     "source": "東急リバブル L-note (livable.co.jp)",
+     "source": "東急リバブル L-note",
      "url": "https://www.livable.co.jp/l-note/?p=17263",
      "as_of": "2023-11",
-     "quoted": "本体価格と取付工事費を合わせて1台あたり約5万円(30坪以下・3台で約15万円)",
+     "quoted": "本体価格と取付工事費を合わせて1台あたり約5万円 / ～30坪 3台 約15万円",
      "unit_matches": true
     },
     {
-     "source": "CREX リフォーム (crexgroup.com)",
+     "source": "CREX GROUP 床下リフォーム",
      "url": "https://crexgroup.com/ja/reform/renovation/underfloor-renovation-type-cost-average/",
      "as_of": "2026-02-04",
-     "quoted": "15万円～35万円（2～4台設置）",
+     "quoted": "床下換気扇の設置 15万円～35万円（2～4台設置）",
+     "unit_matches": false
+    },
+    {
+     "source": "リフォらん",
+     "url": "https://refolean.com/%E5%BA%8A%E4%B8%8B%E6%8F%9B%E6%B0%97%E6%89%87%E3%81%AE%E8%B2%BB%E7%94%A8%E3%81%A8%E4%BE%A1%E6%A0%BC%E3%81%AE%E7%9B%B8%E5%A0%B4%E3%81%AF%EF%BC%9F/",
+     "as_of": "2024-11-12",
+     "quoted": "本体価格＋施工費用＝30,000円〜80,000円/台 / 後付け設置 1台あたりおよそ50,000円～80,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "コマリフォーム",
+     "url": "https://koma-reform.com/other/yukashitakanki/",
+     "as_of": "2026-06-10",
+     "quoted": "一般的な住宅での交換費用は1台あたり約5万〜10万円（本体約1万5,000円〜4万円＋工賃約3万円〜5万円）",
+     "unit_matches": true
+    },
+    {
+     "source": "DENKI110",
+     "url": "https://denki110.net/ventilator/article0043/",
+     "as_of": "2026-10-18",
+     "quoted": "本体と取り付け工事を合わせて1台あたり約50,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "サンキョークリーンサービス 湿気対策料金",
+     "url": "https://www.sankyo64.com/price/humid/",
+     "as_of": "2026-10-18",
+     "quoted": "基礎型・追加取付（標準取付工事1台）¥45,000（税込¥49,500） / 新規取付3台セット ¥150,000（税込¥165,000）",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケット 床下換気扇(広島)",
+     "url": "https://curama.jp/underfloor-ventilation-fan/hiroshima/1/4/",
+     "as_of": "2026-10-18",
+     "quoted": "取り付け 1箇所 ¥15,000〜¥20,000（本体はご自身で用意）",
      "unit_matches": false
     }
    ],
-   "note": "souba 1台8〜25万は出典の1台約5万を大きく上回る(訪問販売の価格帯を載せている可能性)"
+   "note": "2026-10-18 second check against further sources of the same scope. 1台の本体込み設置費は独立した5件(L-note 約5万、DENKI110 約5万、リフォらん 3〜8万、コマリフォーム 5〜10万、サンキョー 追加1台 4.95万 税込)が一致して 3万〜10万円に収まる。CREX の 15〜35万/2〜4台も1台あたり約4〜9万円。souba の 8〜25万円(平均15万)は下限ですら公開値の中央を上回り、上限25万は最も高い公開値の2.5倍。提案値: min 30,000 = リフォらんの下限、avg 60,000 = 5件の中央付近(5万、5万、5.5万、6.5万、7.5万)、max 100,000 = コマリフォームの上限。danger 500,000(1台50万)は公開値の5倍超で、悪質訪問販売の3台セット総額に近い額を1台に当てており意味をなさない。データセット内の danger/max 比(約1.5)に合わせ 150,000 を提案。",
+   "changed_in": "2.3.0",
+   "previous": {
+    "version": "2.2.0",
+    "min": 80000,
+    "avg": 150000,
+    "max": 250000
+   }
   },
   {
    "id": "yukashita_chouyu_tsubo",
@@ -479,24 +525,66 @@
    "min": 3500,
    "avg": 5000,
    "max": 7000,
-   "verdict": "inconsistent",
+   "verdict": "consistent",
    "sources": [
     {
      "source": "ミツモア シロアリ駆除",
      "url": "https://meetsmore.com/services/termite-control",
      "as_of": "2026-10-17",
-     "quoted": "シロアリ駆除の有料オプションの例: 床下防腐防カビ処理 | 1坪2,000円",
-     "unit_matches": true
+     "quoted": "シロアリ駆除の有料オプションの例: 床下防腐防カビ処理 1坪2,000円",
+     "unit_matches": false
     },
     {
      "source": "CREX GROUP 床下リフォーム",
      "url": "https://crexgroup.com/ja/reform/renovation/underfloor-renovation-type-cost-average/",
      "as_of": "2026-02-04",
-     "quoted": "床下調湿剤の散布: 5万円～15万円（1坪あたり約5,000円～15,000円）",
+     "quoted": "床下調湿剤の散布 5万円～15万円（1坪あたり約5,000円～15,000円）。防腐・防カビの記載なし",
+     "unit_matches": false
+    },
+    {
+     "source": "ミツモア 安田ハウス総合サービス",
+     "url": "https://meetsmore.com/p/YpmrTkSQUAAcS44l/termite-control",
+     "as_of": "2026-10-18",
+     "quoted": "オプション作業 床下防腐防カビ処理 2,000円/坪",
+     "unit_matches": false
+    },
+    {
+     "source": "ミツモア 株式会社マルックス",
+     "url": "https://meetsmore.com/p/XOOUVw2u9FAViDvX/termite-control",
+     "as_of": "2026-10-18",
+     "quoted": "オプション作業 床下防腐防カビ処理 1,600円/坪",
+     "unit_matches": false
+    },
+    {
+     "source": "ミツモア 事業者(X-qAM)",
+     "url": "https://meetsmore.com/p/X-qAM-YyLykIPeBR/termite-control",
+     "as_of": "2026-10-18",
+     "quoted": "オプション作業 床下防腐防カビ処理 2,200円/坪",
+     "unit_matches": false
+    },
+    {
+     "source": "サンキョークリーンサービス",
+     "url": "https://www.sankyo64.com/price/humid/",
+     "as_of": "2026-10-18",
+     "quoted": "床下防腐防カビ殺菌消毒 ¥7,000/1坪（税込¥7,700） / シロアリ防除同時施工 ¥3,500/1坪（税込¥3,850）",
+     "unit_matches": true
+    },
+    {
+     "source": "テコラ",
+     "url": "https://tecola.jp/contents/yukashita_boukabi.php",
+     "as_of": "2026-10-18",
+     "quoted": "防カビ処理のみ単体 10坪まで33,000円（税込）、10坪超は1坪あたり3,300円（税込）。シロアリ予防とセットなら無料",
+     "unit_matches": true
+    },
+    {
+     "source": "ハウスキーパー 料金表",
+     "url": "https://house--keeper.jp/termite-control_cost/",
+     "as_of": "2023-05-23",
+     "quoted": "床下防腐・防カビ殺菌消毒 ¥13,068/坪 ¥3,960/㎡（税込）",
      "unit_matches": true
     }
    ],
-   "note": "同じ作業の唯一の公開値はミツモアの見積内訳例 2,000円/坪で、souba の下限 3,500円/坪より低い。CREX の 5,000〜15,000円/坪は防カビ剤ではなく調湿剤の散布なので別作業。見積例が一つだけなので根拠は弱い。"
+   "note": "2026-10-18 second check against further sources of the same scope. 第一パスが根拠にしたミツモアの 2,000円/坪(他2社も 1,600円、2,200円)は、いずれもシロアリ駆除に付けるオプション単価で、単独施工の坪単価ではない。単独施工の公開価格は テコラ 3,300円/坪、サンキョー 7,000円/坪(税抜)、ハウスキーパー 13,068円/坪(税込)で、souba の 3,500〜7,000円(平均5,000円)はこの単独施工の範囲の下側に収まる。サンキョーの同時施工 3,500円/坪も souba の下限と一致。よって KEEP。ただし改善提案として、note に『単独施工の坪単価。シロアリ駆除と同時なら 1,600〜3,500円/坪、セット無料の業者もある』と明記すると誤判定を防げる。danger 12,000円は、ハウスキーパーの表示価格 13,068円(税込)が超えている。高めの正規価格表が1件あるので、danger は意味を保つが余裕が小さい。上げるなら 14,000円程度。CREX の値は調湿剤散布で別作業(既存の yukashita_chouyu_tsubo 行の範囲)。"
   },
   {
    "id": "kitchen_low",
@@ -917,24 +1005,38 @@
    "min": 75000,
    "avg": 95000,
    "max": 115000,
-   "verdict": "inconsistent",
+   "verdict": "partly",
    "sources": [
     {
-     "source": "ミツモア",
+     "source": "ミツモア 壁紙張り替えの費用相場",
      "url": "https://meetsmore.com/services/wall-paper-exchange/media/101268",
      "as_of": "2025-07-23",
-     "quoted": "12畳 施工面積60㎡程度 量産タイプ 60,000～72,000円",
+     "quoted": "12畳 60㎡程度 量産型 60,000～72,000円（天井を含むか明記なし）",
      "unit_matches": true
     },
     {
      "source": "くらしのマーケットマガジン",
      "url": "https://curama.jp/magazine/732/",
      "as_of": "2026-09-09",
-     "quoted": "12畳 スタンダード（量産）クロス 5.7万〜6.8万円",
+     "quoted": "12畳 スタンダードグレード 5.7万円〜6.8万円。天井の張替えや養生・下地補修などの諸経費は含まれていない、剥がし処分は別途1〜3万円程度",
+     "unit_matches": false
+    },
+    {
+     "source": "ミツモア 12畳の壁紙クロスを張り替える費用",
+     "url": "https://meetsmore.com/services/wall-paper-exchange/media/257916",
+     "as_of": "2025-07-23",
+     "quoted": "量産型 60,000～84,000円 / 壁と天井を張り替える場合 61.58㎡",
+     "unit_matches": true
+    },
+    {
+     "source": "ダイヤモンド不動産研究所",
+     "url": "https://diamond-fudosan.jp/articles/-/1111433",
+     "as_of": "2024-02-21",
+     "quoted": "量産品 1,300円〜/㎡ / 10畳（56㎡）7万円〜",
      "unit_matches": true
     }
    ],
-   "note": "souba 下限7.5万が両出典の量産上限(7.2万/6.8万)を上回る。souba は高い側"
+   "note": "2026-10-18 second check against further sources of the same scope. くらしのマーケットの 5.7〜6.8万円は天井と剥がし処分を含まないので、全壁+天井の souba とは範囲が違う(天井と諸経費を足すと約8〜11万円になる)。ミツモアの2記事(同じ発行元なので独立は1件)は 12畳 壁+天井 61.58㎡で量産 6〜8.4万円。ダイヤモンド不動産の 1,300円/㎡〜で 61.58㎡を掛けると約8万円〜。souba の 7.5〜11.5万円(平均9.5万)は公開値の上半分に乗るが、同じ範囲の独立した2つの出典がそろって外れと言っているわけではないので KEEP。直すなら note の『12畳=約75㎡』で、ミツモアの面積 61.58㎡に合わせて『約60㎡』にすべき(75㎡は過大)。下限を 65,000円に下げる余地はある。danger 170,000円は量産の上限 8.4万の約2倍で、ミツモアの高級型の上限 18万に近く妥当。"
   },
   {
    "id": "mansion_renov_sqm",
@@ -1930,20 +2032,55 @@
    "id": "builtin_dishwasher",
    "work": "リンナイ フロントオープン",
    "unit": "一式",
-   "min": 350000,
-   "avg": 430000,
-   "max": 550000,
-   "verdict": "inconsistent",
+   "min": 180000,
+   "avg": 250000,
+   "max": 350000,
+   "verdict": "consistent",
    "sources": [
     {
-     "source": "ミツモア",
+     "source": "ミツモア ビルトイン食洗機",
      "url": "https://meetsmore.com/services/dishwasher-installation/media/118066",
      "as_of": "2025-07-31",
-     "quoted": "フロントオープン（リンナイ RSW-F402C-SV） 本体12万円程度 設置工事込み 170,000～230,000円 / 後付け（給排水分岐とコンセント工事の両方） 追加 約3～5万円",
+     "quoted": "リンナイ RSW-F402C-SV 設置工事を含めた費用 170,000円から230,000円 / 分岐工事とコンセント工事の両方で追加約3～5万円 / キャビネット加工だけなら約2～4万円 / キャビネット丸ごと交換は約10～30万円",
+     "unit_matches": true
+    },
+    {
+     "source": "T-COSNAVI 後付けビルトイン食洗機の総額",
+     "url": "https://www.t-cosnavi.com/dishwasher/plan2/",
+     "as_of": "2026-04-24",
+     "quoted": "新規設置（既存収納を加工して新たに組み込むケース） フロントオープン 18〜26万円前後 / 代替えキャビネット本体と入れ替え 10万円前後",
+     "unit_matches": true
+    },
+    {
+     "source": "交換できるくん 後付け・新規設置",
+     "url": "https://www.sunrefre.jp/kitchen/built_in/new/",
+     "as_of": "2026-10-18",
+     "quoted": "RSW-F403C-SV フロントオープン工事費込みセット 合計161,184円（税込） / 戸建て 合計目安 102,400円（基本工事＋給排水＋専用回路＋アース）",
+     "unit_matches": true
+    },
+    {
+     "source": "リフォトル(TOPPAN) ビルトイン食洗機の後付け費用",
+     "url": "https://forest.toppan.com/refotoru/column/part/kitchen/article_2024_11_15_172/",
+     "as_of": "2026-06-08",
+     "quoted": "ビルトイン食洗機の後付け費用は、10～35万円が相場",
+     "unit_matches": true
+    },
+    {
+     "source": "くらしのマーケットマガジン",
+     "url": "https://curama.jp/magazine/1862",
+     "as_of": "2025-11-04",
+     "quoted": "ビルトインタイプ食洗機本体＋工事費 新規取り付け 15万5,000円〜（2022年3月時点）",
      "unit_matches": true
     }
    ],
-   "note": "出典は後付け追加込みでも約20〜28万。souba 35〜55万は明確に上。キャビネット改造費の有無で差の一部は説明可能"
+   "note": "2026-10-18 second check against further sources of the same scope. リンナイのフロントオープンを新規後付けする総額は、ミツモア 17〜23万+後付け追加 3〜5万+キャビネット加工 2〜4万 = 約22〜32万円、T-COSNAVI 新規設置 18〜26万円、交換できるくん 本体120,384円+戸建て工事一式102,400円 = 約22.3万円、リフォトル 後付け 10〜35万円で、4つの独立した出典が 18〜35万円に収まる。souba の 35〜55万円(平均43万)は公開値の上限が souba の下限になっている。キャビネット丸ごと交換(10〜30万)を足した場合だけ souba の範囲に届くが、それは別の範囲。提案値: min 180,000 = T-COSNAVI 下限、avg 250,000 = ミツモア後付け込み中央(約24万)と T-COSNAVI 中央(22万)にキャビネット加工(2〜4万)を加味、max 350,000 = リフォトル上限(ミツモア 23+5+4=32万とも整合)。danger 825,000 は公開上限の2倍超で、提案 max の約1.5倍の 500,000 を提案。付記: note の型番『RSW-D401系』はリンナイの深型(スライドオープン)の型番とみられ、フロントオープンは RSW-F402C/F403C 系なので要確認。note の『国産45cmで¥28-45万』も同じ理由で高い。",
+   "changed_in": "2.3.0",
+   "previous": {
+    "version": "2.2.0",
+    "min": 350000,
+    "avg": 430000,
+    "max": 550000
+   }
   },
   {
    "id": "builtin_dishwasher_matsu",
@@ -1952,17 +2089,45 @@
    "min": 1000000,
    "avg": 1300000,
    "max": 1600000,
-   "verdict": "inconsistent",
+   "verdict": "consistent",
    "sources": [
     {
      "source": "Pricey ミーレ食洗機価格",
      "url": "https://www.pricey.jp/web/articles/3118",
      "as_of": "2026-04-14",
-     "quoted": "工事費込みの総額の目安: 60cmモデルで約54〜62万円 / G 7934 C SCi: ¥830,500 / 新規設置工事費（給排水・電気工事込み）: ¥118,200",
+     "quoted": "工事費込みの総額は45cmモデルで約49〜57万円、60cmモデルで約54〜62万円 / G 7934 C SCi ¥830,500 / 新規設置工事費（給排水・電気工事込）¥118,200 / SCiはドア面材の費用が別途",
+     "unit_matches": false
+    },
+    {
+     "source": "ミーレ・ジャパン公式 G 7964 C SCVi AutoDos",
+     "url": "https://www.miele.co.jp/domestic/dishwashers-2510.htm?mat=11286070&name=G_7964_C_SCVi_AutoDos",
+     "as_of": "2026-10-18",
+     "quoted": "価格： ¥ 858,000（消費税(10%)込） / 食器洗い機 (オールドア材取付専用タイプ)",
      "unit_matches": true
+    },
+    {
+     "source": "ミーレブログ 全モデル比較",
+     "url": "https://miele-blog.com/model-introduction/",
+     "as_of": "2026-06-02",
+     "quoted": "G 7964 C SCVi AutoDos ¥ 858,000 / G 7364 C SCVi AutoDos ¥ 528,000 / G 7104 C SCU ¥ 352,000",
+     "unit_matches": true
+    },
+    {
+     "source": "リフォトル(TOPPAN)",
+     "url": "https://forest.toppan.com/refotoru/column/part/kitchen/article_2024_11_15_172/",
+     "as_of": "2026-06-08",
+     "quoted": "海外製 本体価格は30～60万円、キッチン交換が必要なケースが多い / ドアパネル・面材製作費 10,000～30,000円",
+     "unit_matches": false
+    },
+    {
+     "source": "T-COSNAVI",
+     "url": "https://www.t-cosnavi.com/dishwasher/plan2/",
+     "as_of": "2026-04-24",
+     "quoted": "外国製（BOSCH・Mieleなど）新規設置 35〜50万円前後 / 代替えキャビネット本体と入れ替え 10万円前後",
+     "unit_matches": false
     }
    ],
-   "note": "60cm 機の工事込み総額の目安は 54〜62万円。最上位機の G 7934 に新規設置工事を足しても約95万円で、souba の下限 100万円に届かない。souba にはキャビネット改造が含まれるが、それを考えても 100〜160万円は高い。G 7964 はこのページに載っていない。"
+   "note": "2026-10-18 second check against further sources of the same scope. 第一パスの『60cm機 工事込み 54〜62万円』は入門〜中位機の目安で、souba が指定する G 7964 SCVi(全面ドア材取付の最上位級)とは範囲が違う。メーカー公式価格は 858,000円(税込)。これに Pricey の新規設置工事 118,200円を足すと 976,200円、ドア面材 1〜3万円とキャビネット加工 2〜4万円で約100〜105万円、キャビネット入れ替え(10〜30万円)まで含めると約110〜135万円。souba の下限100万円は妥当、平均130万円は上寄り、上限160万円はやや余裕がある程度。同じ範囲の独立した2つの出典が外れを示していないので KEEP。直すなら avg を 1,150,000 程度に下げる余地がある。danger 2,400,000 は積み上げ上限(約135万)の約1.8倍で意味は保つ。"
   },
   {
    "id": "carpoort_single_ume",
@@ -2334,17 +2499,45 @@
    "min": 1500000,
    "avg": 2500000,
    "max": 4000000,
-   "verdict": "inconsistent",
+   "verdict": "consistent",
    "sources": [
     {
-     "source": "ビズトリー(biz.ne.jp)",
+     "source": "ビズトリー 井戸掘りの料金",
      "url": "https://www.biz.ne.jp/matome/2003037/",
      "as_of": "2024-05-02",
-     "quoted": "深い(50m以上) 約60〜100万円程度／掘削単価 50m以上 15,000円〜(1mあたり)",
+     "quoted": "50m以上：約60〜100万円程度 / 50m以上 1mあたり15,000円〜 / 基本料金20万円〜50万円程度 / 水質調査 1回約5万円",
+     "unit_matches": false
+    },
+    {
+     "source": "水ログ 井戸を掘る費用",
+     "url": "https://ido-pro.net/well-drilling-cost/",
+     "as_of": "2026-06-13",
+     "quoted": "直径100mm 50m 150〜200万円程度 / 100m 300〜400万円程度 / 1mあたり3〜4万円程度 / 深井戸のポンプ費用 60万〜200万円以上",
+     "unit_matches": true
+    },
+    {
+     "source": "水落住建 二代目ブログ",
+     "url": "https://mizuochi-jyuuken.jp/nidaime_blog/2025/02/09/13834/",
+     "as_of": "2025-02-09",
+     "quoted": "100mの井戸を掘ればおおよそ300万円～400万円 / 1mあたり3万円～4万円程度",
+     "unit_matches": true
+    },
+    {
+     "source": "ニワート 井戸掘削の費用相場",
+     "url": "https://niwart.com/blog/%E4%BA%95%E6%88%B8%E6%8E%98%E5%89%8A%E3%81%AE%E8%B2%BB%E7%94%A8%E7%9B%B8%E5%A0%B4%E3%81%AF%EF%BC%9F%E6%B7%B1%E4%BA%95%E6%88%B8%E3%83%BB%E6%B5%85%E4%BA%95%E6%88%B8%E3%81%AE%E9%81%95%E3%81%84%E3%82%84/",
+     "as_of": "2022-09-02",
+     "quoted": "深井戸 費用相場は100万円から300万円以上 / 飲料用は保健所の基準を満たす詳細な検査が必須",
+     "unit_matches": true
+    },
+    {
+     "source": "八女テクノ 井戸工事の相場",
+     "url": "https://yame-techno.com/column/55d1a25d-94a0-41fb-950a-f3d9a7f29539",
+     "as_of": "2026-07-20",
+     "quoted": "50メートルを超える井戸は費用は100万円以上 / 水質検査 1回あたり約1万円から3万円程度",
      "unit_matches": false
     }
    ],
-   "note": "出典の深井戸総額60-100万に対し souba 150-400万は上。ただし同ページの m単価15,000円〜と基本料20-50万で80mを積むと140万超になり、出典自体が粗い。飲料適合・水質検査は出典外"
+   "note": "2026-10-18 second check against further sources of the same scope. 第一パスが根拠にしたビズトリーの『50m以上 60〜100万円』は深さの上限が示されておらず、同じページの 1m 15,000円〜と基本料金 20〜50万円で 80m を積むと 140〜170万円になるので、ページ内で整合していない。80m の掘削は、m単価 3〜4万円の独立した2件(水ログ、水落住建)で 240〜320万円、水ログの表で 50m 150〜200万円 / 100m 300〜400万円の間なので 80m は約240〜320万円、これに深井戸用の水中ポンプ(60万円〜)と水質検査が乗る。ニワートの深井戸 100〜300万円以上とも整合する。souba の 150〜400万円(平均250万)は公開値の範囲内なので KEEP。danger 600万円は 150mm 口径の 80m(約360〜480万円)+ポンプでも届きにくい線で意味を保つ。"
   },
   {
    "id": "ih_gas_conversion_ume",
@@ -2701,24 +2894,52 @@
    "min": 800000,
    "avg": 1500000,
    "max": 2500000,
-   "verdict": "inconsistent",
+   "verdict": "partly",
    "sources": [
     {
-     "source": "アイミツ",
+     "source": "アイミツ 店舗看板",
      "url": "https://imitsu.jp/cost/billboard-design/article/storesign",
      "as_of": "2025-01-08",
-     "quoted": "屋上看板 20～50万円",
+     "quoted": "屋上広告看板の費用相場は20万～50万円程度 / ポール看板の費用相場は20万円程度～（制作か設置込みか明記なし、LEDの記載なし）",
      "unit_matches": false
     },
     {
-     "source": "クラウドワークス",
+     "source": "クラウドワークス 看板デザイン料金",
      "url": "https://crowdworks.jp/times/know-how/11838/",
      "as_of": "2025-01-03",
-     "quoted": "屋上看板 制作費用相場は20～50万円(表は 20～50万円以上)",
+     "quoted": "屋上看板 制作費用相場は20～50万円（表は 20～50万円以上）",
+     "unit_matches": false
+    },
+    {
+     "source": "ハニー 広告看板の費用",
+     "url": "https://hunny-inc.jp/contents/advertising-billboard/",
+     "as_of": "2023-11-15",
+     "quoted": "屋上看板は大型サイズとなり、設置費用の相場は20万円～50万円程度（照明・構造の記載なし）",
+     "unit_matches": false
+    },
+    {
+     "source": "看板いつき 自立看板の費用",
+     "url": "https://www.kanbanitsuki.com/blog/8565/",
+     "as_of": "2026-06-02",
+     "quoted": "高さ2.5〜3m、幅1mの両面表示 LED外照式 トータル50万〜80万円程度 / 内照式はさらに10〜20万円 / 高さ3.9m 幅1.2m 照明付き 80万〜150万円程度",
+     "unit_matches": false
+    },
+    {
+     "source": "カードローナ 看板製作の費用相場",
+     "url": "https://www.cardrona.co.jp/column/sign-prices",
+     "as_of": "2026-06-12",
+     "quoted": "大型看板・自立看板（野立看板） 30万～200万円程度",
+     "unit_matches": false
+    },
+    {
+     "source": "すぐメシくん 看板設置費用",
+     "url": "https://column.sugumeshikun.bpsinc.jp/2026/04/28/signboard-price/",
+     "as_of": "2026-04-28",
+     "quoted": "野立て看板 20万円〜150万円程度（支柱の本数やサイズ、両面か片面かで変わる） / 大型の内照式看板は100万円を超えることも",
      "unit_matches": false
     }
    ],
-   "note": "souba 80-250万は出典の屋上看板 20-50万を大きく上回る。出典は制作費で両面LED・構造・設置費を含むか不明"
+   "note": "2026-10-18 second check against further sources of the same scope. 第一パスの『屋上看板 20〜50万円』の3件は大きさ・照明・構造・設置費の有無が書かれておらず、文言もほぼ同じで独立性が低い(看板面の制作費と読める)。ビル屋上に鉄骨で自立させる両面LED看板(高さ4m超は工作物確認申請、クレーン・高所作業を伴う)と同じ範囲の公開値は見つからなかった。近い範囲として、地上の両面照明付き自立看板が 50〜150万円(看板いつき)、大型自立看板が 30〜200万円(カードローナ)、内照式大型は 100万円超(すぐメシくん)。屋上は構造・揚重・申請が加わるので、souba の 80〜250万円(平均150万)は否定できない。同じ範囲の2つの出典が外れを示していないので KEEP、ただし根拠は薄い(要追加データ)。danger 375万円は地上大型の上限200万の約1.9倍で、意味は保つ。"
   },
   {
    "id": "karinosumai_ume",
@@ -3265,24 +3486,45 @@
    "min": 80000,
    "avg": 150000,
    "max": 250000,
-   "verdict": "none",
+   "verdict": "consistent",
    "sources": [
     {
      "source": "くらしのマーケットマガジン 庭木の剪定料金",
      "url": "https://curama.jp/magazine/281/",
      "as_of": "2026-08-19",
-     "quoted": "中木（高さ3～5m未満）：5,000円～9,000円 / 高木（高さ5～7m未満）：1.3万円～2万円（1本あたり、2024年9月時点）",
+     "quoted": "中木（高さ3～5m未満） 5,000円～9,000円 / 高木（高さ5～7m未満） 1.3万円～2万円（2024年9月時点） / ホームセンター 中木 8,000円/本 高木 20,000円/本 / マツは別途見積もり / 年間管理の記載なし",
      "unit_matches": false
     },
     {
      "source": "ミツモア 庭木の剪定料金相場レポート",
      "url": "https://meetsmore.com/services/tree-trimming/media/271251",
      "as_of": "2026-08-25",
-     "quoted": "立ち木 3〜4m 4,473円 / 4〜5m 5,979円 / 5〜6m 8,774円；マツ 2〜3m 16,944円 / 3〜4m 27,182円 / 4〜5m 41,646円（1本あたり平均）",
+     "quoted": "立ち木 3〜4m 4,473円 / 4〜5m 5,979円 / 5〜6m 8,774円 / 6〜7m 12,758円；マツ 2〜3m 16,944円 / 3〜4m 27,182円 / 4〜5m 41,646円（目安幅上限 54,591円）（2025年4月〜2026年3月成約5,748件）",
      "unit_matches": false
+    },
+    {
+     "source": "植木屋あきば 定期管理契約費用",
+     "url": "https://uekiya-akiba.com/archives/1850",
+     "as_of": "2026-05-26",
+     "quoted": "戸建てで年5万〜15万円 / 標準的な庭 庭木10本前後・30㎡前後 年2〜3回 8〜12万円 / 緑多めの庭 庭木15本以上・40㎡以上 年3〜4回 12〜15万円 / 高木4本・松1本・年3回剪定＋消毒＋草刈り 12〜15万円",
+     "unit_matches": true
+    },
+    {
+     "source": "にわくら 庭の手入れの年間費用",
+     "url": "https://niwakura.com/blog/garden-maintenance-annual-cost-guide",
+     "as_of": "2026-10-08",
+     "quoted": "全てを業者に依頼すると、年間で10万〜40万円程度（庭50〜100平米、庭木5〜10本） / 全て業者に依頼すると約15万円/年の例",
+     "unit_matches": true
+    },
+    {
+     "source": "セーフリー 造園費用の相場",
+     "url": "https://safely.co.jp/gp/gardening-category/recommend/landscaping-market-price/",
+     "as_of": "2025-11-08",
+     "quoted": "アフターメンテナンス 年間5万〜10万円 / 中木（3〜5m未満）4,500〜9,000円 / 高木（5〜7m未満）9,000〜1万7,000円",
+     "unit_matches": true
     }
    ],
-   "note": "No fetched page states a price for an annual garden management contract (年間管理契約); curama and crowdworks pages mention such contracts without a figure. Only per-tree pruning prices were found, which are not comparable to the souba row. Side finding on the note text: its per-tree figures (中木 ¥1-2.5万, 高木 ¥3-10万, 松 ¥5-20万) sit well above the fetched per-tree prices (中木 5,000～9,000円, 高木 1.3万～2万円, マツ 2～5m 平均 16,944～41,646円)."
+   "note": "2026-10-18 second check against further sources of the same scope. 行本体(年間管理 30坪庭・年4回・剪定+施肥+消毒+草取り)は、年間管理の公開値 植木屋あきば 年3〜4回 12〜15万円、にわくら 全部業者で 10〜40万円(例 約15万円)、セーフリー 5〜10万円と比べて、souba の 8〜25万円(平均15万)は範囲内なので KEEP。30坪(約100㎡)はにわくらの前提 50〜100㎡と同等。danger 37.5万円はにわくら上限 40万にほぼ並び、意味は保つ。前回の『note の1本あたり単価が公開値の約2倍』という指摘は確認できた。note の 中木 ¥1〜2.5万 に対し公開値は 4,473〜9,000円(ミツモア 3〜5m 平均、くらしのマーケット、セーフリー、ホームセンター 8,000円)で約2〜3倍。高木 ¥3〜10万 に対し 0.88〜2万円(ミツモア 5〜7m 平均 8,774〜12,758円、くらしのマーケット 1.3〜2万、セーフリー 0.9〜1.7万)で 2〜5倍以上。松 ¥5〜20万 に対しミツモアのマツ平均 9,559〜41,646円(上限 54,591円)で、下限からして約2倍以上。note は『中木 0.5〜1万、高木 1〜2万、松 1〜5万(2〜5m)』程度に直すべき。範囲外の付記: 兄弟行 shokusai_zoen_ume(中木1本 3m級 5,000〜25,000円、平均12,000円)も、上限と平均が同じ公開値(3〜4m 平均 4,473円、目安幅上限 6,529円、くらしのマーケット 5,000〜9,000円)を上回る。別途点検を勧める。"
   },
   {
    "id": "shokusai_zoen_matsu",
@@ -3371,27 +3613,62 @@
    "id": "smart_home_iot_ume",
    "work": "スマートロック追加（玄関）",
    "unit": "一式",
-   "min": 60000,
-   "avg": 110000,
-   "max": 200000,
-   "verdict": "inconsistent",
+   "min": 20000,
+   "avg": 40000,
+   "max": 60000,
+   "verdict": "consistent",
    "sources": [
     {
-     "source": "ミツモアメディア",
+     "source": "ミツモアメディア 鍵交換",
      "url": "https://meetsmore.com/services/lock-exchange/media/84690",
      "as_of": "2024-06-28",
-     "quoted": "商品本体の価格帯は10,000〜50,000円くらい / シリンダーや穴あけなどの工事が必要な場合はおよそ3,000〜5,000円が相場",
+     "quoted": "商品本体の価格帯は幅広く、10,000〜50,000円くらい / シリンダーや穴あけなどの工事が必要となる場合は、およそ3,000〜5,000円が相場",
      "unit_matches": true
     },
     {
-     "source": "くらしのマーケットマガジン",
+     "source": "くらしのマーケットマガジン スマートロック",
      "url": "https://curama.jp/locksmith/magazine/2991/",
      "as_of": "2026-08-27",
-     "quoted": "SwitchBot ¥11,980、SwitchBot ロック Pro ¥22,980、AEGIS GATE ¥36,980(本体価格)",
+     "quoted": "SwitchBot ¥11,980 / SwitchBot ロック Pro ¥22,980 / AEGIS GATE ¥36,980 / Flassa 5D ¥58,880 / Flassa 1J ¥64,680（本体価格）",
+     "unit_matches": false
+    },
+    {
+     "source": "くらしのマーケット スマートロック設置(事業者A)",
+     "url": "https://curama.jp/locksmith/SER609984517/",
+     "as_of": "2026-10-18",
+     "quoted": "ドアの補助鍵の取り付け ¥8,000 / 箇所（鍵などの防犯機器はお客様が用意）",
+     "unit_matches": false
+    },
+    {
+     "source": "くらしのマーケット スマートロック設置(事業者B)",
+     "url": "https://curama.jp/locksmith/SER410408928/",
+     "as_of": "2026-10-18",
+     "quoted": "ドアの補助鍵の取り付け ¥14,000 / 箇所（本体は別途商品代）",
+     "unit_matches": false
+    },
+    {
+     "source": "くらしのマーケット スマートキー取り付け(事業者C)",
+     "url": "https://curama.jp/locksmith/SER218880524/",
+     "as_of": "2026-10-18",
+     "quoted": "1箇所 ¥13,000（機器はお客様ご自身でご用意）",
+     "unit_matches": false
+    },
+    {
+     "source": "みんなの楽々",
+     "url": "https://minnano-rakuraku.com/contents/smartlock-2250/",
+     "as_of": "2023-04-17",
+     "quoted": "スマートロックの相場は1万〜5万円前後と製品によって幅があり、取り付け方法によっては工事費用が別途",
      "unit_matches": false
     }
    ],
-   "note": "出典は本体+工事で約1.3万〜5.5万円。souba 6万〜20万円は上(後付け型の想定なら明確に高い)"
+   "note": "2026-10-18 second check against further sources of the same scope. souba の範囲は『Sesame/Qrio等 + 既存錠への後付け』で、本体+業者による取り付けの総額を意味する。本体は 1.2〜3.7万円(SwitchBot 11,980円〜AEGIS GATE 36,980円、ミツモア 1〜5万円)、取り付け作業は くらしのマーケットの3事業者で 8,000〜14,000円/箇所、穴あけ等の工事は 3,000〜5,000円(ミツモア)。足し上げると約2万〜5.6万円。本格工事型の Flassa(5.9〜6.5万円)を業者取り付けしても約8万円で、souba の 6〜20万円(平均11万)は、後付け型では下限ですら公開の積み上げ上限を超える。提案値: min 20,000 = SwitchBot 11,980 + 取り付け 8,000、avg 40,000 = ロック Pro 22,980 + 取り付け 13,000〜14,000、max 60,000 = AEGIS GATE 36,980 + 14,000 + 穴あけ 5,000(約5.6万)。danger 300,000 は根拠のない水準で、提案 max の約1.7倍の 100,000(本格工事型 Flassa の業者取り付け約8万円をも上回る線)を提案。note の『ロック¥6-20万』も同じ理由で直すべき。",
+   "changed_in": "2.3.0",
+   "previous": {
+    "version": "2.2.0",
+    "min": 60000,
+    "avg": 110000,
+    "max": 200000
+   }
   },
   {
    "id": "smart_home_iot",
@@ -3532,27 +3809,55 @@
    "id": "tokushuseiso",
    "work": "ゴミ屋敷清掃（1K・腰高ゴミ）",
    "unit": "一式",
-   "min": 200000,
-   "avg": 450000,
-   "max": 800000,
-   "verdict": "inconsistent",
+   "min": 50000,
+   "avg": 150000,
+   "max": 300000,
+   "verdict": "consistent",
    "sources": [
     {
-     "source": "くらしのマーケットマガジン",
+     "source": "くらしのマーケットマガジン ゴミ屋敷",
      "url": "https://curama.jp/hoarding-cleanup/magazine/373/",
      "as_of": "2024-09-30",
-     "quoted": "1R、1K 3万円〜5万円(床から約50cm(ひざ)まで) / ワンルームで天井まで埋まっている場合 5万円〜20万円",
+     "quoted": "1R、1K 3万円〜5万円（床から約50cm(ひざ)まで） / ワンルームマンションの天井まで埋まっている 5～20万円",
      "unit_matches": true
     },
     {
-     "source": "ミツモア",
+     "source": "ミツモア ゴミ屋敷",
      "url": "https://meetsmore.com/services/hoarding-cleanup/media/113297",
      "as_of": "2025-07-16",
-     "quoted": "1Rの事例 料金7万円 / 20㎡～(2tトラック約3台分) 117,000円～150,000円",
+     "quoted": "1Rの事例 料金7万円 / 10～20㎡（2tトラック約2台分）80,000～100,000円 / 20㎡～（2tトラック約3台分以上）117,000～150,000円 / ハウスクリーニング 1R/1K 27,500～35,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "片付け堂 ゴミ屋敷の片付け費用",
+     "url": "https://www.katazukedou.com/lab/hoarding_house/18",
+     "as_of": "2021-06-10",
+     "quoted": "ワンルーム・膝ぐらいまで 3～5万円～ / ワンルーム・天井近くまで 5～10万円～ / 1K・1R 3万5,000円～",
+     "unit_matches": true
+    },
+    {
+     "source": "まごのて 部屋の片付け・ゴミ屋敷の費用",
+     "url": "https://www.osoujiyasan.jp/gomiyashiki/service/",
+     "as_of": "2026-10",
+     "quoted": "単身用（1R・1K・1DK・1LDK）多いのは税別20万円前後、次に多いのは税別25万～30万円前後 / 1K軽度 税別58,000円 / 1K選別＋清掃 税別267,000円 / 1K 税別340,000円 / 1R重度 税別1,010,000円",
+     "unit_matches": true
+    },
+    {
+     "source": "ゴミ屋敷ハンター 料金表",
+     "url": "https://g03-hunter.com/price/",
+     "as_of": "2026-10-18",
+     "quoted": "1R/1K 基本料金 33,000円～（税込）",
      "unit_matches": true
     }
    ],
-   "note": "1K腰高は出典で数万〜20万円(天井までで上限20万円)。souba 20万〜80万円は明確に上"
+   "note": "2026-10-18 second check against further sources of the same scope. 1K の腰高ゴミの片付けは、ひざまで 3〜5万円と天井まで 5〜20万円(くらしのマーケット)、5〜10万円〜(片付け堂)の間にあたる。ミツモアの物量別では 10〜20㎡で 8〜10万円、20㎡以上で 11.7〜15万円、ハウスクリーニング 1K 2.75〜3.5万円を足すと約11〜18.5万円。分別と清掃まで含む実務会社のまごのては 単身用で多いのは20万円前後、25〜30万円、1K 選別＋清掃 26.7万円。souba の 20〜80万円(平均45万)は、独立した3件(くらしのマーケット、ミツモア、片付け堂)が上限としている 15〜20万円を下限に置いており、平均・上限とも高い。まごのても上限は 34万円(重度の 1R 101万は別格)。提案値: min 50,000 = 天井までの下限 5万(くらしのマーケット、片付け堂)とまごのて 1K軽度 5.8万、avg 150,000 = ミツモア積み上げ 11〜18.5万の中央付近、max 300,000 = まごのて 単身 25〜30万、1K 選別＋清掃 26.7万。danger 1,200,000 は重度 1R の実例(101万)すら超える水準で、腰高 1K の過大請求の線としては高すぎる。まごのての 1K 最高例 34万を明確に超える 500,000 を提案。",
+   "changed_in": "2.3.0",
+   "previous": {
+    "version": "2.2.0",
+    "min": 200000,
+    "avg": 450000,
+    "max": 800000
+   }
   },
   {
    "id": "tokushuseiso_matsu",
@@ -3742,20 +4047,48 @@
    "id": "zenkanki_jokuki_matsu",
    "work": "オフィス全館空調（業務用）",
    "unit": "一式",
-   "min": 4000000,
-   "avg": 6500000,
-   "max": 10000000,
-   "verdict": "inconsistent",
+   "min": 1000000,
+   "avg": 1800000,
+   "max": 3000000,
+   "verdict": "consistent",
    "sources": [
     {
      "source": "ダイキン 業務用エアコン ご購入価格の目安",
      "url": "https://www.ac.daikin.co.jp/customercenter/price/sa",
-     "as_of": "2026-03",
-     "quoted": "8馬力以上 110㎡以上 100～200万円(機器代金＋工事代金、1セット)",
+     "as_of": "2026-10-18",
+     "quoted": "4～6馬力 一般事務所60㎡～80㎡ 70～80万円 / 8馬力以上 一般事務所110㎡以上 100～200万円（機器代金＋工事代金、1セット、室内機形状にかかわらず集計）",
      "unit_matches": true
+    },
+    {
+     "source": "明電商事 業務用エアコンの交換費用の目安",
+     "url": "https://info-meidens.com/senryaku/2024/04/17/airconditioner-simulation/",
+     "as_of": "2026-09-24",
+     "quoted": "30坪（100㎡）5馬力（P140型）交換費用（本体代含む）100万円 / 45坪（150㎡）8馬力 150万円",
+     "unit_matches": true
+    },
+    {
+     "source": "オフィスバンク オフィス内装の費用相場",
+     "url": "https://www.officebank.co.jp/column/33635/",
+     "as_of": "2026-10-16",
+     "quoted": "業務用エアコン（天井埋め込み型）1台あたり30万円〜100万円 / 換気設備の設置・改修 20万円〜200万円",
+     "unit_matches": true
+    },
+    {
+     "source": "ビズトリー 業務用エアコンの設置工事費用",
+     "url": "https://www.biz.ne.jp/matome/2004015/",
+     "as_of": "2025-02-21",
+     "quoted": "本体と工事の総額は20万円～100万円程度 / 天井埋め込み型 総額約24万～116万円",
+     "unit_matches": false
     }
    ],
-   "note": "メーカー公表の成約価格は110㎡級で100〜200万。souba 400〜1000万は明らかに上。ダクト式全館空調なら差は縮むが公開相場は未発見"
+   "note": "2026-10-18 second check against further sources of the same scope. 100㎡のオフィス空調は、ダイキンの成約集計(4〜6馬力 60〜80㎡ 70〜80万円、8馬力以上 110㎡以上 100〜200万円、うち 100〜150万円が42%、150〜200万円が39%)と明電商事(100㎡ 5馬力 100万円)という独立した2件が、約70〜200万円で一致する。souba の 400〜1,000万円(平均650万)は公開値の上限の2倍が下限になっている。『全館空調』としてダクトと換気設備を加える前提でも、オフィスバンクの 天井埋込 1台 30〜100万円+換気設備 20〜200万円 = 最大約300万円。提案値: min 1,000,000 = 明電商事 100㎡ 100万、ダイキン 8馬力の下限、avg 1,800,000 = ダイキン 8馬力の分布中心(約150万)にダクト・換気の追加を加味、max 3,000,000 = オフィスバンク 天井埋込上限 100万 + 換気設備上限 200万。danger 15,000,000 は根拠のない水準で、提案 max の1.5倍の 4,500,000 を提案。付記: note の『高断熱住宅前提』は住宅向けの文で、業務用の行には合わない。",
+   "changed_in": "2.3.0",
+   "previous": {
+    "version": "2.2.0",
+    "min": 4000000,
+    "avg": 6500000,
+    "max": 10000000
+   }
   },
   {
    "id": "ashiyu_unit_danran_set",
@@ -3821,27 +4154,41 @@
    "id": "kagami_studio_per_sheet",
    "work": "大型スタジオミラー 1000×1500前後 1枚（鏡本体・施工別）",
    "unit": "枚",
-   "min": 40000,
-   "avg": 49350,
-   "max": 60000,
-   "verdict": "inconsistent",
+   "min": 28000,
+   "avg": 38000,
+   "max": 50000,
+   "verdict": "consistent",
    "sources": [
     {
      "source": "楽天 鏡屋 村松",
      "url": "https://www.rakuten.co.jp/muramatsu-kagami/",
      "as_of": "2026-10-18",
-     "quoted": "【DIYJUMBO】［3営業日以内発送］80×210cm 姿見鏡セット ジャンボ 33,800円 / 【DIYBIG】［3営業日以内発送］ 60×150cm 13,800円",
+     "quoted": "【DIYJUMBO】80×210cm 姿見鏡セット ジャンボ 33,800円 / 【DIYBIG】60×150cm 13,800円（厚み・磨きの記載なし）",
      "unit_matches": false
     },
     {
      "source": "くらしのマーケット 鏡の取り付け",
      "url": "https://curama.jp/mirror-install/SER401957951/",
      "as_of": "2026-10-18",
-     "quoted": "1枚：¥13,200 / 枚（金額はご用意していただいた鏡を取り付ける金額です）",
+     "quoted": "金額はご用意していただいた鏡を取り付ける金額です（鏡本体を含まない）",
      "unit_matches": false
+    },
+    {
+     "source": "鏡の販売.com 大型ミラー(ダンススタジオ向け)",
+     "url": "https://www.e-kagami.com/product/768/",
+     "as_of": "2026-10-18",
+     "quoted": "90×180センチ 大型ガラスミラー 27,800円(税抜) / 税込30,580円（5ミリが一般的、厚みの明記なし）",
+     "unit_matches": true
     }
    ],
-   "note": "souba の 1000×1500（1.5㎡）より大きい 80×210cm（1.68㎡）の小売セットが 33,800円で、souba の下限 40,000円より安い。ただし小売の DIY セットで厚みも磨きも書かれていないので、根拠は弱い。くらしのマーケットの値は取り付け工事だけで、souba には含まれない。"
+   "note": "2026-10-18 second check against further sources of the same scope. 第一パスの村松の値は DIY 姿見セットで厚み・磨きが不明なので単独では弱いが、ダンススタジオ向けに売っている鏡の販売.com の 90×180cm(1.62㎡、souba の 1.5㎡より大きい)が税込 30,580円で、独立した2件の公開値(30,580円、33,800円)が souba の下限 40,000円を下回る。加えて、この行自身の一次資料である M5素板 27,900〜32,550円も下限より下にあり、兄弟行 kagami_studio_5mm_sqm の ㎡単価 13,000〜24,000円を 1.5㎡に掛けた 19,500〜36,000円とも食い違う(データセット内の不整合)。本行の範囲は『5〜6mm磨き』なので、下は 5mm、上は 6mm磨き 49,350円とするのが筋。提案値: min 28,000 = M5素板の下限 27,900、avg 38,000 = 5mm の公開値(30,580〜33,800)と 6mm磨き 49,350 の中間、max 50,000 = M6磨き 49,350。danger は提案 max の1.5倍の 75,000。注意: 公開値は小売・送料別で、磨きの仕様が souba と完全には一致しない。6mm磨きに限る行にするなら、RESCOPE として work を『6mm 磨き』にして現行値(平均49,350)を残す選択もある。くらしのマーケットの値は取り付けだけで、範囲が違う。",
+   "changed_in": "2.3.0",
+   "previous": {
+    "version": "2.2.0",
+    "min": 40000,
+    "avg": 49350,
+    "max": 60000
+   }
   },
   {
    "id": "kagami_studio_full_construction",

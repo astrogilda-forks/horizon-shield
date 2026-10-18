@@ -35,7 +35,7 @@ for (const c of CASES) {
   t(c.name + ": 画面に渡す物に松・梅・最悪額・差額・削減額が無い", !Object.keys(v).some((k) => /matsu|ume|worst|diff|saving/i.test(k)));
   t(c.name + ": 出典は今の版と算出した日", v.provenance.includes("souba-db " + DB._meta.version) && v.provenance.includes("算出日: 2026-10-07") && !/2\.1\.0|2026年5月|v15/.test(v.provenance), v.provenance);
 }
-t("正本の版は 2.2.0", DB._meta.version === "2.2.0", DB._meta.version);
+t("正本の版は 2.3.0", DB._meta.version === "2.3.0", DB._meta.version);
 
 // ---- 2. 行が一つに決まらない時は null（KIRA の積み上げを目安として出す） ----
 const none = (name, text) => t("行を決めない: " + name, L.matchSoubaRow(DB, text) === null, JSON.stringify(L.matchSoubaRow(DB, text)));
