@@ -83,7 +83,13 @@ What remains:
 - **`--settle` exit codes.** 0 for a settlement with receipts, 2 when the bundle is refused or the log does not verify, 3 when the file cannot be read; the same in `companion_v0.py`.
 - Everything in v0 section 8 still applies, including no hardware claim.
 
-## 8. Vectors
+## 8. Running a witness
+
+A witness needs no server and no part of this code base beyond one file. `witness_ack.py` (dependencies: `cryptography`, `rfc8785`) makes a key, prints an item's digest, signs an acknowledgement over a block the witness has seen, and checks one. The witness publishes the item and the acknowledgement anywhere public and stable (a git repository is enough); anchoring is anyone's job and can be done later with OpenTimestamps. A relying party that names the witness's key in its trust configuration, with the threshold it wants, then counts that witness.
+
+What is asked of a witness, and nothing more: sign only restrictions it has received and published, name the newest block it has seen, and keep what it signed where it published it. Independent witness operators are sought in horizon-shield Issue #50.
+
+## 9. Vectors
 
 `python companion_v0_1.py --selftest` reruns all 38. `python gen_vectors_v0_1.py` rebuilds the file byte for byte and then checks two inputs no vector file can hold (a lone surrogate in a request and in a credential: refused as `lone_surrogate`, never raised); its SHA-256 is in NOTES.md. The test chain gives each block a time ten minutes after the one before, so `as_of` can fall on either side of a block.
 

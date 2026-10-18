@@ -60,3 +60,5 @@ v0 could prove that the operator dropped an entry it had signed, not that it ref
 - Low: a restriction anchored in the block the responder then names is before the receipt (spec: fix S first); the omission rule is on exact bytes (spec: log what the witnesses publish); a view ending before the due block reported nothing (now `omission_check: due_block_not_in_view`, WV38); `revocation_published_late` is not listed beside `revocation_order_unresolved` (information only, unchanged); `--settle` exit codes were inconsistent (now 0, 2, 3 in both profiles); the module docstring still gave the anchor-height rule (fixed); cost is quadratic in receipts and revocations (spec section 7).
 
 vectors/vectors_v0_1.json sha256: 9b4e83e9c1484ce100de67c50f3220aacfb330415393d1d6b48696a64dcda046 (38 vectors).
+
+`witness_ack.py` (2026-10-18): the whole of a witness in one file, keygen, digest, sign, check; the acknowledgement it signs is what `companion_v0_1._ack` reads. Independent witness operators are sought in horizon-shield Issue #50.
