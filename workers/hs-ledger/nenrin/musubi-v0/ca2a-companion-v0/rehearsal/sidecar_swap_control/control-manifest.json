@@ -1,0 +1,58 @@
+{
+  "case_id": "horizon51-acceptance-sidecar-swap",
+  "scope": "negative control derived from two issued rehearsal receipts; not a pilot run",
+  "derivation": "Exchange only the complete bindings_sidecar JSON values, including their existing signatures. Preserve every byte outside those values.",
+  "source_repository": "https://github.com/babyblueviper1/preaction-governance-conformance",
+  "source_commit": "a77ff8fabe46a30aaf3e50d10c8c3a9f003713f9",
+  "source_directory": "examples/work-acceptance-issuer",
+  "sha256_basis": "exact UTF-8 file bytes; no JSON recanonicalization",
+  "native_expected_field": "Preserved from each source: expected describes war_check.py, which does not check the sidecar join. A join-aware check must detect both mismatches.",
+  "files": [
+    {
+      "file": "hs51-rehearsal-caseA-audit-only.swapped-sidecar.json",
+      "sha256": "32744cfc7104dcb5bb59daf7305f9b7fe4887ce4da81886040003f73ef836ada",
+      "bytes": 19822,
+      "source_file": "hs51-rehearsal-caseA-audit-only.json",
+      "source_sha256": "89300f7acee6eea406cdd1b7f1a174ac13d489847889a542c24af15058917660",
+      "sidecar_source_file": "hs51-rehearsal-caseA-with-fixture.json",
+      "changed_json_pointer": "/bindings_sidecar",
+      "other_original_bytes_unchanged": true,
+      "expected": {
+        "native_verdict": "incomplete",
+        "native_problem_codes": [],
+        "native_warning_codes": [],
+        "acceptance_signature_valid": true,
+        "sidecar_signature_valid": true,
+        "sidecar_receipt_digest_matches": false,
+        "sidecar_execution_digest_matches": true,
+        "sidecar_occurrence_digest_matches": true,
+        "acceptance_receipt_canonical_sha256": "c4c35fa53984d0e7048faf1308c228109f6ed11799fed0468ed01f9cacaf860e",
+        "sidecar_receipt_sha256": "692356d374a2f27d337e32aae5f9912fcc9b0c362feb0c4bb8ec99a34246f67c"
+      }
+    },
+    {
+      "file": "hs51-rehearsal-caseA-with-fixture.swapped-sidecar.json",
+      "sha256": "561ce33bad29cac89261ae1a7d06a7c71a9d118103667e9ef940d04083846860",
+      "bytes": 19642,
+      "source_file": "hs51-rehearsal-caseA-with-fixture.json",
+      "source_sha256": "b3eeca0e4165d14084e0375a7661ea3db8f32fe84e551911eb92574da5569e5d",
+      "sidecar_source_file": "hs51-rehearsal-caseA-audit-only.json",
+      "changed_json_pointer": "/bindings_sidecar",
+      "other_original_bytes_unchanged": true,
+      "expected": {
+        "native_verdict": "pass",
+        "native_problem_codes": [],
+        "native_warning_codes": [],
+        "acceptance_signature_valid": true,
+        "sidecar_signature_valid": true,
+        "sidecar_receipt_digest_matches": false,
+        "sidecar_execution_digest_matches": true,
+        "sidecar_occurrence_digest_matches": true,
+        "acceptance_receipt_canonical_sha256": "692356d374a2f27d337e32aae5f9912fcc9b0c362feb0c4bb8ec99a34246f67c",
+        "sidecar_receipt_sha256": "c4c35fa53984d0e7048faf1308c228109f6ed11799fed0468ed01f9cacaf860e"
+      }
+    }
+  ],
+  "source_license": "MIT",
+  "source_license_notice": "UPSTREAM-LICENSE.txt"
+}
