@@ -2,6 +2,7 @@
   "_meta": {
     "version": "1.0-phase1.7-toshi-philosophy",
     "updated": "2026-05-07",
+    "corrected": "2026-10-18 souba-db 2.3.0 に合わせて範囲と注記を是正(各行の correction_2026_10_18)",
     "category_id": "smart_home_iot",
     "category_name_jp": "スマートホーム・IoT工事",
     "maintainer": "TOshi (大賀 俊勝) / HORIZON SHIELD",
@@ -21,7 +22,7 @@
   },
   "additional_costs": {
     "wifi_strengthening": { "name": "Wi-Fi環境整備（メッシュ化等）", "price_jpy": { "min": 50000, "max": 200000 } },
-    "smart_lock_install": { "name": "スマートロック設置（玄関）", "price_jpy": { "min": 50000, "max": 150000 } },
+    "smart_lock_install": { "name": "スマートロック設置（玄関）", "price_jpy": { "min": 20000, "max": 60000 } },
     "smart_curtain_motor": { "name": "電動カーテン", "price_per_window_jpy": { "min": 50000, "max": 200000 } }
   },
   "plans": {
@@ -37,12 +38,13 @@
     },
     "smart_lock_addition": {
       "name": "スマートロック追加（玄関）",
+      "correction_2026_10_18": "2026-10-18 souba-db 2.3.0 と同じ是正: 同じ範囲の独立した公開値 2 件以上(data/souba-db.basis.json)で外れた範囲を直した。区分別の幅は区分ごとの公開値が無いため、範囲の下限と上限が動いた比率を掛けた推計(千円単位)。旧値は git の履歴と souba-db-2.2.0.json に残る。",
       "scope": "Sesame/Qrio等 + 既存錠への後付け",
-      "estimated_total_jpy": { "min": 60000, "max": 200000 },
-      "hs_rule_estimate_jpy": 110000,
+      "estimated_total_jpy": { "min": 20000, "max": 60000 },
+      "hs_rule_estimate_jpy": 40000,
       "料金_業者規模別_税込_円": {
-        "区分1_個人業者": { "min": 66000, "max": 190000 },
-        "区分2_中小": { "min": 70000, "max": 200000, "note": "HS第一推奨" }
+        "区分1_個人業者": { "min": 22000, "max": 57000 },
+        "区分2_中小": { "min": 23000, "max": 60000, "note": "HS第一推奨" }
       }
     },
     "smart_aircon_full": {
@@ -85,7 +87,7 @@
   ],
   "customer_scenario_guide": [
     { "case": "入門・部分導入", "recommendation": "スターターキット", "cost_range": { "min": 80000, "max": 250000 } },
-    { "case": "玄関の利便性向上", "recommendation": "スマートロック", "cost_range": { "min": 60000, "max": 200000 } },
+    { "case": "玄関の利便性向上", "recommendation": "スマートロック", "cost_range": { "min": 20000, "max": 60000 } },
     { "case": "エアコン外出制御", "recommendation": "全室スマートエアコン", "cost_range": { "min": 200000, "max": 600000 } },
     { "case": "カーテン自動化", "recommendation": "電動カーテン", "cost_range": { "min": 250000, "max": 700000 } },
     { "case": "戸建統合", "recommendation": "全室スマートホーム", "cost_range": { "min": 1000000, "max": 3500000 } }
@@ -108,7 +110,7 @@
     "保証範囲（機器・施工別）"
   ],
   "trade_knowledge": {
-    "summary": "スマートホームは段階導入推奨。入門¥8-25万、ロック¥6-20万、空調全室¥20-60万、戸建統合¥100-350万",
+    "summary": "スマートホームは段階導入推奨。入門¥8-25万、ロック¥2-6万、空調全室¥20-60万、戸建統合¥100-350万",
     "knowledge_source": "TOshi経験 + IoT業界データ"
   },
   "connected_clusters": {

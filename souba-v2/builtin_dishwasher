@@ -2,6 +2,7 @@
   "_meta": {
     "version": "1.0-phase1.7-toshi-philosophy",
     "updated": "2026-05-07",
+    "corrected": "2026-10-18 souba-db 2.3.0 に合わせて範囲と注記を是正(各行の correction_2026_10_18)",
     "category_id": "builtin_dishwasher",
     "category_name_jp": "ビルトイン食洗機後付け工事",
     "maintainer": "TOshi (大賀 俊勝) / HORIZON SHIELD",
@@ -110,14 +111,15 @@
     },
     "rinnai_front_open": {
       "name": "リンナイ フロントオープン",
-      "scope": "RSW-D401系・新規後付け",
-      "estimated_total_jpy": { "min": 350000, "max": 550000 },
-      "hs_rule_estimate_jpy": 430000,
+      "correction_2026_10_18": "2026-10-18 souba-db 2.3.0 と同じ是正: 同じ範囲の独立した公開値 2 件以上(data/souba-db.basis.json)で外れた範囲を直した。区分別の幅は区分ごとの公開値が無いため、範囲の下限と上限が動いた比率を掛けた推計(千円単位)。旧値は git の履歴と souba-db-2.2.0.json に残る。",
+      "scope": "フロントオープン機の新規後付け",
+      "estimated_total_jpy": { "min": 180000, "max": 350000 },
+      "hs_rule_estimate_jpy": 250000,
       "料金_業者規模別_税込_円": {
-        "区分1_個人業者": { "min": 380000, "max": 520000 },
-        "区分2_中小工務店": { "min": 405000, "max": 550000, "note": "HS第一推奨" },
-        "区分3_人気工務店": { "min": 460000, "max": 630000 },
-        "区分4_大手_ハウスメーカー": { "min": 555000, "max": 760000 }
+        "区分1_個人業者": { "min": 195000, "max": 331000 },
+        "区分2_中小工務店": { "min": 208000, "max": 350000, "note": "HS第一推奨" },
+        "区分3_人気工務店": { "min": 237000, "max": 401000 },
+        "区分4_大手_ハウスメーカー": { "min": 285000, "max": 484000 }
       }
     },
     "miele_45cm_imported": {
@@ -200,7 +202,7 @@
     "メーカー保証期間（1-5年）の確認"
   ],
   "trade_knowledge": {
-    "summary": "ビルトイン食洗機後付けは共働き世代需要急増。本体+キャビネット改造+配管+電気の複合工事。国産45cmで¥28-45万、上位¥38-58万、輸入Miele 45cmで¥70-110万、60cmで¥100-160万",
+    "summary": "ビルトイン食洗機後付けは共働き世代需要急増。本体+キャビネット改造+配管+電気の複合工事。国産45cmの交換で¥18-28万、新規後付けで¥18-35万、輸入Miele 45cmで¥70-110万、60cmで¥100-160万",
     "industry_scam_structure": "本体定価ベース表記+改造費一式で¥80万級の請求事例あり。型番・改造費明細・業者仕入れ値で適正化",
     "trade_price_reality": "Panasonic NP-45MD9S 定価¥28万→業者仕入れ¥14万。施主表示は¥18-22万が適正",
     "knowledge_source": "TOshi経験 + Panasonic/Miele業界データ"

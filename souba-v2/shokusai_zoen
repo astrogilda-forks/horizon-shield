@@ -2,6 +2,7 @@
   "_meta": {
     "version": "1.0-phase1.7-toshi-philosophy",
     "updated": "2026-05-07",
+    "corrected": "2026-10-18 souba-db 2.3.0 に合わせて trade_knowledge.summary の剪定単価を是正(中木¥1-2.5万→¥0.5-1万、高木¥3-10万→¥1-2万、松¥5-20万→¥1-5万、公開相場の 2 倍超だった)",
     "category_id": "shokusai_zoen",
     "category_name_jp": "造園・植栽工事",
     "maintainer": "TOshi (大賀 俊勝) / HORIZON SHIELD",
@@ -149,7 +150,7 @@
     "高級樹（松等）は専門業者に依頼"
   ],
   "trade_knowledge": {
-    "summary": "造園は樹種・サイズで大幅変動。中木1本剪定¥1-2.5万、高木¥3-10万、松¥5-20万が標準。年間管理¥8-25万",
+    "summary": "造園は樹種・サイズで大幅変動。中木1本剪定¥0.5-1万、高木¥1-2万、松¥1-5万が標準。年間管理¥8-25万",
     "industry_scam_structure": "①剪定費の水増し②並品の高級品偽装③搬入費の事後請求",
     "knowledge_source": "TOshi経験 + 日本造園組合連合会業界データ"
   },

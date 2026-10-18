@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 make_souba_dataset_seed.py (2026-09-14): souba-db.json の内容ハッシュを台帳投入用 seed にする
+2026-10-18 追記: 2.3.0 から書き出し先を版ごとの seed_entry_souba_dataset_v1_<version>.json にした
+  (2.2.0 の seed_entry_souba_dataset_v1.json は JIDEC entry 42 として錨打ち済み、上書きしない)。
+  _meta.previous_release があれば、前の版の sha と、それが錨打ちされた JIDEC の entry を記録に書く
+  (後の版は前の版を引用する、編集しない)。前の版の sha が PREVIOUS_ANCHORS に無ければ中止。
+  previous_release の無い 2.2.0 のバイトに掛けると、entry 42 と同じ claim ac11efd4... を再現する。
+  SOUBA と DST は環境変数 SOUBA_PATH / SEED_DST で差し替えられる(検算用)。
 
 狙い(堀の時刻半分):
   audit_estimate は claim.dataset_sha256 = 判定に使った souba-db.json の実バイトの SHA-256 を返す。
@@ -30,8 +36,15 @@ fail-closed:
 import io, json, os, sys, hashlib
 
 ROOT = "workers/hs-ledger"
-SOUBA = "data/souba-db.json"
-DST = ROOT + "/seed_entry_souba_dataset_v1.json"
+SOUBA = os.environ.get("SOUBA_PATH", "data/souba-db.json")
+DST_V220 = ROOT + "/seed_entry_souba_dataset_v1.json"
+DST_FMT = ROOT + "/seed_entry_souba_dataset_v1_%s.json"
+
+# dataset_sha256 of an earlier release -> (JIDEC entry, claim_sha256) it is anchored at
+PREVIOUS_ANCHORS = {
+    "85418e4af9d3d727af2eb1c95566aa56f21d8ae1046601bc259baa302515680d":
+        (42, "ac11efd49d231c0d0a4fa1e04930a8864d2670916dfad41c5868f01c66db5e03"),
+}
 DATASET_URL = "https://shield.the-horizons-innovation.com/data/souba-db.json"
 
 FORBIDDEN_DASH = ["—", "–", "―", "−"]  # em / en / horizontal bar / minus
@@ -41,8 +54,27 @@ def is_hex64(s):
     return isinstance(s, str) and len(s) == 64 and all(c in "0123456789abcdef" for c in s)
 
 
-def build_record(version, updated_at, updated_by, dataset_sha256, sources):
+def build_record(version, updated_at, updated_by, dataset_sha256, sources, previous=None, basis=None):
     src_lines = "\n".join("    " + s for s in sources)
+    basis_lines = ""
+    if basis:
+        basis_lines = ("    basis_url      " + basis[0] + "\n"
+                       "    basis_sha256   " + basis[1] + "\n")
+    prev_block = ""
+    if previous:
+        pv, psha, purl, pentry, pclaim = previous
+        prev_block = (
+            "Previous release, cited and not edited:\n"
+            "\n"
+            "    previous_version        " + pv + "\n"
+            "    previous_dataset_sha256 " + psha + "\n"
+            "    previous_dataset_url    " + purl + "\n"
+            "    previous_anchor         jidec:entry:" + str(pentry) + " (claim_sha256 " + pclaim + ")\n"
+            "\n"
+            "The previous bytes stay served at their own URL, so a verdict that cites the previous "
+            "dataset_sha256 can still be recomputed against the bytes it names.\n"
+            "\n"
+        )
     return (
         "# souba-db dataset release, content-anchored (souba-dataset-v1)\n"
         "\n"
@@ -68,7 +100,12 @@ def build_record(version, updated_at, updated_by, dataset_sha256, sources):
         "    updated_by     " + updated_by + "\n"
         "    dataset_url    " + DATASET_URL + "\n"
         "    dataset_sha256 " + dataset_sha256 + "\n"
+        + basis_lines +
         "\n"
+        + (("The basis file gives each row of the dataset its own public sources (source name, URL, date, "
+            "quoted figure) and whether they agree with the row. Its bytes are bound here with the dataset's.\n\n")
+           if basis else "")
+        + prev_block +
         "Public sources the dataset is cross-checked against:\n"
         "\n" + src_lines + "\n"
         "\n"
@@ -141,8 +178,33 @@ def main():
     if not all(ok for _, ok in checks):
         print("★ 前提が違う。1バイトも書かずに終了。"); sys.exit(1)
 
+    previous = None
+    pr = meta.get("previous_release")
+    if pr:
+        psha = str(pr.get("sha256") or "")
+        if psha not in PREVIOUS_ANCHORS:
+            print("★ previous_release の sha %s が錨打ち済みの版に無い。前の版を先に錨打ちする。中止。" % psha[:16]); sys.exit(1)
+        pentry, pclaim = PREVIOUS_ANCHORS[psha]
+        previous = (str(pr.get("version") or ""), psha, str(pr.get("url") or ""), pentry, pclaim)
+        if not previous[0] or not previous[2]:
+            print("★ previous_release の version か url が空。中止。"); sys.exit(1)
+    basis = None
+    burl = str(meta.get("basis") or "").strip()
+    if burl:
+        prefix = "https://shield.the-horizons-innovation.com/"
+        if not burl.startswith(prefix):
+            print("★ _meta.basis が自社の公開 URL で無い: %s。中止。" % burl); sys.exit(1)
+        bpath = burl[len(prefix):]
+        if not os.path.exists(bpath):
+            print("★ basis のファイル %s が手元に無い。中止。" % bpath); sys.exit(1)
+        bsha = hashlib.sha256(io.open(bpath, "rb").read()).hexdigest()
+        basis = (burl, bsha)
+        print("  OK  basis %s sha256 %s" % (bpath, bsha[:16]))
+    dst = DST_V220 if version == "2.2.0" else DST_FMT % version
+    dst = os.environ.get("SEED_DST", dst)
+
     # updated_by は監修メモが長い。禁止ダッシュだけ弾き、内容は生かす。
-    record = build_record(version, updated_at, updated_by, dataset_sha256, sources)
+    record = build_record(version, updated_at, updated_by, dataset_sha256, sources, previous, basis)
     work = WORK.replace("{ver}", version)
 
     for label, text in (("record", record), ("work", work)):
@@ -152,15 +214,15 @@ def main():
 
     claim_sha256 = hashlib.sha256(record.encode("utf-8")).hexdigest()
     seed = {"claim_sha256": claim_sha256, "record_canonical": record, "work": work}
-    io.open(DST, "w", encoding="utf-8").write(json.dumps(seed, ensure_ascii=False))
+    io.open(dst, "w", encoding="utf-8").write(json.dumps(seed, ensure_ascii=False))
 
-    back = json.load(io.open(DST, encoding="utf-8"))
+    back = json.load(io.open(dst, encoding="utf-8"))
     re_sha = hashlib.sha256(back["record_canonical"].encode("utf-8")).hexdigest()
     if re_sha != claim_sha256 or back["claim_sha256"] != claim_sha256:
-        print("★ %s: 読み戻し検算に失敗。中止。" % DST); sys.exit(1)
+        print("★ %s: 読み戻し検算に失敗。中止。" % dst); sys.exit(1)
 
     print("")
-    print("書いた: %s" % DST)
+    print("書いた: %s" % dst)
     print("  claim_sha256   : %s" % claim_sha256)
     print("  dataset_sha256 : %s" % dataset_sha256)
     print("  version        : %s" % version)
@@ -170,12 +232,15 @@ def main():
     print("       curl -s %s | shasum -a 256" % DATASET_URL)
     print("     → 出た sha が dataset_sha256 (%s) と一致することを確認。" % dataset_sha256[:16] + "...")
     print("     ずれていたら souba-db.json が未 push か差し替え済み。push して一致させてから錨打ちする。")
+    if basis:
+        print("       curl -s %s | shasum -a 256" % basis[0])
+        print("     → %s と一致すること。" % basis[1][:16] + "...")
     print("  1) git add workers/hs-ledger/make_souba_dataset_seed.py")
-    print("     git add workers/hs-ledger/seed_entry_souba_dataset_v1.json")
+    print("     git add %s" % dst)
     print("     commit / push")
-    print("  2) 台帳へ append(回転後の鍵で。既存 NENRIN / coordinate-v1 と同じ手順)")
-    print("  3) ots stamp。数時間後に Bitcoin ブロックに入る")
-    print("  4) 済んだら mcp.js の dataset_verify ノートの約束(JIDEC で sha を引ける)が本物になる")
+    print("  2) 台帳へ append と stamp: zsh workers/hs-ledger/append_witness.sh %s" % os.path.basename(dst))
+    print("     (token は隠し入力。数時間後に Bitcoin ブロックに入る)")
+    print("  3) 済んだら mcp.js の dataset_verify ノートの約束(JIDEC で sha を引ける)が本物になる")
 
 
 if __name__ == "__main__":

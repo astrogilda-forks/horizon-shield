@@ -2,6 +2,7 @@
   "_meta": {
     "version": "1.0-phase1.7-toshi-philosophy",
     "updated": "2026-05-07",
+    "corrected": "2026-10-18 souba-db 2.3.0 に合わせて範囲と注記を是正(各行の correction_2026_10_18)",
     "category_id": "zenkanki_jokuki",
     "category_name_jp": "全館空調・除湿システム工事",
     "maintainer": "TOshi (大賀 俊勝) / HORIZON SHIELD",
@@ -56,12 +57,13 @@
     },
     "office_commercial_install": {
       "name": "オフィス全館空調（業務用）",
-      "scope": "100㎡程度・ダイキン/三菱重工",
-      "estimated_total_jpy": { "min": 4000000, "max": 10000000 },
-      "hs_rule_estimate_jpy": 6500000,
+      "correction_2026_10_18": "2026-10-18 souba-db 2.3.0 と同じ是正: 同じ範囲の独立した公開値 2 件以上(data/souba-db.basis.json)で外れた範囲を直した。区分別の幅は区分ごとの公開値が無いため、範囲の下限と上限が動いた比率を掛けた推計(千円単位)。旧値は git の履歴と souba-db-2.2.0.json に残る。",
+      "scope": "100㎡程度のオフィス・ダイキン/三菱重工の業務用(天井埋込、ダクトと換気設備込み)",
+      "estimated_total_jpy": { "min": 1000000, "max": 3000000 },
+      "hs_rule_estimate_jpy": 1800000,
       "料金_業者規模別_税込_円": {
-        "区分3_専門": { "min": 5400000, "max": 10500000 },
-        "区分4_大手": { "min": 6500000, "max": 12500000 }
+        "区分3_専門": { "min": 1350000, "max": 3150000 },
+        "区分4_大手": { "min": 1625000, "max": 3750000 }
       }
     },
     "desica_dehumid_only": {
@@ -98,7 +100,7 @@
   "customer_scenario_guide": [
     { "case": "戸建30坪・新築/大規模リフォーム", "recommendation": "標準全館空調", "cost_range": { "min": 1800000, "max": 3500000 } },
     { "case": "戸建40坪・高機能", "recommendation": "上位全館空調", "cost_range": { "min": 3000000, "max": 5500000 } },
-    { "case": "オフィス", "recommendation": "業務用全館空調", "cost_range": { "min": 4000000, "max": 10000000 } },
+    { "case": "オフィス", "recommendation": "業務用全館空調", "cost_range": { "min": 1000000, "max": 3000000 } },
     { "case": "高湿度対策", "recommendation": "デシカ除湿", "cost_range": { "min": 1200000, "max": 2500000 } },
     { "case": "地下室・倉庫", "recommendation": "業務用除湿機", "cost_range": { "min": 300000, "max": 1000000 } }
   ],
