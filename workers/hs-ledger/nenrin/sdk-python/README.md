@@ -146,6 +146,13 @@ gives values a numeric comparator cannot order, `new URL(s).host`) goes through 
 whitespace, strings and numbers as JSON.stringify writes them. The JavaScript side of the same hash is
 `tests/parity/js_canon.mjs` (twelve lines).
 
+## 0.5.6 (2026-10-18)
+
+`nenrin-tsunagi run` (with npm 0.5.4): when the command under test exits non zero, the last printed line now ends with
+"; not a pass: the command exited <code>" instead of only the count, so a reader who stops at the last line does not
+take a failing run for a pass (piiiico, aeoess/agent-governance-vocabulary#177). The exit status, the scores and the
+board are unchanged. Verifiers and corpora are unchanged (verifier_version 0.1.7).
+
 ## 0.5.5 (2026-10-15)
 
 Verifier change (verifier_version 0.1.7, with npm 0.5.3): a record's own `"__proto__"` key stays in its preimage. The

@@ -72,6 +72,14 @@ account, no token, no trust in HS. A mismatch exits 2 and prints the two trees t
 attestation (who built it, from which commit) and this script (what that commit builds, on your
 machine), the chain source to package is closed at both ends by the reader, not by the operator.
 
+## 0.5.4 (2026-10-18): the referee's last line says "not a pass" when the command exited non zero
+
+`nenrin-tsunagi run` exited 1 when the verifier under test wrote every right answer and then exited non zero, but its
+last printed line read "36/36 verdict signatures reproduced", and a reader who stops at that line took it as a pass
+(piiiico, aeoess/agent-governance-vocabulary#177). That line now ends with "; not a pass: the command exited <code>"
+whenever the exit code is not zero. Scores, the board and the exit status are unchanged; the Python referee on PyPI
+0.5.6 prints the same line. Verifiers and corpora are unchanged (verifier_version 0.1.7).
+
 ## 0.5.3 (2026-10-15): an own `__proto__` key is part of the preimage (verifier_version 0.1.7)
 
 A record's preimage is the record minus its derived fields, every other own key included (VERIFIER.md section 2).
