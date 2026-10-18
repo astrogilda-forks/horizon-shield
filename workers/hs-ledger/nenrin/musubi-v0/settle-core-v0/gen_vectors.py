@@ -932,6 +932,56 @@ synth("synth_parent_approvers_child_drops", "4.3.1",
       _C_DROPS, one(_C_DROPS), parent=PARENT_APPROVERS)
 
 
+
+# ----------------------------------------------------------------------------------------------- revision 0.4 (NOTES.md N17)
+# Every underspecified reason of Appendix A was checked against the expected results. Ten were produced by no vector.
+# Four of them are reachable and get a vector here; two need inputs the vector layout cannot carry (exercise_inputs.py);
+# four can never fire (4.2). The reference did not change.
+
+def _grant_variant(name, mutate):
+    c = synth_contract(sign=False, label="settle-core-v0 synthetic r04 " + name)
+    mutate(c["grant"])
+    return _resigned(c)
+
+
+def _witnesses(n):
+    out = []
+    for i in range(n):
+        _k, pub = seedkey("synthetic-witness-%02d" % i)
+        out.append({"name": "synthetic-witness-%02d" % i, "public_key_ed25519_b64": pub})
+    return out
+
+
+_C_ANAME = _grant_variant("grant action name", lambda g: g.__setitem__("authorized_actions", ["read", "Write"]))
+synth("synth_grant_action_name_invalid", "4.2",
+      "grant.authorized_actions lists Write (capital W). 4.1 rule 9 only asks for non-empty strings, so the door accepts; 4.2 then finds a name that "
+      "does not match ^[a-z][a-z0-9_.:-]{0,63}$: grant_action_name_invalid, no verdict. Revision 0.4 (N17).",
+      _C_ANAME, one(_C_ANAME))
+
+_C_W33 = _grant_variant("33 witnesses", lambda g: g.__setitem__("witnesses", _witnesses(33)))
+synth("synth_too_many_witnesses", "4.2",
+      "grant.witnesses lists 33 witnesses with distinct names and keys. 4.1 sets no count; 4.2 allows at most 32: too_many_witnesses, no verdict. "
+      "Revision 0.4 (N17).",
+      _C_W33, one(_C_W33))
+
+_C_W32 = _grant_variant("32 witnesses", lambda g: g.__setitem__("witnesses", _witnesses(32)))
+synth("synth_witnesses_32", "4.2",
+      "The same with 32 witnesses: within the limit, within_grant. With synth_too_many_witnesses it pins the boundary. Revision 0.4 (N17).",
+      _C_W32, one(_C_W32))
+
+_C_ACK0 = _grant_variant("delivery ack without window", lambda g: g.__setitem__("revocation", {"effective_at": "delivery_ack"}))
+synth("synth_delivery_ack_without_window", "4.2",
+      "grant.revocation is {effective_at: delivery_ack} with no ack_window. 4.1 rule 10 allows ack_window to be absent; 4.2 needs it for "
+      "delivery_ack: ack_window_missing, no verdict. Revision 0.4 (N17).",
+      _C_ACK0, one(_C_ACK0))
+
+_C_FIN0 = _grant_variant("finality without depth", lambda g: g.__setitem__("finality", {"max_target_bits": "207fffff"}))
+synth("synth_finality_without_depth", "4.2",
+      "grant.finality is {max_target_bits: 207fffff} with no depth. 4.1 rule 10 allows depth to be absent; 4.2 needs an integer depth >= 1: "
+      "finality_policy_missing, no verdict. The floor is still read, so the view is accepted. Revision 0.4 (N17).",
+      _C_FIN0, one(_C_FIN0))
+
+
 def main():
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)

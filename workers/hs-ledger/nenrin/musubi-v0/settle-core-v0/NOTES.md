@@ -180,6 +180,18 @@ The same implementation, updated to revision 0.3 (aeoess/musubi-settle-core-chec
 
 One more note (C3): rule 14 compares canonical approver entries, so the order of `actions` inside an entry matters, and no vector shows it. The reference does exactly that (contract_v0.grant_subset sorts the entries, not the arrays inside them). A child that keeps pinned approvers is out of scope in core v0, so no core input reaches it; 4.3.1 now says so in one sentence. No vector and no code changed.
 
+## N17. Which reasons the vectors actually produce (revision 0.4)
+
+Status: closed in revision 0.4 of SETTLE_CORE_v0.md. The reference did not change.
+
+Prompted by draft-he-agentproto-verifier-evidence-00 (EXR-1 and EXR-2: a rejecting path counts as exercised only when an identified input drove it), the expected results of the 123 vectors were counted against Appendix A. All ten deviation codes are produced by at least one vector. Of the 28 underspecified reasons, 18 were and 10 were not. Each of the ten was then driven through the reference:
+
+- Reachable, no vector: `grant_action_name_invalid`, `too_many_witnesses`, `ack_window_missing`, `finality_policy_missing`. Five vectors added (`synth_witnesses_32` pins the boundary beside 33). The 123 earlier vectors are byte for byte unchanged; 128 in all.
+- Reachable, not through the vector layout: `input_not_settleable` (events not a list) and `input_too_large` (more than 10000 records). `exercise_inputs.py` drives them in memory and keeps its lines in `EXERCISE.txt`. Driving them showed that 10001 copies of one record do not trigger the limit: identical bytes are merged first (6.3), which 6.2 did not say. It says so now. The headers branch of `input_too_large` (more than 200000 verified headers) is still not exercised.
+- Unreachable: `authorized_actions_missing`, `witness_key_invalid`, `revocation_policy_not_recomputable`, `bad_expiry_height`. Each 4.2 row describes an input that 4.1 rules 9 or 10 already refuse, and 4.2 applies only after 4.1 accepts. `exercise_inputs.py` D1 to D6 run those inputs and get `contract_not_verified`. The rows stay, so that no code changes meaning, and 4.2 and Appendix A now say they cannot fire.
+
+Every unexercised path was on the refusal side. A verifier that never returns `underspecified` for a malformed policy goes on to compute a verdict it has no basis for, so these paths are the ones worth pinning.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.

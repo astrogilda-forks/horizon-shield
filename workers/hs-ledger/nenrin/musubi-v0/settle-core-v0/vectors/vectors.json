@@ -2451,6 +2451,104 @@
     "parent.json": "268077bdff3cc51eff7fcfbf548b8b2be5e821073de512db868b34c9165e9155",
     "view.json": "af208d07a609d8da366535be360a9cfdebf4d43db8fc8c31e7be542dc09f3c4c"
    }
+  },
+  {
+   "id": "synth_grant_action_name_invalid",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.authorized_actions lists Write (capital W). 4.1 rule 9 only asks for non-empty strings, so the door accepts; 4.2 then finds a name that does not match ^[a-z][a-z0-9_.:-]{0,63}$: grant_action_name_invalid, no verdict. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "grant_action_name_invalid"
+    ]
+   },
+   "files": {
+    "contract.json": "8d20b2bf7f6b83899c793988e98220a14dd9cae91971d93e97515bded6737893",
+    "events/e00.json": "90dc9d532503c8fec1b93c9f4ba3bbcf23c85bbf260ee4ed64064f13ece9576f",
+    "expected.json": "51a3eda0af06fd779cb1951b22853ede4fdfa1d77e9c33bb3ae8d959c7731c27",
+    "view.json": "ea7919838a86bc5d2c599fddd6b3a23adf3ff486bba061718187841e6d61c738"
+   }
+  },
+  {
+   "id": "synth_too_many_witnesses",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.witnesses lists 33 witnesses with distinct names and keys. 4.1 sets no count; 4.2 allows at most 32: too_many_witnesses, no verdict. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "too_many_witnesses"
+    ]
+   },
+   "files": {
+    "contract.json": "e8ecddd67dc0eebb94fe8ba9cca85de0c11ed48d73ef7f0ce0b42eee7fbee227",
+    "events/e00.json": "442698fa8319181339295d8f9acd08db0b39fb116dcd999a2a2d3ef5ae5df0bd",
+    "expected.json": "a4533d9af15f640472da25d038f608da5c49611b0d26470d6e7e7b1e45f27005",
+    "view.json": "2a73fec3d098a675ea8ce4c73ffe8a9efeac2fe1ae68394c2a1d17a2f182dfd8"
+   }
+  },
+  {
+   "id": "synth_witnesses_32",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "The same with 32 witnesses: within the limit, within_grant. With synth_too_many_witnesses it pins the boundary. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "54866268ed08f0c1e7ad600abb52712b2e719a696d73f124d85bf65f64f59370",
+    "events/e00.json": "98730a3e25935cc823968d296780c07a302591881e35712adbc99d573460c61e",
+    "expected.json": "3f6045049041cfa4cfd11bab863eb8f077e5026cccde8577e0ed3e7ebd84ec83",
+    "view.json": "eb1bc83bc1b98ee56c6ee2235f52aaea1cf436473598b9dbf381a9317c8c2e10"
+   }
+  },
+  {
+   "id": "synth_delivery_ack_without_window",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.revocation is {effective_at: delivery_ack} with no ack_window. 4.1 rule 10 allows ack_window to be absent; 4.2 needs it for delivery_ack: ack_window_missing, no verdict. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "ack_window_missing"
+    ]
+   },
+   "files": {
+    "contract.json": "719fa4605ccc18ab651a8b9441ff7f1e9298792c307b8374f0a08976c40ce61b",
+    "events/e00.json": "c65e2684bcdc635873d41376c302fc8e7ebd917172490560d32ec8a8d3d32519",
+    "expected.json": "85abbde3699397fa6ce9ab100a383b71273214cb69644293fb4f7d6d9cad88b1",
+    "view.json": "0efffa43ad938a347c2af2043b71f2864a37fe82999614fa4ae23607e050c082"
+   }
+  },
+  {
+   "id": "synth_finality_without_depth",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.finality is {max_target_bits: 207fffff} with no depth. 4.1 rule 10 allows depth to be absent; 4.2 needs an integer depth >= 1: finality_policy_missing, no verdict. The floor is still read, so the view is accepted. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "finality_policy_missing"
+    ]
+   },
+   "files": {
+    "contract.json": "ac82fb290710878e211d6a69a4d404c91edfeecd79083c8e1f008a7294d06071",
+    "events/e00.json": "6829fc694e0406c25432210ff86a52b41036393e2942b28e197b79131ac0d626",
+    "expected.json": "95edaa05d75dc5da314d5a2c5675ddeaa219495c544937dc6ca5e0e3d7180d2c",
+    "view.json": "09d4b4f4737fa8523f5ac87b83a7d63fee7562bc0dd008301fca87f401d9a8df"
+   }
   }
  ]
 }

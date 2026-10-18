@@ -7,6 +7,8 @@ Revision 0.2, 2026-10-17: the answers to 25 implementation notes (NOTES.md N14) 
 
 Revision 0.3, 2026-10-18: the answers to 10 more implementation notes (NOTES.md N15): how non-finite numbers are spelled, which approver values are carried, and pinned approvers on a parent. The reference did not change; section 13 lists each place and its vector.
 
+Revision 0.4, 2026-10-18: every underspecified reason was checked against the expected results of the vectors (NOTES.md N17). Ten were produced by no vector. Four are reachable and have vectors now; two need inputs the vector layout cannot carry and are driven by `exercise_inputs.py`; four can never fire, because 4.1 refuses the same inputs first (4.2). 6.2 now says records are counted after identical bytes are merged. The reference did not change; section 13 lists each place.
+
 ## 0. Why this document exists
 
 Until now the MUSUBI settle function was defined only by Python code (settle_v1.py to settle_v1_16.py, each layer importing the ones below it).
@@ -193,6 +195,8 @@ Only when 4.1 accepts, each of these adds the underspecified reason shown:
 
 An empty `authorized_actions` list means nothing is authorized. It is not an error.
 
+Four rows of this table cannot add their reason in core v0: `authorized_actions_missing`, `witness_key_invalid`, `revocation_policy_not_recomputable` and `bad_expiry_height`. 4.1 rules 9 and 10 refuse the same inputs first, and this table applies only when 4.1 accepts, so the input settles as `contract_not_verified`. The rows are kept so that no code changes meaning; an implementation that never emits these four agrees with the reference (revision 0.4, `exercise_inputs.py` cases D1 to D6).
+
 ### 4.3 Strict terms
 
 Whether or not 4.1 accepts, each of these adds the underspecified reason shown:
@@ -316,7 +320,7 @@ Binding is by `contract_sha256` alone, so a record made under earlier terms with
 
 ### 6.2 Size limit
 
-If more than 10000 records are kept by 6.0, the reason `input_too_large` is added and no record is examined further.
+If more than 10000 records are kept by 6.0, the reason `input_too_large` is added and no record is examined further. Records are counted after identical bytes are merged (6.3): 10001 copies of one record are one record (revision 0.4, `exercise_inputs.py` cases E4 to E6).
 
 ### 6.3 Identical bytes
 
@@ -661,6 +665,19 @@ Clarified in revision 0.3, from 10 more notes of the same implementation (impl/A
 | C3 | rule 14 compares each approver entry as canonical bytes, so the order of `actions` inside an entry counts; core v0 cannot reach it (4.3.1) | none (out of scope) |
 | B8 | exactly three spellings; `nan` and `+Infinity` stop the reader; `1e400` is an infinity (2.2) | none (no settlement to compare) |
 
+Checked in revision 0.4 (NOTES.md N17): which underspecified reasons the vectors actually produce. The reference did not change:
+
+| reason | what was missing | vector or exercise |
+|---|---|---|
+| `grant_action_name_invalid` | no vector; 4.1 accepts any non-empty string, 4.2 applies the name pattern | `synth_grant_action_name_invalid` |
+| `too_many_witnesses` | no vector; 33 refuse, 32 are accepted | `synth_too_many_witnesses`, `synth_witnesses_32` |
+| `ack_window_missing` | no vector; 4.1 allows `delivery_ack` without `ack_window` | `synth_delivery_ack_without_window` |
+| `finality_policy_missing` | no vector; 4.1 allows `finality` without `depth` | `synth_finality_without_depth` |
+| `input_not_settleable` | events that are not a list cannot be written as event files | `exercise_inputs.py` E1 to E3 |
+| `input_too_large` (records) | 10001 records would be 10001 files; the count is after 6.3 | `exercise_inputs.py` E4 to E6 |
+| `input_too_large` (headers) | more than 200000 verified headers | none: not exercised |
+| `authorized_actions_missing`, `witness_key_invalid`, `revocation_policy_not_recomputable`, `bad_expiry_height` | cannot fire: 4.1 refuses first (4.2) | `exercise_inputs.py` D1 to D6 show `contract_not_verified` |
+
 ## 14. What this does not establish
 
 - That any record is true. A signature proves which key signed, not that the act happened as described.
@@ -704,6 +721,7 @@ Real vectors use the real records, contracts and Bitcoin headers of two settled 
 Synthetic vectors use keys named synthetic-principal, synthetic-contractor, synthetic-witness and synthetic-stranger, derived from fixed seeds, and a synthetic header chain at regtest difficulty (`max_target_bits` `207fffff`, checkpoint height 800001).
 `gen_vectors.py` regenerates every vector from the two real inputs and the reference; it is deterministic.
 `run_reference.py` runs the reference over every vector and checks every file hash and every core field.
+`exercise_inputs.py` builds in memory the inputs the vector layout cannot carry (events that are not a list, 10001 records) and the inputs of the four rows of 4.2 that cannot fire, runs the reference on them, and compares its lines with `EXERCISE.txt` (`--check`).
 
 The reference, as run for these vectors (first 16 hex digits of each file's sha256):
 settle_v1.py 0e51350331c8931c, settle_v1_1.py a2391a5db199bcda, settle_v1_10.py 34beeebaa1397059, settle_v1_11.py fb03687cbacd2713, settle_v1_12.py 40a8fbb82a8e7680, settle_v1_13.py eb02b3a6544b1bf1, settle_v1_14.py 7d0704fa060adafd, settle_v1_15.py a2be5de8ba60656e, settle_v1_16.py ec332ecb387e9b56, settle_v1_2.py 6c674fd54a1a5c89, settle_v1_3.py 17119bbc7802647f, settle_v1_4.py ef3779d05fc98e40, settle_v1_5.py f9b313566713cdc4, settle_v1_6.py 6752a748ed7b6e3b, settle_v1_7.py 878a3a3697775d3a, settle_v1_8.py fe61f67c1593c776, settle_v1_9.py 7a84302be1ec38a1, admission_verify_v0.py aa889e542ff40e25, agreement_verify.py 72990326ac4a0a65, anchor_compose.py a661f673c05dbe6e, approval_v3.py e8dde985dbe6fbf4, clause_eval_v0.py fee48c3a66c28fe1, contract_v0.py 211a568783705e11, convergence_v0.py 65a267380fa623f5, corroboration_v0.py 62ae1d6c27a92228, independence_v0.py 50964883c27896de, recovery_verify.py e9bc9c11dd7d9aef, spine_verify.py ad2076d49be6763e, terms_v0.py 6532d5c6160a3974. Python 3.13.16, cryptography 50.0.1.
@@ -713,6 +731,8 @@ The reference is called as a library, `settle_v1_16.settle_v1_16(contract, event
 
 Underspecified reasons in core v0:
 `contract_not_verified`, `input_not_settleable`, `contract_signature_not_strict`, `bond_malformed`, `parent_not_supplied`, `parent_narrowing_failed`, `view_not_strict`, `record_not_strict`, `anchor_not_strict`, `anchor_below_lower_bound`, `walk_not_strict`, `authorized_actions_missing`, `grant_action_name_invalid`, `too_many_witnesses`, `witness_key_invalid`, `key_conflict`, `tie_policy_refused`, `revocation_policy_not_recomputable`, `ack_window_missing`, `finality_policy_missing`, `bad_expiry_height`, `unscoped_approvals_refused`, `chain_view_rejected`, `input_too_large`, `anchor_incomplete`, `anchor_beyond_observed_chain`, `anchor_proof_invalid`, `anchor_batch_leg_refused`.
+
+Of these, `authorized_actions_missing`, `witness_key_invalid`, `revocation_policy_not_recomputable` and `bad_expiry_height` cannot be reached in core v0 (4.2).
 
 Deviation codes in core v0:
 `revoked`, `after_expiry`, `prohibited`, `conditional`, `unauthorized`, `delegation`, `forged_approval`, `nonconforming_record`, `evidence_names_other_contract`, `evidence_missing`.
