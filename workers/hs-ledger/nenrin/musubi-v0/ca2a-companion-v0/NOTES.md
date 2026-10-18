@@ -62,3 +62,11 @@ v0 could prove that the operator dropped an entry it had signed, not that it ref
 vectors/vectors_v0_1.json sha256: 9b4e83e9c1484ce100de67c50f3220aacfb330415393d1d6b48696a64dcda046 (38 vectors).
 
 `witness_ack.py` (2026-10-18): the whole of a witness in one file, keygen, digest, sign, check; the acknowledgement it signs is what `companion_v0_1._ack` reads. Independent witness operators are sought in horizon-shield Issue #50.
+
+## Pilot profile v0: a delegated budget and paid calls (2026-10-18)
+
+`PILOT_v0.md`, `pilot_v0.py`, 28 vectors. Built on v0.1 for the scene aeoess proposed on agent-governance-vocabulary#177 (an agent with a delegated budget paying another project's service per call). Assembling it found four gaps the layers below did not cover (PILOT_v0.md section 2); the companion gained a way to hand a built-on profile its item parsers and restriction kinds for one call (`parse_item(item, extensions)`, `companion_v0_1.settle(bundle, extensions, restrictions)`), with no change to what v0 or v0.1 say on their own.
+
+2026-10-18, fifth round (adversarial review of the pilot before publishing): 3 high, 4 medium, 5 low. The budget could be dodged by a use under a second credential for the same request, by a unit spelled differently, and by a 1 JPY payment logged before the real one; an outsider's or the payee's own payment stood in for the caller's; a supplied request with a list for `task_sha256` raised; two payments of 2^53 minus 1 made the settlement unserialisable; importing the pilot changed what v0.1 said about a bundle; a zero-price task under a budget could never settle clean; an unresolved witnessed budget did not price a call; an execution row hid its payment's problems; a payment dated hours before its seen block passed. All fixed by judging a payment against the request occurrence it names (PL17, PL19, PL20, PL21, PL22, PL23, PL24, PL25, PL26, PL27, PL28) and by passing extensions instead of registering them.
+
+vectors/vectors_pilot_v0.json sha256: 245aad5289edbf85fa78787b5675cbfa9fb2d76aaa69fcab0a00ce8c287c283e (28 vectors).

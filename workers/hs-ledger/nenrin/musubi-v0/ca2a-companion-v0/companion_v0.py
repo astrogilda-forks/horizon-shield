@@ -224,11 +224,15 @@ def _lineage(lin):
 
 
 # ==== items
-def parse_item(item):
-    """Validate one logged item on its own: shape and its author's signature. Returns (kind, item)."""
+def parse_item(item, extensions=None):
+    """Validate one logged item on its own: shape and its author's signature. Returns (kind, item).
+    extensions: {type: parser} of a profile built on this one; this profile's own settlement passes none, so
+    what it says about a bundle never depends on which other profiles are loaded."""
     if not isinstance(item, dict) or not isinstance(item.get("type"), str):
         raise Bad("item_untyped")
     t = item["type"]
+    if extensions and t in extensions:
+        return extensions[t](item)
     if t == REVOCATION_TYPE:
         st = RevocationStatement.from_dict(item)          # cA2A's own strict parser
         st.verify_signature()

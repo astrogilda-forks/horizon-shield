@@ -54,6 +54,7 @@ MAX_ACKS = 64
 MAX_TOTAL_ACKS = 512                 # over the whole bundle
 MAX_MERGE = 1008                     # one week of blocks
 SOFT = ("revocation_published_late", "revocation_order_unresolved", "use_policy_order_unresolved")
+RESTRICTIONS = frozenset(("revocation", "use-policy"))   # kinds the witnessed lane accepts
 
 
 # ==== trust
@@ -132,7 +133,7 @@ def _ack(ack, digest, trust, res):
     return ack["witness"], seen, h, problems
 
 
-def witnessed_restrictions(records, trust, res):
+def witnessed_restrictions(records, trust, res, extensions=None, restrictions=RESTRICTIONS):
     """Returns (accepted, rejected). accepted: item digest -> {kind, item, published, earliest, signers,
     anchored, ack_problems}. earliest: the threshold-th lowest seen height over the witnesses that signed
     (threshold many had not all signed before that block). published: the threshold-th lowest anchor height
@@ -147,8 +148,8 @@ def witnessed_restrictions(records, trust, res):
     for i, rec in enumerate(records):
         try:
             _fields(rec, ("item", "acks"), (), "witnessed record")
-            kind, item = parse_item(rec["item"])
-            if kind not in ("revocation", "use-policy"):
+            kind, item = parse_item(rec["item"], extensions)
+            if kind not in restrictions:
                 raise Bad("not_a_restriction", kind)
             acks = rec["acks"]
             if not (isinstance(acks, list) and 1 <= len(acks) <= MAX_ACKS):
@@ -215,9 +216,10 @@ def order(w, seen_height, anchor_height):
 
 
 # ==== settlement
-def settle(bundle):
+def settle(bundle, extensions=None, restrictions=RESTRICTIONS):
     """As profile v0, plus bundle["witnessed"]: [{item, acks: [ack, ...]}, ...]. Deterministic; returns the
-    settlement object, never raises on input."""
+    settlement object, never raises on input. extensions and restrictions are for a profile built on this one;
+    this profile's own CLI and selftest pass none."""
     out = {"type": T_SETTLEMENT, "profile": PROFILE}
     try:
         _fields(bundle, ("profile", "trust", "view", "log", "chains"), ("requests", "witnessed"), "bundle")
@@ -296,7 +298,7 @@ def settle(bundle):
     for e in entries:
         seq, t = e["seq"], e["logged_at"]
         try:
-            kind, item = parse_item(e["item"])
+            kind, item = parse_item(e["item"], extensions)
             extra = {}
             if kind == "use":
                 chain = _parse_chain(item["chain"])
@@ -319,7 +321,7 @@ def settle(bundle):
                      for k in ("revocation", "use-policy", "use", "receipt", "commit", "reveal")}
 
     # the lane around the operator
-    witnessed, wrejected = witnessed_restrictions(bundle.get("witnessed", []), trust, res)
+    witnessed, wrejected = witnessed_restrictions(bundle.get("witnessed", []), trust, res, extensions, restrictions)
     in_log = {}
     for e in entries:
         try:
