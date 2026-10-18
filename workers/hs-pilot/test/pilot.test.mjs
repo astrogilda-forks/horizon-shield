@@ -10,7 +10,7 @@ if (!globalThis.crypto) globalThis.crypto = webcrypto;
 const SEED_X = "11".repeat(32), SEED_B = "22".repeat(32);
 const FIXTURE = { type: "horizon-shield.estimate-fixture.v0", lines: [
   { item: "外壁塗装 シリコン", qty: 180, unit: "㎡", unit_price: 3200 },
-  { item: "足場", qty: 240, unit: "㎡", unit_price: 900 }] };
+  { item: "足場設置 ㎡単価", qty: 240, unit: "㎡", unit_price: 900 }] };
 const env = { RESPONDER_SEED: SEED_X, PRICE: "7000", UNIT: "JPY-testnet", MCP_URL: "mock://mcp", BLOCKS_URL: "mock://blocks" };
 
 function mockFetch(url, init) {
@@ -18,9 +18,13 @@ function mockFetch(url, init) {
   if (url === "mock://mcp") {
     const body = JSON.parse(init.body);
     const w = body.params.arguments.work;
+    assert.equal(body.params.arguments.region, undefined);      // no region unless the caller gives one
+    if (w === "足場設置 ㎡単価") return text(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { structuredContent: {
+      work: w, ambiguous: true, candidates: [] } } }));          // the dataset gives no single reference
     return text(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { structuredContent: {
-      work: w + " 単価", fair_range: { min: 1000, avg: 2000, max: 3000 }, verdict: "適正レンジ内", level: "ok",
-      provenance: { data_version: "2.2.0" } } } }));
+      work: w + " 単価", fair_range: { min: 1000, avg: 2000, max: 3000 }, verdict: "適正レンジを上回る", level: "high",
+      provenance: { data_version: "2.2.0" },
+      claim: { dataset_sha256: "85".repeat(32), ruleset: { id: "hs-audit-verdict", version: "1" } } } } }));
   }
   if (url === "mock://blocks/blocks/tip/height") return text("920000");
   if (url.startsWith("mock://blocks/block-height/")) return text("ab".repeat(32));
@@ -56,6 +60,12 @@ test("a well formed call returns a receipt the companion's rules accept", async 
   assert.equal(out.audit.fixture_sha256, await sha256hex(jcs(FIXTURE)));   // the audit names its input by hash
   assert.equal(out.audit.lines.length, 2);
   assert.equal(out.audit.total, 180 * 3200 + 240 * 900);
+  const [la, lb] = out.audit.lines;
+  assert.deepEqual([la.amount, la.reference_amount, la.finding, la.dataset_sha256, la.ruleset],
+    [180 * 3200, 180 * 2000, "above", "85".repeat(32), { id: "hs-audit-verdict", version: "1" }]);
+  assert.deepEqual([lb.finding, lb.fair_range, lb.reference_amount, lb.matched_work], ["unmatched", null, null, null]);
+  assert.equal(out.audit.reference_total, null);              // one line unmatched: no reference total
+  assert.equal(out.audit.region, null);
 });
 
 test("the audit is a function of the inputs: same call, same bytes", async () => {

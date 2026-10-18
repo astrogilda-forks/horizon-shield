@@ -148,24 +148,36 @@ export async function auditFixture(fx, region, mcpUrl, fetchFn) {
   for (let i = 0; i < fx.lines.length; i++) {
     const l = fx.lines[i];
     const body = { jsonrpc: "2.0", id: i + 1, method: "tools/call",
-      params: { name: "audit_estimate", arguments: { work: l.item, quoted_price: l.unit_price, region } } };
+      params: { name: "audit_estimate", arguments: region === null ? { work: l.item, quoted_price: l.unit_price }
+        : { work: l.item, quoted_price: l.unit_price, region } } };
     const res = await fetchFn(mcpUrl, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify(body) });
     if (!res.ok) throw new Refusal("audit_unavailable", "mcp " + res.status);
     const j = await res.json();
     const sc = j && j.result && j.result.structuredContent;
     if (!isObj(sc)) throw new Refusal("audit_unavailable", "no structuredContent for line " + i);
-    // keep only the fields that are a function of the dataset version and the inputs
-    const fr = isObj(sc.fair_range) ? sc.fair_range : null;
-    lines.push({ item: l.item, qty: l.qty, unit: l.unit, unit_price: l.unit_price,
-      matched_work: typeof sc.work === "string" ? sc.work : null,
+    // keep only the fields that are a function of the dataset version and the inputs. A line the dataset
+    // cannot match on one work item (ambiguous or unknown) has no reference: finding "unmatched"
+    const fr = isObj(sc.fair_range) && [sc.fair_range.min, sc.fair_range.avg, sc.fair_range.max].every(nonneg) ? sc.fair_range : null;
+    const claim = isObj(sc.claim) ? sc.claim : {};
+    const amount = l.qty * l.unit_price;
+    let finding = "unmatched";
+    if (fr) finding = l.unit_price > fr.max ? "above" : l.unit_price < fr.min ? "below" : "within";
+    lines.push({ item: l.item, qty: l.qty, unit: l.unit, unit_price: l.unit_price, amount,
+      matched_work: fr && typeof sc.work === "string" ? sc.work : null,
       fair_range: fr ? { min: fr.min, avg: fr.avg, max: fr.max } : null,
-      verdict: typeof sc.verdict === "string" ? sc.verdict : null,
-      level: typeof sc.level === "string" ? sc.level : null,
+      reference_amount: fr ? l.qty * fr.avg : null,
+      finding,
+      verdict: fr && typeof sc.verdict === "string" ? sc.verdict : null,
+      level: fr && typeof sc.level === "string" ? sc.level : null,
       unit_mismatch: sc.unit_mismatch === true,
-      data_version: isObj(sc.provenance) && typeof sc.provenance.data_version === "string" ? sc.provenance.data_version : null });
+      data_version: isObj(sc.provenance) && typeof sc.provenance.data_version === "string" ? sc.provenance.data_version : null,
+      dataset_sha256: HEX32.test(claim.dataset_sha256) ? claim.dataset_sha256 : null,
+      ruleset: isObj(claim.ruleset) && typeof claim.ruleset.id === "string" && typeof claim.ruleset.version === "string"
+        ? { id: claim.ruleset.id, version: claim.ruleset.version } : null });
   }
   const total = fx.lines.reduce((a, l) => a + l.qty * l.unit_price, 0);
-  return { type: "horizon-shield.estimate-audit.v0", fixture_sha256: await sha256hex(jcs(fx)), region, lines, total };
+  const reference_total = lines.every((x) => x.reference_amount !== null) ? lines.reduce((a, x) => a + x.reference_amount, 0) : null;
+  return { type: "horizon-shield.estimate-audit.v0", fixture_sha256: await sha256hex(jcs(fx)), region, lines, total, reference_total };
 }
 
 export async function seenBlock(blocksUrl, fetchFn) {
@@ -188,7 +200,7 @@ export async function handleCall(body, env, fetchFn) {
   checkFixture(body.fixture);
   await checkPayment(body.payment, { requestSha, task: body.task, responder });
   if (body.payment.payer !== body.request.caller) throw new Refusal("payment_not_by_caller");
-  const region = typeof body.region === "string" && body.region.length <= 32 ? body.region : "神奈川";
+  const region = typeof body.region === "string" && body.region.length <= 32 ? body.region : null;
   const audit = await auditFixture(body.fixture, region, env.MCP_URL || "https://mcp.horizonshield.dev/mcp", fetchFn);
   const seen = await seenBlock(env.BLOCKS_URL || "https://mempool.space/api", fetchFn);
   const receipt = await sign({ type: T_RECEIPT, responder, caller: body.request.caller, lineage: body.request.lineage,

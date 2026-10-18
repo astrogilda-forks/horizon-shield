@@ -37,7 +37,7 @@ import pilot_v0 as P                    # noqa: E402
 OUT = os.path.join(HERE, "rehearsal")
 FIXTURE = {"type": "horizon-shield.estimate-fixture.v0", "lines": [
     {"item": "外壁塗装 シリコン", "qty": 180, "unit": "㎡", "unit_price": 3200},
-    {"item": "足場", "qty": 240, "unit": "㎡", "unit_price": 900},
+    {"item": "足場設置 ㎡単価", "qty": 240, "unit": "㎡", "unit_price": 900},
     {"item": "高圧洗浄", "qty": 180, "unit": "㎡", "unit_price": 250}]}
 FIXTURE_SHA = C.sha256_hex(C.jcs(FIXTURE))
 CRITERIA = {"type": "horizon-shield.acceptance-criteria.v0", "fixture_sha256": FIXTURE_SHA, "criteria": [
