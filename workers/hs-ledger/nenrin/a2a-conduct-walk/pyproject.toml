@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "a2a-conduct-walk"
-version = "1.4.2"
+version = "1.5.0"
 description = "Witness walk for the A2A Conduct Extension v1: walk an agent from your own machine, file the observation under your name, get a sha256 that anyone can recompute. Standard library only. Also an MCP server (conduct-witness-mcp) so any agent can be a witness in one tool call."
 readme = "README.md"
 requires-python = ">=3.8"

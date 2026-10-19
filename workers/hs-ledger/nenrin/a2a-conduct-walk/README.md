@@ -10,7 +10,7 @@ Honest numbers as of 2026-09-06: 9 rows on the register, 1 outside witness, 37 l
 
 ## For any agent and any client: `a2a_conduct` (conduct-v1.4 in three calls)
 
-Install: `pip install "git+https://github.com/ogasurfproject-jpg/horizon-shield#subdirectory=workers/hs-ledger/nenrin/a2a-conduct-walk"` (standard library only).
+Install: `pip install a2a-conduct-walk` (PyPI, 1.5.0 and later are built and published from this directory by `.github/workflows/pypi-publish-a2a-conduct-walk.yml` with attestations), or `pip install "git+https://github.com/ogasurfproject-jpg/horizon-shield#subdirectory=workers/hs-ledger/nenrin/a2a-conduct-walk"` for main. Standard library only.
 
 An agent becomes conformant in three lines:
 
@@ -103,7 +103,7 @@ Do not walk an agent whose owner has asked not to be measured (the register hono
 
 ## 6. Files
 
-`a2a_conduct_walk.py` the client; `conduct_witness_mcp.py` the MCP server; `walk_selftest.py` (76 vectors, offline); `walk_reference_servers.py` (the real client against the four reference Workers started locally, both wires, no network; added with conduct-v1.4 because mocks that agree with the client and server tests that agree with the server never met) and `witness_mcp_selftest.py` (14 checks, a real subprocess against a fake agent on localhost); `pyproject.toml` (console scripts `a2a-conduct-walk` and `conduct-witness-mcp`). License: Apache-2.0 (the specification's `LICENSE`).
+`a2a_conduct_walk.py` the client; `conduct_witness_mcp.py` the MCP server; `walk_selftest.py` (87 vectors, offline); `walk_reference_servers.py` (the real client against the four reference Workers started locally, both wires, no network; added with conduct-v1.4 because mocks that agree with the client and server tests that agree with the server never met) and `witness_mcp_selftest.py` (15 checks, a real subprocess against a fake agent on localhost); `pyproject.toml` (console scripts `a2a-conduct-walk` and `conduct-witness-mcp`). License: Apache-2.0 (the specification's `LICENSE`).
 
 ---
 
