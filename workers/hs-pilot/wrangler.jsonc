@@ -16,7 +16,7 @@
     "BLOCKS_URL": "https://mempool.space/api"
   },
   "kv_namespaces": [
-    { "binding": "STATE", "id": "__HS_PILOT_STATE_ID__" }
+    { "binding": "STATE", "id": "6d41abaee7fd4469b67475d2339f0dd4" }
   ]
   // secret, set by hand and never written here:  wrangler secret put RESPONDER_SEED   (64 hex, a fresh Ed25519 seed)
 }
