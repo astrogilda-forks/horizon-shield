@@ -1,12 +1,12 @@
 {
   "schema": "hs-status-v0",
-  "generated_at": "2026-10-19T07:55:12.246Z",
+  "generated_at": "2026-10-19T15:43:28.708Z",
   "measured_from": "one GitHub Actions hosted runner per run (GitHub does not say where; usually the United States)",
   "cadence": "every endpoint once an hour, one after another",
   "timeout_ms": 20000,
   "history_days": 30,
   "percentile_method": "nearest rank over the last 7 days of tools/call (or GET) latencies; timeouts count at the timeout",
-  "rows_in_history": 55,
+  "rows_in_history": 56,
   "endpoints": [
     {
       "id": "hs-mcp",
@@ -14,25 +14,25 @@
       "url": "https://mcp.horizonshield.dev/mcp",
       "tool": "get_price_range",
       "last": {
-        "at": "2026-10-19T07:55:12.246Z",
+        "at": "2026-10-19T15:43:28.708Z",
         "ok": true,
         "error": null,
-        "call_ms": 584
+        "call_ms": 441
       },
       "reach_24h_pct": 100,
       "reach_24h": {
-        "ok": 7,
-        "of": 7
+        "ok": 6,
+        "of": 6
       },
       "reach_7d_pct": 100,
       "reach_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_success_7d_pct": 100,
       "call_success_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_p50_ms_7d": 566,
       "call_p95_ms_7d": 986,
@@ -40,7 +40,7 @@
       "server_version": "1.1.0",
       "protocol_version": "2025-06-18",
       "tool_count": 15,
-      "last_initialize_ms": 147
+      "last_initialize_ms": 219
     },
     {
       "id": "ccdb",
@@ -48,33 +48,33 @@
       "url": "https://ccdb.horizonshield.dev/mcp",
       "tool": "search_jccdb_items",
       "last": {
-        "at": "2026-10-19T07:55:12.246Z",
+        "at": "2026-10-19T15:43:28.708Z",
         "ok": true,
         "error": null,
-        "call_ms": 2258
+        "call_ms": 3664
       },
       "reach_24h_pct": 100,
       "reach_24h": {
-        "ok": 7,
-        "of": 7
+        "ok": 6,
+        "of": 6
       },
       "reach_7d_pct": 100,
       "reach_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_success_7d_pct": 100,
       "call_success_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
-      "call_p50_ms_7d": 2595,
+      "call_p50_ms_7d": 2625,
       "call_p95_ms_7d": 8902,
       "server_name": "horizon-shield-construction-cost-data",
       "server_version": "1.0.0",
       "protocol_version": "2025-06-18",
       "tool_count": 15,
-      "last_initialize_ms": 132
+      "last_initialize_ms": 171
     },
     {
       "id": "gate",
@@ -82,25 +82,25 @@
       "url": "https://gate.horizonshield.dev/mcp",
       "tool": "get_conditions",
       "last": {
-        "at": "2026-10-19T07:55:12.246Z",
+        "at": "2026-10-19T15:43:28.708Z",
         "ok": true,
         "error": null,
-        "call_ms": 26
+        "call_ms": 59
       },
       "reach_24h_pct": 100,
       "reach_24h": {
-        "ok": 7,
-        "of": 7
+        "ok": 6,
+        "of": 6
       },
       "reach_7d_pct": 100,
       "reach_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_success_7d_pct": 100,
       "call_success_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_p50_ms_7d": 45,
       "call_p95_ms_7d": 129,
@@ -108,7 +108,7 @@
       "server_version": "0.4.20",
       "protocol_version": "2025-06-18",
       "tool_count": 6,
-      "last_initialize_ms": 147
+      "last_initialize_ms": 162
     },
     {
       "id": "jidec",
@@ -116,33 +116,33 @@
       "url": "https://jidec.horizonshield.dev/mcp",
       "tool": "nenrin_ledger_head",
       "last": {
-        "at": "2026-10-19T07:55:12.246Z",
+        "at": "2026-10-19T15:43:28.708Z",
         "ok": true,
         "error": null,
-        "call_ms": 1357
+        "call_ms": 1639
       },
       "reach_24h_pct": 100,
       "reach_24h": {
-        "ok": 7,
-        "of": 7
+        "ok": 6,
+        "of": 6
       },
       "reach_7d_pct": 100,
       "reach_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_success_7d_pct": 100,
       "call_success_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
-      "call_p50_ms_7d": 1222,
+      "call_p50_ms_7d": 1226,
       "call_p95_ms_7d": 10534,
       "server_name": "hs-jidec-mcp",
       "server_version": "1.3.0",
       "protocol_version": "2025-11-25",
       "tool_count": 9,
-      "last_initialize_ms": 143
+      "last_initialize_ms": 357
     },
     {
       "id": "yakumo-contractors",
@@ -150,33 +150,33 @@
       "url": "https://hearing.horizonshield.dev/mcp",
       "tool": "mall_overview",
       "last": {
-        "at": "2026-10-19T07:55:12.246Z",
+        "at": "2026-10-19T15:43:28.708Z",
         "ok": true,
         "error": null,
-        "call_ms": 755
+        "call_ms": 1556
       },
       "reach_24h_pct": 100,
       "reach_24h": {
-        "ok": 7,
-        "of": 7
+        "ok": 6,
+        "of": 6
       },
       "reach_7d_pct": 100,
       "reach_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_success_7d_pct": 100,
       "call_success_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
-      "call_p50_ms_7d": 765,
-      "call_p95_ms_7d": 1105,
+      "call_p50_ms_7d": 775,
+      "call_p95_ms_7d": 1130,
       "server_name": "HORIZON SHIELD YAKUMO",
       "server_version": "2.3.2-rmw-20261013",
       "protocol_version": "2025-06-18",
       "tool_count": 6,
-      "last_initialize_ms": 164
+      "last_initialize_ms": 238
     },
     {
       "id": "ledger",
@@ -184,27 +184,27 @@
       "url": "https://ledger.horizonshield.dev/health",
       "tool": null,
       "last": {
-        "at": "2026-10-19T07:55:12.246Z",
+        "at": "2026-10-19T15:43:28.708Z",
         "ok": true,
         "error": null,
-        "call_ms": 156
+        "call_ms": 203
       },
       "reach_24h_pct": 100,
       "reach_24h": {
-        "ok": 7,
-        "of": 7
+        "ok": 6,
+        "of": 6
       },
       "reach_7d_pct": 100,
       "reach_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
       "call_success_7d_pct": 100,
       "call_success_7d": {
-        "ok": 38,
-        "of": 38
+        "ok": 39,
+        "of": 39
       },
-      "call_p50_ms_7d": 157,
+      "call_p50_ms_7d": 159,
       "call_p95_ms_7d": 434,
       "server_name": null,
       "server_version": null,
@@ -213,5 +213,5 @@
       "last_initialize_ms": null
     }
   ],
-  "status_sha256": "f57cceffe88e58bedd30a7a42c55d31d4280a6df521d505ed4ca172171cd08d1"
+  "status_sha256": "af3f267de5a0f397b34db2f135875ea03fba85251d8413b8878f2dcbb9a84936"
 }
