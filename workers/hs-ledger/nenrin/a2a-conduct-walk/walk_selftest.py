@@ -500,11 +500,19 @@ def main():
     flip["signatures"][0]["signature"] = ("B" if s0[0] == "A" else "A") + s0[1:]
     rflip = W.read_card_signature(flip, G, "full", fetch=jfetch())
     v11("cs1_a_flipped_signature_does_not_verify", "served-rfc8785" not in {r["index"]: r for r in rflip["signatures"]}[0]["verified_in"])
+    # RFC 8785 3.2.2.3: ECMAScript Number::toString. Since 2026-10-19 non-integer numbers are written, not refused
+    # (astrogilda's run of agent-evidence-vectors 0.20.0 found the nine refusals; rfc8785_corpus_check.py runs that corpus).
+    num_cases = [(4.940656458412465e-324, "5e-324"), (1.7976931348623157e308, "1.7976931348623157e+308"), (1e21, "1e+21"),
+                 (1e20, "100000000000000000000"), (0.000001, "0.000001"), (1e-7, "1e-7"), (333333333.3333333, "333333333.3333333"),
+                 (4.5, "4.5"), (0.002, "0.002"), (-0.0, "0"), (-1.5, "-1.5"), (9007199254740992.0, "9007199254740992"),
+                 (12345678901234567890, "12345678901234567000"), ({"x": 1.5}, '{"x":1.5}')]
+    num_bad = [(x, want, W.rfc8785(x)) for x, want in num_cases if W.rfc8785(x) != want]
+    v11("cs1_numbers_are_written_as_ecmascript_writes_them", not num_bad, str(num_bad)[:200] if num_bad else "%d cases" % len(num_cases))
     try:
-        W.rfc8785({"x": 1.5}); refused = False
+        W.rfc8785({"x": float("nan")}); refused = False
     except W.NotReproducible:
         refused = True
-    v11("cs1_a_non_integer_number_is_refused_not_guessed", refused)
+    v11("cs1_nan_is_refused_not_written", refused)
     try:
         import rfc8785 as ref
     except Exception:

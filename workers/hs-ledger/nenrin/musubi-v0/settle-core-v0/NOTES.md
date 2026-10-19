@@ -201,6 +201,12 @@ Found while carrying revision 0.4 into draft-oga-musubi-settlement-01:
 - Section 16 gave agreement_verify.py as `72990326ac4a0a65`. That is the copy vendored into sdk-python. settle_v1_16.py imports `agreement-v0/agreement_verify.py`, whose sha256 begins `fd8c34ce8a11cf42` (the same at 4100d52a and dd64d0e2). The other prefixes match what the reference loads.
 - Section 12 said settle_v1_15.py gives the same core fields on every vector section 13 does not list. Run over the 128 vectors of revision 0.4 (called as `settle_v1_15(contract, events, view, nenrin_records=...)`, core fields as in `run_reference.core_fields`, dispositions set aside), v1.15 differs on 51 and raises on 3 (`synth_delegated_to_object` TypeError, `synth_revocation_irrevocable_grant` TypeError, `synth_contract_not_object` AttributeError). 23 of the 51 are not named anywhere in the specification, for example `synth_exec_signed_by_stranger`, `synth_payload_digest_mismatch`, `real_cross_record_names_other_contract`. The sentence now says only that earlier layers do not agree. The bullet on v1.15 under "What I could not pin down" below was written for the vectors of the first draft.
 
+## N19. Revision 0.4 rerun by its author: 128 of 128
+
+The same implementation, updated to revision 0.4 (`dd64d0e2`) by its author (aeoess/musubi-settle-core-check at [53cfafb](https://github.com/aeoess/musubi-settle-core-check/tree/53cfafb4460c06060d44cd7423ace06cc0196dd3)), agrees with all 128 vectors on the eight core fields with no UNASSESSED field. The 123 earlier outputs are byte identical (their vector directories and `inputs/` at the same Git tree hashes as at `aea731eb`), the four newly covered reasons appear in the expected cases, and none of the four reasons revision 0.4 calls unreachable is emitted. Outputs are frozen in `out/FROZEN-r04.txt` (horizon-shield Issue #49).
+
+Two limits, as he stated them: the run is not blind to the new cases, since he read the comment describing them first, and APS is a party to `real_p31_baseline`. We have not rerun it at 53cfafb ourselves. Revision 0.5 (`c2904fa2`) changed no rule, reason or vector, so the result stands for 0.5.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.

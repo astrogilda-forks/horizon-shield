@@ -336,6 +336,33 @@ class NotReproducible(Exception):
     pass
 
 
+def _es_number(x):
+    """RFC 8785 section 3.2.2.3: the ECMAScript Number::toString form of an IEEE 754 double. repr() gives the
+    shortest digits that round-trip, which is the digit string ECMAScript picks; only the layout differs."""
+    if x != x or x in (float("inf"), float("-inf")):
+        raise NotReproducible("NaN or an infinity, which JSON cannot carry")
+    if x == 0:
+        return "0"
+    sign = "-" if x < 0 else ""
+    m = repr(abs(x))
+    mant, _, exp = m.partition("e")
+    ip, _, fp = mant.partition(".")
+    digits = (ip + fp).lstrip("0")
+    point = len(ip) + (int(exp) if exp else 0) - (len(ip + fp) - len((ip + fp).lstrip("0")))
+    digits = digits.rstrip("0")
+    k, n = len(digits), point
+    if k <= n <= 21:
+        out = digits + "0" * (n - k)
+    elif 0 < n <= 21:
+        out = digits[:n] + "." + digits[n:]
+    elif -6 < n <= 0:
+        out = "0." + "0" * (-n) + digits
+    else:
+        e = n - 1
+        out = digits[0] + ("." + digits[1:] if k > 1 else "") + "e" + ("+" if e >= 0 else "-") + str(abs(e))
+    return sign + out
+
+
 def rfc8785(v):
     """RFC 8785 for the values an agent card holds. Raises NotReproducible for anything it would have to guess at."""
     if v is None:
@@ -345,13 +372,14 @@ def rfc8785(v):
     if v is False:
         return "false"
     if isinstance(v, int):
-        if abs(v) > 2 ** 53 - 1:
-            raise NotReproducible("an integer outside the IEEE 754 exact range")
-        return str(v)
+        if abs(v) <= 2 ** 53 - 1:
+            return str(v)
+        try:
+            v = float(v)  # what an RFC 8785 reader holds for this literal: the nearest IEEE 754 double
+        except OverflowError:
+            raise NotReproducible("an integer outside the IEEE 754 range")
     if isinstance(v, float):
-        if v.is_integer() and abs(v) <= 2 ** 53 - 1:
-            return str(int(v))
-        raise NotReproducible("a non-integer number (ECMAScript number formatting is not reproduced here)")
+        return _es_number(v)
     if isinstance(v, str):
         out = json.dumps(v, ensure_ascii=False)
         try:

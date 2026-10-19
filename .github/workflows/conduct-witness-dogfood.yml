@@ -13,7 +13,7 @@ jobs:
           origins: |
             https://mcp.horizonshield.dev a2a
             https://gate.horizonshield.dev mcp
-          walker_sha256: 07c7ba26c34595fddbdc77be27db5a76d2ea4db928388c269cd19286f6817864
+          walker_sha256: a7e36d3828c03b1a0e22079f248549c372f723c2859d1a6fb8b7b051f3792f9f
           bind_task: "true"
           task_bind_sha256: b0777582dff8e15edf2ec30e3b22181835a7ebfaebaa5ba2d7709bd4de41d771
           producer_sha256: 2ea6385ffc613545b858dab8acacb2bdcba99eebc6f785c0ba5c134cd58b9d86
