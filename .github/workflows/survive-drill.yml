@@ -79,7 +79,8 @@ jobs:
             exit 0
           fi
           git commit -m "survive-v0: keep $(date -u +%Y-%m-%d) ($(echo "$NEW" | wc -l | tr -d ' ') files)"
-          for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
+          ok=0; for i in 1 2 3; do if git pull --rebase origin main && git push; then ok=1; break; fi; sleep 5; done
+          [ "$ok" = 1 ] || { echo "::error::push failed 3 times"; exit 1; }
           echo "COMMITTED=1" >> "$GITHUB_ENV"
       - name: ask Software Heritage to archive the repository (does not fail the job)
         if: env.COMMITTED == '1'
@@ -107,6 +108,9 @@ jobs:
 
   drill:
     needs: keep
+    # 2026-10-19: the drill reads only Software Heritage and GitHub, never the operator, so it runs when keep fails too
+    # (keep fails exactly on the day the operator is down, which is the day the drill is for).
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -168,7 +172,8 @@ jobs:
           git add "$SV/drills"
           git diff --cached --quiet && exit 0
           git commit -m "survive-v0: drill $(date -u +%Y-%m-%d)"
-          for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
+          ok=0; for i in 1 2 3; do if git pull --rebase origin main && git push; then ok=1; break; fi; sleep 5; done
+          [ "$ok" = 1 ] || { echo "::error::push failed 3 times"; exit 1; }
       - name: red when the copy disagrees with itself or with Bitcoin, or cannot be rebuilt at all
         # 2026-10-09 (red team R3-3): a copy that is gone used to leave this step green. Now red when any copy has
         # findings, when any copy is empty, or when no copy could be rebuilt. One custodian being unavailable while

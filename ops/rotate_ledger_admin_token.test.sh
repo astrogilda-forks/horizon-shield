@@ -21,10 +21,12 @@ trap 'rm -rf "$WORK"' EXIT
 
 FAKE_HOME="$WORK/home"
 mkdir -p "$FAKE_HOME"
-for w in hs-ledger hs-pdf-gen hs-gateway; do
+for w in hs-ledger hs-pdf-gen; do
   mkdir -p "$FAKE_HOME/horizon-shield/workers/$w"
   printf '{ "name": "%s" }\n' "$w" > "$FAKE_HOME/horizon-shield/workers/$w/wrangler.jsonc"
 done
+mkdir -p "$FAKE_HOME/hs-core-private/hs-agreement-intake"
+printf '{ "name": "hs-agreement-intake" }\n' > "$FAKE_HOME/hs-core-private/hs-agreement-intake/wrangler.jsonc"
 FAKE_TOKEN="$(printf 'a1%.0s' $(seq 32))"   # 64 hex built at run time, so no key-shaped literal sits in the repo
 printf '%s\n' "$FAKE_TOKEN" > "$FAKE_HOME/.hs_ledger_token"
 chmod 600 "$FAKE_HOME/.hs_ledger_token"
@@ -64,7 +66,7 @@ echo "--rotate (dry-run):"
 O="$WORK/rotate.out"; run "$O" --  --rotate
 check "exit 0" '[ "$(rc "$O")" = 0 ]'
 check "order: generate, put hs-ledger, probe new, move, pdf-gen, gateway, Actions" \
-  'in_order "$O" "STEP: generate a new value" "STEP: put the new LEDGER_ADMIN_TOKEN to hs-ledger" "STEP: probe hs-ledger with the new value" "STEP: move" "STEP: put LEDGER_ADMIN_TOKEN to hs-pdf-gen" "STEP: put LEDGER_ADMIN_TOKEN to hs-gateway" "STEP: set GitHub Actions secret"'
+  'in_order "$O" "STEP: generate a new value" "STEP: put the new LEDGER_ADMIN_TOKEN to hs-ledger" "STEP: probe hs-ledger with the new value" "STEP: move" "STEP: put LEDGER_ADMIN_TOKEN to hs-pdf-gen" "STEP: put LEDGER_ADMIN_TOKEN to hs-agreement-intake" "STEP: set GitHub Actions secret"'
 check "each wrangler put is the printf pipe shape run in the worker dir" \
   '[ "$(grep -c "printf %s \"\$V\" | npx --yes wrangler secret put LEDGER_ADMIN_TOKEN" "$O")" = 3 ]'
 check "gh reads the value from a file on stdin" 'grep -qF "gh secret set LEDGER_ADMIN_TOKEN --repo ogasurfproject-jpg/horizon-shield <" "$O"'
@@ -74,11 +76,11 @@ check "key manager reminder is printed" 'grep -qF "鍵マネージャ" "$O"'
 check "no 64-hex string and not the fake token in the output" 'no_secret "$O"'
 check "dry-run left the key file unchanged and made no .new" '[ "$(cksum < "$FAKE_HOME/.hs_ledger_token")" = "$BEFORE_SUM" ] && [ ! -e "$FAKE_HOME/.hs_ledger_token.new" ]'
 
-echo "--rotate, hs-gateway put fails:"
-O="$WORK/rotate_fail.out"; run "$O" DRYRUN_FAIL=hs-gateway -- --rotate
+echo "--rotate, hs-agreement-intake put fails:"
+O="$WORK/rotate_fail.out"; run "$O" DRYRUN_FAIL=hs-agreement-intake -- --rotate
 check "exit 1" '[ "$(rc "$O")" = 1 ]'
 check "names where the new value is and where the old value is" \
-  'grep -q "新しい値: hs-ledger" "$O" && grep -q "新しい値: keyfile" "$O" && grep -q "新しい値: hs-pdf-gen" "$O" && grep -q "古い値:   hs-gateway" "$O"'
+  'grep -q "新しい値: hs-ledger" "$O" && grep -q "新しい値: keyfile" "$O" && grep -q "新しい値: hs-pdf-gen" "$O" && grep -q "古い値:   hs-agreement-intake" "$O"'
 check "says how to finish (--sync)" 'grep -qF "bash ops/rotate_ledger_admin_token.sh --sync" "$O"'
 check "Actions is still attempted after a worker fails" 'grep -qF "STEP: set GitHub Actions secret" "$O"'
 check "no 64-hex string in the failure output" 'no_secret "$O"'
@@ -99,7 +101,7 @@ echo "--sync (dry-run):"
 O="$WORK/sync.out"; run "$O" -- --sync
 check "exit 0" '[ "$(rc "$O")" = 0 ]'
 check "order: check file, probe, pdf-gen, gateway, Actions" \
-  'in_order "$O" "STEP: check" "STEP: probe hs-ledger with" "STEP: put LEDGER_ADMIN_TOKEN to hs-pdf-gen" "STEP: put LEDGER_ADMIN_TOKEN to hs-gateway" "STEP: set GitHub Actions secret"'
+  'in_order "$O" "STEP: check" "STEP: probe hs-ledger with" "STEP: put LEDGER_ADMIN_TOKEN to hs-pdf-gen" "STEP: put LEDGER_ADMIN_TOKEN to hs-agreement-intake" "STEP: set GitHub Actions secret"'
 check "hs-ledger is not put without --include-ledger" '! grep -qF "to hs-ledger" "$O"'
 check "no 64-hex string" 'no_secret "$O"'
 
@@ -128,9 +130,11 @@ O="$WORK/sync_mode.out"; run "$O" -- --sync
 check "mode 644 is reported as a chmod 600 (dry-run does not change it)" 'grep -qF "chmod 600" "$O" && [ "$(stat -c %a "$FAKE_HOME/.hs_ledger_token" 2>/dev/null || stat -f %Lp "$FAKE_HOME/.hs_ledger_token")" = 644 ]'
 
 echo "missing worker dir:"
-rm -rf "$FAKE_HOME/horizon-shield/workers/hs-gateway"
+rm -rf "$FAKE_HOME/hs-core-private/hs-agreement-intake"
 O="$WORK/nodir.out"; run "$O" -- --rotate
 check "exit 2 before anything is generated" '[ "$(rc "$O")" = 2 ] && ! grep -qF "STEP: generate" "$O"'
+
+check "hs-gateway is no longer a place (its secret was removed on 2026-10-13)" '! grep -qF "hs-gateway" "$O"'
 
 echo
 echo "=== $pass ok, $fail failed ==="

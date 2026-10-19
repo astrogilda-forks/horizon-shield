@@ -12,6 +12,6 @@ if [ ${#TOK} -ne 64 ]; then echo "wrong length ${#TOK}, need 64. Nothing was sen
 RESP=$(curl -s -X POST https://ledger.horizonshield.dev/ledger/append -H "X-Ledger-Key: $TOK" -H "content-type: application/json" --data @"$SEED")
 echo "$RESP" | python3 -m json.tool
 if ! echo "$RESP" | grep -q '"n"'; then echo "append failed, not stamping."; unset TOK; exit 1; fi
-PATH="$HOME/Library/Python/3.9/bin:$PATH" LEDGER_URL="https://ledger.horizonshield.dev" LEDGER_ADMIN_TOKEN="$TOK" python3 "$HOME/jidec/jidec_stamp.py"
+PATH="$HOME/Library/Python/3.9/bin:$PATH" LEDGER_URL="https://ledger.horizonshield.dev" LEDGER_ADMIN_TOKEN="$TOK" python3 "$HOME/horizon-shield/scripts/jidec_stamp.py"
 unset TOK
 echo "done."

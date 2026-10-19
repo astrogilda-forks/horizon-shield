@@ -24,6 +24,20 @@ checks = [
     ("pending only: None, so the entry stays pending", J.earliest_bitcoin_height("verify PendingAttestation('https://a.pool.opentimestamps.org')") is None),
     ("empty or missing output: None", J.earliest_bitcoin_height("") is None and J.earliest_bitcoin_height(None) is None),
 ]
+import datetime  # noqa: E402
+NOW = datetime.datetime(2026, 10, 19, 12, 0, tzinfo=datetime.timezone.utc)
+E = [{"n": 1, "ots_status": "unstamped", "created_at": "2026-10-19T09:00:00Z"},
+     {"n": 2, "ots_status": "unstamped", "created_at": "2026-10-19T03:00:00.000Z"},
+     {"n": 3, "ots_status": "pending", "created_at": "2026-10-16T00:00:00Z", "stamped_at": "2026-10-18T00:00:00Z"},
+     {"n": 4, "ots_status": "pending", "created_at": "2026-10-16T00:00:00Z", "stamped_at": "2026-10-17T00:00:00Z"},
+     {"n": 5, "ots_status": "pending", "created_at": "2026-10-16T00:00:00Z"},
+     {"n": 6, "ots_status": "confirmed", "created_at": "2026-10-01T00:00:00Z"},
+     {"n": 7, "ots_status": "unstamped", "created_at": "not a time"}]
+checks += [
+    ("stalled: unstamped 9 h and pending 60 h are late; 3 h, 36 h, confirmed and an unreadable time are not",
+     [n for n, _, _ in J.stalled(E, set(), NOW)] == [2, 4, 5]),
+    ("stalled: an entry this run moved is not late, whatever its age", [n for n, _, _ in J.stalled(E, {2, 4, 5}, NOW)] == []),
+]
 bad = [n for n, ok in checks if not ok]
 for n, ok in checks:
     print(("ok    " if ok else "FAIL  ") + n)

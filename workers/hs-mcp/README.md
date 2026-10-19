@@ -3,9 +3,10 @@
 **An independent, third-party auditor for Japanese construction & renovation estimates.**
 Ask whether a quoted price is fair. It checks the number against a curated fair-price
 database (*souba-db*, supervised by Toshikatsu Oga  -  30 years in the field), flags known
-overcharge tactics, and  -  uniquely  -  can return a **Bitcoin-anchored, independently
-verifiable signed receipt** (PTKA: Pre-Transaction Knowledge Anchoring). The AI doesn't
-just say *"fair"*  -  it hands you cryptographic proof you can verify yourself.
+overcharge tactics, and can return a **tamper-evident fair-price receipt**: a claim whose
+SHA-256 anyone can recompute, kept by the issuer at a public URL, under PTKA (Pre-Transaction
+Knowledge Anchoring). The AI doesn't just say *"fair"*: it hands you a record you can check
+yourself. What is and is not anchored in Bitcoin is stated below.
 
 Works with any MCP client: **Claude  |  ChatGPT  |  Gemini  |  Perplexity  |  Cursor  |  Cline** and more.
 
@@ -14,14 +15,20 @@ Works with any MCP client: **Claude  |  ChatGPT  |  Gemini  |  Perplexity  |  Cu
 - **Registry name:** `io.github.ogasurfproject-jpg/horizon-shield`
 - Operator: The HORIZONs Inc.  |  https://shield.the-horizons-innovation.com
 
-日本の建設・リフォーム見積もりが適正かを、AIエージェントから「呼べる」中立の第三者監査。相場データ(souba-db／大賀俊勝 実務監修30年)と照合し、過剰請求の赤旗を検知し、**Bitcoinに刻印された検証可能な署名レシート**まで返す。AIが「適正」と言うだけでなく、誰でも自分で検証できる証拠を出す。
+日本の建設・リフォーム見積もりが適正かを、AIエージェントから「呼べる」中立の第三者監査。相場データ(souba-db／大賀俊勝 実務監修30年)と照合し、過剰請求の赤旗を検知し、**誰でも SHA-256 を再計算できる適正価格のレシート**まで返す。AIが「適正」と言うだけでなく、誰でも自分で確かめられる記録を出す。Bitcoin に刻印されているのは PTKA の宣言(block 949356)で、レシート 1 件ずつの刻印はまだ行っていない。
 
 ## Why it's different
-- **Verifiable, not just an opinion.** Fair prices come with a SHA-256 claim hash and a
-  Bitcoin block anchor (via OpenTimestamps / the JIDEC third-party stamping ledger).
-  Recompute the hash yourself  -  you don't have to trust the issuer. *Conferred verifiability.*
-- **Recorded before the quote (PTKA).** A neutral fair price is anchored *before* the
-  contractor's estimate arrives, so it can't be rewritten to suit the seller.
+- **Verifiable, not just an opinion.** A fair-price receipt is a claim with its SHA-256
+  (`SHA-256(JSON.stringify(claim))`), served by the issuer at `https://mcp.horizonshield.dev/ledger/<sha>`.
+  Recompute the hash yourself: once you hold it, the claim cannot change without the hash changing.
+  `audit_estimate` also names the SHA-256 of the souba-db bytes it judged against, and dataset releases
+  are anchored in Bitcoin through the JIDEC ledger (souba-db 2.3.0 = entry 114).
+- **What is anchored and what is not.** The PTKA protocol declaration is anchored in Bitcoin
+  (block 949356, via OpenTimestamps); each receipt carries that block as the protocol it follows.
+  The receipts themselves are kept by the issuer and are **not yet anchored one by one** in JIDEC,
+  so a receipt's issue time rests on the issuer's word until that is done.
+- **Recorded before the quote (PTKA).** A neutral fair price is recorded, with its issue time in
+  the claim, *before* the contractor's estimate arrives.
 - **Field-supervised data.** souba-db is curated from multiple public price sources plus
   30 years of on-site experience  -  not scraped guesses.
 
@@ -32,7 +39,7 @@ Works with any MCP client: **Claude  |  ChatGPT  |  Gemini  |  Perplexity  |  Cu
 |---|---|
 | `get_price_range` | Fair price range (min/avg/max), overcharge danger threshold, unit, trend |
 | `audit_estimate` | Judge a specific quoted amount vs the fair range  -  verdict, % gap, advice |
-| `verify_fair_price` | Fair price as a **tamper-evident signed receipt** (SHA-256 + Bitcoin / PTKA) |
+| `verify_fair_price` | Fair price as a **tamper-evident receipt** (SHA-256 anyone can recompute, under PTKA) |
 | `check_red_flags` | Detect overcharge / high-pressure sales tactics (lump-sum, today-only, etc.) |
 | `preview_reverse_estimate` | Early-stage preview: which way a rough estimate deviates from average |
 | `search_cost_category` | Find a construction-cost category by keyword |

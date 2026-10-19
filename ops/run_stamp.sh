@@ -5,6 +5,8 @@
 #   鍵を回した日から毎時 401 で落ち、誰も気づかなかった(launchd.out は空、stamp.log にだけ FATAL が並んだ)。
 #   鍵は台本に書かない。~/.hs_ledger_token (chmod 600) から読む。無い・長さが違う、なら1バイトも送らない。
 #   作業ディレクトリは手動の append_witness.sh と同じ workers/hs-ledger(claim_N.txt / .ots はそこにある)。
+# 2026-10-19: 走らせるのはリポジトリの scripts/jidec_stamp.py(GitHub の毎時と同じもの)。前は ~/jidec/jidec_stamp.py という
+#   リポジトリ外の写しを回していて、直しを 2 か所に当てる必要があった。止まった entry を赤にする判定もこちらにだけある。
 set -u
 export PATH="/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin:$HOME/Library/Python/3.9/bin:$PATH"
 KEYFILE="$HOME/.hs_ledger_token"
@@ -15,7 +17,7 @@ TOK="$(tr -d '[:space:]' < "$KEYFILE")"
 if [ ${#TOK} -ne 64 ]; then echo "$STAMP FAIL key length ${#TOK}, need 64. nothing sent." >> "$LOG"; exit 1; fi
 cd "$HOME/horizon-shield/workers/hs-ledger" || { echo "$STAMP FAIL cd" >> "$LOG"; exit 1; }
 echo "$STAMP run" >> "$LOG"
-LEDGER_URL="https://ledger.horizonshield.dev" LEDGER_ADMIN_TOKEN="$TOK" python3 "$HOME/jidec/jidec_stamp.py" >> "$LOG" 2>&1
+LEDGER_URL="https://ledger.horizonshield.dev" LEDGER_ADMIN_TOKEN="$TOK" python3 "$HOME/horizon-shield/scripts/jidec_stamp.py" >> "$LOG" 2>&1
 rc=$?
 unset TOK
 echo "$STAMP rc=$rc" >> "$LOG"

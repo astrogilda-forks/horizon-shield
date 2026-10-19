@@ -164,10 +164,12 @@ jobs:
           done
           echo "変わった頁: $CHANGED_PAGES / $COUNT 枚"
           git commit -m "$INDUSTRY: auto-publish, ${CHANGED_PAGES} of ${COUNT} pages changed (門を通過)"
+          ok=0
           for i in 1 2 3 4; do
-            if git push origin main; then break; fi
+            if git push origin main; then ok=1; break; fi
             echo "push retry $i"; sleep $((2**i))
           done
+          [ "$ok" = 1 ] || { echo "::error::push failed 4 times"; exit 1; }
           echo "published=true" >> "$GITHUB_OUTPUT"
 
   indexnow:

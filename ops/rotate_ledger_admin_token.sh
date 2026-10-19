@@ -3,10 +3,14 @@
 #
 # hs-ledger への書き込み鍵 (header X-Ledger-Key) を、置き場所すべてで同じ値にそろえる。社長の Mac で走らせる。
 #
-# 同じ値が要る場所 (2026-10-13 時点):
+# 同じ値が要る場所 (2026-10-19 時点):
 #   1. hs-ledger    の worker secret LEDGER_ADMIN_TOKEN   (鍵を確かめる側)
 #   2. hs-pdf-gen   の worker secret LEDGER_ADMIN_TOKEN   (台帳へ追記する)
-#   3. hs-gateway   の worker secret LEDGER_ADMIN_TOKEN   (台帳へ追記する。未投入なら追記を飛ばす作り)
+#   3. hs-agreement-intake の worker secret LEDGER_ADMIN_TOKEN (合意・契約・実行の日次の束ねを台帳へ追記する。
+#      private、~/hs-core-private/hs-agreement-intake。HS_INTAKE_DIR で場所を変えられる)
+#      2026-10-19: ここが一覧から漏れていた。10-13 の回転でこの worker だけ古い値のまま残り、10-14 から毎日の
+#      束ねが 401 で戻され、SEKI の execution が台帳に入らなかった (失敗は worker の中で黙って待ちに戻る作り)。
+#   hs-gateway は 2026-10-13 に TOshi が secret を消し、台帳へ書かない状態に戻した。この台本は入れない。
 #   4. GitHub Actions secret LEDGER_ADMIN_TOKEN of ogasurfproject-jpg/horizon-shield (.github/workflows/jidec-stamp.yml)
 #   5. ~/.hs_ledger_token (64 桁の 16 進、mode 600。ops/run_stamp.sh が毎時読む)
 # この台本が触らない場所 (終わりの一覧で思い出させる):
@@ -15,7 +19,7 @@
 #
 # 使い方:
 #   bash ops/rotate_ledger_admin_token.sh                     = --sync
-#   bash ops/rotate_ledger_admin_token.sh --sync              今の ~/.hs_ledger_token を確かめて、2 3 4 に配る
+#   bash ops/rotate_ledger_admin_token.sh --sync              今の ~/.hs_ledger_token を確かめて、2 3 4 に配る (3 だけ配るなら --sync で全部配って構わない、同じ値の入れ直し)
 #   bash ops/rotate_ledger_admin_token.sh --sync --include-ledger
 #                                                             1 にも入れる (先に 1 に入れて、200 を確かめてから配る)
 #   bash ops/rotate_ledger_admin_token.sh --rotate            新しい値を作り、1 に入れて 200 を確かめてから 5 2 3 4
@@ -42,7 +46,9 @@ REPO="${HS_REPO:-$HOME/horizon-shield}"
 KEYFILE="$HOME/.hs_ledger_token"
 NEWFILE="$HOME/.hs_ledger_token.new"
 PROBE_URL="https://ledger.horizonshield.dev/ledger/pending"
-OTHER_WORKERS="hs-pdf-gen hs-gateway"
+OTHER_WORKERS="hs-pdf-gen hs-agreement-intake"
+INTAKE_DIR="${HS_INTAKE_DIR:-$HOME/hs-core-private/hs-agreement-intake}"
+wdir() { case "$1" in hs-agreement-intake) printf '%s' "$INTAKE_DIR" ;; *) printf '%s' "$REPO/workers/$1" ;; esac; }
 
 MODE="sync"; INCLUDE_LEDGER=0; DRY=0
 for a in "$@"; do
@@ -63,7 +69,7 @@ trap cleanup EXIT
 trap 'echo; echo "interrupted"; [ "$MODE" = "rotate" ] && rotate_failure_report; exit 1' INT TERM
 
 # 状態の記録 (値は持たない)。STATE_<place> = old | new | same | failed | skipped | unknown
-PLACES="hs-ledger hs-pdf-gen hs-gateway actions keyfile"
+PLACES="hs-ledger hs-pdf-gen hs-agreement-intake actions keyfile"
 setst() { eval "STATE_${1//-/_}=\"\$2\""; }
 getst() { eval "printf '%s' \"\${STATE_${1//-/_}:-not-run}\""; }
 for p in $PLACES; do setst "$p" "not-run"; done
@@ -105,16 +111,17 @@ gen_new() { # $1 = dest file
 
 wr_put() { # $1 = worker, $2 = file with the value. 0 when wrangler printed Success
   local w="$1" f="$2" log="$TMPD/wrangler_$1.log" v rc
-  if [ ! -f "$REPO/workers/$w/wrangler.jsonc" ] && [ ! -f "$REPO/workers/$w/wrangler.toml" ]; then
-    echo "  $w: $REPO/workers/$w に wrangler の設定が無い。put しない。"
+  local d; d="$(wdir "$w")"
+  if [ ! -f "$d/wrangler.jsonc" ] && [ ! -f "$d/wrangler.toml" ]; then
+    echo "  $w: $d に wrangler の設定が無い。put しない。"
     return 1
   fi
   if [ "$DRY" = 1 ]; then
-    echo "[dry-run] (cd $REPO/workers/$w && printf %s \"\$V\" | npx --yes wrangler secret put $NAME)"
+    echo "[dry-run] (cd $d && printf %s \"\$V\" | npx --yes wrangler secret put $NAME)"
     if [ "${DRYRUN_FAIL:-}" = "$w" ]; then echo "X [ERROR] simulated failure" > "$log"; else echo "Success! Uploaded secret $NAME" > "$log"; fi
   else
     v="$(readval "$f")"
-    ( cd "$REPO/workers/$w" && printf %s "$v" | npx --yes wrangler secret put "$NAME" ) > "$log" 2>&1
+    ( cd "$d" && printf %s "$v" | npx --yes wrangler secret put "$NAME" ) > "$log" 2>&1
     rc=$?
     v=
   fi
@@ -153,7 +160,7 @@ preflight() {
     if command -v gh >/dev/null 2>&1 && ! gh auth status >/dev/null 2>&1; then echo "  gh is not logged in (gh auth login)"; missing=1; fi
   fi
   for w in hs-ledger $OTHER_WORKERS; do
-    [ -d "$REPO/workers/$w" ] || { echo "  missing worker dir: $REPO/workers/$w"; missing=1; }
+    [ -d "$(wdir "$w")" ] || { echo "  missing worker dir: $(wdir "$w")"; missing=1; }
   done
   if [ $missing -ne 0 ]; then echo "  始める前の確認で止めた。何も変えていない。"; exit 2; fi
   echo "  ok"
@@ -186,7 +193,7 @@ finish() {
     case "$p" in
       hs-ledger) label="hs-ledger worker secret" ;;
       hs-pdf-gen) label="hs-pdf-gen worker secret" ;;
-      hs-gateway) label="hs-gateway worker secret" ;;
+      hs-agreement-intake) label="hs-agreement-intake worker secret" ;;
       actions) label="GitHub Actions secret ($REPO_SLUG)" ;;
       keyfile) label="$KEYFILE" ;;
     esac
@@ -221,7 +228,7 @@ rotate_failure_report() {
   if [ "$(getst keyfile)" = "new" ]; then
     echo "   新しい値は $KEYFILE にある (hs-ledger はこの値で 200)。失敗した場所だけ入れ直すには:"
     echo "     bash ops/rotate_ledger_admin_token.sh --sync"
-    echo "   (--sync は $KEYFILE が 200 を返すことを確かめてから hs-pdf-gen, hs-gateway, Actions に配る)"
+    echo "   (--sync は $KEYFILE が 200 を返すことを確かめてから hs-pdf-gen, hs-agreement-intake, Actions に配る)"
   else
     echo "   新しい値は $NEWFILE にある (mode 600)。"
     echo "   もう一度 --rotate を走らせると、$NEWFILE が hs-ledger で 200 を返すならそれを使って続きをやる。"

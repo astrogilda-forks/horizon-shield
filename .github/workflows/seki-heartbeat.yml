@@ -2,8 +2,9 @@ name: seki heartbeat
 
 # Once a day, whether or not anyone else calls it, the first SEKI door is exercised on its own paid path and every
 # earlier day is settled once Bitcoin has confirmed it (workers/hs-ledger/nenrin/seki-heartbeat/heartbeat.py).
-#   23:17 UTC  settle the earlier days that are confirmed, then today's three calls (report admitted, audit and compare
-#              refused). The records reach the ledger before its 00:30 UTC batch.
+#   21:17 UTC  settle the earlier days that are confirmed, then today's three calls (report admitted, audit and compare
+#              refused). GitHub starts scheduled runs up to about two hours late (at 23:17 the records landed after the
+#              00:30 UTC batch, a day late); 21:17 leaves that margin. A day still unsettled 72 hours after it ran is red.
 # Secrets (repository Actions secrets, never printed): SEKI_AGENT_SEED_B64 (the demonstration contract's contractor key,
 # a 32 byte Ed25519 seed in base64) and HSG_STORE_TOKEN_SEKI_DEMO (the gateway token of the store hs-seki-demo).
 # The door's key is not here; it stays in Cloudflare. Principal, agent and door are all The HORIZONs Co., Ltd.
@@ -11,7 +12,7 @@ name: seki heartbeat
 
 on:
   schedule:
-    - cron: "17 23 * * *"
+    - cron: "17 21 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -58,10 +59,12 @@ jobs:
             echo "Nothing new to record." | tee -a "$GITHUB_STEP_SUMMARY"
           else
             git commit -m "seki-heartbeat: $(date -u +%Y-%m-%d) ($(git diff --cached --name-only | wc -l | tr -d ' ') files)"
+            ok=0
             for i in 1 2 3; do
-              git pull --rebase origin main && git push && break
+              if git pull --rebase origin main && git push; then ok=1; break; fi
               sleep 5
             done
+            [ "$ok" = 1 ] || { echo "::error::push failed 3 times"; exit 1; }
           fi
       - name: a failed step is a failed run
         if: steps.settle.outcome == 'failure' || steps.run.outcome == 'failure'

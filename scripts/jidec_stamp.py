@@ -21,6 +21,12 @@ got it into a block). The entry now records the earliest block, not whichever on
 `ots info` happens to print first: entry 86's .ots carries 971024 and 971047 and was
 recorded as 971047. The earliest attestation is the tightest bound on when the bytes
 existed, and it is what invinoveritas's slot-log index and our checkers name.
+
+2026-10-19: a stamp that makes no progress is red. Before this, a calendar that never
+returned an .ots, or an entry that never reached a Bitcoin block, left every run green
+while the entry stayed unstamped or pending for good. Now the run fails when an entry it
+could not move is unstamped for more than UNSTAMPED_HOURS after it was created, or
+pending for more than PENDING_HOURS after it was stamped (created, if no stamp time).
 """
 import os, re, sys, json, base64, subprocess, urllib.request, urllib.error, datetime
 
@@ -65,6 +71,40 @@ def earliest_bitcoin_height(info):
     """The lowest block height among the BitcoinBlockHeaderAttestation lines of `ots info`, or None."""
     heights = [int(h) for h in re.findall(r"BitcoinBlockHeaderAttestation\((\d+)\)", info or "")]
     return min(heights) if heights else None
+
+
+UNSTAMPED_HOURS = 6
+PENDING_HOURS = 48
+
+
+def _ts(v):
+    try:
+        return datetime.datetime.fromisoformat(str(v).replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def stalled(entries, moved, now):
+    """Entries this run could not move that have waited too long: [(n, status, hours)]."""
+    out = []
+    for e in entries:
+        if not isinstance(e, dict) or e.get("n") in moved:
+            continue
+        st = e.get("ots_status")
+        if st == "unstamped":
+            t, lim = _ts(e.get("created_at")), UNSTAMPED_HOURS
+        elif st == "pending":
+            t, lim = _ts(e.get("stamped_at")) or _ts(e.get("created_at")), PENDING_HOURS
+        else:
+            continue
+        if t is None:
+            continue
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=datetime.timezone.utc)
+        hours = (now - t).total_seconds() / 3600
+        if hours > lim:
+            out.append((e.get("n"), st, round(hours, 1)))
+    return out
 
 
 def run(cmd):
@@ -130,16 +170,26 @@ def main():
     print(f"pending entries: {len(pending)}")
     changed = 0
     errors = []
+    moved = set()
     for e in pending:
         n = e.get("n") if isinstance(e, dict) else None
         try:
-            changed += stamp_one(e)
+            c = stamp_one(e)
+            changed += c
+            if c:
+                moved.add(n)
         except Exception as ex:
             errors.append(n)
             print(f"[{n}] ERROR: {ex}")
     print(f"done. updated {changed} entr{'y' if changed==1 else 'ies'}; {len(errors)} error(s).")
+    late = stalled(pending, moved | set(errors), datetime.datetime.now(datetime.timezone.utc))
+    for n, st, h in late:
+        print(f"[{n}] STALLED: {st} for {h} hours (limit {UNSTAMPED_HOURS if st == 'unstamped' else PENDING_HOURS})")
     if errors:
         sys.stderr.write("failed entries: %s\n" % ", ".join(str(n) for n in errors))
+        sys.exit(1)
+    if late:
+        sys.stderr.write("stalled entries: %s\n" % ", ".join(str(n) for n, _, _ in late))
         sys.exit(1)
 
 

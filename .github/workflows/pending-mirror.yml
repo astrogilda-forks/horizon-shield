@@ -44,7 +44,9 @@ jobs:
           fi
           N=$(git diff --cached --name-only | wc -l | tr -d ' ')
           git commit -m "pending-v0: $(date -u +%Y-%m-%dT%H:%MZ) ($N files, as served)"
+          ok=0
           for i in 1 2 3; do
-            git pull --rebase origin main && git push && break
+            if git pull --rebase origin main && git push; then ok=1; break; fi
             sleep 5
           done
+          [ "$ok" = 1 ] || { echo "::error::push failed 3 times"; exit 1; }

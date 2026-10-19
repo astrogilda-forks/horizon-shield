@@ -1,0 +1,95 @@
+name: core tests
+
+# The offline suites of the layers everything else stands on, run on every change to them and once a week
+# (2026-10-19). Before this they ran only by hand before a deploy: the ledger, the gate, the pilot responder,
+# settle core's 128 vectors and its exercise record, TSUGI's recovery suites, the stamper, the SEKI heartbeat and
+# the ledger token rotation. All of them inject their own fetch or serve on 127.0.0.1; none needs a secret.
+# Not here: the agreement suite (agreement-v0/run_all.mjs, longer than ten minutes) and hs-mcp (its source is not in
+# this repository).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "workers/hs-ledger/**"
+      - "workers/hs-verify-gate/**"
+      - "workers/hs-pilot/**"
+      - "workers/a2a-card-sign/**"
+      - "scripts/jidec_stamp*.py"
+      - "ops/rotate_ledger_admin_token*.sh"
+      - ".github/workflows/core-tests.yml"
+  pull_request:
+    paths:
+      - "workers/hs-ledger/**"
+      - "workers/hs-verify-gate/**"
+      - "workers/hs-pilot/**"
+      - "workers/a2a-card-sign/**"
+      - "scripts/jidec_stamp*.py"
+      - "ops/rotate_ledger_admin_token*.sh"
+      - ".github/workflows/core-tests.yml"
+  schedule:
+    - cron: "41 4 * * 2"     # Tuesdays 04:41 UTC, so a suite that rots without a change is still seen
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
+          node-version: "22"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: the gate's one npm dependency (@a2a-js/sdk, from the lockfile)
+        working-directory: workers/a2a-card-sign
+        run: npm ci --no-audit --no-fund
+      - name: python dependency of the suites that call Python (pinned)
+        run: python -m pip install --disable-pip-version-check "cryptography==46.0.7"
+      - name: hs-ledger (every test/*.test.mjs)
+        run: |
+          bad=0
+          for t in workers/hs-ledger/test/*.test.mjs; do
+            if node "$t" > out.txt 2>&1; then echo "ok    $t  $(tail -n 1 out.txt)"; else echo "FAIL  $t"; tail -n 30 out.txt; bad=$((bad + 1)); fi
+          done
+          [ "$bad" = 0 ]
+      - name: hs-verify-gate (test/run_all.mjs)
+        working-directory: workers/hs-verify-gate
+        run: node test/run_all.mjs
+      - name: hs-pilot
+        run: node workers/hs-pilot/test/pilot.test.mjs
+      - name: TSUGI recovery (recovery-v0/run_all.mjs)
+        run: node workers/hs-ledger/nenrin/recovery-v0/run_all.mjs
+
+  python:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: the one dependency (pinned)
+        run: python -m pip install --disable-pip-version-check "cryptography==46.0.7"
+      - name: settle core, 128 vectors against the reference
+        working-directory: workers/hs-ledger/nenrin/musubi-v0/settle-core-v0
+        run: python -I -B run_reference.py
+      - name: settle core, the exercise record (EXERCISE.txt)
+        working-directory: workers/hs-ledger/nenrin/musubi-v0/settle-core-v0
+        run: python -I -B exercise_inputs.py --check
+      - name: the stamper
+        run: python -I -B scripts/jidec_stamp_test.py
+      - name: the SEKI heartbeat
+        run: python -I -B workers/hs-ledger/nenrin/seki-heartbeat/heartbeat.py --selftest
+      - name: the ledger token rotation (dry run with a fake home)
+        run: bash ops/rotate_ledger_admin_token.test.sh
