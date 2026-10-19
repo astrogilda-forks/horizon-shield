@@ -1,0 +1,52 @@
+{
+  "industry": "nursing",
+  "company": "合同会社アップス",
+  "count": 5,
+  "ratio": {
+    "geo": 4,
+    "aeo": 3,
+    "llmo": 2,
+    "webmcp": 1
+  },
+  "urls": [
+    "https://shield.the-horizons-innovation.com/care/member-8d18360c/",
+    "https://shield.the-horizons-innovation.com/care/member-8d18360c/faq/1/",
+    "https://shield.the-horizons-innovation.com/care/member-8d18360c/about/choose/",
+    "https://shield.the-horizons-innovation.com/care/member-8d18360c/about/verify/",
+    "https://shield.the-horizons-innovation.com/care/member-8d18360c/mcp/"
+  ],
+  "pages": [
+    {
+      "type": "window",
+      "url": "https://shield.the-horizons-innovation.com/care/member-8d18360c/",
+      "path": "care/member-8d18360c/index.html"
+    },
+    {
+      "type": "aeo",
+      "url": "https://shield.the-horizons-innovation.com/care/member-8d18360c/faq/1/",
+      "path": "care/member-8d18360c/faq/1/index.html"
+    },
+    {
+      "type": "llmo",
+      "url": "https://shield.the-horizons-innovation.com/care/member-8d18360c/about/choose/",
+      "path": "care/member-8d18360c/about/choose/index.html"
+    },
+    {
+      "type": "llmo",
+      "url": "https://shield.the-horizons-innovation.com/care/member-8d18360c/about/verify/",
+      "path": "care/member-8d18360c/about/verify/index.html"
+    },
+    {
+      "type": "webmcp",
+      "url": "https://shield.the-horizons-innovation.com/care/member-8d18360c/mcp/",
+      "path": "care/member-8d18360c/mcp/index.html"
+    }
+  ],
+  "paths": [
+    "care/member-8d18360c/index.html",
+    "care/member-8d18360c/faq/1/index.html",
+    "care/member-8d18360c/about/choose/index.html",
+    "care/member-8d18360c/about/verify/index.html",
+    "care/member-8d18360c/mcp/index.html"
+  ]
+}
