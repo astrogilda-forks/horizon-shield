@@ -69,6 +69,7 @@ tf.close()
 _k2, did2 = B.did_key_from_pem(tf.name)
 os.unlink(tf.name)
 ok("did_key_from_pem == did:key from raw pub (one key, both identities)", did2 == W)
+ok("did_key_from_privkey == did:key from raw pub (the path the walk uses to sign)", B.did_key_from_privkey(wpriv) == W)
 
 tampered = dict(obs)
 tampered["conduct"] = {"verdict": "FAIL", "detail_ref": obs["conduct"]["detail_ref"]}

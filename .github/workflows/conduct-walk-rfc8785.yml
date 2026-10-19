@@ -2,17 +2,17 @@ name: conduct-walk rfc8785 corpus
 
 # a2a_conduct_walk.py の RFC 8785 正規化を、agent-evidence-vectors 0.20.0 が同梱する a2a-tck の正規化コーパス
 # (vectors-a2a-jcs-v01 の rfc8785 の 53 件) に通す。版は固定する。2026-10-19 に小数を書くよう直した (#55)。
+# 2026-10-19 から、a2a-conduct-walk の下のどのファイルが変わっても selftest 4 本も回す
+# (walk 87、helpers 17、MCP server 15、task_bind)。PyPI へ出す workflow と同じ版の部品で回す。
 
 on:
   push:
     paths:
-      - "workers/hs-ledger/nenrin/a2a-conduct-walk/a2a_conduct_walk.py"
-      - "workers/hs-ledger/nenrin/a2a-conduct-walk/rfc8785_corpus_check.py"
+      - "workers/hs-ledger/nenrin/a2a-conduct-walk/**"
       - ".github/workflows/conduct-walk-rfc8785.yml"
   pull_request:
     paths:
-      - "workers/hs-ledger/nenrin/a2a-conduct-walk/a2a_conduct_walk.py"
-      - "workers/hs-ledger/nenrin/a2a-conduct-walk/rfc8785_corpus_check.py"
+      - "workers/hs-ledger/nenrin/a2a-conduct-walk/**"
       - ".github/workflows/conduct-walk-rfc8785.yml"
   workflow_dispatch:
 
@@ -27,7 +27,17 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - name: install the pinned corpus
-        run: python -m pip install --disable-pip-version-check agent-evidence-vectors==0.20.0
+      - name: install the pinned corpus and the selftest dependencies
+        run: python -m pip install --disable-pip-version-check agent-evidence-vectors==0.20.0 cryptography==46.0.7 rfc8785==0.1.4
       - name: rfc8785 vectors
         run: python workers/hs-ledger/nenrin/a2a-conduct-walk/rfc8785_corpus_check.py
+      - name: selftests (walk, helpers, MCP server, task bind)
+        working-directory: workers/hs-ledger/nenrin/a2a-conduct-walk
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          set -euo pipefail
+          python -B walk_selftest.py
+          python -B a2a_conduct_selftest.py
+          python -B witness_mcp_selftest.py
+          python -B task_bind_selftest.py
