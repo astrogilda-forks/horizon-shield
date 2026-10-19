@@ -1,6 +1,6 @@
 {
   "schema": "hs-adoption-count-v1",
-  "measured_at": "2026-10-16T10:11:07Z",
+  "measured_at": "2026-10-19T05:15:57Z",
   "metrics": {
     "independent_implementations": {
       "count": 19,
@@ -257,14 +257,16 @@
     "independent_witnesses": {
       "count": 3,
       "ledger": {
-        "ledger_n": 106,
-        "ledger_head": "7f0d48f7b057b9985c977a3c449225c8ab32093f2ccdcfff704f7021211579f2",
-        "witness_batches": 24,
+        "ledger_n": 119,
+        "ledger_head": "07f166f3ad5dda91a21f86bf5067935803007731540f8946a7b0c21c3b97d072",
+        "witness_batches": 27,
         "unreadable_entries": [],
+        "refused_shared_host": [],
         "signed_domains": {
           "api.babyblueviper.com": [
             57,
-            61
+            61,
+            107
           ],
           "kuangmi-bit.github.io": [
             71,
@@ -276,7 +278,10 @@
             89,
             96,
             100,
-            103
+            103,
+            107,
+            111,
+            116
           ],
           "pipavlo82.github.io": [
             65,
@@ -377,7 +382,13 @@
         }
       ],
       "published_not_counted": [],
-      "repo_not_counted": []
+      "repo_not_counted": [],
+      "repo_test_material_skipped": {
+        "dirs": [
+          "workers/hs-ledger/nenrin/musubi-v0/settle-core-v0"
+        ],
+        "json_files": 570
+      }
     },
     "external_evidence_producers": {
       "count": 4,
