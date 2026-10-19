@@ -226,9 +226,11 @@ function knownQids(industryKey) {
 }
 
 /* 設問1問ぶんの入力欄。id が qid そのものなので、送信側は data-q を拾うだけでよい。 */
-function qField(qid, text) {
-  return '<div class="qq"><label for="' + escHtml(qid) + '">' + escHtml(text) + '</label>' +
-    '<textarea id="' + escHtml(qid) + '" data-q></textarea></div>';
+function qField(qid, text, val) {
+  var v = (val == null) ? "" : String(val);
+  var done = v.trim() ? ' <span class="done">回答済</span>' : '';
+  return '<div class="qq"><label for="' + escHtml(qid) + '">' + escHtml(text) + done + '</label>' +
+    '<textarea id="' + escHtml(qid) + '" data-q>' + escHtml(v) + '</textarea></div>';
 }
 
 /* ------------------------------ 返事待ちの設問 / 見積書の受け口 ------------------------------ */
@@ -358,6 +360,11 @@ function hearingForm(token, store, profile, pendingQs) {
      「同じことは、もうお尋ねしません」と昨日送った。紙も同じ約束を守る。
      何ももらっていない相手には、これまでと1バイトも変わらない紙が出る。 */
   const pf = profile || {};
+  const pfExtra = (pf.extra && typeof pf.extra === "object" && !Array.isArray(pf.extra)) ? pf.extra : {};
+  const ansText = function (q) { const e = pfExtra[q]; if (e == null) return ""; if (typeof e === "object") { if (e.attributed === "ambiguous") return ""; return safeStr(e.text, 2000); } return safeStr(e, 2000); };
+  const answeredCount = Object.keys(pfExtra).filter(function (q) { return ansText(q).trim(); }).length;
+  let answeredFocus = "";
+  for (const _fk of AP.FOCUS_KEYS) { const _bank = AP.QUESTION_BANK[_fk] || {}; if (Object.keys(_bank).some(function (q) { return ansText(q).trim(); })) { answeredFocus = _fk; break; } }
   const company = escHtml(safeStr((store && store.company) || pf.company, 120) || W.fallbackName);
   const memberNo = escHtml(safeStr(store && store.member_no, 20) || "");
   const pfArea = escHtml(safeStr(pf.area, 80));
@@ -375,10 +382,12 @@ function hearingForm(token, store, profile, pendingQs) {
   // 業種ごとの設問(45問前後)。重い順に出す。閉じた状態で置く。
   const ibank = IND.industryBank(industry) || {};
   const ibankIds = Object.keys(ibank).sort((a, b) => (ibank[b].w || 0) - (ibank[a].w || 0));
-  const ibankHtml = ibankIds.map((q) => qField(q, ibank[q].text)).join("");
+  const ibankHtml = ibankIds.map((q) => qField(q, ibank[q].text, ansText(q))).join("");
+  const ibankHasAns = ibankIds.some((q) => !!ansText(q).trim());
 
   // 可視性の設問。業種を問わず全員に同じだけ効く。
-  const visHtml = VIS.visibilityQids().map((q) => qField(q, VIS.visibilityQuestion(q).text)).join("");
+  const visHtml = VIS.visibilityQids().map((q) => qField(q, VIS.visibilityQuestion(q).text, ansText(q))).join("");
+  const visHasAns = VIS.visibilityQids().some((q) => !!ansText(q).trim());
 
   // 目的別の設問。選ばれた目的の組だけを表示する(切り替えは下の script)。
   const focusOpts = AP.FOCUS_KEYS
@@ -389,7 +398,7 @@ function hearingForm(token, store, profile, pendingQs) {
     return '<div class="fg" data-f="' + k + '" style="display:none;">' +
       Object.keys(bank).map(function (q) {
         const ov = IND.focusQuestion(industry, k, q);
-        return qField(q, (ov && ov.text) || bank[q].text);
+        return qField(q, (ov && ov.text) || bank[q].text, ansText(q));
       }).join("") + '</div>';
   }).join("");
 
@@ -428,11 +437,14 @@ function hearingForm(token, store, profile, pendingQs) {
 '.inapp-warn{display:none;margin:10px 0 0;padding:11px 12px;border:1px solid #C79E5A;border-radius:9px;background:rgba(199,158,90,.08);font-size:13px;line-height:1.7;}' +
 '.inapp-warn b{color:#C79E5A;}' +
 '.estfstat{font-size:12px;color:#B9C4D4;margin-top:6px;min-height:16px;}' +
+'.resume{border:1px solid #15847A;border-left:3px solid #3FE0CE;border-radius:10px;padding:12px 14px;background:rgba(63,224,206,.07);font-size:13px;color:#B9C4D4;margin-bottom:20px;line-height:1.7;}.resume b{color:#3FE0CE;display:block;margin-bottom:4px;}' +
+'.done{color:#3FE0CE;font-size:11px;border:1px solid #15847A;border-radius:999px;padding:1px 7px;margin-left:6px;font-weight:600;white-space:nowrap;}' +
 '</style></head><body><div class="wrap">' +
 '<div class="brand">' + escHtml(W.brand) + '</div>' +
 '<h1>' + escHtml(W.heading) + '</h1>' +
 '<p class="lead">' + escHtml(W.lead) + '</p>' +
 '<div class="who">' + escHtml(W.whoLabel) + ': <b>' + company + '</b>' + (memberNo ? ' ・ 加盟 <b>' + memberNo + '</b>' : '') + '</div>' +
+(answeredCount > 0 ? '<div class="resume"><b>✓ これまでに ' + answeredCount + '問 お答えいただいています</b>必須項目は回答済みです。下にはお預かりしている回答を表示しています。追記・修正は任意で、このまま閉じても問題ありません。</div>' : '') +
 '<form id="f">' +
 
 /* 2026-09-11 返事待ちの設問を、用紙の一番上に出す。
@@ -445,7 +457,7 @@ function hearingForm(token, store, profile, pendingQs) {
     '<p class="hint">分かるところだけで結構です。空のままでも送れます。</p>' +
     pendingQs.map(function(q){
       return '<div class="qq"><label for="pq_' + escHtml(q.qid) + '">' + escHtml(q.text) + '</label>' +
-             '<textarea id="pq_' + escHtml(q.qid) + '" data-pq="' + escHtml(q.qid) + '"></textarea></div>';
+             '<textarea id="pq_' + escHtml(q.qid) + '" data-pq="' + escHtml(q.qid) + '">' + escHtml(ansText(q.qid)) + '</textarea></div>';
     }).join('') +
     '</div>'
   : '') +
@@ -518,12 +530,12 @@ W.works.map(function(w){return '<span class="chip'+(pfWorkSet.has(w)?' on':'')+'
 '<label>代表的な事例 <span class="opt">任意</span> <span class="hint">(1行に1件。金額は要りません)</span></label>' +
 '<textarea id="cases" placeholder="' + escHtml(W.casesPh) + '"></textarea>' +
 
-'<details><summary>AIと検索から見つけてもらうために (' + VIS.visibilityQids().length + '問)</summary>' +
+'<details' + (visHasAns ? ' open' : '') + '><summary>AIと検索から見つけてもらうために (' + VIS.visibilityQids().length + '問)</summary>' +
 '<p class="hint">所在をはっきりさせ、よく聞かれる問いに答えの形で答えておく。ここは業種を問わず同じだけ効きます。</p>' +
 visHtml + '</details>' +
 
 (ibankIds.length ?
-'<details><summary>' + escHtml(W.bankHeading) + ' (' + ibankIds.length + '問)</summary>' +
+'<details' + (ibankHasAns ? ' open' : '') + '><summary>' + escHtml(W.bankHeading) + ' (' + ibankIds.length + '問)</summary>' +
 '<p class="hint">' + escHtml(W.bankLead) + '</p>' +
 ibankHtml + '</details>'
 : '') +
@@ -588,6 +600,7 @@ W.recruitRoles.map(function(w){return '<span class="chip" data-w="'+escHtml(w)+'
 'document.getElementById("addFaq").addEventListener("click",function(){var d=document.createElement("div");d.className="card faq";d.innerHTML=\'<input type="text" class="q" placeholder="質問"><textarea class="a" placeholder="答え" style="margin-top:8px;"></textarea>\';document.getElementById("faqs").appendChild(d);});' +
 'var focusSel=document.getElementById("focus");' +
 'if(focusSel)focusSel.addEventListener("change",function(){var v=focusSel.value;document.querySelectorAll(".fg").forEach(function(g){g.style.display=(g.getAttribute("data-f")===v)?"block":"none";});});' +
+(answeredFocus ? 'if(focusSel){focusSel.value=' + JSON.stringify(answeredFocus) + ';document.querySelectorAll(".fg").forEach(function(g){g.style.display=(g.getAttribute("data-f")===focusSel.value)?"block":"none";});}' : '') +
 'function val(id){var e=document.getElementById(id);return e?e.value.trim():"";}' +
 /* 見積書は1枚ずつ生のまま上げる。まとめて base64 にすると、電波の悪い現場で 1枚失敗した時に全部やり直しになる。1枚ずつなら、通ったものは残る。 */
 'function uploadEstFiles(base,cb){var inp=document.getElementById("estFiles");if(!inp||!inp.files||!inp.files.length){cb(null);return;}var files=[].slice.call(inp.files).slice(0,6),i=0,okc=0,errs=[];var st=document.getElementById("estFileStat");function next(){if(i>=files.length){if(st)st.textContent=okc?("見積書 "+okc+"件を送りました"):"";cb({ok:okc,err:errs});return;}var f=files[i++];if(st)st.textContent="送信中 "+i+"/"+files.length+" "+f.name;fetch(base+"/file?name="+encodeURIComponent(f.name),{method:"POST",headers:{"Content-Type":f.type||"application/octet-stream"},body:f}).then(function(r){return r.json();}).then(function(res){if(res&&res.ok)okc++;else errs.push(f.name+": "+((res&&res.error)||"失敗"));next();}).catch(function(){errs.push(f.name+": 通信エラー");next();});}next();}' +
