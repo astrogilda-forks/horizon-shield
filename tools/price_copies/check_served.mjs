@@ -8,7 +8,9 @@
 //   hs-pdf-gen   GET https://hs-pdf-gen.oga-surf-project.workers.dev/souba-dataset   (public: version and sha256)
 //   gateway      GET https://hs-reference-gateway.oga-surf-project.workers.dev/reference/souba-db.json
 //                (needs X-Gateway-Token; without GATEWAY_TOKEN in the environment it is reported as not measured)
-// Exit 1 when a copy that could be read differs, or hs-pdf-gen cannot be read. The fix is to put the file into R2:
+// Exit 1 when a copy that could be read differs, when hs-pdf-gen cannot be read, or when GATEWAY_TOKEN is set and the
+// gateway cannot be read (a 401 there means the token given here is not the one the gateway holds; on 2026-10-19 the
+// first run with a mistaken secret went green, which is why a set token that fails is red). The fix for a copy is:
 //   npx wrangler r2 object put <bucket>/souba-db.json --remote --file data/souba-db.json --content-type application/json
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -37,7 +39,7 @@ export async function measure(fileBytes, fetchImpl = globalThis.fetch, gatewayTo
       rows.push(b ? { copy: "reference gateway (R2 hs-reference-data)", version: r.headers.get("x-reference-version"), sha256: sha(b), same: sha(b) === want } : { copy: "reference gateway (R2 hs-reference-data)", read_failed: "HTTP " + r.status });
     } catch (e) { rows.push({ copy: "reference gateway (R2 hs-reference-data)", read_failed: String(e && e.message || e) }); }
   }
-  return { want, rows, red: rows.some((x) => x.same === false || (x.read_failed && x.copy.startsWith("hs-pdf-gen"))) };
+  return { want, rows, red: rows.some((x) => x.same === false || Boolean(x.read_failed)) };
 }
 
 async function main() {
@@ -51,7 +53,12 @@ async function main() {
     else console.log((x.same ? "same         " : "DIFFERS      ") + x.copy + "  " + x.version + "  " + x.sha256.slice(0, 16));
   }
   if (rows.some((x) => x.same === false)) console.log("A copy differs from data/souba-db.json: put the file into that bucket (see the head of this script).");
-  else if (red) console.log("hs-pdf-gen could not be read, so nothing is said about its copy; run again, then check the worker.");
+  else if (red) {
+    for (const x of rows.filter((y) => y.read_failed)) {
+      if (x.copy.startsWith("reference gateway") && x.read_failed === "HTTP 401") console.log("The gateway refused GATEWAY_TOKEN: the value given here is not the one hs-reference-gateway holds. Set the secret from ~/.hs_gateway_token.");
+      else console.log(x.copy + " could not be read, so nothing is said about its copy; run again, then check the worker.");
+    }
+  }
   return red ? 1 : 0;
 }
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main().then((c) => process.exit(c), (e) => { console.error(e); process.exit(1); });
