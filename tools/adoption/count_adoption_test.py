@@ -67,6 +67,12 @@ def main():
     c = C.contracts(our)
     check("committed contracts both sides signed have an outside party", c["with_an_outside_party"] >= 1, True)
     check("no contract without us is invented", c["with_no_party_from_us"], 0)
+    check("test vectors and copied inputs under settle-core-v0 are not read as contracts",
+          [x["file"] for x in c["items"] if "/settle-core-v0/" in x["file"]], [])
+    check("the skipped test material is reported, not hidden", c["repo_test_material_skipped"]["json_files"] > 0, True)
+    check("a reserved test name is never a party",
+          [C.reserved_name(x) for x in ["principal.synthetic.invalid", "a.example", "example.com", "x.example.org", "agent-passport.org", "examplecorp.com", "localhost"]],
+          [True, True, True, True, False, False, True])
     # a contract two outside parties keep in their own repository, listed in the registry by URL
     try:
         import base64, tempfile

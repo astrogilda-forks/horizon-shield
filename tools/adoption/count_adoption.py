@@ -14,7 +14,10 @@ Five numbers, each from a source a stranger can read, none typed by hand:
                                re-verification pool (recovery-v0/pool_report.json) is reported beside it.
   external_contracts           MUSUBI contracts signed by both sides with a party that is not this project, and
                                separately those with no party from this project at all.
-                               Source: the signed contracts committed under workers/hs-ledger/nenrin/musubi-v0.
+                               Source: the signed contracts committed under workers/hs-ledger/nenrin/musubi-v0,
+                               except settle-core-v0/ (test vectors signed by synthetic keys, and copies of a
+                               contract its parties publish, which is counted from registry.json instead). In the
+                               repository, a party named with a reserved test name (RFC 2606, RFC 6761) is not counted.
   external_evidence_producers  distinct outside identities that signed anything the evidence layer keeps: a
                                ledger witness walk, a contract, an agreement record. The union of the above.
   outside_trace_pins           distinct TRACE signing keys (RFC 7638 thumbprints) not listed as ours whose records
@@ -45,6 +48,12 @@ POOL = os.path.join(ROOT, "workers", "hs-ledger", "nenrin", "recovery-v0", "pool
 DIVERSITY = os.path.join(ROOT, "workers", "hs-ledger", "nenrin", "recovery-v0", "witness_diversity_report.json")
 MUSUBI = os.path.join(ROOT, "workers", "hs-ledger", "nenrin", "musubi-v0")
 AGREEMENT = os.path.join(ROOT, "workers", "hs-ledger", "nenrin", "agreement-v0")
+# Directories under musubi-v0 that hold test material, not contracts anyone made: settle-core-v0/vectors are signed by
+# synthetic keys, and settle-core-v0/inputs/peer31 is a copy of a contract its parties publish (counted from
+# registry.json). Found 2026-10-19: the 2026-10-17 vectors made the offline test count 46 contracts with no party from us.
+NOT_CONTRACT_RECORDS = ("settle-core-v0",)
+RESERVED_SUFFIXES = (".test", ".example", ".invalid", ".localhost")
+RESERVED_NAMES = ("example.com", "example.net", "example.org", "localhost", "test", "example", "invalid")
 TEMPLATE = "ogasurfproject-jpg/conduct-witness-template"
 OWNER = "ogasurfproject-jpg"
 UA = "HORIZON-SHIELD-adoption-count/1.0 (+https://github.com/ogasurfproject-jpg/horizon-shield/tree/main/tools/adoption)"
@@ -91,6 +100,12 @@ SHARED_HOSTS = {
 def shared_host(identity):
     s = (identity or "").lower()
     return s in SHARED_HOSTS or (s.startswith("s3.") and s.endswith(".amazonaws.com"))
+
+
+def reserved_name(identity):
+    """A reserved test name (RFC 2606, RFC 6761) names nobody, so it is never a party."""
+    s = (identity or "").lower().rstrip(".")
+    return s in RESERVED_NAMES or s.endswith(RESERVED_SUFFIXES) or any(s.endswith("." + n) for n in RESERVED_NAMES[:3])
 
 
 def ours(identity, our):
@@ -290,8 +305,12 @@ def recompute_settlement(row, contract_bytes, csha):
 
 
 def contracts(our, published=(), published_problems=()):
-    out, repo_refused = [], []
+    out, repo_refused, repo_skipped = [], [], 0
+    skip = tuple(os.path.join(MUSUBI, d) + os.sep for d in NOT_CONTRACT_RECORDS)
     for p in tracked(MUSUBI, True):
+        if p.startswith(skip):
+            repo_skipped += 1
+            continue
         try:
             d = json.load(io.open(p, encoding="utf-8"))
         except Exception:
@@ -314,6 +333,8 @@ def contracts(our, published=(), published_problems=()):
         except Exception as e:
             repo_refused.append({"file": os.path.relpath(p, ROOT), "why": "contract_v0 not importable: %s" % e}); continue
         domains = [str(x.get("domain") or "").lower() for x in d["parties"] if isinstance(x, dict)]
+        if any(reserved_name(x) for x in domains):
+            repo_refused.append({"file": os.path.relpath(p, ROOT), "why": "a party has a reserved test name"}); continue
         cid = d["contract_id"]
         if any(o["contract_id"] == cid for o in out):
             continue
@@ -327,7 +348,8 @@ def contracts(our, published=(), published_problems=()):
     settled = [c for c in with_outside if (c.get("settlement") or {}).get("recomputed_identical") and c["settlement"].get("status") == "final"]
     return {"signed_by_both": len(out), "with_an_outside_party": len(with_outside), "with_no_party_from_us": len(without_us),
             "settled_final_recomputed": len(settled),
-            "items": out, "published_not_counted": list(published_problems), "repo_not_counted": repo_refused}
+            "items": out, "published_not_counted": list(published_problems), "repo_not_counted": repo_refused,
+            "repo_test_material_skipped": {"dirs": ["workers/hs-ledger/nenrin/musubi-v0/" + d for d in NOT_CONTRACT_RECORDS], "json_files": repo_skipped}}
 
 
 def agreements(our):
