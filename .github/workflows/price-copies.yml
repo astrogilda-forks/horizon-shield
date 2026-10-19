@@ -1,0 +1,42 @@
+name: price copies
+
+# The souba-db copies production serves must be the bytes of data/souba-db.json (2026-10-19).
+# hs-pdf-gen (paid PDF diagnosis, R2 hs-pdfs) is read through its public GET /souba-dataset; the reference gateway
+# (R2 hs-reference-data, read by KIRA on LINE and the reverse estimate) needs the repository secret GATEWAY_TOKEN and
+# is reported as not measured without it. Red when a copy differs: put data/souba-db.json into that bucket.
+# It also runs on every change to data/souba-db.json, so a new release that has not reached R2 yet shows at once.
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "data/souba-db.json"
+      - "tools/price_copies/**"
+      - ".github/workflows/price-copies.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
+          node-version: "22"
+      - name: the check's rules, offline
+        run: node tools/price_copies/check_served_test.mjs
+      - name: the bands hs-hearing copies
+        run: node tools/price_copies/check_bands.mjs
+      - name: what production serves
+        env:
+          GATEWAY_TOKEN: ${{ secrets.GATEWAY_TOKEN }}
+        run: |
+          set -o pipefail
+          node tools/price_copies/check_served.mjs | tee -a "$GITHUB_STEP_SUMMARY"
