@@ -152,9 +152,10 @@ jobs:
           if [ -n "$prev" ]; then
             echo "### 前の走行との差" >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
-            python3 tools/survey/survey_diff.py --walk "$prev" "$out" \
-              --json "verify-directory/survey/data/survey_diff_${stamp}.json" \
-              | tee -a "$GITHUB_STEP_SUMMARY"
+            ( set -o pipefail
+              python3 tools/survey/survey_diff.py --walk "$prev" "$out" \
+                --json "verify-directory/survey/data/survey_diff_${stamp}.json" \
+                | tee -a "$GITHUB_STEP_SUMMARY" )
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           fi
 

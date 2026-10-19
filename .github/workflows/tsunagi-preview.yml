@@ -58,7 +58,7 @@ jobs:
         env:
           IDS: ${{ steps.rows.outputs.ids }}
         run: |
-          python3 tools/tsunagi/run_board.py --out preview-out --only "$IDS" | tee -a "$GITHUB_STEP_SUMMARY"
+          ( set -o pipefail; python3 tools/tsunagi/run_board.py --out preview-out --only "$IDS" | tee -a "$GITHUB_STEP_SUMMARY" )
           echo "" >> "$GITHUB_STEP_SUMMARY"
           sed -n '/^| implementation/,/^$/p' preview-out/BOARD.md >> "$GITHUB_STEP_SUMMARY"
       - name: Nothing to run

@@ -90,7 +90,7 @@ jobs:
           fi
           echo "### 母集団の動き" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          python3 tools/survey/survey_diff.py --count "$old" "$new" | tee -a "$GITHUB_STEP_SUMMARY"
+          ( set -o pipefail; python3 tools/survey/survey_diff.py --count "$old" "$new" | tee -a "$GITHUB_STEP_SUMMARY" )
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: 索引を作り直す

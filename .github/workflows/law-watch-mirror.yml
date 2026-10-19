@@ -27,7 +27,7 @@ jobs:
       - name: fetch the three pages and keep only the anchors
         run: |
           python3 workers/hs-law-watch/tools/mirror_fetch.py --selftest
-          python3 workers/hs-law-watch/tools/mirror_fetch.py --out data/law-watch/mirror | tee -a "$GITHUB_STEP_SUMMARY"
+          ( set -o pipefail; python3 workers/hs-law-watch/tools/mirror_fetch.py --out data/law-watch/mirror | tee -a "$GITHUB_STEP_SUMMARY" )
       - name: record
         run: |
           git config user.name "hs-law-watch-mirror"

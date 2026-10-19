@@ -33,7 +33,7 @@ jobs:
         run: node workers/hs-ledger/nenrin/evidence-v0/mirror_records.test.mjs
       - name: mirror verdict bytes whose hash matches their name
         run: |
-          node workers/hs-ledger/nenrin/evidence-v0/mirror_records.mjs --out workers/hs-ledger/nenrin/evidence-v0/records | tee -a "$GITHUB_STEP_SUMMARY"
+          ( set -o pipefail; node workers/hs-ledger/nenrin/evidence-v0/mirror_records.mjs --out workers/hs-ledger/nenrin/evidence-v0/records | tee -a "$GITHUB_STEP_SUMMARY" )
       - name: record (only when a new verdict was mirrored)
         run: |
           git config user.name "hs-evidence-mirror"

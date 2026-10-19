@@ -26,11 +26,14 @@ export const AE_LINEAGE_VERSION = "AE-EVALUATION-LINEAGE-v1";
 export const PROBLEM_TYPE = "https://iana.org/assignments/http-problem-types#ae-required";
 const GATE = "https://gate.horizonshield.dev";
 export const ACTION_PROFILE = GATE + "/ae/action/renovation-payment-v1";
-export const POLICY_ID = GATE + "/ae/policy/fair-price-before-payment-v1";
+// v2 (2026-10-19): the receipt must be for the work the action names. Under v1 any fresh receipt satisfied any payment,
+// whatever work it priced, so an agent could present the receipt of one job before paying for another.
+export const POLICY_ID = GATE + "/ae/policy/fair-price-before-payment-v2";
+const POLICY_V1_ID = GATE + "/ae/policy/fair-price-before-payment-v1";
 export const EVIDENCE_TYPE = GATE + "/ae/e/hs-fair-price-receipt-v1";
 export const EVIDENCE_PROFILE = GATE + "/ae/p/claim-sha256-v1";
 export const PRESENT_AS = GATE + "/ae/p/claim-sha256-v1";
-export const EVALUATION_PROFILE = GATE + "/ae/eval/receipt-recompute-v1";
+export const EVALUATION_PROFILE = GATE + "/ae/eval/receipt-recompute-v2";
 export const PREDICATE_RECORDED = GATE + "/ae/pred/receipt-recorded-by-issuer";
 export const PREDICATE_RECOMPUTES = GATE + "/ae/pred/claim-hash-recomputes";
 const RECEIPT_STORE = "https://mcp.horizonshield.dev/ledger/";
@@ -45,10 +48,27 @@ export const POLICY = {
   requires: [{
     requirement_id: "fair-price-verdict",
     type: EVIDENCE_TYPE,
+    meaning: "A HORIZON SHIELD fair-price receipt (verify_fair_price) recorded by the issuer under its claim_sha256, whose hash recomputes from the claim, issued no more than max_age_sec before evaluation, for the work the action names: the action's work is exactly the receipt's claim.work (copy it from the receipt).",
+    max_age_sec: MAX_AGE_SEC,
+  }],
+  supersedes: POLICY_V1_ID,
+  not_claimed: "The verdict is reference evidence about price, not an approval of the contractor or a guarantee of the work. The amount of the payment is not compared with the fair range; the receipt says what the work should cost, the payer decides.",
+};
+
+// The v1 policy, still served so that its digest can be recomputed; challenges are no longer issued under it.
+export const POLICY_V1 = {
+  policy_id: POLICY_V1_ID,
+  title: "Fair-price evidence before paying for Japanese renovation work",
+  applies_to: ACTION_PROFILE,
+  requires: [{
+    requirement_id: "fair-price-verdict",
+    type: EVIDENCE_TYPE,
     meaning: "A HORIZON SHIELD fair-price receipt (verify_fair_price) for the quoted work, recorded by the issuer under its claim_sha256, whose hash recomputes from the claim, issued no more than max_age_sec before evaluation.",
     max_age_sec: MAX_AGE_SEC,
   }],
   not_claimed: "The verdict is reference evidence about price, not an approval of the contractor or a guarantee of the work.",
+  superseded_by: POLICY_ID,
+  superseded_because: "v1 did not compare the receipt's work with the action's, so a fresh receipt for any work satisfied any payment",
 };
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -142,6 +162,8 @@ export async function evaluate({ challenge, action, presentation, readReceipt, n
       else {
         receipt = got;
         if ((await sha256Hex(JSON.stringify(got.claim))) !== claim) reasons.push("evidence_not_verified");
+        // v2: the receipt is evidence for this action only when it prices the work the action names.
+        if (typeof action.work !== "string" || action.work !== got.claim.work) reasons.push("action_not_matched");
         const issued = Date.parse(got.claim.issued_at || got.issued_at || "");
         const age = (now - issued) / 1000;
         const maxAge = Number.isInteger(req.max_age_sec) ? req.max_age_sec : MAX_AGE_SEC;
@@ -181,15 +203,17 @@ export const AE_USAGE = {
     "POST /ae/challenge": "{action: {...}, audience?: string} -> 403 application/problem+json with evidence_challenge",
     "POST /ae/evaluate": "{challenge, action, presentation: {claim_sha256, presenter?}} -> 200 {lineage: AE-EVALUATION-LINEAGE-v1, receipt}",
   },
-  obtain_evidence: "Call verify_fair_price on " + OBTAIN_MCP + " and present verification.claim_sha256 from its answer.",
-  limits: "Stateless challenges, no capacity bounds or anti-abuse budgets (the draft's section 5 items). The gate checks that the issuer recorded the receipt, that its hash recomputes and its age; it does not re-judge the price. Receipts are not yet anchored one by one in the hash-chained JIDEC ledger.",
+  obtain_evidence: "Call verify_fair_price on " + OBTAIN_MCP + ", put its fair_price_claim.work into the action as action.work, and present verification.claim_sha256 from its answer.",
+  action: "A JSON object. action.work must be exactly the receipt's claim.work, or the evaluation is action_not_matched (policy v2, 2026-10-19; under v1 the work was not compared).",
+  limits: "Stateless challenges, no capacity bounds or anti-abuse budgets (the draft's section 5 items). The gate checks that the issuer recorded the receipt, that its hash recomputes, its age, and that it prices the work the action names; it does not re-judge the price or compare the payment's amount with the fair range. From 2026-10-19 the issuer's receipts of each UTC day are listed in one JIDEC ledger entry the next day; the gate does not yet require a receipt to be in such an entry (a fresh receipt is usually not in one yet).",
 };
 
 export async function aeRoute(request, url, env, helpers) {
   const { json, problem } = helpers;
   const path = url.pathname;
   if (path === "/ae" || path === "/ae/") return json(AE_USAGE);
-  if (path === "/ae/policy/fair-price-before-payment-v1") return json({ ...POLICY, policy_digest: await digestOf(POLICY) });
+  if (path === "/ae/policy/fair-price-before-payment-v2") return json({ ...POLICY, policy_digest: await digestOf(POLICY) });
+  if (path === "/ae/policy/fair-price-before-payment-v1") return json({ ...POLICY_V1, policy_digest: await digestOf(POLICY_V1) });
   if (path === "/ae/challenge" && request.method === "POST") {
     let body; try { body = await request.json(); } catch (_e) { return json({ error: "body must be JSON" }, 400); }
     if (!validAction(body && body.action)) return json({ error: "action must be a non-empty JSON object" }, 400);

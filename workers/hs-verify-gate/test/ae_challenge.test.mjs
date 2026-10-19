@@ -8,7 +8,7 @@ const CLAIM = { work: "外壁塗装 30坪 一式（シリコン）", unit: "一�
 const HASH = "eb13e05b296badc97463e3d05d23d2a0261b6aeb3dcd4bc9fdbedb91cb8b99e3";
 const STORE = { [HASH]: { claim: CLAIM, claim_sha256: HASH, bitcoin_block: 949356, issued_at: CLAIM.issued_at } };
 const T0 = Date.parse(CLAIM.issued_at);
-const ACTION = { kind: "renovation-payment", work: "外壁塗装 30坪", payee: "example-contractor", amount_jpy: 1100000 };
+const ACTION = { kind: "renovation-payment", work: CLAIM.work, payee: "example-contractor", amount_jpy: 1100000 };
 const read = async (h) => STORE[h] || null;
 let fail = 0, n = 0;
 const ok = (c, m) => { n++; console.log((c ? "ok   " : "FAIL ") + m); if (!c) fail++; };
@@ -35,6 +35,12 @@ L = await ev({ challenge: chLate, now: T31 });
 ok(L.reason_ids.includes("stale_evidence"), "a receipt older than max_age_sec is stale");
 L = await ev({ action: { ...ACTION, amount_jpy: 2000000 } });
 ok(L.reason_ids.includes("action_not_matched"), "a different action does not match the challenge");
+// policy v2 (2026-10-19): the receipt must price the work the action names
+for (const [why, act] of [["a receipt for other work", { ...ACTION, work: "屋根塗装 30坪" }], ["the user's own wording, not the receipt's", { ...ACTION, work: "外壁塗装 30坪" }], ["an action that names no work", { kind: "renovation-payment", payee: "example-contractor", amount_jpy: 1100000 }]]) {
+  const c = (await issueChallenge({ action: act, now: T0, id: "c-w" })).evidence_challenge;
+  const LL = (await evaluate({ challenge: c, action: act, presentation: { claim_sha256: HASH }, readReceipt: read, now: T0 + 600e3, id: "e-w" })).lineage;
+  ok(LL.outcome === "UNSATISFIED" && LL.reason_ids.length === 1 && LL.reason_ids[0] === "action_not_matched", "v2: " + why + " does not satisfy the challenge (action_not_matched)");
+}
 L = await ev({ presentation: {} });
 ok(L.reason_ids.includes("missing_evidence"), "no claim_sha256 is missing evidence");
 L = await ev({ presentation: { claim_sha256: "a".repeat(64) } });
@@ -57,9 +63,12 @@ const body = await r.json();
 ok(challengeProblems(body.evidence_challenge).length === 0, "the served challenge is well formed");
 r = await worker.fetch(new Request(O + "/ae"), {}, CTX);
 ok(r.status === 200 && (await r.json()).routes, "GET /ae documents the routes");
-r = await worker.fetch(new Request(O + "/ae/policy/fair-price-before-payment-v1"), {}, CTX);
+r = await worker.fetch(new Request(O + "/ae/policy/fair-price-before-payment-v2"), {}, CTX);
 const pol = await r.json();
-ok(pol.policy_digest === body.evidence_challenge.policy_digest, "the served policy has the digest the challenge carries");
+ok(pol.policy_digest === body.evidence_challenge.policy_digest && body.evidence_challenge.policy_id.endsWith("-v2"), "the served v2 policy has the digest the challenge carries");
+r = await worker.fetch(new Request(O + "/ae/policy/fair-price-before-payment-v1"), {}, CTX);
+const pol1 = await r.json();
+ok(r.status === 200 && pol1.superseded_by && pol1.policy_digest !== pol.policy_digest, "the v1 policy is still served, marked superseded, with its own digest");
 let called = "";
 const ENV_SVC = { MCP_SVC: { fetch: async (u) => { called = String(u); return new Response(JSON.stringify(STORE[HASH]), { status: 200, headers: { "content-type": "application/json" } }); } } };
 const ch2 = body.evidence_challenge;

@@ -1,6 +1,6 @@
 # Use HORIZON SHIELD with OpenAI Codex
 
-HORIZON SHIELD is a remote MCP server that audits Japanese construction and renovation estimates against fair-price data, and returns tamper-evident fair-price receipts whose SHA-256 anyone can recompute (the PTKA declaration and the dataset releases are anchored in Bitcoin; the receipts are not yet anchored one by one). It is read-only and needs no API key.
+HORIZON SHIELD is a remote MCP server that audits Japanese construction and renovation estimates against fair-price data, and returns tamper-evident fair-price receipts whose SHA-256 anyone can recompute (the PTKA declaration and the dataset releases are anchored in Bitcoin, and from 2026-10-19 each day's receipts are listed in one JIDEC ledger entry the next day). It is read-only and needs no API key.
 
 OpenAI Codex supports remote streamable HTTP MCP servers natively, so you can add HORIZON SHIELD with a single URL.
 

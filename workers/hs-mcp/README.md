@@ -15,7 +15,7 @@ Works with any MCP client: **Claude  |  ChatGPT  |  Gemini  |  Perplexity  |  Cu
 - **Registry name:** `io.github.ogasurfproject-jpg/horizon-shield`
 - Operator: The HORIZONs Inc.  |  https://shield.the-horizons-innovation.com
 
-日本の建設・リフォーム見積もりが適正かを、AIエージェントから「呼べる」中立の第三者監査。相場データ(souba-db／大賀俊勝 実務監修30年)と照合し、過剰請求の赤旗を検知し、**誰でも SHA-256 を再計算できる適正価格のレシート**まで返す。AIが「適正」と言うだけでなく、誰でも自分で確かめられる記録を出す。Bitcoin に刻印されているのは PTKA の宣言(block 949356)で、レシート 1 件ずつの刻印はまだ行っていない。
+日本の建設・リフォーム見積もりが適正かを、AIエージェントから「呼べる」中立の第三者監査。相場データ(souba-db／大賀俊勝 実務監修30年)と照合し、過剰請求の赤旗を検知し、**誰でも SHA-256 を再計算できる適正価格のレシート**まで返す。AIが「適正」と言うだけでなく、誰でも自分で確かめられる記録を出す。Bitcoin に刻印されているのは PTKA の宣言(block 949356)と、データの各版と、2026-10-19 からは毎日のレシートの一覧(前日分を翌日に JIDEC 台帳の 1 entry として刻む)。
 
 ## Why it's different
 - **Verifiable, not just an opinion.** A fair-price receipt is a claim with its SHA-256
@@ -25,8 +25,10 @@ Works with any MCP client: **Claude  |  ChatGPT  |  Gemini  |  Perplexity  |  Cu
   are anchored in Bitcoin through the JIDEC ledger (souba-db 2.3.0 = entry 114).
 - **What is anchored and what is not.** The PTKA protocol declaration is anchored in Bitcoin
   (block 949356, via OpenTimestamps); each receipt carries that block as the protocol it follows.
-  The receipts themselves are kept by the issuer and are **not yet anchored one by one** in JIDEC,
-  so a receipt's issue time rests on the issuer's word until that is done.
+  From 2026-10-19 the receipts of each UTC day are listed at `https://mcp.horizonshield.dev/ledger/day/<date>`,
+  and the next day that list (every receipt that recomputes) becomes one JIDEC ledger entry, stamped to
+  Bitcoin by the ledger's stamping run (`.github/workflows/receipt-anchor.yml`, copies in `ops/receipts/`).
+  That bounds a receipt's issue time from above by about a day. Receipts issued before 2026-10-19 were not listed.
 - **Recorded before the quote (PTKA).** A neutral fair price is recorded, with its issue time in
   the claim, *before* the contractor's estimate arrives.
 - **Field-supervised data.** souba-db is curated from multiple public price sources plus

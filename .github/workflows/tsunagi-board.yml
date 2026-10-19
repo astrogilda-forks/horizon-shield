@@ -38,7 +38,9 @@ jobs:
       - name: How the board reads each output, offline
         run: python3 tools/tsunagi/run_board_test.py
       - name: Run every implementation (refereed corpora, tonight's fresh bundles, history, badges)
-        run: python3 tools/tsunagi/run_board.py --out board-out --history-in ops/tsunagi/history.json --keep-reports board-out/reports | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -o pipefail
+          python3 tools/tsunagi/run_board.py --out board-out --history-in ops/tsunagi/history.json --keep-reports board-out/reports | tee -a "$GITHUB_STEP_SUMMARY"
       # board-out/reports holds every crosswalk comparison report the board scored, byte for byte (VATE #84). It is
       # kept in this artifact for 30 days and not committed; board.json carries each report's sha256 either way.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

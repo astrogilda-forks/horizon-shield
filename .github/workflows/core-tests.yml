@@ -2,8 +2,8 @@ name: core tests
 
 # The offline suites of the layers everything else stands on, run on every change to them and once a week
 # (2026-10-19). Before this they ran only by hand before a deploy: the ledger, the gate, the pilot responder,
-# settle core's 128 vectors and its exercise record, TSUGI's recovery suites, the stamper, the SEKI heartbeat and
-# the ledger token rotation. All of them inject their own fetch or serve on 127.0.0.1; none needs a secret.
+# settle core's 128 vectors and its exercise record, TSUGI's recovery suites, the stamper, the SEKI heartbeat,
+# the ledger token rotation, the receipt anchor, and the price bands hs-hearing copies from souba-db. All of them inject their own fetch or serve on 127.0.0.1; none needs a secret.
 # Not here: the agreement suite (agreement-v0/run_all.mjs, longer than ten minutes) and hs-mcp (its source is not in
 # this repository).
 
@@ -17,6 +17,10 @@ on:
       - "workers/a2a-card-sign/**"
       - "scripts/jidec_stamp*.py"
       - "ops/rotate_ledger_admin_token*.sh"
+      - "data/souba-db.json"
+      - "workers/hs-hearing/src/autopilot.js"
+      - "tools/price_copies/**"
+      - "tools/receipts/**"
       - ".github/workflows/core-tests.yml"
   pull_request:
     paths:
@@ -26,6 +30,10 @@ on:
       - "workers/a2a-card-sign/**"
       - "scripts/jidec_stamp*.py"
       - "ops/rotate_ledger_admin_token*.sh"
+      - "data/souba-db.json"
+      - "workers/hs-hearing/src/autopilot.js"
+      - "tools/price_copies/**"
+      - "tools/receipts/**"
       - ".github/workflows/core-tests.yml"
   schedule:
     - cron: "41 4 * * 2"     # Tuesdays 04:41 UTC, so a suite that rots without a change is still seen
@@ -70,6 +78,10 @@ jobs:
         run: node workers/hs-pilot/test/pilot.test.mjs
       - name: TSUGI recovery (recovery-v0/run_all.mjs)
         run: node workers/hs-ledger/nenrin/recovery-v0/run_all.mjs
+      - name: the price bands hs-hearing copies trace to souba-db
+        run: node tools/price_copies/check_bands.mjs
+      - name: the daily receipt anchor, offline
+        run: node tools/receipts/anchor_day_test.mjs
 
   python:
     runs-on: ubuntu-24.04

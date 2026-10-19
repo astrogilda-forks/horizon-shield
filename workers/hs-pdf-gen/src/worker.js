@@ -17255,6 +17255,9 @@ async function diagnose(params, env) {
   }
   const sobaText = await sobaObj.text();
   const sobaData = JSON.parse(sobaText);
+  // 2026-10-19: name the bytes the verdict was judged against (as hs-mcp does), so a paid diagnosis can be traced to a
+  // souba-db release: data/souba-db.json in horizon-shield at the same sha256, anchored in JIDEC per release.
+  const dataset = { version: (sobaData._meta && sobaData._meta.version) || "unversioned", sha256: await hsSha256Hex(sobaText), source: "R2 PDFS_BUCKET souba-db.json" };
   const item = sobaData.categories?.find((c2) => c2.id === koji_type);
   if (!item) {
     throw new Error(`Unknown koji_type: ${koji_type}`);
@@ -17302,7 +17305,8 @@ async function diagnose(params, env) {
     gapPct,
     status,
     statusLabel,
-    statusColor
+    statusColor,
+    dataset
   };
 }
 __name(diagnose, "diagnose");
@@ -19893,6 +19897,16 @@ var worker_default = {
             ntfy: !!env.NTFY_TOPIC_URL
           }
         });
+      }
+      // 2026-10-19: which souba-db the paid diagnosis reads (R2 copy). Compare its sha256 with data/souba-db.json in
+      // horizon-shield; a copy that differs is judging customers on numbers no release names.
+      if (pathname === "/souba-dataset" && request.method === "GET") {
+        const o = await env.PDFS_BUCKET.get("souba-db.json");
+        if (!o) return json({ error: "not_found", read_failed: true, note: "souba-db.json is not in R2; the paid diagnosis cannot run" }, 503);
+        const t = await o.text();
+        let v = "unversioned";
+        try { const d = JSON.parse(t); v = (d._meta && d._meta.version) || v; } catch (_e) { v = "not JSON"; }
+        return json({ schema: "hs-pdf-gen-souba-dataset-v1", version: v, sha256: await hsSha256Hex(t), bytes: new TextEncoder().encode(t).length, source: "R2 PDFS_BUCKET souba-db.json", compare_with: "https://raw.githubusercontent.com/ogasurfproject-jpg/horizon-shield/main/data/souba-db.json" });
       }
       if (pathname === "/canary" && request.method === "GET") {
         var __canaryEnc = new TextEncoder().encode(JSON.stringify(HS_AUDIT_CANARY_EX));

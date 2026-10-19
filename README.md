@@ -409,7 +409,7 @@ The construction cost data server (`https://ccdb.horizonshield.dev/mcp`, fifteen
 audit_estimate(work: "外壁塗装 30坪", quoted_price: 1500000)
 ```
 
-Returns a verdict (for example, overcharge risk), the fair range (min, avg, max), and the gap from the average. `verify_fair_price` additionally returns a SHA-256 fingerprint of the fair price claim under PTKA (the PTKA declaration is anchored in Bitcoin; the receipt itself is kept by the issuer and not yet anchored one by one).
+Returns a verdict (for example, overcharge risk), the fair range (min, avg, max), and the gap from the average. `verify_fair_price` additionally returns a SHA-256 fingerprint of the fair price claim under PTKA (the PTKA declaration is anchored in Bitcoin; the receipt is kept by the issuer, and from 2026-10-19 each day's receipts are listed in one JIDEC ledger entry the next day).
 
 ## Verify a verdict yourself
 

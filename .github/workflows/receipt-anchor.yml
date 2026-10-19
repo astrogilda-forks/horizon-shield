@@ -1,0 +1,60 @@
+name: receipt anchor
+
+# Once a day, the fair-price receipts hs-mcp issued the day before (UTC) are listed in one JIDEC ledger entry, so that
+# the ledger's stamping run bounds each of them by a Bitcoin block (tools/receipts/anchor_day.mjs, 2026-10-19).
+# A copy of the day's receipts is kept in ops/receipts/<date>.json and the entry number in ops/receipts/index.json.
+# Red when the day's list cannot be read, when a listed receipt does not recompute, or when the append fails.
+# Secret: LEDGER_ADMIN_TOKEN (the same one jidec-stamp.yml uses; never printed).
+
+on:
+  schedule:
+    - cron: "37 1 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "UTC day to anchor (YYYY-MM-DD); empty = yesterday"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: receipt-anchor
+  cancel-in-progress: false
+
+jobs:
+  anchor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
+          node-version: "22"
+      - name: the job's rules, offline
+        run: node tools/receipts/anchor_day_test.mjs
+      - name: list, recompute and anchor the day
+        env:
+          LEDGER_URL: https://hs-ledger.oga-surf-project.workers.dev
+          LEDGER_ADMIN_TOKEN: ${{ secrets.LEDGER_ADMIN_TOKEN }}
+          DAY: ${{ github.event.inputs.date }}
+        run: |
+          set -o pipefail
+          if [ -n "${DAY:-}" ]; then node tools/receipts/anchor_day.mjs --date "$DAY" --append | tee -a "$GITHUB_STEP_SUMMARY"
+          else node tools/receipts/anchor_day.mjs --append | tee -a "$GITHUB_STEP_SUMMARY"; fi
+      - name: keep the copy and the entry number
+        if: always()
+        run: |
+          git config user.name "hs-receipt-anchor"
+          git config user.email "contact@the-horizons-innovation.com"
+          [ -d ops/receipts ] || exit 0
+          git add ops/receipts
+          git diff --cached --quiet && exit 0
+          git commit -m "receipts: anchor $(date -u -d yesterday +%Y-%m-%d)"
+          ok=0
+          for i in 1 2 3; do
+            if git pull --rebase origin main && git push; then ok=1; break; fi
+            sleep 5
+          done
+          [ "$ok" = 1 ] || { echo "::error::push failed 3 times"; exit 1; }

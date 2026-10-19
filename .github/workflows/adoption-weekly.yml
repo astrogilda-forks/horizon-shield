@@ -40,7 +40,9 @@ jobs:
       - name: Count
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 tools/adoption/count_adoption.py --write | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -o pipefail
+          python3 tools/adoption/count_adoption.py --write | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Keep the count
         run: |

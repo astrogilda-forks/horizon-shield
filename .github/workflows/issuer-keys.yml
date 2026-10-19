@@ -32,7 +32,9 @@ jobs:
       - name: test (fake issuer, no network)
         run: node workers/hs-ledger/nenrin/issuer-keys-v0/issuer_keys.test.mjs
       - name: observe the issuers
-        run: node workers/hs-ledger/nenrin/issuer-keys-v0/observe.mjs --out workers/hs-ledger/nenrin/issuer-keys-v0/log | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -o pipefail
+          node workers/hs-ledger/nenrin/issuer-keys-v0/observe.mjs --out workers/hs-ledger/nenrin/issuer-keys-v0/log | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
