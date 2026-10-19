@@ -1,10 +1,10 @@
 {
- "anchor": "https://ledger.horizonshield.dev/ledger/42",
+ "anchor": "https://ledger.horizonshield.dev/ledger/114",
  "claims": [
   {
    "claim_id": "hs-souba-yane-fukikae-galvalume-eaf9149400dd",
    "id": "yane-fukikae-galvalume",
-   "object_sha256": "b47f251d804e8baeefee47f2e76b959b413b35228c41d6c13d7cf06f958b0a93",
+   "object_sha256": "ec2b222fe512b254cbdd9a8ce4c751cc487619383f15c055a6a28aeb9ad85edd",
    "page": "https://shield.the-horizons-innovation.com/souba/yane-fukikae-galvalume-souba/",
    "question": "屋根をガルバリウムに葺き替える費用相場は？",
    "url": "https://shield.the-horizons-innovation.com/evidence/claims/yane-fukikae-galvalume.json"
@@ -12,7 +12,7 @@
   {
    "claim_id": "hs-souba-shiroari-30tsubo-c60fcc1964d4",
    "id": "shiroari-30tsubo",
-   "object_sha256": "8bc75e4acce7a1a8848be036edd6913430381d2aff5161fc75e2981a473130b4",
+   "object_sha256": "1c746a9429575b74723a77a728d289c472a0cc5dffa6de573690a4b680abc0e2",
    "page": "https://shield.the-horizons-innovation.com/souba/shiroari-30tsubo-hiyou/",
    "question": "シロアリ駆除30坪の費用相場は？",
    "url": "https://shield.the-horizons-innovation.com/evidence/claims/shiroari-30tsubo.json"
@@ -20,7 +20,7 @@
   {
    "claim_id": "hs-souba-yane-cover-galvalume-f774f5d96a4d",
    "id": "yane-cover-galvalume",
-   "object_sha256": "3b2ec1a4324ceadb2de120333032eb81b545e6d68c2680a4b56fc7f9c9e12a1a",
+   "object_sha256": "c648345ca0885a769eede1bf66ce1f9de59beadcedd3b1ee6afef156a7bade1e",
    "page": "https://shield.the-horizons-innovation.com/souba/yane-cover-galvalume-souba/",
    "question": "屋根カバー工法の費用相場は？",
    "url": "https://shield.the-horizons-innovation.com/evidence/claims/yane-cover-galvalume.json"
@@ -28,14 +28,14 @@
   {
    "claim_id": "hs-souba-unit-bath-1616-e2fed6a30ad4",
    "id": "unit-bath-1616",
-   "object_sha256": "a2a1ef55379958203e559107dfefc7ebc8a750fdcc76c3d09891e36aeca8619e",
+   "object_sha256": "d67a1525ecab6cedb5a6eba89100e6f735dd7c3dbeaf2587c6a957006d5900c6",
    "page": "https://shield.the-horizons-innovation.com/souba/unit-bath-1616-souba/",
    "question": "ユニットバス1616の交換費用の相場は？",
    "url": "https://shield.the-horizons-innovation.com/evidence/claims/unit-bath-1616.json"
   }
  ],
  "dataset": "https://shield.the-horizons-innovation.com/data/souba-db.json",
- "dataset_sha256": "85418e4af9d3d727af2eb1c95566aa56f21d8ae1046601bc259baa302515680d",
- "dataset_version": "2.2.0",
+ "dataset_sha256": "7b16600e50ed73b844ff5b2718f04a6dd4d9ace0367982fb8d139db509d023fd",
+ "dataset_version": "2.3.0",
  "schema": "souba-claims-index-v0"
 }

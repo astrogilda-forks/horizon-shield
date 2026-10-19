@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
-import { jcs, sha256hex, sign, verify, publicKeyHex, handleCall, Refusal } from "../src/pilot.mjs";
+import { jcs, sha256hex, sign, verify, publicKeyHex, handleCall, handleVoid, Refusal } from "../src/pilot.mjs";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
@@ -13,9 +13,11 @@ const FIXTURE = { type: "horizon-shield.estimate-fixture.v0", lines: [
   { item: "足場設置 ㎡単価", qty: 240, unit: "㎡", unit_price: 900 }] };
 const env = { RESPONDER_SEED: SEED_X, PRICE: "7000", UNIT: "JPY-testnet", MCP_URL: "mock://mcp", BLOCKS_URL: "mock://blocks" };
 
+let mcpCalls = 0;
 function mockFetch(url, init) {
   const text = (t) => ({ ok: true, status: 200, text: async () => t, json: async () => JSON.parse(t) });
   if (url === "mock://mcp") {
+    mcpCalls++;
     const body = JSON.parse(init.body);
     const w = body.params.arguments.work;
     assert.equal(body.params.arguments.region, undefined);      // no region unless the caller gives one
@@ -99,4 +101,72 @@ test("jcs refuses floats and lone surrogates", () => {
   assert.throws(() => jcs({ a: 1.5 }), (e) => e.code === "number_not_in_profile");
   assert.throws(() => jcs({ a: "\ud800" }), (e) => e.code === "lone_surrogate");
   assert.equal(jcs({ b: [1, { z: null, a: "x" }], a: true }), '{"a":true,"b":[1,{"a":"x","z":null}]}');
+});
+
+// ---- state: one answer per occurrence, and the lost call (Issue #51)
+function fakeKV() {
+  const m = new Map();
+  return { m, async get(k, type) { const v = m.get(k); return v === undefined ? null : type === "json" ? JSON.parse(v) : v; },
+    async put(k, v) { m.set(k, v); } };
+}
+async function voidFor(b, seed = SEED_B) {
+  const caller = await publicKeyHex(seed);
+  return sign({ type: "musubi.ca2a.void-request.v0", caller, request_sha256: b.rs }, seed);
+}
+
+test("with state, a second call for an executed occurrence replays the stored receipt without auditing again", async () => {
+  const b = await build(), senv = { ...env, STATE: fakeKV() };
+  const a = await handleCall(b.body, senv, mockFetch);
+  const n = mcpCalls;
+  const c = await handleCall(b.body, senv, mockFetch);
+  assert.equal(mcpCalls, n);                                   // nothing fetched the second time
+  assert.equal(c.replay, true);
+  assert.equal(jcs(c.receipt), jcs(a.receipt));                 // the same signed bytes, not a new receipt
+  assert.equal(jcs(c.audit), jcs(a.audit));
+  assert.equal(a.replay, undefined);
+});
+
+test("void after the call ran: the receipt comes back, nothing is voided", async () => {
+  const b = await build(), senv = { ...env, STATE: fakeKV() };
+  const a = await handleCall(b.body, senv, mockFetch);
+  const v = await handleVoid({ request: b.request, void: await voidFor(b) }, senv, mockFetch);
+  assert.equal(v.status, "executed");
+  assert.equal(jcs(v.receipt), jcs(a.receipt));
+  assert.equal(senv.STATE.m.has("void:" + b.rs), false);
+  const again = await handleCall(b.body, senv, mockFetch);      // still answered, still the same receipt
+  assert.equal(jcs(again.receipt), jcs(a.receipt));
+});
+
+test("void before any call: a signed non-execution statement, and the occurrence is never executed after", async () => {
+  const b = await build(), senv = { ...env, STATE: fakeKV() };
+  const vq = await voidFor(b);
+  const v = await handleVoid({ request: b.request, void: vq }, senv, mockFetch);
+  assert.equal(v.status, "not_executed");
+  assert.equal(v.request_sha256, b.rs);
+  const st = v.statement;
+  assert.equal(st.type, "musubi.ca2a.non-execution.v0");
+  assert.equal(st.responder, b.X);
+  assert.equal(st.caller, b.B);
+  assert.equal(st.request_sha256, b.rs);
+  assert.deepEqual(st.outcome, { kind: "not_executed" });
+  assert.deepEqual(st.seen_block, { height: 920000, hash: "ab".repeat(32) });
+  assert.equal(st.void_request_sha256, await sha256hex(jcs(vq)));
+  assert.equal(await verify(st, "responder"), true);
+  const n = mcpCalls;
+  await assert.rejects(() => handleCall(b.body, senv, mockFetch), (e) => e instanceof Refusal && e.code === "request_voided");
+  assert.equal(mcpCalls, n);                                   // refused before any audit
+  const v2 = await handleVoid({ request: b.request, void: vq }, senv, mockFetch);
+  assert.equal(jcs(v2.statement), jcs(st));                     // asking twice returns the stored statement
+});
+
+test("void refusals: another signer, another request, a bad signature, no state", async () => {
+  const b = await build(), senv = { ...env, STATE: fakeKV() };
+  const rej = (body, e2, code) => assert.rejects(() => handleVoid(body, e2, mockFetch), (e) => e instanceof Refusal && e.code === code, code);
+  await rej({ request: b.request, void: await voidFor(b, "33".repeat(32)) }, senv, "void_not_by_caller");
+  const other = await sign({ type: "musubi.ca2a.void-request.v0", caller: b.B, request_sha256: "00".repeat(32) }, SEED_B);
+  await rej({ request: b.request, void: other }, senv, "void_not_for_this_request");
+  const forged = { ...(await voidFor(b)), signature: "00".repeat(64) };
+  await rej({ request: b.request, void: forged }, senv, "void_signature_invalid");
+  await rej({ request: b.request, void: await voidFor(b) }, env, "no_state");
+  assert.equal(senv.STATE.m.size, 0);                           // none of them left a mark
 });

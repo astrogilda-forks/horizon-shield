@@ -10,14 +10,30 @@
 //
 // What it does not do. It does not log anything: the caller logs the use, the payment and the receipt with the
 // log operator, which is a separate role. It does not refund, and it does not decide the budget: the issuer's
-// budget is judged afterwards by pilot_v0.py. It keeps no state.
+// budget is judged afterwards by pilot_v0.py.
+//
+// State. One KV namespace (binding STATE) holds, per request occurrence, the receipt the worker signed for it
+// and, for an occurrence the caller voided before any execution, the signed non-execution statement. With it
+// the worker answers the same occurrence once: a second /call for an executed occurrence returns the stored
+// receipt and audit (nothing is audited or signed again), and a /call for a voided occurrence is refused. The
+// statement exists for the case of a lost call (Issue #51, aeoess): a caller whose call got no answer asks
+// the worker whether that occurrence ran; the worker either returns the receipt it had already signed, or signs
+// that it did not run and will not, so the payer's hold can be released and a new occurrence id used instead.
+// KV is eventually consistent across locations (up to about a minute), so a /void and a /call for the same
+// occurrence sent at the same moment from different places can both succeed within that window; the caller
+// sends one or the other, never both at once. Without the binding the worker behaves as before and refuses
+// /void with no_state.
 //
 // Routes
 //   GET  /.well-known/pilot.json   the responder key, the price, the unit, the fixture digest, the profile
 //   POST /call                     {request, task, fixture, payment} -> {receipt, audit, request_sha256}
+//   POST /void                     {request, void} -> {status: "executed", receipt, audit} or
+//                                  {status: "not_executed", statement}; void is a caller-signed
+//                                  musubi.ca2a.void-request.v0 naming the request occurrence by digest
 //
-// Secrets and vars (wrangler): RESPONDER_SEED (32-byte hex Ed25519 seed; TOshi sets it), PRICE, UNIT,
-//   MCP_URL (default https://mcp.horizonshield.dev/mcp), BLOCKS_URL (default https://mempool.space/api).
+// Secrets, vars and bindings (wrangler): RESPONDER_SEED (32-byte hex Ed25519 seed; TOshi sets it), PRICE, UNIT,
+//   MCP_URL (default https://mcp.horizonshield.dev/mcp), BLOCKS_URL (default https://mempool.space/api),
+//   STATE (KV namespace).
 
 const enc = new TextEncoder();
 const HEX32 = /^[0-9a-f]{64}$/;
@@ -28,6 +44,8 @@ const T_REQUEST = "musubi.ca2a.request.v0";
 const T_TASK = "musubi.ca2a.task.v0";
 const T_PAYMENT = "musubi.ca2a.payment-receipt.v0";
 const T_RECEIPT = "musubi.ca2a.execution-receipt.v0";
+const T_VOID = "musubi.ca2a.void-request.v0";
+const T_NONEXEC = "musubi.ca2a.non-execution.v0";
 const T_FIXTURE = "horizon-shield.estimate-fixture.v0";
 const SERVICE = "estimate-audit";
 const LONE_SURROGATE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
@@ -200,6 +218,12 @@ export async function handleCall(body, env, fetchFn) {
   checkFixture(body.fixture);
   await checkPayment(body.payment, { requestSha, task: body.task, responder });
   if (body.payment.payer !== body.request.caller) throw new Refusal("payment_not_by_caller");
+  // one answer per occurrence: a voided occurrence is never executed; an executed one is answered from state
+  if (env.STATE) {
+    if (await env.STATE.get("void:" + requestSha)) throw new Refusal("request_voided", requestSha);
+    const prior = await env.STATE.get("rcpt:" + requestSha, "json");
+    if (prior) return { ...prior, replay: true };
+  }
   const region = typeof body.region === "string" && body.region.length <= 32 ? body.region : null;
   const audit = await auditFixture(body.fixture, region, env.MCP_URL || "https://mcp.horizonshield.dev/mcp", fetchFn);
   const seen = await seenBlock(env.BLOCKS_URL || "https://mempool.space/api", fetchFn);
@@ -207,7 +231,40 @@ export async function handleCall(body, env, fetchFn) {
     capability: body.request.capability, request_sha256: requestSha, seen_block: seen,
     outcome: { kind: "result", stage: "audited", response_sha256: await sha256hex(jcs(audit)) },
     attestation_sha256: null }, env.RESPONDER_SEED);
-  return { request_sha256: requestSha, receipt, audit };
+  const out = { request_sha256: requestSha, receipt, audit };
+  if (env.STATE) await env.STATE.put("rcpt:" + requestSha, JSON.stringify(out));
+  return out;
+}
+
+// ---- the lost call: did this occurrence run? Answered from state, signed by the responder when it did not.
+//
+// The caller (the request's caller key) signs a void request naming the occurrence by digest. If the worker holds
+// a receipt for that occurrence, the call ran: the receipt and audit are returned and nothing is voided. Otherwise
+// the worker signs a non-execution statement and stores it: this responder has issued no execution receipt for
+// request_sha256 as of seen_block, and will issue none (every later /call for it is refused request_voided). The statement carries the digest of the void request it answers. Asking twice returns the same
+// stored statement. Only the caller can void, so no third party can block an occurrence it does not own.
+export async function handleVoid(body, env, fetchFn) {
+  fields(body, ["request", "void"], [], "void-call");
+  const responder = await publicKeyHex(env.RESPONDER_SEED);
+  const requestSha = await checkRequest(body.request);
+  if (body.request.responder !== responder) throw new Refusal("request_names_another_responder");
+  const v = body.void;
+  fields(v, ["type", "caller", "request_sha256", "signature"], [], "void");
+  if (v.type !== T_VOID) throw new Refusal("wrong_type", "void");
+  if (v.caller !== body.request.caller) throw new Refusal("void_not_by_caller");
+  if (v.request_sha256 !== requestSha) throw new Refusal("void_not_for_this_request");
+  if (!(await verify(v, "caller"))) throw new Refusal("void_signature_invalid");
+  if (!env.STATE) throw new Refusal("no_state", "this deployment keeps no state and cannot say whether an occurrence ran");
+  const prior = await env.STATE.get("rcpt:" + requestSha, "json");
+  if (prior) return { status: "executed", ...prior };
+  const stored = await env.STATE.get("void:" + requestSha, "json");
+  if (stored) return { status: "not_executed", request_sha256: requestSha, statement: stored };
+  const seen = await seenBlock(env.BLOCKS_URL || "https://mempool.space/api", fetchFn);
+  const statement = await sign({ type: T_NONEXEC, responder, caller: body.request.caller, lineage: body.request.lineage,
+    capability: body.request.capability, request_sha256: requestSha, seen_block: seen,
+    outcome: { kind: "not_executed" }, void_request_sha256: await sha256hex(jcs(v)) }, env.RESPONDER_SEED);
+  await env.STATE.put("void:" + requestSha, JSON.stringify(statement));
+  return { status: "not_executed", request_sha256: requestSha, statement };
 }
 
 export default {
@@ -218,14 +275,16 @@ export default {
       if (request.method === "GET" && url.pathname === "/.well-known/pilot.json") {
         return json({ profile: "musubi.ca2a.pilot.v0", service: SERVICE, responder: await publicKeyHex(env.RESPONDER_SEED),
           price: Number(env.PRICE), unit: env.UNIT, issue: "ogasurfproject-jpg/horizon-shield#51",
-          what: "POST /call with {request, task, fixture, payment}; returns the signed execution receipt and the audit" });
+          state: env.STATE ? "one answer per occurrence; POST /void asks whether an occurrence ran" : "none",
+          what: "POST /call with {request, task, fixture, payment}; returns the signed execution receipt and the audit. "
+            + "POST /void with {request, void}; returns the stored receipt or a signed non-execution statement" });
       }
-      if (request.method === "POST" && url.pathname === "/call") {
+      if (request.method === "POST" && (url.pathname === "/call" || url.pathname === "/void")) {
         const raw = await request.text();
         if (raw.length > 65536) throw new Refusal("too_large");
         let body;
         try { body = JSON.parse(raw); } catch (_e) { throw new Refusal("not_json"); }
-        return json(await handleCall(body, env, fetch));
+        return json(await (url.pathname === "/call" ? handleCall : handleVoid)(body, env, fetch));
       }
       return json({ refused: "no_such_route" }, 404);
     } catch (e) {
