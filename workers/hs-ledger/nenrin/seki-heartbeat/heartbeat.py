@@ -64,7 +64,10 @@ PAYLOAD = {
     "compare": {"note": "SEKI heartbeat: the door refuses this call before the payload is read"},
 }
 UA = "seki-heartbeat/1 (+https://github.com/ogasurfproject-jpg/horizon-shield)"
-SCAN_ENTRIES = 40
+# 2026-10-19: locate() used to look at the newest 40 entries only. Once the ledger head passed 120, the batch holding
+# 2026-10-10's admissions (entry 80) fell out of reach and that day could never settle, although it had settled in a
+# dry run hours before. A day is now looked for down to entry 1; entries are fetched once per settle run and shared by
+# every day (the ledger had about 120 entries on that day).
 
 
 def http(method, url, body=None, headers=None, timeout=120):
@@ -216,21 +219,30 @@ def run(root, date):
 
 
 # --------------------------------------------------------------------------- settle
-def locate(shas, get=None):
-    """{sha: (entry n, batch bytes)} for the shas listed in records[] of a recent ledger entry."""
+def locate(shas, get=None, cache=None):
+    """{sha: (entry n, batch bytes)} for the shas listed in records[] of any ledger entry, newest first.
+    cache (a dict) keeps the head and each entry for the rest of one settle run, so several days fetch each entry once."""
     get = get or (lambda u: http("GET", u))
-    st, _, b = get(LEDGER + "/ledger/head?cb=%d" % int(time.time()))
-    head = (jl(b) or {}).get("n") if st == 200 else None
-    if not isinstance(head, int):
-        raise RuntimeError("the ledger head did not answer (%s)" % st)
+    cache = {} if cache is None else cache
+    if "head" not in cache:
+        st, _, b = get(LEDGER + "/ledger/head?cb=%d" % int(time.time()))
+        head = (jl(b) or {}).get("n") if st == 200 else None
+        if not isinstance(head, int):
+            raise RuntimeError("the ledger head did not answer (%s)" % st)
+        cache["head"] = head
+    head = cache["head"]
     want, found = set(shas), {}
-    for n in range(head, max(0, head - SCAN_ENTRIES), -1):
-        st, _, raw = get("%s/ledger/%d?format=raw" % (LEDGER, n))
+    for n in range(head, 0, -1):
+        if n not in cache:
+            cache[n] = get("%s/ledger/%d?format=raw" % (LEDGER, n))
+        st, _, raw = cache[n]
         if st != 200:
             continue
         d = jl(raw)
         for r in (d or {}).get("records") or []:
-            s = r.get("sha") if isinstance(r, dict) else None
+            # The ledger's agreement pool (which also takes admissions and revocations) lists a record by
+            # canonical_sha256; MUSUBI's contract and execution intake lists it by sha. Both are listings.
+            s = (r.get("sha") or r.get("canonical_sha256")) if isinstance(r, dict) else None
             if s in want and s not in found:
                 found[s] = (n, raw)
         if len(found) == len(want):
@@ -239,6 +251,107 @@ def locate(shas, get=None):
 
 
 CHUNK = 1000
+STALL_HOURS = 72      # a day that ran as expected and is still not settled after this long is a failure, not a wait
+
+
+# 2026-10-19. The ledger batches admissions with its agreement pool, whose listing is
+# {"canonical_sha256", "record_schema", "verdict", "verifier_version"} under nenrin-agreement-batch-v1 (entry 80).
+# anchor_compose.py reads only the MUSUBI intake listing {"sha", "kind"}, so every admission was refused as not listed
+# and every day since 2026-10-10 stayed "waiting for Bitcoin" although its batch was confirmed at 970879. settle v1.11
+# and later read an admission's anchor height as stated and leave verifying it to the caller, so the caller composes it
+# here, with the same leg 1 and the same OTS legs as anchor_compose, the listing found at records[i].canonical_sha256.
+# anchor_compose.py and the settle versions are unchanged. Stated limit: anchor_compose.batch_leg_check reads only
+# records[i].sha, so it answers record_not_listed_in_batch for these admission proofs; recompute them with
+# intake_listing_ops below (or by hand: the proof's prepend and append operands rebuild the batch bytes, and the
+# digest sits at records[i].canonical_sha256).
+INTAKE_BATCH_SCHEMA = "nenrin-agreement-batch-v1"
+
+
+def intake_listing_ops(record, batch):
+    """(digest, ops, offset) for a record listed by canonical_sha256 in the ledger's agreement pool batch. Raises AC.Refused."""
+    d = v11.commitment_digest(record)
+    hx = d.hex()
+    try:
+        text = batch.decode("utf-8")
+        parsed = parse_strict(text)
+    except Exception as e:
+        raise AC.Refused("batch_not_json", "the batch bytes are not strict JSON (%s)" % type(e).__name__)
+    if not isinstance(parsed, dict) or parsed.get("schema") != INTAKE_BATCH_SCHEMA:
+        raise AC.Refused("batch_schema_unknown", "not an agreement pool batch")
+    recs = parsed.get("records")
+    if not isinstance(recs, list) or not all(isinstance(r, dict) for r in recs):
+        raise AC.Refused("batch_schema_unknown", "records must be a list of objects")
+    if "count" in parsed and parsed["count"] != len(recs):
+        raise AC.Refused("batch_count_mismatch", "count %r but %d records" % (parsed["count"], len(recs)))
+    hits = [i for i, r in enumerate(recs) if r.get("canonical_sha256") == hx]
+    if not hits:
+        raise AC.Refused("record_not_listed_in_batch", "%s is not the canonical_sha256 of any entry in records[]" % hx)
+    if len(hits) > 1:
+        raise AC.Refused("record_listed_twice", "records[] lists %s %d times" % (hx, len(hits)))
+    idx = hits[0]
+    entry = recs[idx]
+    rschema = record.get("schema") if isinstance(record, dict) else None
+    if entry.get("record_schema") != rschema:
+        raise AC.Refused("record_schema_mismatch", "records[%d] is listed with record_schema %r, the record is %r" % (idx, entry.get("record_schema"), rschema))
+    if entry.get("verdict") != "accepted":
+        raise AC.Refused("record_not_accepted", "records[%d] is listed with verdict %r" % (idx, entry.get("verdict")))
+    spans = AC._json_positions(text, ("records", idx, "canonical_sha256"))
+    if len(spans) != 1 or text[spans[0][0]:spans[0][1]] != hx:
+        raise AC.Refused("internal", "records[%d].canonical_sha256 could not be located in the raw bytes" % idx)
+    at = len(text[:spans[0][0]].encode("utf-8"))
+    prefix, suffix = batch[:at], batch[at + len(hx):]
+    ops = [{"op": "hexlify"}]
+    chunks = [prefix[i:i + CHUNK] for i in range(0, len(prefix), CHUNK)]
+    for c in reversed(chunks):
+        ops.append({"op": "prepend", "hex": c.hex()})
+    for i in range(0, len(suffix), CHUNK):
+        ops.append({"op": "append", "hex": suffix[i:i + CHUNK].hex()})
+    ops.append({"op": "sha256"})
+    return d, ops, at
+
+
+def compose_listed(record, batch, ots, contract, view):
+    """anchor_compose.compose for a batch that lists by sha; the same legs for the agreement pool's canonical_sha256 listing."""
+    if isinstance(record, dict) and record.get("schema") not in AC.RECORD_KIND:
+        try:
+            parsed = parse_strict(batch.decode("utf-8"))
+        except Exception:
+            parsed = None
+        recs = (parsed or {}).get("records") if isinstance(parsed, dict) else None
+        if isinstance(recs, list) and any(isinstance(r, dict) and "canonical_sha256" in r for r in recs):
+            return _compose_intake(record, batch, ots, contract, view)
+    return AC.compose(record, batch, ots, contract, view)
+
+
+def _compose_intake(record, batch, ots, contract, view):
+    d, ops1, offset = intake_listing_ops(record, batch)
+    claim = hashlib.sha256(batch).digest()
+    if v11.run_proof(d, ops1) != claim:
+        raise AC.Refused("internal", "leg 1 does not reproduce the batch sha")
+    fdig, atts = AC.read_ots(ots)
+    if fdig != claim:
+        raise AC.Refused("ots_for_other_bytes", "the .ots stamps %s, the batch bytes hash to %s" % (fdig.hex(), claim.hex()))
+    btc = sorted([a for a in atts if a["kind"] == "bitcoin"], key=lambda a: a["height"])
+    base = {"record_digest": d.hex(), "batch_sha256": claim.hex(), "listed_at_offset": offset, "listing": "canonical_sha256"}
+    if not btc:
+        return dict(base, status="pending")
+    cv, problem = v11.verify_view(view, contract)
+    if cv is None:
+        raise AC.Refused("view_rejected", problem)
+    tried = []
+    for a in btc:
+        h = a["height"]
+        if h not in cv["hashes"]:
+            tried.append({"height": h, "why": "not in the view"})
+            continue
+        proof = ops1 + AC.ots_ops(a)
+        if len(proof) > v11.MAX_PROOF_OPS:
+            raise AC.Refused("proof_too_long", "%d ops over %d" % (len(proof), v11.MAX_PROOF_OPS))
+        if v11.run_proof(d, proof) != cv["merkle"][h]:
+            tried.append({"height": h, "why": "the path does not reach the merkle root of the header at this height"})
+            continue
+        return dict(base, status="anchored", anchor={"height": h, "block_hash": cv["hashes"][h], "proof": proof})
+    raise AC.Refused("no_attestation_verifies", json.dumps(tried))
 
 
 def _chunks(chunk_dir):
@@ -293,7 +406,7 @@ def extend_view(contract, chunk_dir, sources=None, get=HV._get, chunk=CHUNK):
     return view
 
 
-def settle_day(day_dir, contract, chunk_dir, get=None):
+def settle_day(day_dir, contract, chunk_dir, get=None, cache=None):
     get = get or (lambda u: http("GET", u))
     runp = os.path.join(day_dir, "RUN.json")
     if not os.path.exists(runp) or os.path.exists(os.path.join(day_dir, "settlement.json")):
@@ -304,7 +417,7 @@ def settle_day(day_dir, contract, chunk_dir, get=None):
     adm_files = {c["service"]: os.path.join(day_dir, "admission_%s.json" % c["service"]) for c in r["calls"]}
     exe_file = os.path.join(day_dir, "execution_report.json")
     shas = [c["record_sha256"] for c in r["calls"]] + [next(c["execution_sha256"] for c in r["calls"] if c.get("execution_sha256"))]
-    found = locate(shas, get)
+    found = locate(shas, get, cache)
     if len(found) != len(shas):
         return "pending: %d of %d records are in a ledger batch" % (len(found), len(shas))
     entries = sorted({n for n, _ in found.values()})
@@ -322,7 +435,7 @@ def settle_day(day_dir, contract, chunk_dir, get=None):
     for path, sha in [(adm_files[c["service"]], c["record_sha256"]) for c in r["calls"]] + [(exe_file, shas[-1])]:
         rec = rd(path)
         n, batch = found[sha]
-        res = AC.compose(rec, batch, ots[n], contract, view)
+        res = compose_listed(rec, batch, ots[n], contract, view)
         if res["status"] != "anchored":
             return "pending: the proof for %s does not reach Bitcoin yet" % sha[:12]
         a = AC.anchored_record(rec, res["anchor"])
@@ -355,11 +468,17 @@ def settle(root, chunk_dir):
     contract = rd(CONTRACT_PATH)
     days = sorted(d for d in os.listdir(root) if len(d) == 10 and os.path.isdir(os.path.join(root, d))) if os.path.isdir(root) else []
     bad = 0
+    now = datetime.datetime.now(datetime.timezone.utc)
+    cache = {}
     for d in days:
         try:
-            msg = settle_day(os.path.join(root, d), contract, chunk_dir)
+            msg = settle_day(os.path.join(root, d), contract, chunk_dir, cache=cache)
         except Exception as e:
             msg, bad = "FAIL: %s" % e, bad + 1
+        if msg.startswith("pending"):
+            ran = datetime.datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc) + datetime.timedelta(days=1)
+            if (now - ran).total_seconds() > STALL_HOURS * 3600:
+                msg, bad = "STALLED (more than %d hours unsettled): %s" % (STALL_HOURS, msg), bad + 1
         if msg != "skip":
             print("%s  %s" % (d, msg))
     return 1 if bad else 0
@@ -462,6 +581,43 @@ def _selftest():
     write_index(d)
     assert "2026-10-11" in open(os.path.join(d, "README.md")).read()
     n += 1; print("[6] write_index: the day appears in runs/README.md")
+    # the agreement pool's listing: located, and leg 1 rebuilt at records[i].canonical_sha256 only
+    adm = {"schema": "a2a-admission-v0", "admission_id": "self", "decision": "admit"}
+    hx = v11.commitment_digest(adm).hex()
+    pool = canonical({"schema": INTAKE_BATCH_SCHEMA, "anchored_at": "2026-10-11T00:30:00Z", "count": 2, "records": [
+        {"canonical_sha256": "ee" * 32, "record_schema": "a2a-agreement-v1.1", "verdict": "accepted", "verifier_version": "x"},
+        {"canonical_sha256": hx, "record_schema": "a2a-admission-v0", "verdict": "accepted", "verifier_version": "admission-intake 0.2.0"}]}).encode()
+    f = locate([hx], lambda u: (200, {}, json.dumps({"n": 1}).encode()) if "/ledger/head" in u else (200, {}, pool))
+    assert f[hx][0] == 1
+    dg, ops, at = intake_listing_ops(adm, pool)
+    assert v11.run_proof(dg, ops) == hashlib.sha256(pool).digest() and pool[at - 20:at] == b'"canonical_sha256":"'
+    n += 1; print("[7] the agreement pool lists admissions by canonical_sha256: located, and leg 1 rebuilds the batch sha from that listing")
+    for why, rec2, b2 in [
+            ("listed twice", adm, pool.replace(b'"' + b"e" * 64, b'"' + hx.encode())),
+            ("other record_schema", dict(adm, schema="a2a-revocation-v0"), pool),
+            ("not listed", dict(adm, admission_id="other"), pool),
+            ("listed only inside another field", adm, canonical({"schema": INTAKE_BATCH_SCHEMA, "records": [{"canonical_sha256": "ee" * 32, "record_schema": "a2a-admission-v0", "verdict": "accepted", "note": hx}]}).encode())]:
+        try:
+            intake_listing_ops(rec2, b2); ok = False
+        except AC.Refused:
+            ok = True
+        assert ok, why
+    n += 1; print("[8] refused: a digest listed twice, under another record_schema, not listed, or present only inside another field")
+    # an old batch is still found once the ledger has grown far past it, and each entry is fetched once per run
+    asked = []
+
+    def deep(u):
+        asked.append(u)
+        if "/ledger/head" in u:
+            return 200, {}, json.dumps({"n": 130}).encode()
+        m = int(u.split("/ledger/")[1].split("?")[0])
+        return (200, {}, json.dumps({"records": [{"sha": "ab" * 32}]}).encode()) if m == 80 else (200, {}, b"{}")
+    cache = {}
+    assert locate(["ab" * 32], deep, cache)["ab" * 32][0] == 80
+    first = len(asked)
+    assert locate(["ab" * 32], deep, cache)["ab" * 32][0] == 80 and len(asked) == first
+    assert locate(["cd" * 32], deep, cache) == {} and len(asked) == first + 79
+    n += 1; print("[9] locate: a batch 50 entries below the head is found, and a second day in the same run fetches nothing again")
     print("ALL PASS (seki heartbeat: %d checks)" % n)
 
 
