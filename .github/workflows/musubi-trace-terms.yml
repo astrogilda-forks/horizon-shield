@@ -1,0 +1,53 @@
+name: musubi trace-terms
+
+# musubi-trace-terms-v0: TRACE authorizations and Trust Records read as evidence under a two-party MUSUBI
+# contract. Runs the 29 vectors, then rebuilds them from gen_vectors.py and fails if one byte differs.
+# agentrust-trace is pinned: the evaluator calls TRACE's own verify_bridge, so its version is part of the result.
+
+on:
+  push:
+    paths:
+      - "workers/hs-ledger/nenrin/trace-terms-v0/**"
+      - "workers/hs-ledger/nenrin/musubi-v0/contract_v0.py"
+      - "workers/hs-ledger/nenrin/agreement-v0/agreement_verify.py"
+      - "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/trace.py"
+      - "workers/hs-ledger/nenrin/trace-bind-v0/sources/**"
+      - ".github/workflows/musubi-trace-terms.yml"
+  pull_request:
+    paths:
+      - "workers/hs-ledger/nenrin/trace-terms-v0/**"
+      - "workers/hs-ledger/nenrin/musubi-v0/contract_v0.py"
+      - "workers/hs-ledger/nenrin/agreement-v0/agreement_verify.py"
+      - "workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/trace.py"
+      - "workers/hs-ledger/nenrin/trace-bind-v0/sources/**"
+      - ".github/workflows/musubi-trace-terms.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vectors:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: install agentrust-trace and its dependencies, every version pinned
+        run: >-
+          python -m pip install --disable-pip-version-check --no-deps
+          agentrust-trace==0.11.0 cryptography==46.0.7 cffi==2.1.1 pycparser==3.11
+          pydantic==2.14.1 pydantic_core==2.50.1 annotated-types==0.8.0 typing-inspection==0.4.4
+          typing_extensions==4.16.0 jsonschema==4.26.0 jsonschema-specifications==2025.9.1
+          referencing==0.37.0 rpds-py==2026.9.1 attrs==26.1.0 rfc3986-validator==0.1.1 rfc8785==0.1.4
+      - name: the vectors
+        working-directory: workers/hs-ledger/nenrin/trace-terms-v0
+        run: python -I -B trace_terms_v0.py --selftest
+      - name: the vectors rebuild byte for byte
+        working-directory: workers/hs-ledger/nenrin/trace-terms-v0
+        run: |
+          set -euo pipefail
+          cp vectors/vectors.json /tmp/committed.json
+          python -I -B gen_vectors.py
+          cmp vectors/vectors.json /tmp/committed.json
