@@ -11,6 +11,8 @@ Revision 0.4, 2026-10-18: every underspecified reason was checked against the ex
 
 Revision 0.5, 2026-10-19: two statements about the reference were wrong and are corrected (NOTES.md N18): the sha256 of agreement_verify.py in section 16 named the vendored copy in sdk-python, not the agreement-v0 copy the reference imports; and section 12 said settle_v1_15.py gives the same core fields outside the vectors of section 13, which it does not. No rule, reason or vector changed.
 
+Revision 0.6, 2026-10-20: two places where a third independent implementation found the text and the vectors pulling apart are now stated (NOTES.md N20): in 6.0, a strictly signed record whose body is not strict is set aside as well as adding its reason; in 4.3, failing 4.1 with the parent supplied adds only `parent_narrowing_failed`, never `contract_not_verified`. Both sentences say what the vectors already expected. No rule of the reference, reason or vector changed.
+
 ## 0. Why this document exists
 
 Until now the MUSUBI settle function was defined only by Python code (settle_v1.py to settle_v1_16.py, each layer importing the ones below it).
@@ -210,7 +212,7 @@ Whether or not 4.1 accepts, each of these adds the underspecified reason shown:
 | `parent_contract` is present and not null, and no parent was supplied | `parent_not_supplied` |
 | `parent_contract` is present and not null, and the parent is not an object, or does not pass 4.1 on its own, or the contract does not pass 4.1 with the parent supplied (the reference's door then also checks that `parent_contract.contract_id` equals the parent's `contract_id` and that the child's grant is a subset of the parent's: `contract_v0.grant_subset`) | `parent_narrowing_failed` |
 
-These checks do not stop the walk; the event set and dispositions are still computed (section 2.3).
+These checks do not stop the walk; the event set and dispositions are still computed (section 2.3). In the last row, "does not pass 4.1 with the parent supplied" is judged by 4.3.1 and adds only `parent_narrowing_failed`; whether the settlement is `contract_not_verified` is decided by 4.1 on the contract on its own (vectors `synth_parent_full_*`).
 #### 4.3.1 Parent narrowing (grant_subset)
 
 This applies when `parent_contract` is present and not null. The contract passes 4.1 with the parent supplied if and only if it passes 4.1 on its own, `parent_contract` is an object whose `contract_id` equals the parent's `contract_id` (a missing `contract_id` fails), and the child grant C is within the parent grant P. C is within P when none of the following holds. In each rule, a list that is absent or null counts as empty, "has an integer" means the key is present with an integer that is not a boolean, and "the parent sets" a key means the key is present with a value other than null. Both grants have already passed 4.1 rule 10, so every value has its declared type.
@@ -289,12 +291,13 @@ First, a record of one of the three schemas whose record_sha256 cannot be comput
 | not strictly signed, body not strict | set aside, `record_not_strict` |
 | not strictly signed, but a signature verifies under 3.4 alone (lax) | set aside, `signature_not_strict` |
 | not strictly signed otherwise | rejected (disposition `rejected`) |
-| strictly signed, body not strict | the record is a party's own statement: underspecified reason `record_not_strict` |
+| strictly signed, body not strict | set aside, `record_not_strict`, and the underspecified reason `record_not_strict` is added: the record is a party's own statement, so setting it aside does not make the input settleable |
 | strictly signed, anchor not strict, and another bound record with the same record signing bytes is kept by this table and anchors validly (6.4) | set aside, `anchor_not_strict` |
 | strictly signed, anchor not strict, otherwise | underspecified reason `anchor_not_strict` |
 | a revocation, and `grant.revocation` is not an object | set aside, `revocation_not_provided_for` (the contract cannot be revoked) |
 | otherwise | kept |
 
+Only the fourth row both sets a record aside and adds a reason; the first three set aside or reject without one (vectors `synth_nan_in_signed_body` and `synth_unsigned_float_beside_good` show the two cases).
 Set aside and rejected records are never examined again: no collapse (6.4), size limit (6.2), conformance check, anchor check or NENRIN check sees them. They are listed with their disposition (9.2).
 Problems in the signatures list of a strictly signed record (an extra entry that does not verify or is not strict) are ignored.
 

@@ -207,6 +207,17 @@ The same implementation, updated to revision 0.4 (`dd64d0e2`) by its author (aeo
 
 Two limits, as he stated them: the run is not blind to the new cases, since he read the comment describing them first, and APS is a party to `real_p31_baseline`. We have not rerun it at 53cfafb ourselves. Revision 0.5 (`c2904fa2`) changed no rule, reason or vector, so the result stands for 0.5.
 
+## N20. A third independent implementation, and two sentences (revision 0.6)
+
+Kuang Mi (`kuangmi-bit`) wrote a third implementation of settle core v0 from this document (revision 0.5) and the published vectors only, without reading `settle_v1_16.py` or aeoess/musubi-settle-core-check: [kuangmi-bit/nenrin-independent-verifiers settle-core-v0 at bbe455c](https://github.com/kuangmi-bit/nenrin-independent-verifiers/tree/bbe455c/settle-core-v0) (horizon-shield Issue #49). It agrees with all 128 vectors on the eight core fields, including `real_p31_baseline`, `real_cross_record_names_other_contract` and the 25 `synth_parent_full_*` vectors; standard library at run time, Ed25519 through `cryptography` when present and through its own RFC 8032 verifier otherwise. He also ran the reference on the same machine: 128 of 128 (`results/reference-2026-10-19.txt`, bc9b9bf). We reran it at bbe455c (`settle_core_v0.py` sha256 669fd8b3...) against the vectors at dd64d0e2 on Python 3.10.12: 128 of 128 with `cryptography` installed, and 128 of 128 with `cryptography` blocked, so both of its signature paths agree.
+
+He recorded two places where the text and the vectors pull apart, as section 15 asks. In both, the vectors express what was meant and the text now says it:
+
+1. 6.0, fourth row (strictly signed, body not strict). The text gave the reason but not whether the record stays in the event set. The four vectors `synth_nan_in_signed_body`, `synth_float_in_signed_body`, `synth_infinity_in_signed_body` and `synth_negative_infinity_in_signed_body` set it aside with the disposition `record_not_strict` and add the reason, so the event set is empty and the verdict `underspecified`; the first row (not strictly signed, body not strict) sets the same disposition aside without a reason (`synth_unsigned_float_beside_good`). The row now says "set aside, and the reason is added", with one sentence on the difference.
+2. 4.3, parent narrowing. "Does not pass 4.1 with the parent supplied" read like a failure of the contract door. The vectors give `parent_narrowing_failed` alone, without `contract_not_verified`, and the walk still runs. The section now says the narrowing is judged by 4.3.1 and adds only that reason, while `contract_not_verified` is decided by 4.1 on the contract on its own.
+
+No rule of the reference, no reason and no vector changed; 128/128 and EXERCISE.txt are unchanged. The draft (draft-oga-musubi-settlement) carries these two sentences in its next revision.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.
