@@ -33,3 +33,7 @@
 \.pem$
 (^|/)\.hs_[^/]*$
 (^|/)\.dev\.vars$
+# SHIKEN v1 (TOshi's agent: the door, its tools and the agent side): private since 2026-10-20, lives in
+# hs-engine-private/shiken. What is public is the contract, the three public keys and the records.
+(^|/)shiken_(core|door|adapters|agent|mcp|settle|selftest)\.py$
+(^|/)shiken\.py$

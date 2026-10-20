@@ -1,0 +1,9 @@
+{
+  "public_key_ed25519_b64": "bOQOFBA1tK0kobJ+JwfFpAi6QIHXMI/7eRxhOYRjDwM=",
+  "alg": "ed25519",
+  "domain": "shield.the-horizons-innovation.com",
+  "key_url": "https://shield.the-horizons-innovation.com/keys/shiken-agent.json",
+  "role": "contractor of the SHIKEN v1 contracts: SHIKEN, TOshi's work agent (signs a2a-action-request-v0, a2a-execution-v0)",
+  "operator": "The HORIZONs Co., Ltd.",
+  "note": "the principal (TOshi), the contractor (SHIKEN) and the relying party (SHIKEN's door) are all The HORIZONs Co., Ltd. and its representative; this contract binds TOshi's own agent and is not an arm's-length agreement"
+}

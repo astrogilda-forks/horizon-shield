@@ -1,0 +1,9 @@
+{
+  "public_key_ed25519_b64": "Ofg75Aa54grb24BmsYtNgwZyDL/KTQ3cwmkrAIcMiew=",
+  "alg": "ed25519",
+  "domain": "shield.the-horizons-innovation.com",
+  "key_url": "https://shield.the-horizons-innovation.com/keys/shiken-door.json",
+  "role": "SHIKEN's door, the relying party in front of every tool SHIKEN uses (signs a2a-admission-v0)",
+  "operator": "The HORIZONs Co., Ltd.",
+  "note": "the principal (TOshi), the contractor (SHIKEN) and the relying party (SHIKEN's door) are all The HORIZONs Co., Ltd. and its representative; this contract binds TOshi's own agent and is not an arm's-length agreement"
+}

@@ -1,0 +1,9 @@
+{
+  "public_key_ed25519_b64": "oaOkRx/99NkwRTVADVPb1i5+CmLBCMfQWf7Ajm/W3BA=",
+  "alg": "ed25519",
+  "domain": "the-horizons-innovation.com",
+  "key_url": "https://shield.the-horizons-innovation.com/keys/shiken-principal.json",
+  "role": "principal of the SHIKEN v1 contracts: TOshi (signs a2a-contract-v0, a2a-approval-v2 as approver \"toshi\", a2a-revocation-v0)",
+  "operator": "The HORIZONs Co., Ltd.",
+  "note": "the principal (TOshi), the contractor (SHIKEN) and the relying party (SHIKEN's door) are all The HORIZONs Co., Ltd. and its representative; this contract binds TOshi's own agent and is not an arm's-length agreement"
+}
