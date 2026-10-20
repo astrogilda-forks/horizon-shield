@@ -595,25 +595,43 @@ def _from_array_like(xs):
     return bytes(_to_uint8(x) for x in xs)
 
 
-def _specific_type(v):
-    """lib/internal/errors.js determineSpecificType for a plain object, as Node 22 and 24 write it."""
-    c = v["constructor"] if "constructor" in v else "<Object>"
-    if c == "<Object>":
+def _specific_type(v, legacy=False):
+    """lib/internal/errors.js determineSpecificType for a plain object.
+
+    Node 24.22.0 rewrote it (as Node main has it): the constructor's name is read once with `?.`, and only a
+    non-empty string name gives "an instance of <name>"; anything else is inspected at depth -1, "[Object]".
+    That is the default here. Node 22 and Node 24 before 24.22.0 write `'name' in value.constructor`, which
+    throws a TypeError when the constructor is a truthy primitive and prints any name through String();
+    legacy=True gives that older text, so the live test can compare against whichever Node it runs."""
+    if "constructor" not in v:
         return "an instance of Object"
+    c = v["constructor"]
+    if not legacy:
+        name = c["name"] if isinstance(c, dict) and "name" in c else UNDEF
+        if isinstance(name, str) and name != "":
+            return "an instance of " + name
+        return "[Object]"
     if not truthy(c):
         return "[Object]"
-    if c is True or isinstance(c, str):
+    if c is True or isinstance(c, str) or is_num(c):
         raise JSTypeError("Cannot use 'in' operator to search for 'name' in " + to_string(c))
     if isinstance(c, dict) and "name" in c:
         return "an instance of " + to_string(c["name"])
     return "[Object]"
 
 
-def buffer_from(v):
+def node_has_new_specific_type(version):
+    """Whether this Node version ("24.22.0") writes the 24.22.0 determineSpecificType. Only the lines the parity
+    matrix runs are listed; a release or backport that changes it shows up as a failure of the live test."""
+    major, minor = (int(x) for x in version.split(".")[:2])
+    return major == 24 and minor >= 22
+
+
+def buffer_from(v, legacy=False):
     """Buffer.from(v, "base64") for the values JSON can hold (Node 22 and 24, lib/buffer.js): a string is
     decoded leniently; an array is copied element by element through ToNumber modulo 256; an object goes
     through valueOf, then an own length (a non-number gives an empty buffer), then {type: "Buffer", data: [...]},
-    and otherwise throws ERR_INVALID_ARG_TYPE."""
+    and otherwise throws ERR_INVALID_ARG_TYPE, whose text for an object follows _specific_type(v, legacy)."""
     if isinstance(v, str):
         return node_b64decode(v)
     if isinstance(v, list):
@@ -631,7 +649,7 @@ def buffer_from(v):
             return b""
         if seq(v.get("type", UNDEF), "Buffer") and isinstance(v.get("data", UNDEF), list):
             return _from_array_like(v["data"])
-        raise JSTypeError(_ARG_TYPE + _specific_type(v))
+        raise JSTypeError(_ARG_TYPE + _specific_type(v, legacy))
     if v is True or v is False:
         raise JSTypeError(_ARG_TYPE + "type boolean (" + ("true" if v else "false") + ")")
     if v is None:

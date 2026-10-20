@@ -25,6 +25,7 @@ const out = {
   lower: inp.lower.map((s) => s.toLowerCase()),
   buf: inp.buf.map((v) => res(() => Buffer.from(v, "base64").toString("hex"))),
   str: inp.str.map((v) => res(() => "" + v)),
+  node: process.versions.node,
 };
 process.stdout.write(JSON.stringify(out));
 """
@@ -83,6 +84,8 @@ def _bufs(rnd):
         return o
     out = [{}, {"type": "Buffer", "data": ["1", "2"]}, {"length": None}, {"valueOf": ""}, {"valueOf": "QUJD"},
            {"constructor": "x"}, {"constructor": {"name": "Foo"}}, {"constructor": None}, {"constructor": True},
+           {"constructor": "<Object>"}, {"constructor": ""}, {"constructor": {"name": ""}}, {"constructor": {"name": 5}},
+           {"constructor": {"name": {}}}, {"constructor": {}}, {"constructor": []},
            [{"toString": "x"}], ["1", ["2", "3"]], True]
     out += [val(0) for _ in range(3000)]
     return [v for v in out if v is not False and v is not None]
@@ -131,9 +134,11 @@ def test_tsugi_semantics_against_node():
             bad.append(("lower", s, got, j))
     print("lower: %d inputs, %d hold a code point this Python does not assign" % (len(back["lower"]), lunrep))
 
+    legacy = not _js.node_has_new_specific_type(js["node"])
+    print("buf: Node %s, %s determineSpecificType" % (js["node"], "the pre-24.22.0" if legacy else "the 24.22.0"))
     for v, j in zip(back["buf"], js["buf"]):
         try:
-            got = {"v": _js.buffer_from(v).hex()}
+            got = {"v": _js.buffer_from(v, legacy=legacy).hex()}
         except _js.JSTypeError as e:
             got = {"e": str(e)}
         if got != j:
