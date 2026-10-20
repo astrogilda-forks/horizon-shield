@@ -240,8 +240,8 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
 
     <div class="hero">
       <div class="eyebrow">SUBMIT YOUR ESTIMATE</div>
-      <h1>その見積もり、高い？<br><b>写真1枚で解剖</b>します。</h1>
-      <p class="lead">見積書をスマホで撮るだけ。無料、ログインも不要です。KIRA が項目ごとに読み、気をつける点を30秒ほどで返します。<b>結果はあなたにだけ表示されます。</b><span class="lead-more">掲示板に載せるかは、結果を見てから決められます。</span></p>
+      <h1>その見積もり、高い？<br><b>写真で解剖</b>します。</h1>
+      <p class="lead">見積書をスマホで撮るだけ。何枚あっても、まとめて送れます。無料、ログインも不要です。KIRA が項目ごとに読み、気をつける点を30秒ほどで返します。<b>結果はあなたにだけ表示されます。</b><span class="lead-more">掲示板に載せるかは、結果を見てから決められます。</span></p>
       <div class="hero-sub">建設実務30年の監修 / 業者から紹介料を受け取らない第三者 / <a href="/hacker/kaibou/">解剖の例を見る</a></div>
     </div>
 
@@ -253,10 +253,10 @@ footer{border-top:2px solid var(--rule);background:var(--paper);padding:28px 22p
         <div class="drop-ic">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </div>
-        <div class="drop-t">金額の合計が写っている面を1枚</div>
-        <div class="drop-d">写真・スクリーンショット・PDF / 大きい写真はこの画面で縮めて送ります</div>
+        <div class="drop-t">見積書の写真を、全部の頁まとめて(6枚まで)</div>
+        <div class="drop-d">写真・スクリーンショット・PDF / 複数枚はこの画面で1つにまとめて送ります</div>
       </div>
-      <input type="file" id="fileInput" accept="application/pdf,image/*" style="display:none">
+      <input type="file" id="fileInput" accept="application/pdf,image/*" multiple style="display:none">
       <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none">
       <div class="pick-row" id="pickRow">
         <button type="button" class="pick-btn main" onclick="pickCamera()">写真を撮る</button>
@@ -447,22 +447,25 @@ async function login(){try{const r=await fetch(API+'/auth/line-login-start',{met
 async function loginGoogle(){try{const r=await fetch(API+'/auth/google-login-start',{method:'POST'});const d=await r.json();if(d.login_url){location.href=d.login_url;}else{toast('ログインを開始できませんでした');}}catch(e){toast('通信エラーが発生しました');}}
 
 /* ===== ファイル選択 ===== */
+// 2026-10-20: 見積書は何枚にもなる(Threads の相談者が「5枚あるが貼れるか」と止まった)。
+// 写真は6枚まで選べ、2枚以上ならこの画面で1つのPDFにまとめて送る(読み取りの口は従来どおり1ファイルを受ける)。
 const drop=document.getElementById('drop'),fileInput=document.getElementById('fileInput');
-drop.addEventListener('click',()=>{if(!FILE)fileInput.click();});
+drop.addEventListener('click',()=>{if(!PAGES.length&&!FILE)fileInput.click();});
 const camInput=document.getElementById('camInput');
 function pickCamera(){camInput.click();}
 function pickFile(){fileInput.click();}
-camInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+camInput.addEventListener('change',e=>{addFiles(e.target.files);});
 // 2026-10-17: 数だけ送る(個人を特定する物は送らない)。どこで止まるかを測る。
 function ev(name){try{fetch(API+'/rev-event',{method:'POST',keepalive:true,headers:{'Content-Type':'text/plain'},body:JSON.stringify({event:name})});}catch(e){}}
 drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag');});
 drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
-drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
-fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');addFiles(e.dataTransfer.files);});
+fileInput.addEventListener('change',e=>{addFiles(e.target.files);});
 
 // 2026-10-17: スマホの写真は 5MB を超えることが多く、読み取りの API が受け付けない(以前は「読み取れませんでした」で終わっていた)。
-// 写真はこの画面で長い辺 2000px の JPEG に縮めてから送る。iPhone の HEIC も、端末が開ける形なら JPEG にして送る。
-const IMG_MAX_EDGE=2000, IMG_MAX_BYTES=3.5*1024*1024;
+// 写真はこの画面で JPEG に縮めてから送る。iPhone の HEIC も、端末が開ける形なら JPEG にして送る。
+const MAX_PAGES=6, IMG_MAX_EDGE=2000, IMG_MAX_BYTES=1.6*1024*1024;
+let PAGES=[]; // 写真の頁: {name, blob, w, h}
 function loadImage(f){
   return new Promise((res,rej)=>{
     const url=URL.createObjectURL(f);const im=new Image();
@@ -476,52 +479,106 @@ function canvasJpeg(im,edge,q){
   const k=Math.min(1,edge/Math.max(w,h));
   const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
   const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);
-  return new Promise(r=>c.toBlob(b=>r(b),'image/jpeg',q));
+  return new Promise(r=>c.toBlob(b=>r(b?{blob:b,w:c.width,h:c.height}:null),'image/jpeg',q));
 }
 async function shrinkImage(f){
   const im=await loadImage(f);
-  let edge=IMG_MAX_EDGE,q=0.85,b=await canvasJpeg(im,edge,q);
-  for(let i=0;i<3&&b&&b.size>IMG_MAX_BYTES;i++){edge=Math.round(edge*0.8);q=0.8;b=await canvasJpeg(im,edge,q);}
-  if(!b||b.size>IMG_MAX_BYTES)throw new Error('too_big');
-  return b;
+  let edge=IMG_MAX_EDGE,q=0.85,o=await canvasJpeg(im,edge,q);
+  for(let i=0;i<4&&o&&o.blob.size>IMG_MAX_BYTES;i++){edge=Math.round(edge*0.85);q=0.8;o=await canvasJpeg(im,edge,q);}
+  if(!o||o.blob.size>IMG_MAX_BYTES)throw new Error('too_big');
+  return o;
 }
 function blobB64(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=()=>rej(new Error('read'));r.readAsDataURL(b);});}
-async function handleFile(f){
-  const isPdf=f.type==='application/pdf'||/\.pdf$/i.test(f.name||'');
-  const isImg=(f.type||'').startsWith('image/')||/\.(heic|heif|jpe?g|png|webp)$/i.test(f.name||'');
-  if(!isPdf&&!isImg){ev('ehn_pick_ng');toast('写真かPDFを選んでください');return;}
-  try{
-    if(isPdf){
-      if(f.size>20*1024*1024){ev('ehn_pick_ng');toast('PDFは20MBまでです。合計の頁だけを写真で撮ってください');return;}
-      FILE=f;FILE_MEDIA='application/pdf';FILE_B64=await blobB64(f);
-    }else{
-      const drT=document.querySelector('#drop .drop-t');if(drT)drT.textContent='写真を整えています...';
-      const b=await shrinkImage(f);
-      FILE={name:f.name||'photo.jpg',size:b.size};FILE_MEDIA='image/jpeg';FILE_B64=await blobB64(b);
-    }
-  }catch(e){
-    ev('ehn_pick_ng');clearFile();
-    toast('この写真は開けませんでした。スクリーンショットを撮って、それを選んでください');return;
+// 写真の頁を、1頁1枚の PDF にまとめる(外の部品は使わない。JPEG をそのまま DCTDecode で埋める)。
+async function pagesToPdf(pages){
+  const enc=new TextEncoder();const parts=[];let len=0;const offs=[];
+  const put=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length;};
+  const obj=(num,...body)=>{offs[num]=len;put(num+' 0 obj\n');body.forEach(put);put('\nendobj\n');};
+  put('%PDF-1.4\n%âãÏÓ\n');
+  const n=pages.length,kids=[];
+  for(let i=0;i<n;i++)kids.push((3+3*i)+' 0 R');
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+n+' >>');
+  for(let i=0;i<n;i++){
+    const p=pages[i],pg=3+3*i,ct=4+3*i,im=5+3*i;
+    const W=595,H=Math.round(595*p.h/p.w*100)/100;
+    const bytes=new Uint8Array(await p.blob.arrayBuffer());
+    const cs='q '+W+' 0 0 '+H+' 0 0 cm /Im0 Do Q';
+    obj(pg,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W+' '+H+'] /Resources << /XObject << /Im0 '+im+' 0 R >> >> /Contents '+ct+' 0 R >>');
+    obj(ct,'<< /Length '+enc.encode(cs).length+' >>\nstream\n',cs,'\nendstream');
+    obj(im,'<< /Type /XObject /Subtype /Image /Width '+p.w+' /Height '+p.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+bytes.length+' >>\nstream\n',bytes,'\nendstream');
   }
-  ev('ehn_pick');
-  renderFile();
+  const total=2+3*n,xref=len;
+  let x='xref\n0 '+(total+1)+'\n0000000000 65535 f \n';
+  for(let k=1;k<=total;k++)x+=String(offs[k]).padStart(10,'0')+' 00000 n \n';
+  put(x);put('trailer\n<< /Size '+(total+1)+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n');
+  return new Blob(parts,{type:'application/pdf'});
+}
+async function addFiles(list){
+  const files=Array.from(list||[]);fileInput.value='';camInput.value='';
+  if(!files.length)return;
+  const isPdf=f=>f.type==='application/pdf'||/\.pdf$/i.test(f.name||'');
+  const isImg=f=>(f.type||'').startsWith('image/')||/\.(heic|heif|jpe?g|png|webp)$/i.test(f.name||'');
+  const pdfs=files.filter(isPdf),imgs=files.filter(f=>!isPdf(f)&&isImg(f));
+  if(!pdfs.length&&!imgs.length){ev('ehn_pick_ng');toast('写真かPDFを選んでください');return;}
+  if(pdfs.length){
+    if(pdfs.length>1||imgs.length||PAGES.length){toast('PDFは1つだけで送ってください。写真と一緒に送るときは、PDFの頁も写真で撮ってください');return;}
+    const f=pdfs[0];
+    if(f.size>20*1024*1024){ev('ehn_pick_ng');toast('PDFは20MBまでです。頁を写真で撮って選んでください');return;}
+    try{FILE=f;FILE_MEDIA='application/pdf';FILE_B64=await blobB64(f);}
+    catch(e){ev('ehn_pick_ng');clearFile();toast('このPDFは開けませんでした');return;}
+    ev('ehn_pick');renderFile();readyBtn();return;
+  }
+  if(FILE){toast('PDFを選んでいます。写真で送るときは、PDFを✕で外してください');return;}
+  const room=MAX_PAGES-PAGES.length;
+  if(room<=0){toast(MAX_PAGES+'枚までです。合計と明細の頁を優先してください');return;}
+  if(imgs.length>room)toast(MAX_PAGES+'枚までです。最初の'+room+'枚を使います');
+  const drT=document.querySelector('#drop .drop-t');if(drT&&!PAGES.length)drT.textContent='写真を整えています...';
+  let ng=0;
+  for(const f of imgs.slice(0,room)){
+    try{const o=await shrinkImage(f);PAGES.push({name:f.name||('photo'+(PAGES.length+1)+'.jpg'),blob:o.blob,w:o.w,h:o.h});}
+    catch(e){ng++;}
+  }
+  if(ng){ev('ehn_pick_ng');toast(ng+'枚は開けませんでした。スクリーンショットを撮って、それを選んでください');}
+  if(!PAGES.length){clearFile();return;}
+  ev('ehn_pick');renderFile();readyBtn();
+}
+function readyBtn(){
   const btn=document.getElementById('analyzeBtn');btn.disabled=false;
   try{btn.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
 }
+function fmtSize(n){return n<1024*1024?(n/1024).toFixed(0)+' KB':(n/1024/1024).toFixed(1)+' MB';}
 function renderFile(){
-  const kb=FILE.size<1024*1024?(FILE.size/1024).toFixed(0)+' KB':(FILE.size/1024/1024).toFixed(1)+' MB';
-  const ext=FILE_MEDIA==='application/pdf'?'PDF':'IMG';
   drop.classList.add('has');
-  drop.innerHTML=`<div class="file-row"><div class="file-ic">${ext}</div><div class="file-meta"><div class="file-name">${esc(FILE.name)}</div><div class="file-size">${kb} · 解剖の準備完了</div></div><button class="file-x" onclick="clearFile(event)">✕</button></div>`;
+  if(FILE){
+    drop.innerHTML=`<div class="file-row"><div class="file-ic">PDF</div><div class="file-meta"><div class="file-name">${esc(FILE.name)}</div><div class="file-size">${fmtSize(FILE.size)} · 解剖の準備完了</div></div><button class="file-x" onclick="clearFile(event)">✕</button></div>`;
+    return;
+  }
+  const rows=PAGES.map((p,i)=>`<div class="file-row"><div class="file-ic">${pad(i+1).slice(1)}</div><div class="file-meta"><div class="file-name">${esc(p.name)}</div><div class="file-size">${fmtSize(p.blob.size)}</div></div><button class="file-x" onclick="removePage(event,${i})">✕</button></div>`).join('');
+  const more=PAGES.length<MAX_PAGES?`<div class="file-size" style="margin-top:8px">${PAGES.length}枚 · 解剖の準備完了。続きの頁は「写真を撮る」「写真・PDFを選ぶ」で足せます(${MAX_PAGES}枚まで)</div>`:`<div class="file-size" style="margin-top:8px">${PAGES.length}枚 · 解剖の準備完了</div>`;
+  drop.innerHTML=rows+more;
+}
+function removePage(e,i){
+  if(e)e.stopPropagation();
+  PAGES.splice(i,1);
+  if(!PAGES.length){clearFile();return;}
+  renderFile();
 }
 function clearFile(e){
   if(e)e.stopPropagation();
-  FILE=null;FILE_B64=null;FILE_MEDIA=null;
+  FILE=null;FILE_B64=null;FILE_MEDIA=null;PAGES=[];
   fileInput.value='';
   drop.classList.remove('has');
-  drop.innerHTML=`<div class="drop-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="drop-t">金額の合計が写っている面を1枚</div><div class="drop-d">写真・スクリーンショット・PDF / 大きい写真はこの画面で縮めて送ります</div>`;
+  drop.innerHTML=`<div class="drop-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="drop-t">見積書の写真を、全部の頁まとめて(6枚まで)</div><div class="drop-d">写真・スクリーンショット・PDF / 複数枚はこの画面で1つにまとめて送ります</div>`;
   camInput.value='';
   document.getElementById('analyzeBtn').disabled=true;
+}
+// 送る直前に1つのファイルにする: PDF はそのまま、写真1枚は JPEG、2枚以上は1つの PDF。
+async function buildUpload(){
+  if(FILE&&FILE_B64)return true;
+  if(!PAGES.length)return false;
+  if(PAGES.length===1){FILE_MEDIA='image/jpeg';FILE_B64=await blobB64(PAGES[0].blob);return true;}
+  const pdf=await pagesToPdf(PAGES);FILE_MEDIA='application/pdf';FILE_B64=await blobB64(pdf);return true;
 }
 
 /* ===== 工事種別チップ ===== */
@@ -557,7 +614,7 @@ function stopAnaLog(){if(anaTimer){clearInterval(anaTimer);anaTimer=null;}}
 
 /* ===== KIRA解剖 ===== */
 async function analyze(){
-  if(!FILE_B64){toast('見積書をアップロードしてください');return;}
+  try{if(!(await buildUpload())){toast('見積書をアップロードしてください');return;}}catch(e){toast('写真をまとめられませんでした。枚数を減らしてもう一度お試しください');return;}
   showStep('stepAnalyzing');startAnaLog();
   const _ctrl=new AbortController();
   const _to=setTimeout(()=>{_ctrl.abort();},90000);
