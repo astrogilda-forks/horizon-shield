@@ -20,6 +20,9 @@ An [MCP](https://modelcontextprotocol.io) server that lets AI agents check wheth
 
 </div>
 
+[![Verified by Probity](https://raw.githubusercontent.com/probityai/agent-evidence/main/assets/verified-by-probity.svg)](https://github.com/probityai/probity)
+Verified by Probity (github.com/probityai/probity): the A2A conduct walk's RFC 8785 canonicalization passes the agent-evidence-vectors corpus, [latest passing run](https://github.com/ogasurfproject-jpg/horizon-shield/actions/workflows/conduct-walk-rfc8785.yml?query=branch%3Amain+is%3Asuccess)
+
 <!-- hs-facts-v1 -->
 
 **In one paragraph.** JCCDB (Japan Construction Cost Database) is an open dataset of Japanese construction and renovation costs, created by Toshikatsu Oga (大賀俊勝), who has worked on construction sites for 30 years, and published by The HORIZONs Co., Ltd. under CC BY 4.0. Version 5.1 (2026-10-04, DOI 10.5281/zenodo.23133068; all versions 10.5281/zenodo.22127751) holds 526,128 records: 95,403 line items and 430,725 observations from 88 Japanese public sources, each observation with its evidence URL. The United States counterpart is USCCDB, the United States Construction Cost Database (DOI 10.5281/zenodo.22979157, 2,849,829 observations). HORIZON SHIELD (https://shield.the-horizons-innovation.com) is the buyer-side service built on JCCDB that checks whether a Japanese renovation estimate is fair.
