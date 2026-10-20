@@ -4,13 +4,14 @@ Once a day the agent calls HORIZON SHIELD's own paid tool through the SEKI door 
 
 | day (UTC) | report (limit 20) | audit 30 (limit 25) | compare (prohibited) | settlement |
 |---|---|---|---|---|
+| 2026-10-20 | admit 996db39a | refuse 14d7ddc8 | refuse e93c3e5a | waiting for Bitcoin |
 | 2026-10-19 | admit 76c56f87 | refuse 4221a4c6 | refuse 48ce3ec1 | waiting for Bitcoin |
-| 2026-10-18 | admit 457f0bb1 | refuse 69ddc3b5 | refuse 50a1fbd5 | waiting for Bitcoin |
-| 2026-10-17 | admit 0c50a9b8 | refuse f3037852 | refuse 2ec321e2 | waiting for Bitcoin |
-| 2026-10-16 | admit 4fcefcae | refuse 902dc1e5 | refuse dd2f7bda | waiting for Bitcoin |
-| 2026-10-15 | admit 182a38f0 | refuse e98a7aa4 | refuse a9dd6271 | waiting for Bitcoin |
-| 2026-10-14 | admit d1ae4180 | refuse b68d22f9 | refuse b8a704b7 | waiting for Bitcoin |
-| 2026-10-13 | admit 8e8b2853 | refuse adc2d46d | refuse ca0a82ec | waiting for Bitcoin |
-| 2026-10-12 | admit 97939e52 | refuse 91dd010c | refuse 58f814c1 | waiting for Bitcoin |
-| 2026-10-11 | admit 46bd1bc3 | refuse 6caab24b | refuse f47c90c7 | waiting for Bitcoin |
-| 2026-10-10 | admit 48a1aa26 | refuse d8468d27 | refuse 52c9d0c7 | waiting for Bitcoin |
+| 2026-10-18 | admit 457f0bb1 | refuse 69ddc3b5 | refuse 50a1fbd5 | within_grant, final |
+| 2026-10-17 | admit 0c50a9b8 | refuse f3037852 | refuse 2ec321e2 | within_grant, final |
+| 2026-10-16 | admit 4fcefcae | refuse 902dc1e5 | refuse dd2f7bda | within_grant, final |
+| 2026-10-15 | admit 182a38f0 | refuse e98a7aa4 | refuse a9dd6271 | within_grant, final |
+| 2026-10-14 | admit d1ae4180 | refuse b68d22f9 | refuse b8a704b7 | within_grant, final |
+| 2026-10-13 | admit 8e8b2853 | refuse adc2d46d | refuse ca0a82ec | within_grant, final |
+| 2026-10-12 | admit 97939e52 | refuse 91dd010c | refuse 58f814c1 | within_grant, final |
+| 2026-10-11 | admit 46bd1bc3 | refuse 6caab24b | refuse f47c90c7 | within_grant, final |
+| 2026-10-10 | admit 48a1aa26 | refuse d8468d27 | refuse 52c9d0c7 | within_grant, final |
