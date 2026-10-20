@@ -21,7 +21,7 @@ An [MCP](https://modelcontextprotocol.io) server that lets AI agents check wheth
 </div>
 
 [![Verified by Probity](https://raw.githubusercontent.com/probityai/agent-evidence/main/assets/verified-by-probity.svg)](https://github.com/probityai/probity)
-Verified by Probity (github.com/probityai/probity): [latest passing run](https://github.com/ogasurfproject-jpg/horizon-shield/actions/workflows/conduct-walk-rfc8785.yml)
+Verified by Probity (github.com/probityai/probity): the A2A conduct walk's RFC 8785 canonicalization passes the agent-evidence-vectors corpus, [latest passing run](https://github.com/ogasurfproject-jpg/horizon-shield/actions/workflows/conduct-walk-rfc8785.yml?query=branch%3Amain+is%3Asuccess)
 
 <!-- hs-facts-v1 -->
 
