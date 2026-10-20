@@ -45,6 +45,28 @@ COUNT_FIELDS = [
 ]
 
 
+# 運営者が告知して止めた中継のホスト。ここの口が届かなくなったのは、登録した各サーバーの状態ではなく、
+# 中継が止まったから。差では別に数え、理由を名指す(「落ちた」の数に混ぜない)。
+KNOWN_HOST_SHUTDOWNS = [
+    {"hosts": ["server.smithery.ai"], "suffixes": [".run.tools"], "since": "2026-10-31",
+     "what": "Smithery が中継の URL(server.smithery.ai と run.tools)を 2026-10-31 に止めた(2026-10-19 の告知)。"
+             "smithery.ai は名簿として残る。登録した各サーバーは自前の URL で生きていることがある"},
+]
+
+
+def shutdown_of(endpoint):
+    """その口のホストが、告知された中継の停止に当たれば、その記録を返す。"""
+    try:
+        from urllib.parse import urlsplit
+        host = (urlsplit(endpoint).hostname or "").lower()
+    except ValueError:
+        return None
+    for ev in KNOWN_HOST_SHUTDOWNS:
+        if host in ev["hosts"] or any(host.endswith(x) for x in ev["suffixes"]):
+            return ev
+    return None
+
+
 def load_jsonl(path):
     out = {}
     with io.open(path, encoding="utf-8") as f:
@@ -121,9 +143,10 @@ def diff_walk(a_path, b_path):
         if isinstance(ta, int) and isinstance(tb, int) and ta != tb:
             tool_moves.append({"endpoint": k, "before": ta, "after": tb, "delta": tb - ta})
 
-    # 「消えた」と「測れなかった」を混ぜない
+    # 「消えた」と「測れなかった」を混ぜない。告知された中継の停止に当たる口は、別に数える
+    shut = [k for k in both if a[k].get("state") == "measured" and b[k].get("state") != "measured" and shutdown_of(k)]
     lost_measured_to_held = sum(1 for k in both
-                                if a[k].get("state") == "measured" and b[k].get("state") == "held")
+                                if a[k].get("state") == "measured" and b[k].get("state") == "held" and k not in shut)
 
     tool_moves.sort(key=lambda x: -abs(x["delta"]))
     return {
@@ -148,6 +171,12 @@ def diff_walk(a_path, b_path):
             "what_this_is": "前回は測れて今回は測れなかった数。"
                             "これはあちらの状態ではなく、こちらの計器の話である。"
                             "多ければ、この回の走行そのものを疑う。",
+        },
+        "host_shutdowns": {
+            "count": len(shut),
+            "events": sorted({shutdown_of(k)["what"] for k in shut}),
+            "what_this_is": "前回は測れて今回は測れなかった口のうち、運営者が告知して止めた中継のホストにあるもの。"
+                            "上の「測れなかった」には入れていない。",
         },
         "tool_count_moves_top20": tool_moves[:20],
         "caution": [
@@ -193,6 +222,11 @@ def show(d):
         print()
         print("   前回は測れて今回は測れなかった: %d" % m["count"])
         print("     %s" % m["what_this_is"])
+        hs = d["host_shutdowns"]
+        if hs["count"]:
+            print("   告知された中継の停止に当たる口: %d(上の数には入れていない)" % hs["count"])
+            for e in hs["events"]:
+                print("     %s" % e)
     print()
     for c in d["caution"]:
         print("   ※ %s" % c)

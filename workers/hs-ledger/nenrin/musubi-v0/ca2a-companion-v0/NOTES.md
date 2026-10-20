@@ -10,7 +10,7 @@
 
 The verifier imports `settle_v1_1.py` from the directory above for the Bitcoin header view and the anchor proof, unchanged.
 
-One import is private: the at-execution verdict calls cA2A's `_check_revocation` directly, so that every revocation the log published before a receipt is in force whatever its `issued_at` (CA45). A private function can change without notice, so the profile is pinned to ca2a-runtime 0.4.0 until cA2A offers a public way to say "these statements are in force".
+One import is private: the at-execution verdict calls cA2A's `_check_revocation` directly, so that every revocation the log published before a receipt is in force whatever its `issued_at` (CA45). A private function can change without notice, so the profile is pinned to ca2a-runtime 0.4.0 until cA2A offers a public way to say "these statements are in force". What the call cannot establish is the snapshot itself: that it holds every statement the log published before the receipt, in log order, and nothing after the receipt's cut. Remove a statement from a well-formed snapshot and the call answers not_revoked. Those three properties are this companion's to establish, from the ledger, before the call; cA2A does not and cannot check them. An independent characterization of both readings, with 12 signed cases, is on agentrust-io/ca2a#263 (dinakarjs, 2026-10-20, at main 806d114); the proposed public keyword is tracked there.
 
 Checked against both cA2A sources on 2026-10-17: agentrust-io/ca2a at 305fedc (editable install) and the PyPI release ca2a-runtime 0.4.0. Both give 57/57.
 
