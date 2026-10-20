@@ -79,6 +79,23 @@ async function serveFromRaw(rawUrl, scope, key) {
   return buildJsonResponse(buf, scope, key);
 }
 __name(serveFromRaw, "serveFromRaw");
+// 2026-10-20: 呼び手ごとに別のトークン。GATEWAY_TOKEN は KIRA(hs-kira-proxy)と CI、GATEWAY_TOKEN_YAKUMO は
+// AIシミュレーター(やくも)のサーバー。片方を回してももう片方は止まらない。未設定のものは使わない。
+function sameString(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+__name(sameString, "sameString");
+function tokenOk(token, env) {
+  if (!token) return false;
+  for (const v of [env.GATEWAY_TOKEN, env.GATEWAY_TOKEN_YAKUMO]) {
+    if (v && sameString(token, v)) return true;
+  }
+  return false;
+}
+__name(tokenOk, "tokenOk");
 function resolveSoubaV2Key(pathname) {
   const sub = pathname.slice(SOUBA_V2_PREFIX.length);
   if (!sub || sub.includes("..") || sub.startsWith("/")) return null;
@@ -106,7 +123,7 @@ var gateway_default = {
       }
     }
     const token = request.headers.get("X-Gateway-Token");
-    if (!token || token !== env.GATEWAY_TOKEN) {
+    if (!tokenOk(token, env)) {
       return unauthorized();
     }
     if (method !== "GET") return notFound();

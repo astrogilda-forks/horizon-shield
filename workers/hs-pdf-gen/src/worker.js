@@ -17210,6 +17210,13 @@ async function hsGenTokenOk(request, env) {
   return !!env.PDFGEN_TOKEN && !!t && await hsCtEqual(t, env.PDFGEN_TOKEN);
 }
 __name(hsGenTokenOk, "hsGenTokenOk");
+// 2026-10-20: AIシミュレーター(やくも)のサーバー専用。通すのは /generate-meitsumori-signed だけ。
+// PDFGEN_TOKEN(hs-internal-mcp・hs-gateway)とは別の値にして、片方を回してももう片方は止まらないようにする。未設定なら通さない。
+async function hsYakumoPdfTokenOk(request, env) {
+  const t = request.headers.get("X-PDF-Token") || "";
+  return !!env.PDFGEN_TOKEN_YAKUMO && !!t && await hsCtEqual(t, env.PDFGEN_TOKEN_YAKUMO);
+}
+__name(hsYakumoPdfTokenOk, "hsYakumoPdfTokenOk");
 async function hsAuditTokenOk(request, env) {
   const t = request.headers.get("X-HS-TOKEN") || "";
   return !!env.HS_AUDIT_TOKEN && !!t && await hsCtEqual(t, env.HS_AUDIT_TOKEN);
@@ -20007,7 +20014,7 @@ var worker_default = {
           await browser.close();
         }
       }
-      if (request.method === "POST" && HS_GEN_TOKEN_ROUTES.includes(pathname) && !(await hsGenTokenOk(request, env))) {
+      if (request.method === "POST" && HS_GEN_TOKEN_ROUTES.includes(pathname) && !(await hsGenTokenOk(request, env)) && !(pathname === "/generate-meitsumori-signed" && await hsYakumoPdfTokenOk(request, env))) {
         return json({ error: "unauthorized" }, 401);
       }
       if (request.method === "POST" && HS_GEN_AUDIT_ROUTES.includes(pathname) && !(await hsGenTokenOk(request, env)) && !(await hsAuditTokenOk(request, env))) {
