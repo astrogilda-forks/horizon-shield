@@ -19,21 +19,40 @@
 // statement exists for the case of a lost call (Issue #51, aeoess): a caller whose call got no answer asks
 // the worker whether that occurrence ran; the worker either returns the receipt it had already signed, or signs
 // that it did not run and will not, so the payer's hold can be released and a new occurrence id used instead.
-// KV is eventually consistent across locations (up to about a minute), so a /void and a /call for the same
-// occurrence sent at the same moment from different places can both succeed within that window; the caller
-// sends one or the other, never both at once. Without the binding the worker behaves as before and refuses
+//
+// The race between /call and /void (Issue #51, aeoess, 2026-10-21). Before this change handleCall checked void:
+// and rcpt: before the slow audit and never again, and handleVoid checked only rcpt:, so a /void that arrived while
+// a /call was auditing signed not_executed and the call then finished and issued a receipt for the same
+// occurrence. Two layers close it.
+//   1. In the handlers, whatever the store: a /call writes an in-flight marker (run:<request_sha256>, with its
+//      start time and a run id) before the audit, and right before signing it rechecks that it is still within
+//      RUN_SIGN_BY_MS of its start, that no void exists, that no other receipt exists, and that the marker is still
+//      its own; otherwise it refuses and signs nothing. A /void reads the marker, then the receipt, then the void,
+//      and signs not_executed only when there is no receipt and no live marker; while a live marker exists it
+//      answers {status: "in_progress"}, unsigned, and voids nothing. A marker older than RUN_STALE_MS is from a call
+//      that can no longer sign (it would refuse call_expired), so it no longer blocks a void. On KV the marker also
+//      carries expirationTtl RUN_TTL_S so a crashed call's marker is removed.
+//   2. Atomicity: with the OCCURRENCE binding (a SQLite-backed Durable Object, class Occurrence, one object per
+//      request_sha256) the worker forwards /call and /void to that object, which runs them one at a time under
+//      state.blockConcurrencyWhile, with its own transactional storage as the authority for rcpt:, void: and run:.
+//      A /void sent during a /call for the same occurrence waits for it and answers executed. Answers recorded in
+//      KV before this change (the receipts of the earlier run) are still read from STATE when the object has none,
+//      and rcpt: and void: are still written to STATE first, so existing readers keep working.
+// Without the OCCURRENCE binding only layer 1 applies: KV is eventually consistent across locations (up to about
+// a minute), so two places can still race inside that window. Without STATE the worker keeps no state and refuses
 // /void with no_state.
 //
 // Routes
 //   GET  /.well-known/pilot.json   the responder key, the price, the unit, the fixture digest, the profile
 //   POST /call                     {request, task, fixture, payment} -> {receipt, audit, request_sha256}
 //   POST /void                     {request, void} -> {status: "executed", receipt, audit} or
-//                                  {status: "not_executed", statement}; void is a caller-signed
-//                                  musubi.ca2a.void-request.v0 naming the request occurrence by digest
+//                                  {status: "not_executed", statement} or
+//                                  {status: "in_progress", request_sha256, retry_after_s} (unsigned, voids nothing);
+//                                  void is a caller-signed musubi.ca2a.void-request.v0 naming the occurrence by digest
 //
 // Secrets, vars and bindings (wrangler): RESPONDER_SEED (32-byte hex Ed25519 seed; TOshi sets it), PRICE, UNIT,
 //   MCP_URL (default https://mcp.horizonshield.dev/mcp), BLOCKS_URL (default https://mempool.space/api),
-//   STATE (KV namespace).
+//   STATE (KV namespace), OCCURRENCE (Durable Object namespace, class Occurrence).
 
 const enc = new TextEncoder();
 const HEX32 = /^[0-9a-f]{64}$/;
@@ -48,6 +67,18 @@ const T_VOID = "musubi.ca2a.void-request.v0";
 const T_NONEXEC = "musubi.ca2a.non-execution.v0";
 const T_FIXTURE = "horizon-shield.estimate-fixture.v0";
 const SERVICE = "estimate-audit";
+const T_RUN = "hs-pilot.in-flight.v0";
+// A call that has not reached signing RUN_SIGN_BY_MS after it started refuses call_expired and signs nothing. It is
+// under the 30 s a Durable Object allows inside blockConcurrencyWhile, so the handler refuses before the platform
+// resets the object. A marker older than RUN_STALE_MS belongs to a call that can no longer sign, so it no longer
+// blocks a /void (the margin between the two covers the receipt's write and clock skew between machines).
+// RUN_TTL_S is the marker's KV expirationTtl (KV's minimum is 60), longer than RUN_STALE_MS so a live marker never
+// expires first. (Not exported as constants: every export of a Worker's main module must be a function or a
+// handler, so the tests read them through runTimings().)
+const RUN_SIGN_BY_MS = 25000;
+const RUN_STALE_MS = 60000;
+const RUN_TTL_S = 120;
+export function runTimings() { return { RUN_SIGN_BY_MS, RUN_STALE_MS, RUN_TTL_S }; }
 const LONE_SURROGATE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
 
 export class Refusal extends Error {
@@ -218,22 +249,62 @@ export async function handleCall(body, env, fetchFn) {
   checkFixture(body.fixture);
   await checkPayment(body.payment, { requestSha, task: body.task, responder });
   if (body.payment.payer !== body.request.caller) throw new Refusal("payment_not_by_caller");
-  // one answer per occurrence: a voided occurrence is never executed; an executed one is answered from state
-  if (env.STATE) {
-    if (await env.STATE.get("void:" + requestSha)) throw new Refusal("request_voided", requestSha);
-    const prior = await env.STATE.get("rcpt:" + requestSha, "json");
-    if (prior) return { ...prior, replay: true };
-  }
   const region = typeof body.region === "string" && body.region.length <= 32 ? body.region : null;
-  const audit = await auditFixture(body.fixture, region, env.MCP_URL || "https://mcp.horizonshield.dev/mcp", fetchFn);
-  const seen = await seenBlock(env.BLOCKS_URL || "https://mempool.space/api", fetchFn);
-  const receipt = await sign({ type: T_RECEIPT, responder, caller: body.request.caller, lineage: body.request.lineage,
-    capability: body.request.capability, request_sha256: requestSha, seen_block: seen,
-    outcome: { kind: "result", stage: "audited", response_sha256: await sha256hex(jcs(audit)) },
-    attestation_sha256: null }, env.RESPONDER_SEED);
-  const out = { request_sha256: requestSha, receipt, audit };
-  if (env.STATE) await env.STATE.put("rcpt:" + requestSha, JSON.stringify(out));
-  return out;
+  const execute = async () => {
+    const audit = await auditFixture(body.fixture, region, env.MCP_URL || "https://mcp.horizonshield.dev/mcp", fetchFn);
+    const seen = await seenBlock(env.BLOCKS_URL || "https://mempool.space/api", fetchFn);
+    return { audit, seen };
+  };
+  const signReceipt = async ({ audit, seen }) => {
+    const receipt = await sign({ type: T_RECEIPT, responder, caller: body.request.caller, lineage: body.request.lineage,
+      capability: body.request.capability, request_sha256: requestSha, seen_block: seen,
+      outcome: { kind: "result", stage: "audited", response_sha256: await sha256hex(jcs(audit)) },
+      attestation_sha256: null }, env.RESPONDER_SEED);
+    return { request_sha256: requestSha, receipt, audit };
+  };
+  if (!env.STATE) return signReceipt(await execute());
+  // one answer per occurrence: a voided occurrence is never executed; an executed one is answered from state
+  const S = env.STATE;
+  if (await S.get("void:" + requestSha)) throw new Refusal("request_voided", requestSha);
+  const prior = await S.get("rcpt:" + requestSha, "json");
+  if (prior) return { ...prior, replay: true };
+  const started = nowMs(env);
+  const running = await S.get("run:" + requestSha, "json");
+  if (runIsLive(running, started)) throw new Refusal("in_progress", "another call for this occurrence is running; ask again");
+  // the in-flight marker: written before the slow work, so a /void sent meanwhile does not sign not_executed
+  const run = { type: T_RUN, request_sha256: requestSha, run_id: hex(crypto.getRandomValues(new Uint8Array(16))), started_at_ms: started };
+  await S.put("run:" + requestSha, JSON.stringify(run), { expirationTtl: RUN_TTL_S });
+  try {
+    const done = await execute();
+    // the recheck, right before signing: nothing below awaits anything slow
+    const age = nowMs(env) - started;
+    if (!(age >= 0 && age < RUN_SIGN_BY_MS)) throw new Refusal("call_expired", "the audit took " + age + " ms; no receipt was signed; ask /void, then use a new occurrence");
+    if (await S.get("void:" + requestSha)) throw new Refusal("request_voided", requestSha);
+    const raced = await S.get("rcpt:" + requestSha, "json");
+    if (raced) return { ...raced, replay: true };
+    const mine = await S.get("run:" + requestSha, "json");
+    if (!isObj(mine) || mine.run_id !== run.run_id) throw new Refusal("in_progress", "this call's in-flight marker was replaced; no receipt was signed; ask again");
+    const out = await signReceipt(done);
+    await S.put("rcpt:" + requestSha, JSON.stringify(out));
+    return out;
+  } finally {
+    // the marker goes only after the receipt is stored (or nothing was signed), and only if it is still this call's.
+    // A store with no delete (an in-memory KV of a self-test) gets JSON null, which reads as no marker.
+    const cur = await S.get("run:" + requestSha, "json");
+    if (isObj(cur) && cur.run_id === run.run_id) {
+      if (typeof S.delete === "function") await S.delete("run:" + requestSha);
+      else await S.put("run:" + requestSha, "null");
+    }
+  }
+}
+
+const nowMs = (env) => (typeof env.CLOCK === "function" ? env.CLOCK() : Date.now());   // env.CLOCK: tests only
+// live: written by a call that may still sign or store its receipt. A marker without a start time, or with one
+// RUN_STALE_MS or more away from now in either direction, is not live.
+function runIsLive(run, now) {
+  if (!isObj(run) || !Number.isFinite(run.started_at_ms)) return false;
+  const age = now - run.started_at_ms;
+  return age > -RUN_STALE_MS && age < RUN_STALE_MS;
 }
 
 // ---- the lost call: did this occurrence run? Answered from state, signed by the responder when it did not.
@@ -255,36 +326,124 @@ export async function handleVoid(body, env, fetchFn) {
   if (v.request_sha256 !== requestSha) throw new Refusal("void_not_for_this_request");
   if (!(await verify(v, "caller"))) throw new Refusal("void_signature_invalid");
   if (!env.STATE) throw new Refusal("no_state", "this deployment keeps no state and cannot say whether an occurrence ran");
-  const prior = await env.STATE.get("rcpt:" + requestSha, "json");
-  if (prior) return { status: "executed", ...prior };
-  const stored = await env.STATE.get("void:" + requestSha, "json");
-  if (stored) return { status: "not_executed", request_sha256: requestSha, statement: stored };
+  const S = env.STATE;
+  // What is already settled for this occurrence. The marker is read before the receipt: a call removes its marker
+  // only after its receipt is stored, so "no live marker, then no receipt" cannot miss a call that signed.
+  const settled = async () => {
+    const running = await S.get("run:" + requestSha, "json");
+    const prior = await S.get("rcpt:" + requestSha, "json");
+    if (prior) return { status: "executed", ...prior };
+    const stored = await S.get("void:" + requestSha, "json");
+    if (stored) return { status: "not_executed", request_sha256: requestSha, statement: stored };
+    const now = nowMs(env);
+    if (runIsLive(running, now)) {
+      return { status: "in_progress", request_sha256: requestSha,
+        retry_after_s: Math.max(1, Math.ceil((RUN_STALE_MS - (now - running.started_at_ms)) / 1000)) };
+    }
+    return null;
+  };
+  const first = await settled();
+  if (first) return first;
   const seen = await seenBlock(env.BLOCKS_URL || "https://mempool.space/api", fetchFn);
+  const again = await settled();          // again after the block fetch, so the check and the write are adjacent
+  if (again) return again;
   const statement = await sign({ type: T_NONEXEC, responder, caller: body.request.caller, lineage: body.request.lineage,
     capability: body.request.capability, request_sha256: requestSha, seen_block: seen,
     outcome: { kind: "not_executed" }, void_request_sha256: await sha256hex(jcs(v)) }, env.RESPONDER_SEED);
-  await env.STATE.put("void:" + requestSha, JSON.stringify(statement));
+  await S.put("void:" + requestSha, JSON.stringify(statement));
   return { status: "not_executed", request_sha256: requestSha, statement };
+}
+
+// ---- atomicity: one Durable Object per request occurrence (binding OCCURRENCE, class Occurrence, SQLite-backed)
+//
+// The store the handlers see inside the object. Its own storage is the authority. rcpt: and void: fall back to the
+// KV namespace when the object holds nothing (answers recorded before the object existed, such as the receipts of
+// the earlier run), and are written to KV first and then to the object, so a write cut half way is still seen
+// through that fallback and KV readers keep working. run: lives only in the object (no TTL there; its age decides).
+export function occurrenceStore(storage, kv) {
+  const local = (k) => k.startsWith("run:") || !kv;
+  return {
+    async get(k, type) {
+      let raw = await storage.get(k);
+      if (raw === undefined && !local(k)) {
+        const legacy = await kv.get(k);
+        if (legacy !== null) raw = legacy;
+      }
+      if (raw === undefined || raw === null) return null;
+      return type === "json" ? JSON.parse(raw) : raw;
+    },
+    async put(k, v) {
+      if (!local(k)) await kv.put(k, v);
+      await storage.put(k, v);
+    },
+    async delete(k) { await storage.delete(k); }    // only run: is ever deleted
+  };
+}
+
+const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+
+// One POST /call or /void, answered as a Response. It never throws: inside blockConcurrencyWhile a throw resets the object.
+async function answer(path, raw, env, fetchFn) {
+  try {
+    if (raw.length > 65536) throw new Refusal("too_large");
+    let body;
+    try { body = JSON.parse(raw); } catch (_e) { throw new Refusal("not_json"); }
+    return json(await (path === "/call" ? handleCall : handleVoid)(body, env, fetchFn));
+  } catch (e) {
+    if (e instanceof Refusal) return json({ refused: e.code, detail: e.detail }, 400);
+    return json({ refused: "internal" }, 500);
+  }
+}
+
+export class Occurrence {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+    this.fetchFn = (u, init) => fetch(u, init);   // the tests replace it with a mock
+  }
+  async fetch(request) {
+    const path = new URL(request.url).pathname;
+    if (request.method !== "POST" || (path !== "/call" && path !== "/void")) return json({ refused: "no_such_route" }, 404);
+    const raw = await request.text();
+    const env = { ...this.env, STATE: occurrenceStore(this.state.storage, this.env.STATE) };
+    // one request at a time for this occurrence, from the first read to the last write, including the audit
+    return this.state.blockConcurrencyWhile(() => answer(path, raw, env, this.fetchFn));
+  }
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
     try {
       if (request.method === "GET" && url.pathname === "/.well-known/pilot.json") {
         return json({ profile: "musubi.ca2a.pilot.v0", service: SERVICE, responder: await publicKeyHex(env.RESPONDER_SEED),
           price: Number(env.PRICE), unit: env.UNIT, issue: "ogasurfproject-jpg/horizon-shield#51",
-          state: env.STATE ? "one answer per occurrence; POST /void asks whether an occurrence ran" : "none",
+          state: !env.STATE ? "none" : "one answer per occurrence; POST /void asks whether an occurrence ran"
+            + (env.OCCURRENCE ? "; /call and /void for one occurrence run one at a time; not_executed is final" : ""),
           what: "POST /call with {request, task, fixture, payment}; returns the signed execution receipt and the audit. "
-            + "POST /void with {request, void}; returns the stored receipt or a signed non-execution statement" });
+            + "POST /void with {request, void}; returns the stored receipt, a signed non-execution statement, "
+            + "or in_progress (unsigned) while a call for that occurrence is still running" });
       }
       if (request.method === "POST" && (url.pathname === "/call" || url.pathname === "/void")) {
         const raw = await request.text();
-        if (raw.length > 65536) throw new Refusal("too_large");
-        let body;
-        try { body = JSON.parse(raw); } catch (_e) { throw new Refusal("not_json"); }
-        return json(await (url.pathname === "/call" ? handleCall : handleVoid)(body, env, fetch));
+        if (env.OCCURRENCE && raw.length <= 65536) {
+          // the request occurrence names the object; a body whose request does not check is answered here, with
+          // no state at all, so it is refused exactly as before and touches nothing
+          let requestSha = null;
+          try {
+            const body = JSON.parse(raw);
+            requestSha = isObj(body) ? await checkRequest(body.request) : null;
+          } catch (e) {
+            if (!(e instanceof Refusal) && !(e instanceof SyntaxError)) throw e;
+          }
+          if (requestSha === null) {
+            const { STATE: _s, OCCURRENCE: _o, ...bare } = env;
+            return answer(url.pathname, raw, bare, fetch);
+          }
+          const stub = env.OCCURRENCE.get(env.OCCURRENCE.idFromName(requestSha));
+          return stub.fetch("https://occurrence" + url.pathname, { method: "POST", headers: { "content-type": "application/json" }, body: raw });
+        }
+        return answer(url.pathname, raw, env, fetch);
       }
       return json({ refused: "no_such_route" }, 404);
     } catch (e) {

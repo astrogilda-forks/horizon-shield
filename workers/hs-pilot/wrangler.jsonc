@@ -3,6 +3,10 @@
   // One KV binding (STATE): per request occurrence, the receipt signed for it or the signed non-execution
   // statement, so each occurrence is answered once. The audit is fetched from the public MCP server; the block
   // from mempool.space.
+  // One Durable Object binding (OCCURRENCE, class Occurrence, SQLite-backed, 2026-10-21): one object per request
+  // occurrence runs /call and /void for it one at a time, so a /void can never sign not_executed while a /call for
+  // the same occurrence is still running (Issue #51, aeoess). It still reads and writes STATE, so the receipts of
+  // the earlier run keep being answered. The v1 migration creates the class; SQLite-backed objects need no paid plan.
   "name": "hs-pilot",
   "main": "src/pilot.mjs",
   "compatibility_date": "2026-08-01",
@@ -17,6 +21,14 @@
   },
   "kv_namespaces": [
     { "binding": "STATE", "id": "6d41abaee7fd4469b67475d2339f0dd4" }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "OCCURRENCE", "class_name": "Occurrence" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Occurrence"] }
   ]
   // secret, set by hand and never written here:  wrangler secret put RESPONDER_SEED   (64 hex, a fresh Ed25519 seed)
 }
