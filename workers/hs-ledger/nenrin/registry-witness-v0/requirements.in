@@ -1,0 +1,5 @@
+trace-verify==0.4.3
+scitt-cose==0.4.3
+cbor2==6.1.5
+rfc8785==0.1.4
+cryptography==46.0.7

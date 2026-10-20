@@ -1,0 +1,4 @@
+The files under registry/ are copied byte for byte from agentrust-io/trace-registry at the
+commit in SOURCE_COMMIT (https://github.com/agentrust-io/trace-registry). Registry data is
+licensed CC BY 4.0 by its authors; see that repository's LICENSE. Nothing here is modified.
+They are the test fixture for witness_test.py, which witnesses the real checkpoint chain.

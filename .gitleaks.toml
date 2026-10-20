@@ -22,6 +22,8 @@
 # ファイルには書いてへん。
 # 2026-10-16: kyoka-observe-v0/observed/*/binding.json は GitHub Actions の OIDC token(期限切れ後に upload、5 分の寿命、
 # audience nenrin-kyoka-observe)を含む idp-bind-v0 の束ね記録。real-issuers と同じ理由で許す。
+# 2026-10-20: registry-witness-v0 の state(log.json と tree_heads.ndjson)は証人の公開鍵 witness_key(Ed25519、
+# WITNESS_KEY.json で配る公開値)を持つ。generic-api-key が名前の key に反応するので、その欄の形だけ許す。秘密鍵は運営者の Mac の外に出ん。
 title = "horizon-shield gitleaks config"
 
 [extend]
@@ -37,6 +39,7 @@ regexes = [
   '''"(prior_)?key_sha256":\s*"[0-9a-f]{64}"''',
   "fqrEpRuYScHz52eeiuAWAFEeJB3T7VtZJlducNIhzZM=",
   '''key_thumbprint"?\s*:\s*"[A-Za-z0-9_-]{43}"''',
+  '''"witness_key":"[0-9a-f]{64}"''',
 ]
 paths = [
   '''workers/hs-ledger/nenrin/task-delegation-bind-v0/t4_fixture\.json''',
