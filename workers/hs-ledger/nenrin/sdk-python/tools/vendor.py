@@ -49,7 +49,9 @@ MUSUBI_DATA = ["canonical_v0.mjs", "canonical_vectors.json", "anchor_compose_fix
                "admission_verify_v0.mjs", "clause_eval_v0.mjs",
                "fixtures/ADMISSION_FIXTURES.sha256", "fixtures/admission_intake/cases.json",
                "fixtures/admission_intake/v0_admission_public.json", "fixtures/contract_door/corpus.json",
-               "fixtures/settle_admission/cases.json"]
+               "fixtures/settle_admission/cases.json",
+               # admission v0.2 (the immune block): the records its self-test reads, and the demo they come from
+               "fixtures/admission_immune/cases.json", "fixtures/admission_immune/demo.json"]
 # convergence_v0 (settle v1.9) imports recovery-v0/recovery_verify.py by path, so that one file travels too.
 # admission_verify_v0's self-test holds it to its JavaScript twin, which reads ../agreement-v0's three .mjs files.
 VERBATIM = [("musubi-v0/" + f) for f in MUSUBI_MODULES + MUSUBI_DATA] + ["agreement-v0/agreement_verify.py", "agreement-v0/key_succession.py",

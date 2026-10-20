@@ -4,8 +4,9 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { createHash } from "node:crypto";
+import { createHash, generateKeyPairSync, sign as cryptoSign } from "node:crypto";
 import { handleAdmissionIntake, handleRevocationIntake, handleStoredGet, admissionSelfDescription, MAX_BYTES } from "./admission_intake.mjs";
+import { verifyAdmissionText } from "./admission_verify_v0.mjs";
 import { canonical as musubiCanonical } from "./canonical_v0.mjs";
 import { canonicalUtf8, parseStrict } from "../agreement-v0/agreement_canonical.mjs";
 
@@ -126,6 +127,108 @@ t("no contract sent: 400", (await handleRevocationIntake(post({ record_canonical
 // ---- the self description ----
 const d = admissionSelfDescription("https://ledger.horizonshield.dev");
 t("the self description says what the intake does not do", d.what_this_does_not_do.length === 3 && d.schemas.join() === "a2a-admission-v0,a2a-revocation-v0");
+
+// ---- v0.2: the immune block (fixtures/admission_immune/cases.json, the first attack as a door signed it) ----
+{
+  const IC = JSON.parse(readFileSync(path.join(HERE, "fixtures", "admission_immune", "cases.json"), "utf8"));
+  const doorKeyUrl = JSON.parse(IC.records.D_listed_payee).relying_party.key_url;
+  const good = Object.keys(IC.records).filter((k) => /^[A-Z]/.test(k));
+  const wi = world({ keys: { [doorKeyUrl]: IC.relying_pub_b64 } });
+  let okAll = true;
+  for (const k of good) {
+    const rr = await handleAdmissionIntake(post({ record_canonical: IC.records[k] }), wi.deps);
+    okAll = okAll && rr.status === 201 && rr.body.report.admit_version === "0.2" && rr.body.report.decision === JSON.parse(IC.records[k]).decision;
+  }
+  t("v0.2: the " + good.length + " admissions of the first attack, each with its immune block, are accepted and stored", okAll && wi.mem.size === good.length);
+  const want = { v02_without_immune: "malformed", v01_with_immune: "malformed", v02_v01_limits: "does_not_establish_altered", reject_admitted: "immune_inconsistent",
+    hold_without_reason: "immune_inconsistent", released_without_signal: "malformed", clear_with_codes: "immune_inconsistent", unknown_code: "malformed",
+    immune_reason_in_v01: "malformed", extra_immune_field: "malformed", reasons_a_string: "malformed", version_null: "malformed",
+    indicator_seen_on_hold_only: "immune_inconsistent" };
+  for (const [k, code] of Object.entries(want)) await refusal("v0.2 broken: " + k, IC.records[k], code, world({ keys: { [doorKeyUrl]: IC.relying_pub_b64 } }));
+  const anyGood = IC.records[good[0]];
+  await refusal("a negative chain height is malformed", edit(anyGood, (o) => { o.chain_view.height = -1; }), "malformed", world({ keys: { [doorKeyUrl]: IC.relying_pub_b64 } }));
+  const floatText = anyGood.replace(/"height":(\d+)/, '"height":$1.5');
+  const rf = await handleAdmissionIntake(post({ record_canonical: floatText }), world({ keys: { [doorKeyUrl]: IC.relying_pub_b64 } }).deps);
+  t("a chain height that is not an integer never reaches the store", floatText !== anyGood && rf.status === 422, rf.body);
+
+  // Records signed by a key of this test for exactly their canonical bytes, so a refusal is the defect's. The intake's
+  // verdict must be the verifier's (verifyAdmissionText, the twin of admission_verify_v0.verify_admission_text).
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const pub = Buffer.from(publicKey.export({ format: "jwk" }).x, "base64url").toString("base64");
+  const signed = (rec) => {
+    const b = Object.fromEntries(Object.entries(rec).filter(([k]) => k !== "signatures"));
+    const sig = cryptoSign(null, Buffer.from("a2a-admission-v0\n" + canonicalUtf8(b), "utf8"), privateKey).toString("base64");
+    return { ...b, signatures: [{ alg: "ed25519", domain: b.relying_party.domain, sig }] };
+  };
+  const base = parseStrict(anyGood), h0 = base.chain_view.height, hs = '"height":' + h0;
+  const S = (kw) => canonicalUtf8(signed({ ...base, ...kw }));
+  const st = S({});
+  const retext = (old, nu) => { if (st.split(old).length !== 2) throw new Error("not once: " + old); return st.replace(old, nu); };
+  const hold = (codes) => S({ decision: "escalate", reasons: ["immune_hold"], immune: { ...base.immune, verdict: "hold", codes } });
+  const cases = [
+    ["resigned (the control)", st, null],
+    ["(a) height written 970204.0", S({ chain_view: { ...base.chain_view, height: Number(h0) } }), "malformed"],
+    ["(a) height written with an exponent", retext(hs, '"height":' + String(h0)[0] + "." + String(h0).slice(1) + "e" + (String(h0).length - 1)), "not_canonical"],
+    ["(a) a duplicate key, the last one the signed value", retext('"decision":"refuse"', '"decision":"admit","decision":"refuse"'), "unparseable_record"],
+    ["(b) rules a string", S({ rules: "0.2" }), "malformed"],
+    ["(b) rules an array", S({ rules: [base.rules] }), "malformed"],
+    ["(b) contract_ref a string", S({ contract_ref: base.contract_ref.contract_sha256 }), "malformed"],
+    ["(b) does_not_establish 5 (a BigInt, which JSON.stringify could not write)", S({ does_not_establish: 5n }), "malformed"],
+    ["(b) does_not_establish true", S({ does_not_establish: true }), "malformed"],
+    ["(b) signatures 5", canonicalUtf8({ ...signed(base), signatures: 5n }), "malformed"],
+    ["(c) 2^53 outside the height", S({ presentation_ref: [{ ...base.presentation_ref[0], n: 2n ** 53n }] }), "malformed"],
+    ["(c) -2^53 outside the height", S({ presentation_ref: [{ ...base.presentation_ref[0], n: -(2n ** 53n) }] }), "malformed"],
+    ["(c) height 2^60", S({ chain_view: { ...base.chain_view, height: 2n ** 60n } }), "malformed"],
+    ["(c) height of 5000 digits", retext(hs, '"height":' + "9".repeat(5000)), "malformed"],
+    ["(c) height NaN", retext(hs, '"height":NaN'), "malformed"],
+    ["(c) a float outside the height", S({ presentation_ref: [{ ...base.presentation_ref[0], extra: 0.5 }] }), "malformed"],
+    ["(c) a __proto__ key", retext('"publication":"public"', '"__proto__":{},"publication":"public"'), "not_canonical"],
+    ["(d) reject, terms_malformed", S({ immune: { ...base.immune, codes: ["terms_malformed"] } }), null],
+    ["(d) reject, vetoed", S({ immune: { ...base.immune, codes: ["receptor_closed", "vetoed"] } }), null],
+    ["(d) hold, cooling_off", hold(["cooling_off"]), null],
+    ["(d) hold, exposure_full", hold(["exposure_full", "unmarked_novel"]), null],
+    ["(d) hold carrying vetoed", hold(["cooling_off", "vetoed"]), "immune_inconsistent"],
+    ["(d) reject with only cooling_off", S({ immune: { ...base.immune, codes: ["cooling_off"] } }), "immune_inconsistent"],
+    ["(d) flagged with cooling_off", S({ decision: "admit", reasons: ["within_grant"], immune: { ...base.immune, verdict: "flagged", codes: ["cooling_off"] } }), "immune_inconsistent"],
+  ];
+  // keys outside printable ASCII, the digits of a key_url port, lone surrogates (2026-10-21)
+  const pr = (kw) => S({ presentation_ref: [{ ...base.presentation_ref[0], ...kw }] });
+  for (const [name, key] of [["NUL", "a\u0000"], ["e acute", "\u00e9"], ["DEL", "\x7f"], ["an emoji", "\u{1F600}"], ["a tab", "a\tb"]]) {
+    cases.push(["a key with " + name, pr({ [key]: 1n }), "malformed"]);
+  }
+  cases.push(["a key of printable ASCII only", pr({ " ~": 1n }), null]);
+  const port = (d) => S({ relying_party: { ...base.relying_party, key_url: "https://" + base.relying_party.domain + ":" + d + "/keys/door.json" } });
+  for (const [name, d] of [["Garay", "\u{10D41}"], ["outlined", "\u{1CCF1}"], ["Tangsa", "\u{16AC1}"], ["Kawi", "\u{11F51}"], ["fullwidth", "\uff18"],
+    ["Arabic-Indic", "\u0668"], ["ASCII then Devanagari", "8\u0966"]]) cases.push(["a key_url port of " + name + " digits", port(d), "signer_not_on_own_domain"]);
+  cases.push(["a key_url port of ASCII digits", port("8443"), null]);
+  // the bytes Python and canonical_v0.mjs write for a lone surrogate (rule 7: an escape); canonicalUtf8 would write it raw
+  const esc = (text, ch) => text.split(ch).join("\\u" + ch.charCodeAt(0).toString(16));
+  for (const [name, val] of [["high", "\ud800"], ["low", "\udc00"], ["reversed pair", "\ude00\ud83d"], ["high at the end", "x\udbff"]]) {
+    let text = pr({ note: val });
+    for (const ch of new Set(val)) if (ch.charCodeAt(0) >= 0xd800 && ch.charCodeAt(0) <= 0xdfff) text = esc(text, ch);
+    cases.push(["a lone surrogate (" + name + ") in a value, written as rule 7 writes it", text, "not_canonical"]);
+  }
+  cases.push(["a lone surrogate in a key, written as rule 7 writes it", esc(pr({ "\udc00": 1n }), "\udc00"), "not_canonical"]);
+  cases.push(["a lone surrogate sent raw inside record_canonical (JSON.stringify escapes it in the body)", pr({ note: "\ud800" }), "malformed"]);
+  cases.push(["a pair, raw", pr({ note: "\u{1F600}" }), null]);
+  cases.push(["a pair written as two escapes (the verifier accepts; the bytes are not canonical)", pr({ note: "\u{1F600}" }).replace("\u{1F600}", "\\ud83d\\ude00"), "not_canonical"]);
+  for (const [name, text, code] of cases) {
+    let kurl = doorKeyUrl;
+    try { kurl = parseStrict(text).relying_party.key_url; } catch (_e) { /* unreadable: the door's own */ }
+    const ww = world({ keys: { [doorKeyUrl]: pub, [kurl]: pub } });
+    let rr;
+    try { rr = await handleAdmissionIntake(post({ record_canonical: text }), ww.deps); } catch (e) { rr = { status: "threw " + e.name, body: String(e) }; }
+    const v = verifyAdmissionText(text, pub);
+    const codes = (rr.body && (rr.body.refusals || [rr.body.error])) || [];
+    let canon = false;
+    try { canon = canonicalUtf8(parseStrict(text)) === text; } catch (_e) { /* unreadable */ }
+    const stored = rr.status === 201 && ww.mem.size === 1, none = rr.status === 422 && ww.mem.size === 0;
+    // the intake never accepts what the verifier refuses; on canonical bytes it accepts what the verifier accepts
+    const agree = v.verdict === "refused" ? none : canon ? stored : none && codes.includes("not_canonical");
+    const ok = agree && (code === null ? stored : codes.includes(code));
+    t("the intake and the verifier agree: " + name + (code ? " (" + code + ")" : " (accepted)"), ok, { intake: rr.status, body: rr.body, verifier: v, canonical: canon });
+  }
+}
 
 console.log("");
 if (fail) { console.log("FAIL " + fail + " of " + (pass + fail) + " (admission_intake)"); process.exit(1); }

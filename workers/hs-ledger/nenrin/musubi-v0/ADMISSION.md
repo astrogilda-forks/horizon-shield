@@ -53,6 +53,19 @@ settles after the fact. It renders no decision.
 - **Versions**: a record with `rules.version: "0.1"` (2026-10-10) is as above. A record with no `rules.version` is v0:
   its `revocations_seen` are sha256 strings and the third line of its `does_not_establish` differs. The verifier, the
   intake and settlement accept each with its own stated limits and refuse one that carries the other's.
+- **Version 0.2 (2026-10-20)**: the record carries one more field, `immune`, the verdict of the immune rules
+  (`immune_v0.py`, a2a-immune-v0) over the request: `{"rules", "evaluator_sha256", "terms_sha256", "verdict", "codes",
+  "evidence_sha256", "second_signal"}`. `terms_sha256` names the contract's `requirements.immune` the rules read
+  (null only with `not_run`). It carries digests and codes, never the values the rules read; the evidence digest is
+  salted with the opening's salt, so a guessed value cannot be tested against it. Two reasons are added,
+  `immune_hold` and `immune_reject`, and `does_not_establish` gains one line. The verdict is `clear`, `flagged`,
+  `released`, `hold`, `reject` or `not_run`, and it must agree with the decision: `reject` only with `refuse` and
+  `immune_reject`, `hold` only with `escalate` or `refuse` and `immune_hold`, `released` only with
+  `"second_signal": "witnesses"`, `flagged` only with the mark codes or `indicator_seen`. The decision is never looser
+  than the contract's (`immune_v0.combine`). Checked against its contract, a record must be v0.2 when the contract
+  carries immune terms (`immune_missing`), must name those terms (`immune_terms_not_this_contracts`) and may say
+  `not_run` only on a refusal (`immune_not_run`). In every version `chain_view.height` and every other number is an
+  integer within 2^53 - 1. See "Immune rules" below.
 - **Publication**: a record leaves the relying party only by the relying party's choice. The ledger intake stores a
   record only when its signed bytes say `"publication": "public"`.
 
@@ -106,6 +119,46 @@ is stated only with its admission.
 
     python3 settle_v1_12.py --settle c.AB.json --event e.anchored.json --view headers.json --admission adm.anchored.json --relying-key shop.example=<base64>
 
+## Immune rules (immune_v0.py)
+
+The clauses ask whether a kind of act is inside the grant. The immune rules ask where the values of the act came from.
+They have no head: no party (the relying party, the principal, the operator of this repository) holds a key that turns
+a rule on, releases a hold or ends an inflammation. Their terms are `requirements.immune` in the contract both parties
+sign, and the terms pin every key whose record can count (owners, reporters, witnesses); everything else they read is a
+record that authenticates itself against a pinned key, or the Bitcoin chain. They only tighten, and tightening is cheap
+while loosening is slow: an owner can withdraw its mark or kill its own key at once, but a contract that replaces
+another is evaluated under both term sets, the strictest verdict winning, until `change_delay_blocks` after the later
+of the new contract's own Bitcoin lower bound and the height of the first admission signed under it. Every replaced
+contract still in force binds, in the order the signed admissions show (`binding_priors`).
+
+Passing is bounded, not trusted. No rule sees every harm, so the terms also sign what an act that passes every rule
+may still do: an exposure budget per action (at most `max_acts` admitted in any `window_blocks`) and a cooling-off
+delay (an action waits `delay` blocks after the rules let it through, and any one pinned key may stop it in that
+time). The worst a run of passing acts can do in one window is `max_acts` times what the grant lets one act do.
+
+| Rule | What it reads | Finding |
+| --- | --- | --- |
+| receptor | a field the contract closes takes only the listed values, and must be present | reject, `receptor_closed` |
+| mark | a watched field's value is self: in `marked` or a receptor's values, marked by an owner the contract pins for that field (a2a-immune-attestation-v0; an address only by its own domain's owner; `owner_threshold` keys of that owner; counting `mark_delay_blocks` after it was made, while a withdrawal counts at once), or acquired self for that field | mode `second_signal`: hold, `unmarked_from_content` (the door served the value) or `unmarked_novel`; mode `flag`: the act goes on, verdict `flagged` |
+| second signal | for each held value, every one of the n witnesses drawn from the pinned pool (one entity each) by the block hash `beacon_offset` (6 or more) blocks after that value was first held, the draw seeded by the value (`value_key`: action, field, digest), each confirming after that block and before the hold expires (a2a-immune-observation-v0, naming the value key); any one of them stops it by saying not_confirmed or nothing; a look-alike of the value is never released | verdict `released` |
+| expiry | a held value no second signal answered within `hold_expiry_blocks` of when it was first held; adding values to the request or signing the same terms again does not start it over | reject, `hold_expired` |
+| indicator | an extracted value (address, host, URL, account-like string, repo) or a named field's value that pinned reporters of at least `min_distinct_entities` entities reported within `window_blocks` and have not withdrawn (a2a-immune-indicator-v0) | reject, `indicator_match`; on a quiet action (a read) flagged, `indicator_seen` |
+| negative selection | an indicator that matches the contract's own self, or a value this request carries in a field that a live pinned owner's mark covers | not in force; the evaluation says it was suppressed. A mark never stands for a domain, another field or a value the request does not carry. Acquired self never suppresses |
+| inflammation | at least `threshold` refusals of what the agent itself asked for within `window_blocks` (holds, flags, reads, expired holds, unverifiable and replayed requests are not danger signals) | hold every act outside `quiet_actions`; it ends by itself `cool_blocks` after the last signal |
+| acquired self | the values the witnesses confirmed in acts the door carried out, `finality_blocks` deep | self for that action and field. Nothing else teaches: not an approval, not the door's list of served values |
+| innate scan | with `innate`, every extracted value in any field of a non-quiet act that is not self | flagged, field `*`: `unmarked_from_content` when the door served it, else `unmarked_novel` |
+| terms | the contract has `requirements.immune` but it is not well formed | reject, `terms_malformed` |
+| veto | a key the contract pins said not_confirmed during a cooling-off delay | reject, `vetoed` |
+| exposure | the contract's exposure budget for this action in the current window is used up | hold, `exposure_full`; it cools as the window moves |
+| cooling off | the contract delays this action by a fixed number of blocks, during which any pinned key may veto | hold, `cooling_off` |
+
+`fixtures/admission_immune/demo.json` is the first attack end to end: a genuine agent key and grant, a payee and a
+recipient taken from an attacker's mail, the attacker vouching for its own address, a poisoned report against the real
+supplier, fourteen admissions a door signed. Anyone recomputes every one of them from the contract, the records, the
+served content and the block headers in the fixture:
+
+    python3 immune_v0.py --check-demo
+
 ## Stated limits
 
 - A record shows what a relying party signed. It does not show that the relying party ran any particular code;
@@ -113,12 +166,26 @@ is stated only with its admission.
 - The amount settlement reads is the one the execution record states and the admission's digest binds. Whether that
   amount moved in the world is outside these records.
 - A revocation without an anchor has no proven time. A revocation the relying party did not hold is not in its record.
+- An act the immune rules let through can still do harm inside the bound the terms sign (the exposure budget, the
+  cooling-off delay, the grant's own limits). The extractor of served values does not see every obfuscated form, which
+  is why an unmarked value is held whether or not it was seen. Whether a value appeared in served content depends on
+  the door's own list of served tokens; it changes only the code a finding carries, never a verdict or what is learned.
+- A veto names the cooling-off key, which is computed from the request's detail. A public admission carries only the
+  detail's commitment, so a pinned key outside the house can veto only an act whose key the door shows it (SHIKEN shows
+  them in `shk immune status`).
+- An owner's mark proves that a key the contract pins signed it, not that the key was not stolen before its owner
+  killed it. A witness draw proves the witnesses could not be chosen before the block existed, not that they did not
+  collude after it; since every drawn witness must confirm, a coalition of c in a pool of N gets a value through with probability
+  C(c, n) / C(N, n), zero when c < n. Two entities the contract names are not proven to be two owners in the world; reports can
+  only refuse more, never admit more.
 - The fixture records were made with fixed test keys by a door this repository does not carry. Their sha256 is listed
   so that a change to them is visible; the settlements they lead to are recomputed here on every run.
 
 ## Tests
 
-    python3 admission_verify_v0.py --selftest        # records of both versions, the request, the revocation, the JavaScript twin
+    python3 admission_verify_v0.py --selftest        # records of all three versions, the request, the revocation, the JavaScript twin
+    python3 immune_v0.py --selftest                  # the immune rules, and the first attack recomputed
+    python3 immune_v0.py --check-demo
     python3 admission_verify_v0.py --check-fixtures
     python3 settle_v1_11.py --selftest
     python3 settle_v1_12.py --selftest

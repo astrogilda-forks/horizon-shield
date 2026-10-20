@@ -48,7 +48,7 @@ nenrin_verify = ["VENDORED.json", "py.typed", "selftest.json", "tsugi_selftest.j
                  "_repo/musubi-v0/*.md", "_repo/musubi-v0/run0002/*", "_repo/musubi-v0/fixtures/babyblueviper1_leg1/*",
                  "_repo/musubi-v0/fixtures/babyblueviper1_approver_v2/*",
                  "_repo/musubi-v0/fixtures/ADMISSION_FIXTURES.sha256", "_repo/musubi-v0/fixtures/admission_intake/*",
-                 "_repo/musubi-v0/fixtures/contract_door/*", "_repo/musubi-v0/fixtures/settle_admission/*", "_repo/recovery-v0/*.py",
+                 "_repo/musubi-v0/fixtures/contract_door/*", "_repo/musubi-v0/fixtures/settle_admission/*", "_repo/musubi-v0/fixtures/admission_immune/*", "_repo/recovery-v0/*.py",
                  "_repo/interop-v0/*.json", "_repo/interop-v0/fixtures/*.json", "_repo/interop-v0.1/*.json",
                  "_repo/interop-v0.1/fixtures/*.json", "_repo/interop-v0.2/edge/*.json", "_repo/interop-v0.2/edge/fixtures/*.json",
                  "_repo/interop-v0.2/action-presence/*.json", "_repo/interop-v0.2/action-presence/fixtures/*.json",

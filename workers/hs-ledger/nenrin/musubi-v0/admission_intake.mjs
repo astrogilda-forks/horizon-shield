@@ -21,7 +21,7 @@
 import { parseStrict, canonicalUtf8, CanonicalError } from "../agreement-v0/agreement_canonical.mjs";
 import { ed25519Verify } from "../agreement-v0/agreement_verify.mjs";
 
-export const ADMISSION_INTAKE_VERSION = "admission-intake 0.2.0";
+export const ADMISSION_INTAKE_VERSION = "admission-intake 0.3.1";
 export const ADMISSION_SCHEMA = "a2a-admission-v0";
 export const REVOCATION_SCHEMA = "a2a-revocation-v0";
 export const MAX_BYTES = 65536;
@@ -31,6 +31,32 @@ const DECISIONS = ["admit", "escalate", "refuse"];
 const REASONS = ["within_grant", "conditional_needs_approval", "prohibited_action", "outside_grant", "amount_over_limit",
   "delegation_exceeds_parent", "contract_expired", "nonce_reused", "grant_revoked", "key_revoked",
   "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch"];
+const REASONS_V0_2 = [...REASONS, "immune_hold", "immune_reject"];
+// v0.2 (2026-10-20) carries the immune block (immune_v0.py): digests and codes, no values. The intake checks its shape and
+// that it agrees with the decision, the same rule as admission_verify_v0.immune_problems. It does not rerun the rules.
+const IMMUNE_KEYS = ["codes", "evaluator_sha256", "evidence_sha256", "rules", "second_signal", "terms_sha256", "verdict"];
+const IMMUNE_REJECT = ["receptor_closed", "indicator_match", "hold_expired", "terms_malformed", "vetoed"];
+const IMMUNE_HOLD = ["unmarked_from_content", "unmarked_novel", "inflamed", "exposure_full", "cooling_off"];
+const IMMUNE_FLAG = ["unmarked_from_content", "unmarked_novel", "indicator_seen"];
+const H64 = /^[0-9a-f]{64}$/;
+function immuneCodes(record) {
+  const im = record.immune, r = record.reasons, d = record.decision;
+  if (!isObj(im) || JSON.stringify(Object.keys(im).sort()) !== JSON.stringify(IMMUNE_KEYS) || im.rules !== "a2a-immune-v0" || !Array.isArray(r)) return ["malformed"];
+  const v = im.verdict, c = im.codes, ts = im.terms_sha256;
+  const sorted = Array.isArray(c) && c.every((x) => typeof x === "string") && JSON.stringify(c) === JSON.stringify([...new Set(c)].sort());
+  let ok = ["clear", "flagged", "released", "hold", "reject", "not_run"].includes(v) && sorted && c.every((x) => IMMUNE_REJECT.includes(x) || IMMUNE_HOLD.includes(x) || IMMUNE_FLAG.includes(x))
+    && typeof im.evaluator_sha256 === "string" && H64.test(im.evaluator_sha256) && typeof im.evidence_sha256 === "string" && H64.test(im.evidence_sha256)
+    && ((v === "not_run") === (ts === null)) && (ts === null || (typeof ts === "string" && H64.test(ts)))
+    && (im.second_signal === null || im.second_signal === "witnesses") && ((v === "released") === (im.second_signal === "witnesses"));
+  if (!ok) return ["malformed"];
+  const h = r.includes("immune_hold"), j = r.includes("immune_reject"), within = (set) => c.length > 0 && c.every((x) => set.includes(x));
+  if (v === "reject") ok = d === "refuse" && j && !h && c.some((x) => IMMUNE_REJECT.includes(x));
+  else if (v === "hold") ok = (d === "escalate" || d === "refuse") && h && !j && c.some((x) => IMMUNE_HOLD.includes(x)) && within([...IMMUNE_HOLD, ...IMMUNE_FLAG]);
+  else if (v === "released") ok = !h && !j && within([...IMMUNE_HOLD, ...IMMUNE_FLAG]);
+  else if (v === "flagged") ok = !h && !j && within(IMMUNE_FLAG);
+  else ok = !h && !j && c.length === 0;
+  return ok ? [] : ["immune_inconsistent"];
+}
 // The stated limits a record must carry, by the version of admit() that wrote it. A v0 record has no rules.version;
 // a v0.1 record says "0.1" and states the limit about unanchored revocations. A record of one version carrying the
 // other's list is refused, and so is a version this intake does not know.
@@ -47,13 +73,48 @@ const DOES_NOT_ESTABLISH_V0_1 = [
     + "principal signed is obeyed with or without an anchor, and its time is not proven until it is anchored",
   DOES_NOT_ESTABLISH_V0[3],
   DOES_NOT_ESTABLISH_V0[4]];
-const LIMITS_BY_VERSION = { v0: DOES_NOT_ESTABLISH_V0, "0.1": DOES_NOT_ESTABLISH_V0_1 };
+const DOES_NOT_ESTABLISH_V0_2 = [...DOES_NOT_ESTABLISH_V0_1,
+  "that the immune rules stopped every harmful act; a clear verdict says only that no rule in the contract's immune terms fired on the request as "
+    + "presented, and the values it read are not in this record"];
+const LIMITS_BY_VERSION = { v0: DOES_NOT_ESTABLISH_V0, "0.1": DOES_NOT_ESTABLISH_V0_1, "0.2": DOES_NOT_ESTABLISH_V0_2 };
 const RECORD_KEYS = ["schema", "admission_id", "relying_party", "contract_ref", "action_ref", "presentation_ref", "chain_view",
   "revocations_seen", "decision", "reasons", "clause", "rules", "establishes", "does_not_establish", "signatures"];
 const REVOKE_KEYS = ["schema", "contract_ref", "revoked_by", "signatures"];
 
 const enc = new TextEncoder();
 const isObj = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
+const sameStrings = (a, b) => Array.isArray(a) && a.length === b.length && a.every((x, i) => x === b[i]);
+// admission_verify_v0.numbers_ok over what parseStrict yields: every number an integer (a BigInt) within 2^53 - 1. A
+// plain number is a float in the text; canonicalUtf8 writes it back as Python would, so the canonical check alone
+// lets 0.5 or 2^60 through, and the verifier refuses both.
+function numbersOk(x) {
+  const stack = [x];
+  while (stack.length) {
+    const v = stack.pop();
+    if (typeof v === "number") return false;
+    if (typeof v === "bigint") { if (v > 9007199254740991n || v < -9007199254740991n) return false; }
+    else if (Array.isArray(v)) stack.push(...v);
+    else if (isObj(v)) stack.push(...Object.values(v));
+  }
+  return true;
+}
+// admission_verify_v0.text_problem: a key outside printable ASCII, or a lone surrogate in any key or string. canonicalUtf8
+// writes both without complaint (a lone surrogate raw), and the verifiers find no canonical form for either.
+const KEY_OK = /^[\x20-\x7e]*$/;
+const LONE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+function textProblem(x) {
+  const stack = [x];
+  while (stack.length) {
+    const v = stack.pop();
+    if (typeof v === "string") { if (LONE.test(v)) return true; }
+    else if (Array.isArray(v)) stack.push(...v);
+    else if (isObj(v)) {
+      for (const k of Object.keys(v)) if (!KEY_OK.test(k)) return true;
+      stack.push(...Object.values(v));
+    }
+  }
+  return false;
+}
 const body = (rec, drop) => Object.fromEntries(Object.entries(rec).filter(([k]) => !drop.includes(k)));
 const res = (status, b, headers) => ({ status, body: b, headers: headers || {} });
 async function sha256Hex(bytes) {
@@ -62,7 +123,7 @@ async function sha256Hex(bytes) {
 }
 const signingBytes = (context, obj) => enc.encode(context + "\n" + canonicalUtf8(obj));
 function hostOf(url) {
-  const m = typeof url === "string" ? /^https:\/\/([A-Za-z0-9.-]+)(?::\d+)?\//.exec(url) : null;
+  const m = typeof url === "string" ? /^https:\/\/([A-Za-z0-9.-]+)(?::[0-9]+)?\//.exec(url) : null;   // ASCII digits, as the verifiers
   return m ? m[1].toLowerCase() : null;
 }
 
@@ -118,13 +179,23 @@ export async function handleAdmissionIntake(request, deps) {
   const codes = [];
   if (!isObj(record) || record.schema !== ADMISSION_SCHEMA) return refused(["malformed"], { why: "schema must be " + ADMISSION_SCHEMA });
   const keys = Object.keys(record);
-  if (!RECORD_KEYS.every((k) => keys.includes(k)) || keys.some((k) => !RECORD_KEYS.includes(k) && k !== "publication")) codes.push("malformed");
-  if (!DECISIONS.includes(record.decision) || !Array.isArray(record.reasons) || !record.reasons.length || record.reasons.some((r) => !REASONS.includes(r))) codes.push("malformed");
   const rules = isObj(record.rules) ? record.rules : {};
   const version = Object.prototype.hasOwnProperty.call(rules, "version") ? rules.version : "v0";
+  const want = version === "0.2" ? [...RECORD_KEYS, "immune"] : RECORD_KEYS;
+  if (!want.every((k) => keys.includes(k)) || keys.some((k) => !want.includes(k) && k !== "publication")) codes.push("malformed");
+  // the same shape rules as admission_verify_v0.verify_admission: every number a safe integer, and these fields of their type
+  if (!numbersOk(record) || textProblem(record) || !isObj(record.rules) || !isObj(record.contract_ref) || !Array.isArray(record.does_not_establish)
+    || !Array.isArray(record.signatures)) codes.push("malformed");
+  const allowed = version === "0.2" ? REASONS_V0_2 : REASONS;
+  if (!DECISIONS.includes(record.decision) || !Array.isArray(record.reasons) || !record.reasons.length || record.reasons.some((r) => !allowed.includes(r))) codes.push("malformed");
+  if (version === "0.2" && keys.includes("immune")) codes.push(...immuneCodes(record));
+  // the chain height a decision was made at is an integer (a float would let a door step outside the inflammation count)
+  const cvh = isObj(record.chain_view) ? record.chain_view.height : undefined;
+  // (the strict parser may hand integers over as BigInt)
+  if (!((typeof cvh === "bigint" && cvh >= 0n && cvh <= 9007199254740991n) || (Number.isSafeInteger(cvh) && cvh >= 0))) codes.push("malformed");
   const stated = typeof version === "string" && Object.prototype.hasOwnProperty.call(LIMITS_BY_VERSION, version) ? LIMITS_BY_VERSION[version] : null;
   if (stated === null || version === "v0" && Object.prototype.hasOwnProperty.call(rules, "version")) codes.push("malformed");
-  else if (JSON.stringify(record.does_not_establish) !== JSON.stringify(stated)) codes.push("does_not_establish_altered");
+  else if (!sameStrings(record.does_not_establish, stated)) codes.push("does_not_establish_altered");   // no JSON.stringify: a BigInt throws
   const rp = isObj(record.relying_party) ? record.relying_party : {};
   const dom = typeof rp.domain === "string" && rp.domain ? rp.domain : null;
   if (!dom || hostOf(rp.key_url) !== dom.toLowerCase()) codes.push("signer_not_on_own_domain");
@@ -150,6 +221,7 @@ export async function handleAdmissionIntake(request, deps) {
   const report = { record_schema: ADMISSION_SCHEMA, verdict: "accepted", canonical_sha256: canonicalSha, admission_sha256: admissionSha,
     relying_party: dom, decision: record.decision, admit_version: version === "v0" ? "0" : version, verifier_version: ADMISSION_INTAKE_VERSION,
     checked: ["canonical bytes", "closed lists for decision and reasons", "the stated limits are unaltered", "key_url on the relying party's own domain",
+      ...(version === "0.2" ? ["the immune block's shape and its agreement with the decision and reasons (not the immune rules themselves)"] : []),
       "Ed25519 signature under the key that key_url serves", "signed consent to publication"],
     not_checked: ["the decision itself; this intake does not run admit() and does not hold the contract"] };
   const payload = { canonical_sha256: canonicalSha, record_canonical: rb.b.record_canonical, report, verifier_version: ADMISSION_INTAKE_VERSION,
@@ -234,6 +306,7 @@ export function admissionSelfDescription(origin) {
     serve_by_sha: [o + "/admission/{canonical_sha256}", o + "/revocation/{canonical_sha256}"], max_bytes: MAX_BYTES,
     what_this_does: "stores what a relying party (admission) or a principal (revocation) signed, under its sha256, and anchors it with the daily batch",
     what_this_does_not_do: ["run admit() or hold the contract", "say whether an action should have been admitted", "allow or block anything"],
-    function: "https://github.com/ogasurfproject-jpg/horizon-shield/tree/main/workers/hs-ledger/nenrin/musubi-v0 (admission_verify_v0.py, admission_verify_v0.mjs, settle_v1_11.py, settle_v1_12.py)",
+    function: "https://github.com/ogasurfproject-jpg/horizon-shield/tree/main/workers/hs-ledger/nenrin/musubi-v0 (admission_verify_v0.py, admission_verify_v0.mjs, settle_v1_11.py, settle_v1_12.py, immune_v0.py)",
+    versions: ["v0 (no rules.version)", "0.1", "0.2 (carries the immune block of immune_v0.py: digests and codes, no values; the intake checks its shape, not the rules)"],
     publication: "an admission is stored only when its signed bytes say \"publication\": \"public\"", policy: PRIVACY_POLICY };
 }

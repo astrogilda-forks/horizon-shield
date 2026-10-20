@@ -456,13 +456,13 @@
   },
   "_repo/musubi-v0/admission_verify_v0.mjs": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/admission_verify_v0.mjs",
-    "source_sha256": "28b42cf5f79ea618511657b517f9ce2c7baf26c956a5567064edf6b3926cb94a",
-    "vendored_sha256": "28b42cf5f79ea618511657b517f9ce2c7baf26c956a5567064edf6b3926cb94a"
+    "source_sha256": "f5cdcdc532e373dfadc9148e4d3d8e9424c5af4c9b540f9e4f9f7d32b6c6e24b",
+    "vendored_sha256": "f5cdcdc532e373dfadc9148e4d3d8e9424c5af4c9b540f9e4f9f7d32b6c6e24b"
   },
   "_repo/musubi-v0/admission_verify_v0.py": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/admission_verify_v0.py",
-    "source_sha256": "aa889e542ff40e257f62b7a6ac50ddb9d2bf52d655b206d9e7c8b2468c9d0a6a",
-    "vendored_sha256": "aa889e542ff40e257f62b7a6ac50ddb9d2bf52d655b206d9e7c8b2468c9d0a6a"
+    "source_sha256": "4bc36aa7a34ec024c07712503c2858cafdf84b1430339c92108a860f5794d67e",
+    "vendored_sha256": "4bc36aa7a34ec024c07712503c2858cafdf84b1430339c92108a860f5794d67e"
   },
   "_repo/musubi-v0/anchor_compose.py": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/anchor_compose.py",
@@ -541,8 +541,18 @@
   },
   "_repo/musubi-v0/fixtures/ADMISSION_FIXTURES.sha256": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/fixtures/ADMISSION_FIXTURES.sha256",
-    "source_sha256": "101fdc11f87c1b236933afd0a0ea7d994dee973ede87f372c94978d5c377b6ff",
-    "vendored_sha256": "101fdc11f87c1b236933afd0a0ea7d994dee973ede87f372c94978d5c377b6ff"
+    "source_sha256": "0218397472b980adbc76b6bd23df22c2411b2f5376552358e19ff123bad0b0cd",
+    "vendored_sha256": "0218397472b980adbc76b6bd23df22c2411b2f5376552358e19ff123bad0b0cd"
+  },
+  "_repo/musubi-v0/fixtures/admission_immune/cases.json": {
+    "source": "workers/hs-ledger/nenrin/musubi-v0/fixtures/admission_immune/cases.json",
+    "source_sha256": "4025c95d96bf51fbd3fc077df982aadeeab43d011d0e3635a5425a7d654063b1",
+    "vendored_sha256": "4025c95d96bf51fbd3fc077df982aadeeab43d011d0e3635a5425a7d654063b1"
+  },
+  "_repo/musubi-v0/fixtures/admission_immune/demo.json": {
+    "source": "workers/hs-ledger/nenrin/musubi-v0/fixtures/admission_immune/demo.json",
+    "source_sha256": "aaf05cd22662cf8ab84617638096a0b7a0c7c139988445aaab37e3b6f60fc432",
+    "vendored_sha256": "aaf05cd22662cf8ab84617638096a0b7a0c7c139988445aaab37e3b6f60fc432"
   },
   "_repo/musubi-v0/fixtures/admission_intake/cases.json": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/fixtures/admission_intake/cases.json",

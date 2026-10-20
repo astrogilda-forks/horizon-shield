@@ -20,10 +20,16 @@ clause evaluator it used (clause_eval_v0.py, which is public), and settlement re
 contract. A relying party is free to build its own door; what makes its records checkable is this file and the schema
 in schemas/a2a-admission-v0.schema.json.
 
-Two versions of the record exist. A v0 record has no rules.version. A v0.1 record (2026-10-10) says "0.1"; its
+Three versions of the record exist. A v0 record has no rules.version. A v0.1 record (2026-10-10) says "0.1"; its
 presentation_ref may carry self_declared, its revocations_seen are objects that say whether each revocation carried
-an anchor, and the third line of its does_not_establish differs. verify_admission accepts each with its own stated
-limits and refuses one that carries the other's.
+an anchor, and the third line of its does_not_establish differs. A v0.2 record (2026-10-20) says "0.2" and carries
+one more field, immune: the verdict of the immune rules (immune_v0.py, a2a-immune-v0) over the request, as digests and
+codes only, and two more reasons, immune_hold and immune_reject. Its does_not_establish adds one line. verify_admission
+accepts each with its own stated limits and refuses one that carries another's.
+
+A record read from bytes is checked with verify_admission_text, which reads it the way admission_verify_v0.mjs does
+(read_record: a duplicate key or nesting past READER_MAX_DEPTH is malformed). verify_admission takes a record already
+read that way.
 
   python3 admission_verify_v0.py --selftest
   python3 admission_verify_v0.py --check-fixtures      the fixture files are the ones listed in fixtures/ADMISSION_FIXTURES.sha256
@@ -34,6 +40,7 @@ import argparse, base64, hashlib, json, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from contract_v0 import canonical, parse_strict, ed25519_verify, contract_sha256, b64_raw, CANONICAL_RULE
+from agreement_verify import text_depth, READER_MAX_DEPTH, TooDeep, _no_duplicate_keys
 
 SCHEMA = "a2a-admission-v0"
 VERSION = "0.1"
@@ -46,6 +53,14 @@ DECISIONS = ("admit", "escalate", "refuse")
 REASONS = ("within_grant", "conditional_needs_approval", "prohibited_action", "outside_grant", "amount_over_limit",
            "delegation_exceeds_parent", "contract_expired", "nonce_reused", "grant_revoked", "key_revoked",
            "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch")
+VERSION_IMMUNE = "0.2"
+REASONS_V02 = REASONS + ("immune_hold", "immune_reject")
+IMMUNE_RULES = "a2a-immune-v0"
+IMMUNE_VERDICTS = ("clear", "flagged", "released", "hold", "reject", "not_run")
+IMMUNE_REJECT_CODES = ("receptor_closed", "indicator_match", "hold_expired", "terms_malformed", "vetoed")
+IMMUNE_HOLD_CODES = ("unmarked_from_content", "unmarked_novel", "inflamed", "exposure_full", "cooling_off")
+IMMUNE_FLAG_CODES = ("unmarked_from_content", "unmarked_novel", "indicator_seen")
+IMMUNE_KEYS = frozenset(("rules", "evaluator_sha256", "terms_sha256", "verdict", "codes", "evidence_sha256", "second_signal"))
 HEX32 = re.compile(r"^[0-9a-f]{32}\Z")
 HEX64 = re.compile(r"^[0-9a-f]{64}\Z")
 DOES_NOT_ESTABLISH_V0 = [
@@ -61,6 +76,9 @@ DOES_NOT_ESTABLISH = [
     "principal signed is obeyed with or without an anchor, and its time is not proven until it is anchored",
     DOES_NOT_ESTABLISH_V0[3],
     DOES_NOT_ESTABLISH_V0[4]]
+DOES_NOT_ESTABLISH_V02 = DOES_NOT_ESTABLISH + [
+    "that the immune rules stopped every harmful act; a clear verdict says only that no rule in the contract's immune terms fired on the request as "
+    "presented, and the values it read are not in this record"]
 
 
 def sha256_hex(b):
@@ -174,7 +192,9 @@ def admission_sha256(record):
 
 
 def _host(url):
-    m = re.match(r"^https://([A-Za-z0-9.-]+)(?::\d+)?/", url) if isinstance(url, str) else None
+    # [0-9], not \d: \d follows the Unicode version of the Python (and \p{Nd} that of the JavaScript), so a port of
+    # Garay, Tangsa or Kawi digits was a port on one runtime and not on another
+    m = re.match(r"^https://([A-Za-z0-9.-]+)(?::[0-9]+)?/", url) if isinstance(url, str) else None
     return m.group(1).lower() if m else None
 
 
@@ -182,40 +202,221 @@ RECORD_KEYS = frozenset(("schema", "admission_id", "relying_party", "contract_re
                          "revocations_seen", "decision", "reasons", "clause", "rules", "establishes", "does_not_establish", "signatures"))
 
 
+def immune_problems(record):
+    """[] when a v0.2 record's immune block is well formed and agrees with its decision and reasons."""
+    im, reasons, d = record.get("immune"), record.get("reasons"), record.get("decision")
+    if not isinstance(im, dict) or set(im) != IMMUNE_KEYS or im.get("rules") != IMMUNE_RULES or not isinstance(reasons, list):
+        return ["malformed"]
+    v, codes, ts = im.get("verdict"), im.get("codes"), im.get("terms_sha256")
+    ok = (v in IMMUNE_VERDICTS and isinstance(codes, list) and all(isinstance(c, str) for c in codes) and codes == sorted(set(codes))
+          and set(codes) <= set(IMMUNE_REJECT_CODES + IMMUNE_HOLD_CODES + IMMUNE_FLAG_CODES)
+          and isinstance(im.get("evaluator_sha256"), str) and bool(HEX64.match(im["evaluator_sha256"]))
+          and isinstance(im.get("evidence_sha256"), str) and bool(HEX64.match(im["evidence_sha256"]))
+          and ((v == "not_run") == (ts is None)) and (ts is None or (isinstance(ts, str) and bool(HEX64.match(ts))))
+          and im.get("second_signal") in (None, "witnesses") and ((v == "released") == (im.get("second_signal") == "witnesses")))
+    if not ok:
+        return ["malformed"]
+    hold_r, rej_r = "immune_hold" in reasons, "immune_reject" in reasons
+    if v == "reject":
+        ok = d == "refuse" and rej_r and not hold_r and bool(set(codes) & set(IMMUNE_REJECT_CODES))
+    elif v == "hold":
+        ok = (d in ("escalate", "refuse") and hold_r and not rej_r and bool(set(codes) & set(IMMUNE_HOLD_CODES))
+              and set(codes) <= set(IMMUNE_HOLD_CODES + IMMUNE_FLAG_CODES))
+    elif v == "released":
+        ok = not hold_r and not rej_r and bool(codes) and set(codes) <= set(IMMUNE_HOLD_CODES + IMMUNE_FLAG_CODES)
+    elif v == "flagged":
+        ok = not hold_r and not rej_r and bool(codes) and set(codes) <= set(IMMUNE_FLAG_CODES)
+    else:
+        ok = not hold_r and not rej_r and codes == []
+    return [] if ok else ["immune_inconsistent"]
+
+MAX_SAFE = 2 ** 53 - 1
+
+
+def numbers_ok(x):
+    """Every number in the record is an integer a JSON reader in any language reads the same: no floats, nothing past
+    2^53 - 1. A record that breaks this signs bytes one runtime reads differently from another."""
+    stack = [x]
+    while stack:
+        v = stack.pop()
+        if isinstance(v, bool) or v is None or isinstance(v, str):
+            continue
+        if isinstance(v, int):
+            if abs(v) > MAX_SAFE:
+                return False
+        elif isinstance(v, float):
+            return False
+        elif isinstance(v, dict):
+            stack.extend(v.values())
+        elif isinstance(v, list):
+            stack.extend(v)
+    return True
+
+
+def proto_key(x):
+    """True when any object in x has the key "__proto__". A JavaScript reader does not keep it as a key (the strict
+    reader of agreement_canonical.mjs makes it the object's prototype or drops it), so the bytes a JavaScript verifier
+    signs over are not the bytes this one reads. Such a record has no canonical form both runtimes write."""
+    stack = [x]
+    while stack:
+        v = stack.pop()
+        if isinstance(v, dict):
+            if "__proto__" in v:
+                return True
+            stack.extend(v.values())
+        elif isinstance(v, list):
+            stack.extend(v)
+    return False
+
+
+_KEY_OK = re.compile(r"[\x20-\x7e]*\Z")
+_SURROGATE = re.compile("[\ud800-\udfff]")
+
+
+def text_problem(x):
+    """True when an object key is not printable ASCII (0x20 to 0x7E, canonical_v0.mjs rule 2, which throws there and
+    which Python's canonical() does not check), or a key or string carries a lone surrogate (rule 7: Python and
+    canonical_v0.mjs write it as \\udxxx, agreement_canonical.mjs, which the intake uses, writes it raw). Either way the
+    record has no canonical form all three readers write, so it has no signed bytes to check. A pair written as two
+    escapes is one character after json.loads, and well formed in JavaScript, and is not a problem."""
+    stack = [x]
+    while stack:
+        v = stack.pop()
+        if isinstance(v, str):
+            if _SURROGATE.search(v):
+                return True
+        elif isinstance(v, dict):
+            for k in v:
+                if not isinstance(k, str) or not _KEY_OK.match(k):
+                    return True
+            stack.extend(v.values())
+        elif isinstance(v, list):
+            stack.extend(v)
+    return False
+
+
+_INT_DIGITS = 40
+
+
+def _int_literal(s):
+    """int(s) as json.loads does it, except for a literal of more than 40 digits. Python 3.11 and later refuse to
+    convert one of more than 4300 digits (ValueError) and 3.9 reads it, so the same bytes were unreadable on one
+    Python and a number on another. Any literal past 40 digits is outside every range this file accepts, so it is
+    read as a stand in of the same sign that is outside them too, and the record is refused the same way on every
+    Python and in JavaScript (malformed, and no signed bytes to check)."""
+    if len(s) - s.startswith("-") > _INT_DIGITS:
+        return -(2 ** 64) if s.startswith("-") else 2 ** 64
+    return int(s)
+
+
+def read_record(text):
+    """parse_strict (agreement_verify), with its refusals: a duplicate key raises ValueError, nesting past
+    READER_MAX_DEPTH raises TooDeep. The one difference is _int_literal. admission_verify_v0.mjs reads with
+    parseStrict of agreement_canonical.mjs, which refuses the same inputs."""
+    if text_depth(text) > READER_MAX_DEPTH:
+        raise TooDeep("the JSON is nested past what a reader can parse")
+    return json.loads(text, object_pairs_hook=_no_duplicate_keys, parse_int=_int_literal)
+
+
+def immune_binding_problems(record, contract):
+    """With the contract: when it carries immune terms (requirements.immune), the record must be v0.2, name those terms,
+    and may say not_run only on a refusal (a request the door could not read). A record that leaves the rules out is
+    otherwise indistinguishable from one where they found nothing."""
+    terms = ((contract.get("requirements") or {}).get("immune")) if isinstance(contract.get("requirements"), dict) else None
+    if not isinstance(terms, dict):
+        return []
+    rules = record.get("rules") if isinstance(record.get("rules"), dict) else {}
+    if rules.get("version") != VERSION_IMMUNE or not isinstance(record.get("immune"), dict):
+        return ["immune_missing"]
+    im = record["immune"]
+    if im.get("verdict") == "not_run":
+        return [] if record.get("decision") == "refuse" else ["immune_not_run"]
+    if im.get("terms_sha256") != sha256_hex(canonical(terms).encode("utf-8")):
+        return ["immune_terms_not_this_contracts"]
+    return []
+
+
 def verify_admission(record, relying_key_b64, contract=None):
     """{"verdict": "accepted" | "refused", "refusals": [codes]}. relying_key_b64 is the key the caller fetched from
     record.relying_party.key_url. With the contract, an admission signed by a party's own request key is refused: an
-    applicant cannot admit itself (the same fail closed rule as a self witness)."""
+    applicant cannot admit itself (the same fail closed rule as a self witness); and when the contract carries immune
+    terms, the record must carry their verdict over those terms (immune_binding_problems)."""
     ref = []
     if not isinstance(record, dict) or record.get("schema") != SCHEMA:
         return {"verdict": "refused", "refusals": ["malformed"]}
-    if set(record) - RECORD_KEYS - {"publication"} or not RECORD_KEYS <= set(record) or record.get("publication", "public") != "public":
+    # A float, an integer past 2^53 - 1 or a "__proto__" key has no musubi-canonical-v0 form both runtimes write
+    # (canonical_v0.mjs rule 5), so there are no signed bytes to check: malformed and bad_signature, in both twins.
+    signable = numbers_ok(record) and not proto_key(record) and not text_problem(record)
+    if not signable:
+        ref.append("malformed")
+    cv = record.get("chain_view") if isinstance(record.get("chain_view"), dict) else {}
+    hgt = cv.get("height")
+    if not (isinstance(hgt, int) and not isinstance(hgt, bool) and 0 <= hgt <= MAX_SAFE):
+        ref.append("malformed")
+    if not isinstance(record.get("rules"), dict):
+        ref.append("malformed")
+    rules = record.get("rules") if isinstance(record.get("rules"), dict) else {}
+    ver = rules.get("version")
+    if "version" in rules and ver is None:
+        ref.append("malformed")             # an explicit null is not v0 (the intake reads it the same way)
+    keys = RECORD_KEYS | {"immune"} if ver == VERSION_IMMUNE else RECORD_KEYS
+    if set(record) - keys - {"publication"} or not keys <= set(record) or record.get("publication", "public") != "public":
+        ref.append("malformed")
+    if not isinstance(record.get("contract_ref"), dict):
         ref.append("malformed")
     rp = record.get("relying_party") if isinstance(record.get("relying_party"), dict) else {}
     dom = rp.get("domain") if isinstance(rp.get("domain"), str) else None
+    allowed = REASONS_V02 if ver == VERSION_IMMUNE else REASONS
     if record.get("decision") not in DECISIONS or not isinstance(record.get("reasons"), list) or not record.get("reasons") \
-            or any(r not in REASONS for r in record.get("reasons") or []):
+            or any(r not in allowed for r in record.get("reasons") or []):
         ref.append("malformed")
-    rules = record.get("rules") if isinstance(record.get("rules"), dict) else {}
-    if rules.get("version") not in (None, VERSION):
+    if ver not in (None, VERSION, VERSION_IMMUNE):
         ref.append("malformed")
-    # a v0 record (no rules.version) carries v0's stated limits; a v0.1 record carries v0.1's. Neither may carry the other's.
-    if list(record.get("does_not_establish") or []) != (DOES_NOT_ESTABLISH if rules.get("version") == VERSION else DOES_NOT_ESTABLISH_V0):
+    if ver == VERSION_IMMUNE and "immune" in record:
+        ref.extend(immune_problems(record))
+    # each version carries its own stated limits, and none may carry another's
+    stated = DOES_NOT_ESTABLISH_V02 if ver == VERSION_IMMUNE else DOES_NOT_ESTABLISH if ver == VERSION else DOES_NOT_ESTABLISH_V0
+    dne = record.get("does_not_establish")
+    if not isinstance(dne, list):
+        ref.append("malformed")
+    if not isinstance(dne, list) or dne != stated:
         ref.append("does_not_establish_altered")
     if not dom or _host(rp.get("key_url")) != dom.lower():
         ref.append("signer_not_on_own_domain")
-    sigs = [s for s in (record.get("signatures") or []) if isinstance(s, dict)]
-    if b64_raw(relying_key_b64, 32) is None or not any(
-            s.get("domain") == dom and s.get("alg") == "ed25519" and ed25519_verify(relying_key_b64, s.get("sig"), admission_signing_bytes(record)) is True
+    if not isinstance(record.get("signatures"), list):
+        ref.append("malformed")
+    sigs = [s for s in (record["signatures"] if isinstance(record.get("signatures"), list) else []) if isinstance(s, dict)]
+    try:
+        msg = admission_signing_bytes(record) if signable else None
+    except (TypeError, ValueError):
+        msg = None
+        ref.append("malformed")
+    if b64_raw(relying_key_b64, 32) is None or msg is None or not any(
+            s.get("domain") == dom and s.get("alg") == "ed25519" and ed25519_verify(relying_key_b64, s.get("sig"), msg) is True
             for s in sigs):
         ref.append("bad_signature")
     if isinstance(contract, dict):
-        if (record.get("contract_ref") or {}).get("contract_sha256") != contract_sha256(contract):
+        cref = record.get("contract_ref") if isinstance(record.get("contract_ref"), dict) else {}
+        if cref.get("contract_sha256") != contract_sha256(contract):
             ref.append("other_contract")
         if relying_key_b64 == _party_key(contract, "contractor"):
             ref.append("self_admission")
+        ref.extend(immune_binding_problems(record, contract))
     ref = sorted(set(ref))
     return {"verdict": "refused" if ref else "accepted", "refusals": ref}
+
+
+def verify_admission_text(text, relying_key_b64, contract=None):
+    """verify_admission over the record's bytes (a str), read with read_record. Text that cannot be read (not JSON, a
+    duplicate key, nested too deep) is malformed. admission_verify_v0.mjs verifyAdmissionText is the twin."""
+    if not isinstance(text, str) or _SURROGATE.search(text):
+        # a surrogate in the text itself (not an escape): the text has no UTF-8 form, so it is not bytes anyone sent
+        return {"verdict": "refused", "refusals": ["malformed"]}
+    try:
+        record = read_record(text)
+    except (ValueError, RecursionError):
+        return {"verdict": "refused", "refusals": ["malformed"]}
+    return verify_admission(record, relying_key_b64, contract)
 
 
 party_key = _party_key
@@ -325,8 +526,127 @@ def _selftest():
     assert J["revocations"] == {"grant": True, "key": True, "by_contractor": False, "other_terms": False}
     n += 1; print("[5] admission_verify_v0.mjs gives the same verdicts, refusal codes and digests for the same records (%d records, 4 readings each)" % len(mine_py))
 
-    print("\nSELF-TEST PASSED: MUSUBI admission records, the verifying side, %d checks (both versions verify; what does not; the request and its digest; "
-          "the revocation record; the JavaScript twin agrees)" % n)
+    # [6] v0.2: the immune block, in both runtimes
+    IC = json.load(open(os.path.join(HERE, "fixtures", "admission_immune", "cases.json"), encoding="utf-8"))
+    IP, ik = rd(IC["contract_canonical"]), IC["relying_pub_b64"]
+    good = tuple(k_ for k_ in IC["records"] if k_[0].isupper())
+    for k_ in good:
+        assert verify_admission(rd(IC["records"][k_]), ik, IP) == ok, (k_, verify_admission(rd(IC["records"][k_]), ik, IP))
+    want = {"v02_without_immune": "malformed", "v01_with_immune": "malformed", "v02_v01_limits": "does_not_establish_altered",
+            "reject_admitted": "immune_inconsistent", "hold_without_reason": "immune_inconsistent", "released_without_signal": "malformed",
+            "clear_with_codes": "immune_inconsistent", "unknown_code": "malformed", "immune_reason_in_v01": "malformed", "extra_immune_field": "malformed",
+            "reasons_a_string": "malformed", "version_null": "malformed", "terms_of_another_contract": "immune_terms_not_this_contracts",
+            "v01_under_immune_terms": "immune_missing", "not_run_admitted": "immune_not_run", "indicator_seen_on_hold_only": "immune_inconsistent"}
+    for k_, code in want.items():
+        got = verify_admission(rd(IC["records"][k_]), ik, IP)["refusals"]
+        assert code in got and "bad_signature" in got, (k_, got)
+    assert verify_admission(rd(C["admission_public"]), rk, P) == ok          # a v0.1 record reads as before
+    first = rd(IC["records"][good[0]])
+    for h in (float(first["chain_view"]["height"]), 2 ** 53, -1, True, None):
+        assert "malformed" in verify_admission(dict(first, chain_view=dict(first["chain_view"], height=h)), ik, IP)["refusals"], h
+    assert "malformed" in verify_admission(dict(first, presentation_ref=[dict(first["presentation_ref"][0], extra=0.5)]), ik, IP)["refusals"]
+    r = subprocess.run(["node", twin, "--check-immune", os.path.join(HERE, "fixtures", "admission_immune", "cases.json")], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-600:]
+    JI = json.loads(r.stdout)
+    py = {k_: {"sha": admission_sha256(rd(t)), "relying": verify_admission(rd(t), ik, IP)} for k_, t in IC["records"].items()}
+    assert JI == py, [k_ for k_ in py if JI.get(k_) != py[k_]]
+    # Records read from their bytes, each signed by a key of this test for exactly the bytes Python writes, so a
+    # refusal is the defect's and not a stale signature's. Both runtimes must give the same verdict and refusal set.
+    k6 = Ed25519PrivateKey.generate()
+    k6p = base64.b64encode(k6.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)).decode()
+
+    def signed(rec):
+        rec = {kk: vv for kk, vv in rec.items() if kk != "signatures"}
+        sig = base64.b64encode(k6.sign(admission_signing_bytes(rec))).decode("ascii")
+        return dict(rec, signatures=[{"alg": "ed25519", "domain": rec["relying_party"]["domain"], "sig": sig}])
+
+    def retext(text, old, new):
+        assert text.count(old) == 1, old
+        return text.replace(old, new)
+
+    base = rd(IC["records"][good[0]])
+    h0 = base["chain_view"]["height"]
+    hs = '"height":%d' % h0
+    cv, pr0, im0 = base["chain_view"], base["presentation_ref"][0], base["immune"]
+    T = canonical
+    st = T(signed(base))
+    S = lambda **kw: T(signed(dict(base, **kw)))
+    hold = lambda codes, **kw: S(decision="escalate", reasons=["immune_hold"], immune=dict(im0, verdict="hold", codes=codes), **kw)
+    MS, BS = ["bad_signature", "malformed"], ["malformed"]
+    texts = {
+        "resigned": (st, []),
+        # (a) what JSON.parse read differently: a float written as an integer value, a duplicate key
+        "height_970204.0": (S(chain_view=dict(cv, height=float(h0))), MS),
+        "height_mantissa_exponent": (retext(st, hs, '"height":%s.%se%d' % (str(h0)[0], str(h0)[1:], len(str(h0)) - 1)), MS),
+        "height_e0": (retext(st, hs, '"height":%de0' % h0), MS),
+        "duplicate_key_last_wins": (retext(st, '"decision":"refuse"', '"decision":"admit","decision":"refuse"'), BS),
+        "duplicate_key_nested": (retext(st, hs, '"height":1,' + hs), BS),
+        # (b) a field of the wrong type is a refusal, never an exception
+        "rules_a_string": (S(rules="0.2"), ["does_not_establish_altered", "immune_missing", "malformed"]),
+        "rules_an_array": (S(rules=[base["rules"]]), ["does_not_establish_altered", "immune_missing", "malformed"]),
+        "contract_ref_a_string": (S(contract_ref=base["contract_ref"]["contract_sha256"]), ["malformed", "other_contract"]),
+        "does_not_establish_5": (S(does_not_establish=5), ["does_not_establish_altered", "malformed"]),
+        "does_not_establish_true": (S(does_not_establish=True), ["does_not_establish_altered", "malformed"]),
+        "does_not_establish_null": (S(does_not_establish=None), ["does_not_establish_altered", "malformed"]),
+        "signatures_5": (T(dict(signed(base), signatures=5)), MS),
+        # (c) a number past 2^53 - 1, NaN or a "__proto__" key: no canonical form both write, so no signed bytes
+        "integer_2^53": (S(presentation_ref=[dict(pr0, n=2 ** 53)]), MS),
+        "integer_minus_2^53": (S(presentation_ref=[dict(pr0, n=-2 ** 53)]), MS),
+        "height_2^60": (S(chain_view=dict(cv, height=2 ** 60)), MS),
+        "height_5000_digits": (retext(st, hs, '"height":' + "9" * 5000), MS),
+        "height_nan": (retext(st, hs, '"height":NaN'), MS),
+        "float_elsewhere": (S(presentation_ref=[dict(pr0, extra=0.5)]), MS),
+        "proto_key_top": (S(__proto__={}), MS),
+        "proto_key_nested": (S(chain_view=dict(cv, __proto__=5)), MS),
+        # (d) the four new codes, each with the verdict it may stand in, and out of place
+        "reject_terms_malformed": (S(immune=dict(im0, codes=["terms_malformed"])), []),
+        "reject_vetoed": (S(immune=dict(im0, codes=["receptor_closed", "vetoed"])), []),
+        "hold_cooling_off": (hold(["cooling_off"]), []),
+        "hold_exposure_full": (hold(["exposure_full", "unmarked_novel"]), []),
+        "hold_with_vetoed": (hold(["cooling_off", "vetoed"]), ["immune_inconsistent"]),
+        "reject_only_cooling_off": (S(immune=dict(im0, codes=["cooling_off"])), ["immune_inconsistent"]),
+        "flagged_cooling_off": (S(decision="admit", reasons=["within_grant"], immune=dict(im0, verdict="flagged", codes=["cooling_off"])), ["immune_inconsistent"]),
+        "unknown_code_vetoed_x": (S(immune=dict(im0, codes=["vetoedx"])), ["malformed"]),
+    }
+    # keys outside printable ASCII, the digits of a key_url port, lone surrogates (2026-10-21)
+    for name, key in (("nul", "a\x00"), ("e_acute", "\u00e9"), ("del", "\x7f"), ("emoji", "\U0001F600"), ("tab", "a\tb")):
+        texts["key_" + name] = (S(presentation_ref=[dict(pr0, **{key: 1})]), MS)
+    texts["key_printable_ascii"] = (S(presentation_ref=[dict(pr0, **{" ~": 1})]), [])
+    rp0 = base["relying_party"]
+    port = lambda digits: S(relying_party=dict(rp0, key_url="https://%s:%s/keys/door.json" % (rp0["domain"], digits)))
+    for name, digits in (("garay", "\U00010D41"), ("outlined", "\U0001CCF1"), ("tangsa", "\U00016AC1"), ("kawi", "\U00011F51"),
+                         ("fullwidth", "\uff18"), ("arabic_indic", "\u0668"), ("ascii_then_devanagari", "8\u0966")):
+        texts["port_" + name] = (port(digits), ["signer_not_on_own_domain"])
+    texts["port_ascii"] = (port("8443"), [])
+    for name, val in (("high", "\ud800"), ("low", "\udc00"), ("reversed_pair", "\ude00\ud83d"), ("high_at_end", "x\udbff")):
+        texts["lone_surrogate_value_" + name] = (S(presentation_ref=[dict(pr0, note=val)]), MS)
+    texts["lone_surrogate_key"] = (S(presentation_ref=[dict(pr0, **{"\udc00": 1})]), MS)
+    emo = S(presentation_ref=[dict(pr0, note="\U0001F600")])
+    texts["pair_raw"] = (emo, [])
+    texts["pair_escaped"] = (retext(emo, "\U0001F600", "\\ud83d\\ude00"), [])
+    lone = S(presentation_ref=[dict(pr0, note="\ud800")])
+    texts["lone_surrogate_raw_in_text"] = (retext(lone, "\\ud800", "\ud800"), BS)
+    texts["escaped_high_raw_low_in_text"] = (retext(emo, "\U0001F600", "\\ud83d\ude00"), BS)
+    for k_, (t, codes) in texts.items():
+        got = verify_admission_text(t, k6p, IP)
+        assert got == {"verdict": "refused" if codes else "accepted", "refusals": codes}, (k_, got)
+    assert verify_admission_text(b"{}", k6p) == verify_admission_text("{", k6p) == {"verdict": "refused", "refusals": ["malformed"]}
+    feed = json.dumps({"contract_canonical": IC["contract_canonical"], "relying_pub_b64": k6p, "records": {k_: t for k_, (t, _c) in texts.items()}})
+    r = subprocess.run(["node", twin, "--verify-texts"], input=feed, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-600:]
+    JT = json.loads(r.stdout)
+    pyt = {k_: verify_admission_text(t, k6p, IP) for k_, (t, _c) in texts.items()}
+    assert JT == pyt, [(k_, JT.get(k_), pyt[k_]) for k_ in pyt if JT.get(k_) != pyt[k_]]
+    n += 1; print("[6] v0.2 (the immune block): %d records a door signed verify; %d broken ones are refused with their codes, among them a record that "
+                  "names another contract's terms, leaves the rules out or says not_run on an admit; a height or any number that is not a safe integer "
+                  "is malformed; the JavaScript twin gives the same verdicts and digests for all %d; and %d records read from their bytes (a float "
+                  "written as 970204.0 or with an exponent, a duplicate key, a field of the wrong type, 2^53, 2^60, a 5000 digit integer, NaN, a "
+                  "__proto__ key, the four new immune codes, a key outside printable ASCII, a key_url port of non-ASCII digits, a lone "
+                  "surrogate) get the same verdict and refusal set in both"
+                  % (len(good), len(want), len(py), len(texts)))
+
+    print("\nSELF-TEST PASSED: MUSUBI admission records, the verifying side, %d checks (all three versions verify; what does not; the request and its digest; "
+          "the revocation record; the JavaScript twin agrees; v0.2's immune block)" % n)
 
 
 def main():

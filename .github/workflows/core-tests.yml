@@ -3,7 +3,8 @@ name: core tests
 # The offline suites of the layers everything else stands on, run on every change to them and once a week
 # (2026-10-19). Before this they ran only by hand before a deploy: the ledger, the gate, the pilot responder,
 # settle core's 128 vectors and its exercise record, TSUGI's recovery suites, the stamper, the SEKI heartbeat,
-# the ledger token rotation, the receipt anchor, and the price bands hs-hearing copies from souba-db. All of them inject their own fetch or serve on 127.0.0.1; none needs a secret.
+# the ledger token rotation, the receipt anchor, and the price bands hs-hearing copies from souba-db. Since 2026-10-20 also
+# MUSUBI's immune rules and the admission records with their JavaScript twin and the ledger intake. All of them inject their own fetch or serve on 127.0.0.1; none needs a secret.
 # Not here: the agreement suite (agreement-v0/run_all.mjs, longer than ten minutes) and hs-mcp (its source is not in
 # this repository).
 
@@ -105,3 +106,13 @@ jobs:
         run: python -I -B workers/hs-ledger/nenrin/seki-heartbeat/heartbeat.py --selftest
       - name: the ledger token rotation (dry run with a fake home)
         run: bash ops/rotate_ledger_admin_token.test.sh
+      - name: MUSUBI immune v0 (self test, and the first attack recomputed from its records)
+        working-directory: workers/hs-ledger/nenrin/musubi-v0
+        run: |
+          python -I -B immune_v0.py --selftest
+          python -I -B immune_v0.py --check-demo
+      - name: admission records v0, v0.1 and v0.2 (Python and its JavaScript twin), and the ledger intake
+        working-directory: workers/hs-ledger/nenrin/musubi-v0
+        run: |
+          python -I -B admission_verify_v0.py --selftest
+          node admission_intake.test.mjs
