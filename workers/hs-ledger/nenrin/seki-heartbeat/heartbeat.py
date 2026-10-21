@@ -102,8 +102,28 @@ def tip_height():
     return min(tips)
 
 
+# --------------------------------------------------------------------------- the batch window
+# 2026-10-21. settle v1.11 and later call a day admission_after_execution when the admission's Bitcoin block is above
+# the execution's, because then the public record cannot show that the door answered first. The two records go to two
+# pools that are cut at two times: the ledger batches admissions at 00:30 UTC, the MUSUBI intake batches executions at
+# 00:45 UTC. A run whose calls land between the two cuts puts the execution into tonight's 00:45 batch and the admission
+# into tomorrow's 00:30 batch, a day above it. That happened on 2026-10-20 (calls at 00:30:1x, admissions in entry 129,
+# the execution in entry 126). 2026-10-19 went the same way for another reason: the intake was cut by hand at 11:38 UTC
+# (entry 120) while that day's admission still waited for 00:30. So the calls are never made between 00:20 and 00:55
+# UTC, and the intake is never cut by hand while an admission of the same day is waiting (see README.md).
+WINDOW_FROM, WINDOW_TO = (0, 20), (0, 55)
+
+
+def window_wait(now):
+    """Seconds to wait before the calls so that they land outside 00:20 to 00:55 UTC (0 when already outside)."""
+    t = now.astimezone(datetime.timezone.utc)
+    lo = t.replace(hour=WINDOW_FROM[0], minute=WINDOW_FROM[1], second=0, microsecond=0)
+    hi = t.replace(hour=WINDOW_TO[0], minute=WINDOW_TO[1], second=0, microsecond=0)
+    return int((hi - t).total_seconds()) + 1 if lo <= t < hi else 0
+
+
 # --------------------------------------------------------------------------- run
-def run(root, date):
+def run(root, date, now=None, sleep=time.sleep):
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
     out = os.path.join(root, date)
@@ -111,6 +131,10 @@ def run(root, date):
         prev = json.load(open(os.path.join(out, "RUN.json"), encoding="utf-8"))
         print("already ran for %s (%s); nothing is spent twice" % (date, prev.get("result")))
         return 0 if prev.get("result") == "as expected" else 1
+    wait = window_wait(now or datetime.datetime.now(datetime.timezone.utc))
+    if wait:
+        print("waiting %d s: between 00:20 and 00:55 UTC the admission and the execution would land in batches a day apart" % wait)
+        sleep(wait)
     seed_b64 = os.environ.get("SEKI_AGENT_SEED_B64", "").strip()
     token = os.environ.get("HSG_STORE_TOKEN", "").strip()
     if not seed_b64 or not token:
@@ -505,7 +529,8 @@ def write_index(root):
             "the contract prohibits. The door must admit the first and refuse the other two, and every answer is a signed record "
             "on the public ledger. Once the ledger's batch is confirmed in Bitcoin the day is settled with settle v1.15. "
             "Principal, agent and door are all The HORIZONs Co., Ltd.; it is a demonstration, not an outside customer, and the "
-            "pilot's tickets carry no monetary value. heartbeat.py and the workflow seki-heartbeat.yml write this folder.\n\n"
+            "pilot's tickets carry no monetary value. heartbeat.py and the workflow seki-heartbeat.yml write this folder. "
+            "Every deviation is explained in ../README.md, and a final verdict is never rewritten.\n\n"
             "| day (UTC) | report (limit 20) | audit 30 (limit 25) | compare (prohibited) | settlement |\n|---|---|---|---|---|\n"
             + "\n".join(rows) + "\n")
     with open(os.path.join(root, "README.md"), "w", encoding="utf-8") as f:
@@ -618,6 +643,21 @@ def _selftest():
     assert locate(["ab" * 32], deep, cache)["ab" * 32][0] == 80 and len(asked) == first
     assert locate(["cd" * 32], deep, cache) == {} and len(asked) == first + 79
     n += 1; print("[9] locate: a batch 50 entries below the head is found, and a second day in the same run fetches nothing again")
+
+    U = datetime.timezone.utc
+    W = lambda h, m, sec=0: window_wait(datetime.datetime(2026, 10, 20, h, m, sec, tzinfo=U))
+    assert W(0, 19, 59) == 0 and W(0, 55) == 0 and W(1, 14) == 0 and W(21, 17) == 0 and W(23, 59) == 0
+    assert W(0, 20) == 35 * 60 + 1 and W(0, 30, 7) == 24 * 60 + 53 + 1 and W(0, 54, 59) == 2
+    jst = datetime.timezone(datetime.timedelta(hours=9))
+    assert window_wait(datetime.datetime(2026, 10, 20, 9, 30, tzinfo=jst)) == 25 * 60 + 1
+    slept, kept = [], {k: os.environ.pop(k) for k in ("SEKI_AGENT_SEED_B64", "HSG_STORE_TOKEN") if k in os.environ}
+    try:                                                   # without the secrets run() stops before any call is made
+        with tempfile.TemporaryDirectory() as td:
+            rc = run(td, "2026-10-20", now=datetime.datetime(2026, 10, 20, 0, 30, 7, tzinfo=U), sleep=slept.append)
+    finally:
+        os.environ.update(kept)
+    assert slept == [24 * 60 + 54] and rc == 1           # it waited, then stopped at the missing secrets (none in the test)
+    n += 1; print("[10] the calls wait out 00:20 to 00:55 UTC, between the ledger's admission cut and the intake's execution cut")
     print("ALL PASS (seki heartbeat: %d checks)" % n)
 
 

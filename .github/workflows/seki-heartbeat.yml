@@ -5,6 +5,8 @@ name: seki heartbeat
 #   21:17 UTC  settle the earlier days that are confirmed, then today's three calls (report admitted, audit and compare
 #              refused). GitHub starts scheduled runs up to about two hours late (at 23:17 the records landed after the
 #              00:30 UTC batch, a day late); 21:17 leaves that margin. A day still unsettled 72 hours after it ran is red.
+#              A run that starts between 00:20 and 00:55 UTC waits until 00:55 before the calls: admissions are cut at
+#              00:30 and executions at 00:45, and calls between the two cuts settle as admission_after_execution.
 # Secrets (repository Actions secrets, never printed): SEKI_AGENT_SEED_B64 (the demonstration contract's contractor key,
 # a 32 byte Ed25519 seed in base64) and HSG_STORE_TOKEN_SEKI_DEMO (the gateway token of the store hs-seki-demo).
 # The door's key is not here; it stays in Cloudflare. Principal, agent and door are all The HORIZONs Co., Ltd.
@@ -25,7 +27,7 @@ concurrency:
 jobs:
   heartbeat:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
