@@ -217,10 +217,10 @@ const CARD_SIGNATURE = {
   "jku": "https://gate.horizonshield.dev/.well-known/jwks.json",
   "alg": "ES256",
   "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJocy0yMDI2LTA5Iiwiamt1IjoiaHR0cHM6Ly9nYXRlLmhvcml6b25zaGllbGQuZGV2Ly53ZWxsLWtub3duL2p3a3MuanNvbiJ9",
-  "signature": "PUMhZ7gYpLhuQARiVqbNrCwzOn7CEQxkmLvzkz5so87sZIscApMdFu8rHfETZHOFhWpsTECq8Aq2SJuy_duY2w",
+  "signature": "6LOCDIywNHU_78XTZqlJZpKSCtp94_eK9-D9XCnGvxzLM6_uHNlmFbzHtUEr5Gk66ImxfadRwC5N5T22XErALA",
   "plain": {
     "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJocy0yMDI2LTA5Iiwiamt1IjoiaHR0cHM6Ly9nYXRlLmhvcml6b25zaGllbGQuZGV2Ly53ZWxsLWtub3duL2p3a3MuanNvbiJ9",
-    "signature": "CgmLoZvgbKudOsXmzFNpUZgZ-BMwsOdB6jE_8SzGU3NG-G0ylT8mF85xgVIYIuQLH9ONjKYumfe8kfkz_j3oHA"
+    "signature": "K17JKVkjdsxKzp3aSI3fAHHZfJTp77bpOKhRXQW22KYpctMe_fqguSCPpfqwDiv11RAZBpVMZ-h1xbJ4HEJD5Q"
   },
   "jwk": {
     "kty": "EC",
@@ -231,8 +231,8 @@ const CARD_SIGNATURE = {
     "alg": "ES256",
     "use": "sig"
   },
-  "canonical_sha256": "093ed47a1c1d9f559dd4f616d46cf35661c9d166de09372d1495db15b8090b20",
-  "jcs_sha256": "c577d9bbd59c868dd3ad09ea56d97d9ed5990e3ffb356f9716eae6359f95dfac"
+  "canonical_sha256": "c2b88aa27c3adf2378ae1d94500e7158763799f05685cda758d0471cd6791e15",
+  "jcs_sha256": "6b1d4ea492475e2e3a414295dac67f6557d84ae5d46842fd029e6c80a2af1fa4"
 };
 /* @@CARD_SIGNATURE_END */
 // GCP twin は別ドメインで動くので、entrypoint が globalThis.CARD_ORIGIN_OVERRIDE を先に立てて上書きできる。
@@ -5405,7 +5405,10 @@ function ownAgentCard(origin) {
     description:
       "Checks whether an MCP server exists, publishes an agent card, discloses who pays it, " +
       "and returns identical output for identical input. Free. Conformance and disclosure only; " +
-      "this gate does not verify that any price returned by a checked server is correct.",
+      "this gate does not verify that any price returned by a checked server is correct. " +
+      "Cloudflare in front of this gate refuses some default client signatures, such as Python urllib, " +
+      "with HTTP 403 and error code 1010 before the request reaches the gate: send an explicit User-Agent. " +
+      "A 403 with error code 1010 is not this gate's authentication answer.",
     // 0.3.3. 1.0 の supportedInterfaces と 0.3 の url/preferredTransport/protocolVersion を同居させる(公式 SDK 1.x は前者を読み、0.3 の SDK は後者を読む)。
     // url は A2A を喋る /a2a を指す。以前は origin を指しとって、A2A client が POST しても JSON-RPC は返っとらんかった(看板が嘘やった)。
     supportedInterfaces: [
@@ -5483,7 +5486,7 @@ function ownAgentCard(origin) {
       {
         id: "verify",
         name: "Verdict verification",
-        description: "Recompute the SHA-256 of a verdict this gate issued, so you do not have to trust the issuer. Available as the verify_verdict tool over MCP.",
+        description: "Recompute the SHA-256 of a verdict this gate issued, so you do not have to trust the issuer. Served by the verify_verdict tool over MCP at /mcp. The A2A interface (SendMessage at /a2a) does not route by skill and does not perform this one: a text part carrying an https URL gets the register reading, anything else gets a usage note. Call verify_verdict over MCP.",
         tags: ["verification", "tamper-evident", "recomputable"],
         examples: ["Verify this verdict hashes to its own record_sha256", "Recompute the digest of a verdict returned by check"],
         inputModes: ["application/json"],
@@ -5492,7 +5495,7 @@ function ownAgentCard(origin) {
       {
         id: "conditions",
         name: "Verification conditions",
-        description: "Return the exact conditions this gate measures (MCP reachability, agent card, compensation disclosure, deterministic output) and how each verdict is recomputed. The get_conditions tool over MCP and GET /spec serve the same methodology.",
+        description: "Return the exact conditions this gate measures (MCP reachability, agent card, compensation disclosure, deterministic output) and how each verdict is recomputed. Served by GET /spec and by the get_conditions tool over MCP at /mcp. The A2A interface (SendMessage at /a2a) does not route by skill and does not perform this one: without an https URL in the text it returns a usage note. Read GET /spec.",
         tags: ["methodology", "transparency", "spec"],
         examples: ["What does this gate actually check?", "How is a verdict recomputed independently?"],
         inputModes: ["text/plain"],
@@ -5501,7 +5504,7 @@ function ownAgentCard(origin) {
       {
         id: "is-verified",
         name: "Verification status",
-        description: "Report whether an endpoint's latest measurement passed all measured conditions. Returns true or null (state: verified, pending, held, watched, absent), never false. Available as the is_verified tool over MCP.",
+        description: "Report whether an endpoint's latest measurement passed all measured conditions. Returns true or null (state: verified, pending, held, watched, absent), never false. Served by GET /is-verified and the is_verified tool over MCP. Over A2A (SendMessage at /a2a), a text part carrying the endpoint URL returns the same reading.",
         tags: ["verification", "status", "honest-null"],
         examples: ["Is https://example.com/mcp currently verified?", "What is this endpoint's latest state on the register?"],
         inputModes: ["text/plain"],
@@ -5510,7 +5513,7 @@ function ownAgentCard(origin) {
       {
         id: "lookup",
         name: "Register lookup",
-        description: "Look up an endpoint's record on the public register: its latest verdict, state, and record SHA-256, with a recompute URL. Available as the lookup_server tool over MCP.",
+        description: "Look up an endpoint's record on the public register: its latest verdict, state, and record SHA-256, with a recompute URL. Served by the lookup_server tool over MCP at /mcp. Over A2A (SendMessage at /a2a) a text part carrying the endpoint URL returns only the register reading (state, record SHA-256 and recompute URL when measured, the same bytes as GET /is-verified), not the full record.",
         tags: ["register", "lookup", "recomputable"],
         examples: ["Look up the record for https://example.com/mcp", "Find the latest verdict hash for this endpoint"],
         inputModes: ["text/plain"],
