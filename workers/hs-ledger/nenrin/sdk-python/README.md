@@ -146,6 +146,17 @@ gives values a numeric comparator cannot order, `new URL(s).host`) goes through 
 whitespace, strings and numbers as JSON.stringify writes them. The JavaScript side of the same hash is
 `tests/parity/js_canon.mjs` (twelve lines).
 
+## 0.5.7 (2026-10-21)
+
+- `nenrin-track`: whether a door's signed admissions, in a [nenrin mirror](../mirror-v0) you hold, form one history
+  (fork, broken link, an admission anchored more than four days after the height it names, gaps), under keys you pin
+  as `<base64 key>@<key_url>`. The repository's `track-v0/track.py` and its ten vector mirrors, byte for byte;
+  `nenrin-track --selftest` reproduces every vector's report. The Go port `nenrin-track-go` (sdk-go v0.3.0) prints the
+  same report. See [track-v0](../track-v0).
+- MUSUBI: `immune_v0` (the immune rules, a2a-immune-v0) is now shipped, so `musubi-verify immune_v0 --selftest` runs
+  from the package, and the admission verifier with the immune block (`admission_verify_v0`, admission v0.2) is the
+  one in the repository at d79c052a. 27 modules.
+
 ## 0.5.6 (2026-10-18)
 
 `nenrin-tsunagi run` (with npm 0.5.4): when the command under test exits non zero, the last printed line now ends with

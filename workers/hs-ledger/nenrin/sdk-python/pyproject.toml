@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nenrin-verify"
-version = "0.5.6"
-description = "Recompute NENRIN evidence yourself, offline: A2A task provenance, two-party agreement records, TSUGI recovery chains and MUSUBI contracts. Record every A2A call your agent makes as a signed witness record (two lines, official A2A SDK), and apply your own rule to a resume."
+version = "0.5.7"
+description = "Recompute NENRIN evidence yourself, offline: A2A task provenance, two-party agreement records, TSUGI recovery chains and MUSUBI contracts, and whether a door's signed admissions in a mirror form one history (nenrin-track). Record every A2A call your agent makes as a signed witness record (two lines, official A2A SDK), and apply your own rule to a resume."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -38,6 +38,7 @@ nenrin-policy = "nenrin_verify.policy:main"
 nenrin-tsunagi = "nenrin_verify.tsunagi:main"
 nenrin-trace-verify = "nenrin_verify.trace:main"
 nenrin-trace-pin = "nenrin_verify.trace_pin:main"
+nenrin-track = "nenrin_verify.track_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -55,4 +56,6 @@ nenrin_verify = ["VENDORED.json", "py.typed", "selftest.json", "tsugi_selftest.j
                  "_repo/interop-v0.3/survivors/*.json", "_repo/interop-v0.3/survivors/fixtures/*.json",
                  "_repo/interop-v0.3/own-proto/*.json", "_repo/interop-v0.3/own-proto/fixtures/*.json",
                  "_repo/trace-intake-v0/*.json", "_repo/trace-intake-v0/fixtures/*.json", "_repo/trace-bind-v0/*.json",
-                 "_repo/trace-bind-v0/fixtures/*.json", "_repo/trace-span-v0/*.json", "_repo/trace-span-v0/fixtures/*.json"]
+                 "_repo/trace-bind-v0/fixtures/*.json", "_repo/trace-span-v0/*.json", "_repo/trace-span-v0/fixtures/*.json",
+                 "_repo/track-v0/*.py", "_repo/track-v0/vectors/*.json", "_repo/track-v0/vectors/*/*.json",
+                 "_repo/track-v0/vectors/*/ledger/*", "_repo/track-v0/vectors/*/objects/*"]

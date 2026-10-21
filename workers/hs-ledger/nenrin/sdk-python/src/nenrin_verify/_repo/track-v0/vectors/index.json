@@ -1,0 +1,62 @@
+[
+ {
+  "case": "01_one_history",
+  "why": "one chain, three anchored in time and one waiting for its Bitcoin block",
+  "verdict": "one_history",
+  "report_sha256": "ee0eaa63a7dc551aca8df537e1c5368f6dae40e3694a8c2dc7d81b2789fa9c6d"
+ },
+ {
+  "case": "02_fork",
+  "why": "the door signed two admissions with seq 3",
+  "verdict": "findings",
+  "report_sha256": "1f13b830db4511ef786436e4534346b276524ae4b3d576ce4aefe203cbe0e29a"
+ },
+ {
+  "case": "03_broken_link",
+  "why": "seq 3 does not follow seq 2",
+  "verdict": "findings",
+  "report_sha256": "710854004b41bed541135d797bcf9faf62bb704458324d8242b1a032367d461a"
+ },
+ {
+  "case": "04_gap",
+  "why": "seq 2 is not in this copy",
+  "verdict": "incomplete",
+  "report_sha256": "842848c1429c60c2cc3c25da76bec00ac719268eaad91b56da0e1c69a4c8d182"
+ },
+ {
+  "case": "05_anchored_late",
+  "why": "seq 4 was first anchored more than 576 blocks after the height it names",
+  "verdict": "findings",
+  "report_sha256": "2c476f76b7b01e6c04d6a6678b5848d8ebcadf312931cefc488598dfb8e39d04"
+ },
+ {
+  "case": "06_bad_signature",
+  "why": "an admission under door A's name that door A's key did not sign; it is left out and seq 2 is a gap",
+  "verdict": "incomplete",
+  "report_sha256": "a1b72d0eba22f15b999faa344efa5d753662f5663c7bf18333e8fc0a39a5c8fe"
+ },
+ {
+  "case": "07_unpinned_and_unreadable",
+  "why": "door B is not pinned; a copy that is not canonical; bytes that are not what their name says; a name with no bytes",
+  "verdict": "incomplete",
+  "report_sha256": "b78039856cda756d7d6a01e85c3716c5042da8d1b5b815e5f1e1736aafe06e04"
+ },
+ {
+  "case": "08_genesis",
+  "why": "seq 1 must name 64 zeros",
+  "verdict": "findings",
+  "report_sha256": "491ab551e4bc5dfe0f8d6c1bbecc84d577006c3dabb9c7e2ed8cd953e7158cd2"
+ },
+ {
+  "case": "09_two_doors_one_domain",
+  "why": "two doors share a domain with their own keys and names: each is its own chain",
+  "verdict": "one_history",
+  "report_sha256": "ee3ac32000a3cba2a7393e06cae227ce5817aba13eb24e5336ffe39e8424439e"
+ },
+ {
+  "case": "10_unchained",
+  "why": "admission ids with no seq and prev: no chain to judge, and the second was anchored late",
+  "verdict": "findings",
+  "report_sha256": "79ce43e5472bce2a5554535d939b5f2a3456878ab9b75815d5649900ff5578f3"
+ }
+]

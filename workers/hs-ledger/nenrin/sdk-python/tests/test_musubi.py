@@ -28,7 +28,7 @@ def test_run0002_recomputes_to_the_published_hashes():
 def test_shipped_modules():
     assert musubi.modules() == sorted([
         "admission_verify_v0", "anchor_compose", "bond_v0", "clause_eval_v0", "contract_v0", "convergence_v0", "correction_bundle_v0", "correction_v0",
-        "corroboration_v0", "independence_v0", "offer_v0", "settle_v1", "settle_v1_1", "settle_v1_10", "settle_v1_11", "settle_v1_12", "settle_v1_2",
+        "corroboration_v0", "immune_v0", "independence_v0", "offer_v0", "settle_v1", "settle_v1_1", "settle_v1_10", "settle_v1_11", "settle_v1_12", "settle_v1_2",
         "settle_v1_3", "settle_v1_4", "settle_v1_5", "settle_v1_6", "settle_v1_7", "settle_v1_8", "settle_v1_9",
         "spine_verify", "terms_v0"])
 

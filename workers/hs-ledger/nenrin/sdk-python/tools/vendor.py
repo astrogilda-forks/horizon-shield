@@ -35,7 +35,7 @@ MUSUBI_MODULES = ["contract_v0.py", "settle_v1.py", "settle_v1_1.py", "settle_v1
                   "clause_eval_v0.py", "admission_verify_v0.py", "settle_v1_11.py", "settle_v1_12.py",
                   "convergence_v0.py", "spine_verify.py", "terms_v0.py", "independence_v0.py",
                   "corroboration_v0.py", "offer_v0.py", "bond_v0.py", "correction_v0.py", "correction_bundle_v0.py",
-                  "anchor_compose.py"]
+                  "anchor_compose.py", "immune_v0.py"]
 MUSUBI_DATA = ["canonical_v0.mjs", "canonical_vectors.json", "anchor_compose_fixture.json", "first_contract_A.json",
                "first_contract_AB.json", "first_contract_unsigned.json", "second_contract_A.json", "second_contract_AB.json",
                "README.md", "run0002/README.md", "run0002/entry63.ots", "run0002/entry63.raw", "run0002/exec_19c44a79.anchored.json",
@@ -58,6 +58,13 @@ VERBATIM = [("musubi-v0/" + f) for f in MUSUBI_MODULES + MUSUBI_DATA] + ["agreem
                                                                      "agreement-v0/agreement_verify.mjs", "agreement-v0/agreement_canonical.mjs",
                                                                      "agreement-v0/key_succession.mjs",
                                                                      "recovery-v0/recovery_verify.py"]
+# nenrin-track-v0: the tracker of signed admissions in a mirror, and its vectors (each a small mirror directory).
+TRACK = os.path.join(REPO, "track-v0")
+VERBATIM.append("track-v0/track.py")
+for _root, _dirs, _files in os.walk(os.path.join(TRACK, "vectors")):
+    _dirs.sort()
+    for _f in sorted(_files):
+        VERBATIM.append(os.path.relpath(os.path.join(_root, _f), REPO).replace(os.sep, "/"))
 # The frozen NENRIN corpora, so that nenrin-tsunagi scores a verifier offline exactly as the TSUNAGI board does.
 INTEROP_DIRS = ["interop-v0", "interop-v0.1", "interop-v0.2/edge", "interop-v0.2/action-presence", "interop-v0.3/survivors", "interop-v0.3/own-proto", "trace-intake-v0", "trace-bind-v0", "trace-span-v0"]
 for _d in INTEROP_DIRS:

@@ -26,6 +26,7 @@ on:
       - "workers/hs-ledger/nenrin/interop-v0.3/survivors/**"
       - "workers/hs-ledger/nenrin/interop-v0.3/own-proto/**"
       - "workers/hs-ledger/nenrin/musubi-v0/canonical_vectors.json"
+      - "workers/hs-ledger/nenrin/track-v0/**"
       - ".github/workflows/go-sdk.yml"
   pull_request:
     paths:
@@ -37,6 +38,7 @@ on:
       - "workers/hs-ledger/nenrin/interop-v0.3/survivors/**"
       - "workers/hs-ledger/nenrin/interop-v0.3/own-proto/**"
       - "workers/hs-ledger/nenrin/musubi-v0/canonical_vectors.json"
+      - "workers/hs-ledger/nenrin/track-v0/**"
       - ".github/workflows/go-sdk.yml"
   workflow_dispatch:
     inputs:
@@ -98,6 +100,16 @@ jobs:
           for c in interop-v0 interop-v0.1 interop-v0.2/edge interop-v0.2/action-presence interop-v0.3/survivors interop-v0.3/own-proto; do
             "$RUNNER_TEMP/nenrin-verify-go" --corpus "../$c" | tail -1
           done
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: nenrin-track-go gives track.py's report, byte for byte, on the vectors and 600 mutations of them
+        run: |
+          set -o pipefail
+          python -m pip install "cryptography>=41"
+          go build -o "$RUNNER_TEMP/nenrin-track-go" ./cmd/nenrin-track-go
+          (cd ../track-v0 && python make_vectors.py >/dev/null && git diff --exit-code vectors/)
+          python ../track-v0/parity.py "$RUNNER_TEMP/nenrin-track-go" --n 600 | tail -3
 
   tag:
     name: tag the module release and fetch it through the Go proxy

@@ -1,0 +1,22 @@
+{
+ "schema": "a2a-admission-v0",
+ "admission_id": "test-door-v1:seq=3:prev=aa6f181ee16ed7788936eecba42f2578dadf6886fe48adb28ae4554615bffda6",
+ "relying_party": {
+  "domain": "door-a.example",
+  "key_url": "https://door-a.example/keys/door.json"
+ },
+ "chain_view": {
+  "height": 972430,
+  "header_sha256": "d22d54edfc83d3ef92bf6cc1e3891aff86205f8ed79ff0cdde1eb126fe161f7c"
+ },
+ "decision": "admit",
+ "reasons": [],
+ "publication": "public",
+ "signatures": [
+  {
+   "domain": "door-a.example",
+   "alg": "ed25519",
+   "sig": "beJOk9AVMeASM3hw+1sMSn403hk20o0FwaWOfUtWzrhXKJ9gnlgh1gyG9DWqH2kW7o0tmw9rEiseqeA1+NiNAA=="
+  }
+ ]
+}

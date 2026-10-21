@@ -1,0 +1,67 @@
+# Follow the doors' signed admissions in your NENRIN mirror (nenrin-track-v0), after every mirror run.
+#
+# Put this file at .github/workflows/nenrin-track.yml in the repository where the NENRIN mirror workflow
+# (../../mirror-v0/github-action/nenrin-mirror.yml) keeps its copy on the branch nenrin-mirror. It needs no secret and
+# writes nothing: it installs nenrin-verify at a pinned version from PyPI, reads your copy offline, and fails the run
+# (a red X in your repository) when a door it follows signed two histories, broke its chain, or had an admission
+# anchored long after the height it names.
+#
+# The keys below are pinned here, not fetched at run time. Check them yourself before you commit this file: each is
+# served at its key_url and committed in keys/ of ogasurfproject-jpg/horizon-shield. Add a --pin for any door you
+# want followed; a door you do not pin is counted and not judged.
+#
+# What a green run establishes: that the admissions your copy holds, under these keys, form one history per door and
+# none surfaced late. What it does not: that any decision was right, or that your copy holds every admission.
+name: NENRIN track
+
+on:
+  workflow_run:
+    workflows: ["NENRIN mirror"]
+    types: [completed]
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NENRIN_VERIFY: "nenrin-verify==0.5.7"
+  PINS: >-
+    --pin n4/0R5SQLGINGBwrA7agyMOd2819OcYTvao1Un0lwQ4=@https://shield.the-horizons-innovation.com/keys/shiken-door.json
+    --pin wbWKQTE9F1A2ixJzzhqfpITrU7GhDr9G2ri5YYGvCTE=@https://shield.the-horizons-innovation.com/keys/seki-door.json
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: nenrin-mirror
+          path: work
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install nenrin-verify at the pinned version and check its own vectors
+        run: |
+          set -euo pipefail
+          python -m pip install "$NENRIN_VERIFY"
+          nenrin-track --selftest | tail -1
+      - name: Track
+        run: |
+          set -uo pipefail
+          nenrin-track --dir work/mirror $PINS --json > track.json; code=$?
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          r = json.load(open("track.json"))
+          print("## nenrin-track: %s\n" % r["verdict"])
+          for c in r["chains"]:
+              print("- %s %s: %d admissions, seq %d to %d, forks %d, broken %d, late %d, gaps %d" % (c["key_url"], c["name"], c["admissions"],
+                    c["first_seq"], c["last_seq"], len(c["forks"]), len(c["broken_links"]), len(c["anchored_late"]), len(c["gaps"])))
+          for c in r["unchained"]:
+              print("- %s: %d signed admissions with no seq and prev, late %d" % (c["key_url"], c["admissions"], len(c["anchored_late"])))
+          print("\nreport_sha256 `%s` (two holders of the same copy share it)" % r["report_sha256"])
+          PY
+          cat "$GITHUB_STEP_SUMMARY" | tail -n 20
+          exit $code
