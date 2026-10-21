@@ -1,19 +1,19 @@
 {
   "anchors": {
-    "confirmed": 127,
+    "confirmed": 132,
     "explorers": [
       "blockstream.info",
       "mempool.space"
     ],
     "failed": [],
     "first_block": 959118,
-    "last_block": 972264,
+    "last_block": 972403,
     "pending": []
   },
   "chain": {
     "broken_at": null,
-    "head": "ae3c01598dd81c46e4e00a10edd759eb63e7608c0ed70df5ec875e64f19ecb89",
-    "rebuilt_through": 127,
+    "head": "2c8e4138ea93c60676f385c1fe31f73438b71c1123c98004b76167f0daa9da90",
+    "rebuilt_through": 132,
     "stamped_heads": [
       {
         "carried_by": 58,
@@ -179,13 +179,23 @@
         "carried_by": 125,
         "head_n": 120,
         "result": "match"
+      },
+      {
+        "carried_by": 128,
+        "head_n": 127,
+        "result": "match"
+      },
+      {
+        "carried_by": 131,
+        "head_n": 130,
+        "result": "match"
       }
     ],
-    "stamped_heads_matched": 33
+    "stamped_heads_matched": 35
   },
   "digests": {
     "failed": [],
-    "ok": 127
+    "ok": 132
   },
   "does_not_establish": [
     "that any claim in the ledger is true",
@@ -193,8 +203,8 @@
     "that two explorers agreeing is Bitcoin consensus; check headers against your own node for that",
     "anything about entries whose proofs are still pending; they are listed, not counted"
   ],
-  "drill_at": "2026-10-20T08:39:55Z",
-  "entries": 127,
+  "drill_at": "2026-10-21T09:09:28Z",
+  "entries": 132,
   "establishes": [
     "these ledger bytes were rebuilt from the named custodian without connecting to any operator host",
     "every digest, the jidec-chain-v1 head, the stamped heads and the Bitcoin anchors were recomputed from the copy and two public explorers"
@@ -207,12 +217,12 @@
   "outcome": "rebuilt",
   "range": [
     1,
-    127
+    132
   ],
-  "report_sha256": "3ed64c41e0c96dde930cb7e2af530ac297adef8aaf9332b49ea9c4dc16053649",
+  "report_sha256": "9baa99dac6c222e6f7203e7898b52048600463fb5b3e2878b24d4476376af772",
   "schema": "nenrin-survive-drill-v0",
   "source": {
-    "archive_sha256": "8829d24a07674ddcb3e23ca460a19bc0ad34bac013478cfd9af18b720dc3dbe9",
+    "archive_sha256": "7beabbc1fa371231e89cdc3d07b18232e6f4ac56187c1265de652f9900e3c4ba",
     "custodian": "github",
     "note": "the operator can delete this account; this source proves the copy's form, not its survival",
     "operator_controlled": true,
