@@ -11,9 +11,10 @@ The run of 2026-10-22 00:00 to 03:00 UTC (horizon-shield #51): calls A, B and C 
 | `bundle.json` | the companion v0.1 bundle built from the files above, the witness acknowledgements and a header view of blocks 972238 to 972559 |
 | `settlement.json` | `pilot_v0.py --settle bundle.json`, without the trailing newline |
 
-Recompute the settlement with your own copy of the code:
+Recompute the settlement with your own copy of the code (Python 3.11 or later; ca2a-runtime 0.4.0 brings rfc8785
+and cryptography):
 
-    cd workers/hs-ledger/nenrin/musubi-v0/ca2a-companion-v0 && python3 -m pip install rfc8785==0.1.4 cryptography && python3 pilot_v0.py --settle pilot51/set2/bundle.json | shasum -a 256
+    cd workers/hs-ledger/nenrin/musubi-v0/ca2a-companion-v0 && python3 -m venv /tmp/p51 && /tmp/p51/bin/pip install ca2a-runtime==0.4.0 && /tmp/p51/bin/python pilot_v0.py --settle pilot51/set2/bundle.json | shasum -a 256
 
 The expected sha256 of that output (with its newline) is
 `18a19f8a1eb62593b857241f34c07b1d96550b93d5c9ea17184b2ac695818fbd`.
