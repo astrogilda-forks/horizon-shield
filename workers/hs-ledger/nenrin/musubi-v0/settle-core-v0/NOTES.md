@@ -228,6 +228,17 @@ So anyone holding the two records, including a third party who republishes them,
 
 A later version that wants this order to be a signed fact would sort same-height records by the body digest (3.3) instead of record_sha256. That changes the reference and the expected results of the vectors that have two records in one block, so it is not done in core v0; the three implementations that agree on the 128 vectors would all have to change. Until then, a contract that cares which same-block execution is blamed should not rely on the listing; the parties can avoid the case by not sharing one single use approval between two executions in one block.
 
+## N22. Two files of the reference changed after revision 0.4 (revision 0.8)
+
+Status: stated in section 16. No rule, reason or vector changed.
+
+Found while writing the implementation status of draft-oga-musubi-settlement-02. Of the 29 files section 16 listed, two no longer had the listed sha256 on main:
+
+- `admission_verify_v0.py`, `aa889e542ff40e25` at dd64d0e2, `4bc36aa7a34ec024` at 9ab4a004 (d79c052a, 2026-10-21: a third admission record version, v0.2, with an immune field and two reasons).
+- `recovery-v0/recovery_verify.py`, `e9bc9c11dd7d9aef` at dd64d0e2, `fd4c93f015f6b495` at 9ab4a004 (3252f5ea, 2026-10-22: TSUGI v2.4 witness draws).
+
+Both belong to layers outside settle core. Checked: run_reference.py gives 128/128 and `exercise_inputs.py --check` agrees at 9ab4a004 (Python 3.14.7, cryptography 50.0.1); and the complete output of `settle_v1_16` on each of the 128 vectors, hashed whole rather than projected to the core fields, is the same at dd64d0e2 and at 9ab4a004 for all 128. Section 16 now names the commit its list was taken at, so a later change to an imported file shows as a different commit rather than a wrong statement.
+
 ## What I could not pin down
 
 - Whether the project intends core v0 to follow settle_v1_10 or the latest layer. On the vectors, v1.11 to v1.14 give identical core fields; v1.15 differs on one vector (N10) and reports a dropped copy under `signed_body_collapse` instead of `duplicate_anchorings`, which changes the dispositions projection for real_p31_two_anchorings_one_body only.
