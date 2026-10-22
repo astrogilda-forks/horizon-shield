@@ -201,6 +201,16 @@ node witness_selfcheck.mjs --origin https://youragent.example
 
 It fetches your card, checks the four conditions, and sends one real probe `witness_request` to your `/a2a` (asking you to witness `gate.horizonshield.dev`), then verifies the observation you return. It prints PASS or FAIL per condition and tells you what to fix. A clean run means you meet the conditions, nothing more.
 
+## The pool hash is not the file's sha256
+
+Each draw commits to `pool_sha256`, the hash of the pool it drew from. That value is the sha256 of a canonical form: `{schema, entries}`, where each entry keeps only `signed_domain`, `key_url` and `public_key_ed25519_b64` and the entries are sorted by key (`poolCanonical` in `witness_draw.mjs`). It is not the sha256 of the bytes of `witness_pool.json`. The file also carries `generated_at`, the admission report, notes and each entry's `a2a_url`, and none of them are hashed, so `sha256sum witness_pool.json` gives a different value. To recompute the pool hash from the file, run this in this directory:
+
+```
+node -e 'import("./witness_draw.mjs").then(async (m) => console.log(await m.poolSha256(JSON.parse(require("fs").readFileSync("witness_pool.json", "utf8")))))'
+```
+
+For the pool rebuilt on 22 October 2026 (commit `89305502`), it prints `f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799`, while the file's byte sha256 is `513cadd1…`. kuangmi-bit pointed this out in horizon-shield #56.
+
 ## What happens when you are drawn
 
 When TSUGI re-verifies a repaired agent, it may draw you. You receive a `nenrin-witness-request-v1` at `/a2a` naming an endpoint and a list of public surfaces, with no expected values (the request is blind). You measure those surfaces from where you stand and return one signed observation. You are never sent an instruction, only a measurement target; nothing you return is executed, only the hashes of what you observed are compared. Your observation is counted once per domain per draw, and is anchored on Bitcoin beside the draw. You can be measured back the same way: reciprocity is the price of admission (condition 2).
