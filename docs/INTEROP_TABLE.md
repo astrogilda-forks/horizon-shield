@@ -4,18 +4,19 @@ Where an implementation, or a run of one, was checked against the same bytes, an
 agreement and disagreement; it does not certify anything. Rows are split by who ran them:
 
 - **Outside**: someone other than this project wrote the implementation or ran the check, on their own machine, and
-  published the result. These are the only rows we count as independent.
+  published the result. Independent here means the run, not the program: a row says what the implementation was
+  written from. No implementation here was written from the text alone with the expected outputs withheld.
 - **Ours**: checks this project runs, on code from others or from us. Useful, not independent.
 
 Every row names the commit, the input and where the result is published, so it can be run again. Last updated
-2026-10-22.
+2026-10-23.
 
 ## Outside
 
 | what was checked | who | against what | result | where |
 |---|---|---|---|---|
-| MUSUBI settle core v0, a second implementation | aeoess (`aeoess/musubi-settle-core-check` at `53cfafb`) | the 128 settle core vectors at revision 0.4 (`dd64d0e2`), eight core fields | 128 of 128 agree, no unassessed field | [NOTES.md N19](../workers/hs-ledger/nenrin/musubi-v0/settle-core-v0/NOTES.md), Issue #49 |
-| MUSUBI settle core v0, a third implementation, written from the text and the vectors only | `kuangmi-bit` (`kuangmi-bit/nenrin-independent-verifiers` at `bbe455c`) | the same 128 vectors | 128 of 128 agree; two places where the text and the vectors pulled apart, stated in revision 0.6 | [NOTES.md N20](../workers/hs-ledger/nenrin/musubi-v0/settle-core-v0/NOTES.md), Issue #49 |
+| MUSUBI settle core v0, a second implementation, written from the text and NOTES.md with the expected outputs removed; not counted as independent in [Agent Errata K001](https://github.com/piiiico/agent-errata/blob/main/claims/K001.md), as its author declared | aeoess (`aeoess/musubi-settle-core-check` at `53cfafb`) | the 128 settle core vectors at revision 0.4 (`dd64d0e2`), eight core fields | 128 of 128 agree, no unassessed field | [NOTES.md N19](../workers/hs-ledger/nenrin/musubi-v0/settle-core-v0/NOTES.md), Issue #49 |
+| MUSUBI settle core v0, a third implementation, written from the text and the vectors (expected outputs included) without reading the reference; the one K001 counts as independent | `kuangmi-bit` (`kuangmi-bit/nenrin-independent-verifiers` at `bbe455c`) | the same 128 vectors | 128 of 128 agree; where the text could be read two ways the vectors decided (its README lists the readings), and revision 0.6 states two of those places | [NOTES.md N20](../workers/hs-ledger/nenrin/musubi-v0/settle-core-v0/NOTES.md), Issue #49 |
 | The #51 set 2 settlement (22 October), recomputed | Poke-nushi | `pilot51/set2/bundle.json` at `b85029de`, `ca2a-runtime` 0.4.0 | the published output sha256 reproduced exactly; signatures and the checkpoint's OpenTimestamps proof checked; with the reader's own headers to block 972564 the verdicts are unchanged and only `anchor_depth` moves from 9 to 14 | [#51 comment](https://github.com/ogasurfproject-jpg/horizon-shield/issues/51#issuecomment-6332669484) |
 | The #51 set 2 audits, compared across two rows | aeoess (APS row) | the A and B audit files of each row | byte identical: A `c2920477…` (1,532 bytes), B `40bc2a46…` (1,101 bytes) | [#51 comment](https://github.com/ogasurfproject-jpg/horizon-shield/issues/51#issuecomment-6330218168) |
 | The Agent Errata node and its part of E6 (agent-governance-vocabulary) | Pico, the AI agent that maintains Agent Errata | `e6-consumer.ts` at `8363d2c` (sha256 `fad87cec…`) on a fresh clone of e6-fixture v1.1.0 (`8d8fc50`) | 12 of 12 agree on verdict, decisive check, all eight claims and every code, the same lines as our record; the consumer is theirs, the fixture is neither theirs nor ours | [#179 comment](https://github.com/aeoess/agent-governance-vocabulary/pull/179#issuecomment-6332546428) |

@@ -62,8 +62,9 @@ the specification's 128 vectors (about 30 seconds). Python 3.11 or later. The fi
 - **Every party to the calls was us.** The buyer, the responder and the log operator were all our company. The outside
   parties were witnesses and readers, not parties to the payment.
 - **The outside recomputation used our tool.** Poke-nushi ran our companion settler on our published bundle. That is
-  an independent run, not an independent implementation of the companion. The two independent implementations above
-  cover the settle core rules, not the companion.
+  an independent run, not an independent implementation of the companion. The two implementations by other authors
+  above cover the settle core rules, not the companion, and neither was written from the text alone: one also read our
+  notes, and the other had the expected outputs.
 - **There has been no external audit.** An internal adversarial review found defects, which are listed and fixed in
   public. That is not a third-party audit.
 - **A signature shows who said something, not that it is true.** A recomputed settlement shows that the published
