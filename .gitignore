@@ -282,6 +282,8 @@ reply_playbook.md
 sns_posts_*.md
 aeo_block.txt
 bundle.json
+!workers/hs-ledger/nenrin/musubi-v0/ca2a-companion-v0/pilot51/set2/bundle.json
+!workers/hs-ledger/nenrin/sdk-python/src/nenrin_verify/_repo/musubi-v0/ca2a-companion-v0/pilot51/set2/bundle.json
 endpoints_sample.txt
 hs_batch_*.json
 qa_paths.json
