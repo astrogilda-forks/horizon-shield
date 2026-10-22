@@ -987,64 +987,210 @@ async function loadRegister(){
         ? "none of them registered by a name outside this company yet"
         : outsideCount + " of them registered by a name outside this company") +
       ". Absence is not a negative verdict.";
-    rows.forEach(function(r){
-      const d = document.createElement("div"); d.className = "regcard";
-      const top = document.createElement("div"); top.className = "regtop";
-      const lb0 = r.operator_label || {};
-      const nm = document.createElement("a"); nm.className = "regname";
-      nm.href = "member.html?endpoint=" + encodeURIComponent(r.endpoint);
-      nm.textContent = lb0.en ? lb0.en : (lb0.ja ? lb0.ja : r.endpoint);
-      top.appendChild(nm);
-      if (lb0.en && lb0.ja){
-        top.appendChild(Object.assign(document.createElement("span"), { className: "regja", textContent: lb0.ja }));
-      }
-      const stat = (r.latest && r.latest.status) ? r.latest.status : "not yet measured";
-      const st = document.createElement("span");
-      // 2026-08-19 patch55: ゲートが返すのは "verified"。"pass" と比べていたので
-      // 通った行に一度も緑が付かなかった。CONFIG.tier_pass の実値に合わせる。
-      // held は「測れなかった」であって未通過とは別なので、色も分ける。
-      st.className = "regbadge " + (stat === "verified" ? "b-pass" : stat === "pending" ? "b-pend" : stat === "held" ? "b-none" : "b-none");
-      st.textContent = stat + ((r.latest && r.latest.at) ? " \u00b7 " + String(r.latest.at).slice(0, 10) : "");
-      top.appendChild(st);
-      d.appendChild(top);
-      if (r.operator_label && r.operator_label.en){
-        const en = document.createElement("div"); en.className = "regdesc"; en.textContent = r.operator_label.en; d.appendChild(en);
-      }
-      const meta = document.createElement("div"); meta.className = "regmeta";
-      const ep = document.createElement("span"); ep.className = "mono"; ep.textContent = r.endpoint; meta.appendChild(ep);
-      if (typeof r.measurements === "number"){
-        const m = document.createElement("span"); m.className = "mono";
-        m.textContent = r.measurements + (r.measurements === 1 ? " measurement" : " measurements");
-        meta.appendChild(m);
-      }
-      const h = document.createElement("a"); h.href = r.history_url; h.textContent = "history"; meta.appendChild(h);
-      // 2026-08-19 patch55: 通った人が持ち出せるように、バッジそのものを出す。
-      // 画像はリクエスト時に描かれるので、行が緑でなくなればここも緑ではなくなる。
-      const dl = document.createElement("a");
-      dl.href = GATE + "/badge/seal?download=1&endpoint=" + encodeURIComponent(r.endpoint);
-      dl.textContent = "save badge";
-      dl.setAttribute("download", "");
-      meta.appendChild(dl);
-      const b = document.createElement("a"); b.href = "#"; b.textContent = "measure now";
-      b.addEventListener("click", function(ev){
-        ev.preventDefault();
-        const inp = document.getElementById("epin");
-        if (inp) inp.value = r.endpoint;
-        runCheck(r.endpoint);
-      });
-      meta.appendChild(b);
-      d.appendChild(meta);
-      const seal = document.createElement("img");
-      seal.src = GATE + "/badge/seal?endpoint=" + encodeURIComponent(r.endpoint);
-      seal.alt = "MCP conduct " + stat + " for " + (lb0.en || r.endpoint);
-      seal.loading = "lazy";
-      seal.className = "regseal";
-      d.appendChild(seal);
-      box.appendChild(d);
-    });
+    renderRegisterTable(box, rows);
   }catch(e){
     note.textContent = "live register unavailable (" + e.message + "). The summary above still stands, and the gate answers at /register directly.";
   }
+}
+
+// 2026-10-22 register-table: 1 件 1 行の表にする。前はカードが大きく、バッジの絵が全件に付き、
+// 同じ URL が 3 回出て、1 画面に 5 件ほどしか入らんかった。バッジは行を開いた時だけ読む。
+// 同じ登録ドメインの口は 1 行にたたむ。数えるのは登録簿に書いてある物だけ: 運営者の欄は無いので、
+// 出すのは「登録ドメインの数」であって運営者の数やない。共用のホスト(onrender.com など)は束ねん。
+const RT_ORDER = { "verified": 0, "pending": 1, "held": 2, "not yet measured": 3 };
+const RT_SHARED = ["onrender.com","workers.dev","pages.dev","vercel.app","netlify.app","github.io","herokuapp.com",
+  "fly.dev","railway.app","web.app","firebaseapp.com","azurewebsites.net","run.app","replit.app","deno.dev",
+  "glitch.me","ngrok.app","ngrok-free.app","trycloudflare.com","supabase.co","modal.run","hf.space"];
+const RT_SLD = ["co","or","ne","ac","go","gr","ed","lg","com","net","org","gov","edu"];
+function rtStatus(r){ return (r.latest && r.latest.status) ? String(r.latest.status) : "not yet measured"; }
+function rtRank(s){ return Object.prototype.hasOwnProperty.call(RT_ORDER, s) ? RT_ORDER[s] : 2; }
+function rtMeas(r){ return typeof r.measurements === "number" ? r.measurements : 0; }
+function rtDay(r){ return (r.latest && r.latest.at) ? String(r.latest.at).slice(0, 10) : ""; }
+function rtDomain(endpoint){
+  let host = "";
+  try { host = new URL(endpoint).hostname.toLowerCase(); } catch (e) { return endpoint; }
+  for (const s of RT_SHARED){
+    if (host === s) return host;
+    if (host.endsWith("." + s)) return host.slice(0, -(s.length + 1)).split(".").pop() + "." + s;
+  }
+  const p = host.split(".");
+  if (p.length > 2 && p[p.length - 1].length === 2 && RT_SLD.indexOf(p[p.length - 2]) >= 0) return p.slice(-3).join(".");
+  return p.slice(-2).join(".");
+}
+function rtCmp(a, b){ return (a.rank - b.rank) || (b.meas - a.meas) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0); }
+function rtEl(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+function rtDateCell(day){
+  const dt = rtEl("span", "rt-date", day || "never");
+  if (day) dt.insertBefore(rtEl("span", "rt-unit", "last "), dt.firstChild); else dt.appendChild(rtEl("span", "rt-unit", " measured"));
+  return dt;
+}
+function rtStateWord(s){ return s === "not yet measured" ? "not measured" : s; }
+
+function renderRegisterTable(box, rows){
+  const items = rows.map(function(r){
+    const s = rtStatus(r);
+    return { r: r, s: s, rank: rtRank(s), meas: rtMeas(r), day: rtDay(r), key: r.endpoint, dom: rtDomain(r.endpoint) };
+  });
+  const byDom = {};
+  items.forEach(function(it){ (byDom[it.dom] = byDom[it.dom] || []).push(it); });
+  const top = [];
+  Object.keys(byDom).forEach(function(d){
+    const kids = byDom[d].sort(rtCmp);
+    if (kids.length === 1){ top.push(kids[0]); return; }
+    const best = kids[0];
+    top.push({ group: true, dom: d, kids: kids, rank: best.rank, s: best.s, key: d,
+      meas: kids.reduce(function(n, k){ return n + k.meas; }, 0),
+      day: kids.reduce(function(m, k){ return k.day > m ? k.day : m; }, "") });
+  });
+  top.sort(rtCmp);
+
+  const measured = items.filter(function(it){ return it.meas > 0; }).length;
+  const counts = {};
+  items.forEach(function(it){ counts[it.s] = (counts[it.s] || 0) + 1; });
+
+  const sum = rtEl("div", "rt-sum");
+  [[items.length, "endpoints on the register"], [measured, "measured at least once"], [Object.keys(byDom).length, "registrable domains"]]
+    .forEach(function(x){ const c = rtEl("div"); c.appendChild(rtEl("b", "", String(x[0]))); c.appendChild(rtEl("span", "", x[1])); sum.appendChild(c); });
+  box.appendChild(sum);
+  box.appendChild(rtEl("p", "rt-note", "Registrable domains, not operators: the register has no operator field, and shared hosts such as onrender.com are not merged."));
+
+  const ctl = rtEl("div", "rt-ctl");
+  const q = rtEl("input", "rt-q"); q.type = "search"; q.placeholder = "Find by URL"; q.setAttribute("aria-label", "Find by URL");
+  ctl.appendChild(q);
+  let filter = "all";
+  const chips = [];
+  [["all", "all", items.length]].concat(["verified", "pending", "held", "not yet measured"].map(function(s){ return [s, rtStateWord(s), counts[s] || 0]; }))
+    .forEach(function(c){
+      const b = rtEl("button", "rt-chip", c[1] + " " + c[2]); b.type = "button"; b.setAttribute("aria-pressed", c[0] === "all" ? "true" : "false");
+      b.addEventListener("click", function(){ filter = c[0]; chips.forEach(function(x){ x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); draw(); });
+      chips.push(b); ctl.appendChild(b);
+    });
+  box.appendChild(ctl);
+
+  const head = rtEl("div", "rt-head");
+  ["state", "endpoint", "measurements", "last measured", ""].forEach(function(h){ head.appendChild(rtEl("span", "", h)); });
+  box.appendChild(head);
+  const list = rtEl("div", "rt-list");
+  box.appendChild(list);
+  const open = {};
+
+  function match(it, term){
+    return (filter === "all" || it.s === filter) && (!term || it.r.endpoint.toLowerCase().indexOf(term) >= 0);
+  }
+  function actions(r){
+    const a = rtEl("span", "rt-act");
+    const h = rtEl("a", "", "history"); h.href = r.history_url; a.appendChild(h);
+    // 2026-08-19 patch55: 通った人が持ち出せるように、バッジそのものを出す。
+    // 画像はリクエスト時に描かれるので、行が緑でなくなればここも緑ではなくなる。
+    const dl = rtEl("a", "", "badge"); dl.href = GATE + "/badge/seal?download=1&endpoint=" + encodeURIComponent(r.endpoint);
+    dl.setAttribute("download", ""); dl.title = "save badge"; a.appendChild(dl);
+    const m = rtEl("a", "", "measure"); m.href = "#"; m.title = "measure now";
+    m.addEventListener("click", function(ev){
+      ev.preventDefault();
+      const inp = document.getElementById("epin");
+      if (inp) inp.value = r.endpoint;
+      runCheck(r.endpoint);
+    });
+    a.appendChild(m);
+    return a;
+  }
+  function detail(it){
+    const r = it.r, lb = r.operator_label || {};
+    const d = rtEl("div", "rt-detail");
+    const t = rtEl("div", "rt-dtext");
+    const name = rtEl("a", "rt-name", lb.en || lb.ja || r.endpoint); name.href = "member.html?endpoint=" + encodeURIComponent(r.endpoint);
+    t.appendChild(name);
+    if (lb.en && lb.ja) t.appendChild(rtEl("span", "rt-sub", " " + lb.ja));
+    const facts = [];
+    if (r.tier) facts.push("tier " + r.tier);
+    if (r.cadence) facts.push("cadence " + r.cadence);
+    if (r.first_at) facts.push("first measured " + String(r.first_at).slice(0, 10));
+    facts.push(it.meas + (it.meas === 1 ? " measurement" : " measurements"));
+    t.appendChild(rtEl("div", "rt-sub", facts.join(" · ")));
+    if (r.latest && r.latest.record_sha256){
+      const rec = rtEl("div", "rt-sub");
+      rec.appendChild(document.createTextNode("record_sha256 "));
+      const ra = rtEl("a", "", String(r.latest.record_sha256).slice(0, 16) + "…");
+      ra.href = r.latest.record_url || r.history_url; rec.appendChild(ra);
+      t.appendChild(rec);
+    }
+    d.appendChild(t);
+    const seal = document.createElement("img");
+    seal.src = GATE + "/badge/seal?endpoint=" + encodeURIComponent(r.endpoint);
+    seal.alt = "MCP conduct " + it.s + " for " + (lb.en || r.endpoint);
+    seal.loading = "lazy";
+    d.appendChild(seal);
+    return d;
+  }
+  function row(it, child){
+    const wrap = rtEl("div", "rt-item");
+    const rw = rtEl("div", "rt-row" + (child ? " rt-child" : ""));
+    rw.setAttribute("role", "button"); rw.tabIndex = 0; rw.setAttribute("aria-expanded", open[it.key] ? "true" : "false");
+    rw.appendChild(rtEl("span", "rt-st s-" + it.s.replace(/\s+/g, "-"), rtStateWord(it.s)));
+    rw.appendChild(rtEl("span", "rt-url", it.r.endpoint));
+    const n = rtEl("span", "rt-num", String(it.meas)); n.appendChild(rtEl("span", "rt-unit", it.meas === 1 ? " measurement" : " measurements")); rw.appendChild(n);
+    rw.appendChild(rtDateCell(it.day));
+    rw.appendChild(actions(it.r));
+    wrap.appendChild(rw);
+    let det = null;
+    function toggle(){
+      open[it.key] = !open[it.key];
+      rw.setAttribute("aria-expanded", open[it.key] ? "true" : "false");
+      if (open[it.key]){ det = det || detail(it); wrap.appendChild(det); } else if (det && det.parentNode){ det.parentNode.removeChild(det); }
+    }
+    rw.addEventListener("click", function(ev){ if (ev.target.closest && ev.target.closest("a")) return; toggle(); });
+    rw.addEventListener("keydown", function(ev){ if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); toggle(); } });
+    if (open[it.key]){ det = detail(it); wrap.appendChild(det); }
+    return wrap;
+  }
+  function groupRow(g, shown, forced){
+    const wrap = rtEl("div", "rt-item rt-group");
+    const isOpen = forced || !!open["g:" + g.dom];
+    const rw = rtEl("div", "rt-row");
+    rw.setAttribute("role", "button"); rw.tabIndex = 0; rw.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    // 組の札は一番良い状態を名乗らない(30 件中 27 件が未計測の組が verified に見えた、TOshi 10/22)。
+    // 出すのは verified の件数と組の件数だけで、色は付けない。並び順は今までどおり一番良い状態で決める。
+    const nv = g.kids.filter(function(k){ return k.s === "verified"; }).length;
+    rw.appendChild(rtEl("span", "rt-st s-group", nv + "/" + g.kids.length + " verified"));
+    const u = rtEl("span", "rt-url", g.dom + " · " + g.kids.length + " endpoints");
+    const by = {};
+    g.kids.forEach(function(k){ by[k.s] = (by[k.s] || 0) + 1; });
+    const ks = Object.keys(by).sort(function(a, b){ return rtRank(a) - rtRank(b); });
+    u.appendChild(rtEl("span", "rt-sub", ks.length === 1 ? " all " + rtStateWord(ks[0]) : " " + ks.map(function(s){ return rtStateWord(s) + " " + by[s]; }).join(", ")));
+    rw.appendChild(u);
+    const n = rtEl("span", "rt-num", String(g.meas)); n.appendChild(rtEl("span", "rt-unit", g.meas === 1 ? " measurement" : " measurements")); rw.appendChild(n);
+    rw.appendChild(rtDateCell(g.day));
+    rw.appendChild(rtEl("span", "rt-act rt-fold", isOpen ? "close" : "open"));
+    wrap.appendChild(rw);
+    function toggle(){ open["g:" + g.dom] = !isOpen; draw(); }
+    rw.addEventListener("click", toggle);
+    rw.addEventListener("keydown", function(ev){ if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); toggle(); } });
+    if (isOpen){
+      const kids = rtEl("div", "rt-kids");
+      shown.forEach(function(k){ kids.appendChild(row(k, true)); });
+      wrap.appendChild(kids);
+    }
+    return wrap;
+  }
+  function draw(){
+    const term = q.value.trim().toLowerCase();
+    list.textContent = "";
+    let any = 0;
+    top.forEach(function(it){
+      if (it.group){
+        const shown = it.kids.filter(function(k){ return match(k, term); });
+        if (!shown.length) return;
+        any += shown.length;
+        list.appendChild(groupRow(it, shown, term !== "" || filter !== "all"));
+      } else if (match(it, term)){
+        any += 1;
+        list.appendChild(row(it, false));
+      }
+    });
+    if (!any) list.appendChild(rtEl("p", "rt-empty", "No endpoint on the register matches. Absence here is not a negative verdict."));
+  }
+  q.addEventListener("input", draw);
+  draw();
 }
 // 2026-09-03 share-verdict: 判定をリンクと文面にする。
 // ルール: 文面に書くのは record が言っていることだけ。NOT MEASURED は NOT MEASURED のまま出す。
