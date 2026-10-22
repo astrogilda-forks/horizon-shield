@@ -7,7 +7,9 @@ jobs:
   witness:
     runs-on: ubuntu-24.04
     steps:
-      - uses: ogasurfproject-jpg/horizon-shield/conduct-witness-action@main
+      # Pinned 2026-10-22: the last change to conduct-witness-action/ (4a8d10bb, 2026-10-01). The witness key below
+      # goes to this exact code, never to whatever main holds later. Move the pin on purpose when the action changes.
+      - uses: ogasurfproject-jpg/horizon-shield/conduct-witness-action@4a8d10bb5e5cc4544bd390153a7b814a7fb79a02
         with:
           witness_name: "HORIZON SHIELD self-witness (github runner)"
           origins: |
