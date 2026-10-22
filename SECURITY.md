@@ -38,6 +38,8 @@ when it should verify), a verdict or record that is wrong, a break in the ledger
 make the gate record something the measured server did not do, and any personal data or secret on a public
 surface.
 
+What we protect, who we assume attacks it, what stops each attack today and where nothing does: [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+
 Out of scope: denial of service and load testing, social engineering, physical attacks, findings that need a
 compromised device of the reporter, and scanner output without a demonstrated impact.
 

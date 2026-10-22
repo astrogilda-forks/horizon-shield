@@ -92,7 +92,7 @@ Shield は再検証の証人を自分で選ばん。公開の池 (witness_pool.j
 - **R5-F1 池の選び直し**: v2.2 の約束 (tsugi-draw-commitment-v1) は主題しか固めていなかった。beacon を見てから池を選び直せた (答えない候補を落とす、Sybil を足す)。v2 の約束 (tsugi-draw-commitment-v2、`commitmentClaimTextV2`) は主題・池の hash・k を一緒に固める。検証器は籤の池と k を約束と照らす (`commitment_pool_mismatch`、`commitment_k_mismatch`)。
 - **前の記録**: v2.2 の形の記録は読めるまま。検証器は報告の `segment.witness.forms` に印を付ける (`k_not_recorded`、`request_not_carried`、`pool_not_committed`)。読む側が `requireV24` (`--require-v24`) を求めた時だけ断る (`draw_k_unrecorded`、`draw_request_absent`、`draw_pool_uncommitted`)。
 - **試験**: 攻めと対照は witness_v24_cases.mjs (15 件)、採点は witness_v24_test.mjs。同じ入力を recovery_twin_test.py (Python と node)、sdk/tsugi_verify.test.mjs (1 ファイルの SDK)、sdk-python の固定の試験と生の突き合わせに通す。直す前の検証器 (0.3.1) では、v2.2 の形の攻めは全部通っていた。
-- **言わないこと**: 依頼を結び付けても、証人が本物で独立かは言わない。池は今も空で、v2.4 が効くのは池に人が入ってからになる。
+- **言わないこと**: 依頼を結び付けても、証人が本物で独立かは言わない。本番の池は 1 件 (api.babyblueviper.com、2026-09-23 から) で、定足数 2 の籤はまだ成り立たない。v2.4 が効き目を持つのは、池が定足数を満たしてからになる。
 
 ## 手 (v2.2): 隔離だけを持つ executor
 
