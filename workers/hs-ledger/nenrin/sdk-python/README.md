@@ -146,6 +146,18 @@ gives values a numeric comparator cannot order, `new URL(s).host`) goes through 
 whitespace, strings and numbers as JSON.stringify writes them. The JavaScript side of the same hash is
 `tests/parity/js_canon.mjs` (twelve lines).
 
+## 0.6.0 (2026-10-22)
+
+- TSUGI witness draws v2.4 (`nenrin_verify.tsugi`, verifier 0.4.0), red team R2-1 and R5-F1, fixed in horizon-shield
+  3252f5ea: a draw carries its request body and requested k, a v2 commitment fixes the subject, the pool and k before
+  the beacon, and observations made before their request or before the beacon block time are not counted. New refusal
+  codes `draw_request_mismatch`, `draw_request_unbound`, `draw_k_mismatch`, `commitment_pool_mismatch`,
+  `commitment_k_mismatch`, `witness_before_request`, `witness_before_beacon`, `request_before_beacon`; options
+  `--require-v24` and `--beacon-time`. Draws in the v2.2 form still verify and are marked in `segment.witness.forms`.
+  The port prints the same bytes as `tsugi_verify.mjs` on all 117 frozen cases, the 15 v2.4 attack and control cases
+  included. The vendored `recovery-v0/recovery_verify.py` is the repository's at 3252f5ea.
+- npm and PyPI carry the same version number from this release (npm 0.5.4 had no JavaScript change to follow 0.5.5 to 0.5.7).
+
 ## 0.5.7 (2026-10-21)
 
 - `nenrin-track`: whether a door's signed admissions, in a [nenrin mirror](../mirror-v0) you hold, form one history

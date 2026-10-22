@@ -72,6 +72,27 @@ account, no token, no trust in HS. A mismatch exits 2 and prints the two trees t
 attestation (who built it, from which commit) and this script (what that commit builds, on your
 machine), the chain source to package is closed at both ends by the reader, not by the operator.
 
+## 0.6.0 (2026-10-22): TSUGI witness draws v2.4 (`tsugi-verify` 0.4.0), red team R2-1 and R5-F1
+
+Two holes in the TSUGI witness draw, found by an internal review on 2026-10-09 and fixed in horizon-shield 3252f5ea.
+
+- **R2-1, a request reused across incidents.** A draw named the request its witnesses answered by hash only, so a
+  draw for one incident could name an earlier incident's request and have that incident's signed observations
+  counted again; a draw wider than the policy k let the wanted witnesses in. A v2.4 draw carries the request body
+  (`draw.request`) and the requested k (`draw.k_requested`). `tsugi-verify` recomputes the request hash
+  (`draw_request_mismatch`), checks that the request names this draw's subject, pool, beacon and endpoint
+  (`draw_request_unbound`), holds k to the policy in both directions (`draw_k_mismatch`), and does not count an
+  observation made before its request (`witness_before_request`) or before the beacon block time the reader fetched
+  (`--beacon-time`, `witness_before_beacon`).
+- **R5-F1, a pool chosen after the beacon.** The v1 commitment fixed the subject only. The v2 commitment
+  (`tsugi-draw-commitment-v2`, `commitmentClaimTextV2`) fixes the subject, the pool hash and k together before the
+  beacon block exists; `commitment_pool_mismatch` and `commitment_k_mismatch` when the draw differs.
+- **Older records.** Draws in the v2.2 form still verify. The report marks them in `segment.witness.forms`
+  (`k_not_recorded`, `request_not_carried`, `pool_not_committed`); `--require-v24` refuses them
+  (`draw_k_unrecorded`, `draw_request_absent`, `draw_pool_uncommitted`).
+- The JavaScript package had no other change since 0.5.4 (PyPI 0.5.5 to 0.5.7 changed the Python side only). From
+  this release npm and PyPI carry the same version number.
+
 ## 0.5.4 (2026-10-18): the referee's last line says "not a pass" when the command exited non zero
 
 `nenrin-tsunagi run` exited 1 when the verifier under test wrote every right answer and then exited non zero, but its
