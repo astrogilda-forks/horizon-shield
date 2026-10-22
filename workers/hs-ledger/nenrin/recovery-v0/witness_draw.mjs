@@ -106,6 +106,42 @@ export function commitmentClaimText(subjectSha256) {
   // 台帳の record_canonical そのもの。1 バイトも自由度を持たせん (持たせたら研磨の余地になる)。
   return "# " + COMMITMENT_SCHEMA + "\n\nsubject_sha256: " + subjectSha256 + "\n\nThis entry commits the record named by subject_sha256 (a TSUGI execution record) to the ledger before any re-verification witness is drawn. The draw's beacon must be the Bitcoin block after the block this entry is anchored to. Establishes: that subject_sha256 existed no later than the anchor block. Does not establish: anything about the record's content.\n";
 }
+// ---- v2.4 (2026-10-22, red team R2-1 and R5-F1) ----
+// R5-F1: the v1 commitment fixes the subject only, so the pool could be chosen after the beacon was known (drop a
+// candidate, add a Sybil). The v2 commitment fixes the subject, the pool hash and the requested k together, before the
+// beacon block exists. The verifier checks the draw's pool_sha256 and k_requested against it.
+// R2-1: a draw named its request only by hash, so an old request (another incident's) could be named and its signed
+// observations counted again. A v2.4 draw carries the request body; the verifier recomputes its hash and checks that
+// the request names this draw's subject, pool and beacon. A v2.4 draw also records k_requested, so the verifier can
+// hold the operator to the policy k exactly (a larger k widens the draw until the wanted witnesses are in it).
+// Records in the v2.2 form stay readable; the verifier marks them (request_not_carried, k_not_recorded,
+// pool_not_committed) and refuses them only when the reader's policy asks for v2.4.
+export const COMMITMENT_SCHEMA_V2 = "tsugi-draw-commitment-v2";
+export function commitmentClaimTextV2(subjectSha256, poolSha256, kRequested) {
+  if (!HEX64.test(String(subjectSha256 || ""))) throw new Error("subjectSha256 must be 64 hex");
+  if (!HEX64.test(String(poolSha256 || ""))) throw new Error("poolSha256 must be 64 hex");
+  if (!/^(0|[1-9][0-9]*)$/.test(String(kRequested))) throw new Error("kRequested must be digits as a string");
+  return "# " + COMMITMENT_SCHEMA_V2 + "\n\nsubject_sha256: " + subjectSha256 + "\npool_sha256: " + poolSha256 + "\nk_requested: " + String(kRequested) + "\n\nThis entry commits the record named by subject_sha256 (a TSUGI execution record), the witness pool named by pool_sha256 and the number of witnesses to draw, before any re-verification witness is drawn. The draw's beacon must be the Bitcoin block after the block this entry is anchored to. Establishes: that subject, pool and k were fixed no later than the anchor block. Does not establish: anything about the record's content or about the witnesses in the pool.\n";
+}
+export async function commitmentSeedV2(subjectSha256, poolSha256, kRequested) {
+  const record_canonical = commitmentClaimTextV2(subjectSha256, poolSha256, kRequested);
+  return { claim_sha256: await drawSha256(record_canonical), record_canonical, work: "TSUGI draw commitment v2: fixes the subject, the pool and k of a witness draw on Bitcoin before the beacon block exists" };
+}
+// The v2.4 draw field. request is the body sent to every drawn witness (witness_request.buildRequest); its hash is
+// request_sha256. commitment (v2) is { subject_sha256, pool_sha256, k_requested, ledger_entry, ledger_url, claim_sha256, anchor }.
+export function drawFieldV24(d, beacon, subjectSha256, request, requestSha256, commitment) {
+  const f = drawField(d, beacon, subjectSha256, requestSha256, null);
+  f.k_requested = String(d.k_requested);
+  f.request = JSON.parse(JSON.stringify(request));
+  if (commitment) f.commitment = {
+    subject_sha256: String(commitment.subject_sha256),
+    // a v1 commitment (no pool_sha256) is carried as v1; the verifier marks it pool_not_committed
+    ...(commitment.pool_sha256 !== undefined ? { pool_sha256: String(commitment.pool_sha256), k_requested: String(commitment.k_requested) } : {}),
+    ledger_entry: String(commitment.ledger_entry), ledger_url: String(commitment.ledger_url), claim_sha256: String(commitment.claim_sha256),
+    anchor: { kind: String(commitment.anchor.kind), height: String(commitment.anchor.height), hash: String(commitment.anchor.hash) },
+  };
+  return f;
+}
 export async function commitmentSeed(subjectSha256) {
   const record_canonical = commitmentClaimText(subjectSha256);
   return { claim_sha256: await drawSha256(record_canonical), record_canonical, work: "TSUGI draw commitment: fixes the subject of a witness draw on Bitcoin before the beacon block exists, so the operator cannot re-grind the draw by editing the record." };
@@ -159,7 +195,12 @@ export async function bitcoinBeaconAfter(isoTime, { fetchImpl = globalThis.fetch
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const args = {};
   for (let i = 2; i < process.argv.length; i++) { const a = process.argv[i]; if (a.startsWith("--")) { const k = a.slice(2); const v = process.argv[i + 1]; if (v && !v.startsWith("--")) { args[k] = v; i++; } else args[k] = true; } }
-  if (args["commit-seed"]) { console.log(JSON.stringify(await commitmentSeed(args["commit-seed"]), null, 1)); process.exit(0); }
+  if (args["commit-seed"]) {
+    // v2.4: with --pool and --k the seed is the v2 commitment (subject, pool hash and k fixed together, red team R5-F1)
+    if (args.pool && args.k) { const p0 = JSON.parse(readFileSync(args.pool, "utf8")); console.log(JSON.stringify(await commitmentSeedV2(args["commit-seed"], await poolSha256(p0), String(args.k)), null, 1)); process.exit(0); }
+    console.error("witness-draw: no --pool and --k given, so this is a v1 commitment (subject only); a v2.4 reader marks it pool_not_committed");
+    console.log(JSON.stringify(await commitmentSeed(args["commit-seed"]), null, 1)); process.exit(0);
+  }
   if (!args.pool || !args.subject || !args.k) { console.error("usage: node witness_draw.mjs --pool witness_pool.json --subject <64hex> --k 3 (--beacon <64hex> --height N | --after <ISO>) [--exclude-host host] [--request <64hex>]"); process.exit(2); }
   const pool = JSON.parse(readFileSync(args.pool, "utf8"));
   let beacon, commitment = null;

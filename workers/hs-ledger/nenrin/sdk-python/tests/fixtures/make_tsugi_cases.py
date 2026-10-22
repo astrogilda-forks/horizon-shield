@@ -204,7 +204,28 @@ def build():
     case("witness: expected_after key toString (the JavaScript throws)", edit(edit(WCHAIN, (3, "expected_after", "toString"), {"a": "b"}), (6, "expected_after", "toString"), {"a": "b"}), FULL, POOL)
     case("witness: expected_after __proto__ meets Object.prototype", edit(edit(WCHAIN, (3, "expected_after", "__proto__"), {}), (6, "expected_after", "__proto__"), {}), FULL, POOL)
     case("witness: segment endpoint uppercase with port", edit(WCHAIN, (0, "endpoint"), "HTTPS://Gate.HorizonShield.dev:443/a2a"), FULL, POOL)
+    # ---- v2.4 (2026-10-22, red team R2-1 and R5-F1): the attack and control cases of recovery-v0/witness_v24_cases.mjs ----
+    for c in v24_cases():
+        q, args, pool = c["quorum"], [], None
+        if "pool" in q:
+            args += ["--pool", "pool.json"]; pool = q["pool"]
+        for key, flag in (("q", "--q"), ("k", "--k"), ("beaconHash", "--beacon"), ("beaconTime", "--beacon-time")):
+            if key in q:
+                args += [flag, str(q[key])]
+        for key, flag in (("requireCommitment", "--require-commitment"), ("requireV24", "--require-v24")):
+            if q.get(key):
+                args.append(flag)
+        case("v2.4: " + c["name"], c["records"], args, pool)
     return CASES
+
+
+def v24_cases():
+    """The v2.4 cases, built by the JavaScript module (deterministic keys and Ed25519, so the same bytes every run)."""
+    with tempfile.TemporaryDirectory() as d:
+        out = os.path.join(d, "v24.json")
+        subprocess.run(["node", os.path.join(REC, "witness_v24_cases.mjs"), out], check=True, cwd=REC)
+        with open(out, encoding="utf-8") as f:
+            return json.load(f)["cases"]
 
 
 def run_js(c):

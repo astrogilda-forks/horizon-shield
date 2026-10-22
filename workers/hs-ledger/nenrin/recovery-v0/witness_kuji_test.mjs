@@ -31,7 +31,7 @@ t("fixture: rebuilding from code gives the same bytes as the file (deterministic
 t("fixture: the own host is in the pool but never in the draw", pool.entries.some((e) => e.signed_domain === OWN_HOST) && !records[6].draw.drawn.includes(OWN_HOST));
 t("fixture: lenient mode (no quorum asked) still checks the embedded observations and passes", (await verifyChain(records)).ok);
 t("fixture: quorum 3 is short (one drawn witness did not answer) -> witness_quorum_short", has(await verifyChain(records, { witnessQuorum: { q: 3, pool } }), "witness_quorum_short"));
-t("verifier version is 0.3.1", VERIFIER_VERSION === "0.3.1");
+t("verifier version is 0.4.0", VERIFIER_VERSION === "0.4.0");
 
 // ---- 2. the draw is recomputable ----
 {

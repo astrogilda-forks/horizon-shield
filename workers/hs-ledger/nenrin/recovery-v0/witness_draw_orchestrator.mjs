@@ -14,7 +14,7 @@
 // drand の予備 beacon は敢えて入れとらん: commit-then-reveal では beacon は anchor の「次のブロック」でなければならん (検証器が
 //   beacon.height === anchor.height + 1 を見る)。drand の乱数はブロックやないので「次のブロック」になれん。二つの Bitcoin API
 //   (mempool / blockstream) が両方落ちた時の予備は witness_draw の bases に足す話で、この一周の設計とは別。
-import { poolSha256, draw, drawField, normalizePool } from "./witness_draw.mjs";
+import { poolSha256, draw, drawFieldV24, normalizePool } from "./witness_draw.mjs";
 import { buildRequest, requestSha256, sendRequest } from "./witness_request.mjs";
 import { seal, verifyWitnesses, canonicalText, sha256Hex } from "./recovery_verify.mjs";
 import { SCHEMAS } from "./recovery_schema.mjs";
@@ -56,7 +56,7 @@ export async function runDraw({
     witness: operatorWitness || { name: "tsugi-orchestrator", vantage: "operator network (the draw is recomputable; the operator is not a witness of the outcome)" },
     prev: subjectSha256, execution_sha256: subjectSha256,
     observed, expected_after: expectedAfter, recovered: !!recovered,
-    draw: drawField(d, beacon, subjectSha256, reqHash, commitment),
+    draw: drawFieldV24(d, beacon, subjectSha256, request, reqHash, commitment),   // v2.4: the request body and k_requested travel with the draw (red team R2-1)
     external,
     establishes: [
       "the draw of witnesses is recomputable from beacon, pool and subject (draw), so the operator did not choose who was asked",

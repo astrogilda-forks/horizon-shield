@@ -26,7 +26,7 @@ async function tsugiMain(argv, files) {
   else if (a["fetch-operator-key"]) opts.operatorKeys = await fetchOperatorKeys(a["fetch-operator-key"]);
   else if (!Array.isArray(loaded) && typeof loaded.operator_public_key_ed25519_b64 === "string" && a["trust-embedded-key"]) opts.operatorKeys = [loaded.operator_public_key_ed25519_b64];
   for (const k of opts.operatorKeys || []) { const pk = b64Exact(k, 32); if (!pk || !ed25519KeyOk(pk)) return { usage: true, exit: 2 }; }   // 0.3.1, as tsugi_verify.mjs
-  if (a.pool || a.q || a.k || a.beacon || a["require-commitment"] || a["anchor-height"]) {
+  if (a.pool || a.q || a.k || a.beacon || a["require-commitment"] || a["anchor-height"] || a["require-v24"] || a["beacon-time"]) {
     opts.witnessQuorum = {};
     if (a.pool) opts.witnessQuorum.pool = JSON.parse(readFileSync(a.pool, "utf8"));
     if (a.q) opts.witnessQuorum.q = Number(a.q);
@@ -34,6 +34,8 @@ async function tsugiMain(argv, files) {
     if (a.beacon) opts.witnessQuorum.beaconHash = String(a.beacon);
     if (a["require-commitment"]) opts.witnessQuorum.requireCommitment = true;
     if (a["anchor-height"]) opts.witnessQuorum.commitmentAnchor = { height: String(a["anchor-height"]), ...(a["anchor-hash"] ? { hash: String(a["anchor-hash"]) } : {}) };
+    if (a["require-v24"]) opts.witnessQuorum.requireV24 = true;
+    if (a["beacon-time"]) opts.witnessQuorum.beaconTime = String(a["beacon-time"]);
   }
   const report = await verifyChain(records, opts);
   const out = { verifier: "tsugi_verify " + VERIFIER_VERSION, mode: { operator_keys: opts.operatorKeys ? opts.operatorKeys.length : 0, witness_quorum: opts.witnessQuorum || null }, ...report,

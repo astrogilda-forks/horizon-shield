@@ -23,6 +23,7 @@ const PRELUDE = `#!/usr/bin/env node
 //   node tsugi_verify.mjs chain.json                                  # lenient: hashes, links, order, catalog
 //   node tsugi_verify.mjs chain.json --operator-key <b64>             # strict: human-approval repairs need a signed, trusted, unexpired authorization
 //   node tsugi_verify.mjs chain.json --operator-key <b64> --pool pool.json --q 2 --k 3 --beacon <block hash> --require-commitment --anchor-height H --anchor-hash <hash>
+//        add --require-v24 to refuse draws in the older form, --beacon-time <ISO> for the beacon block time you fetched (0.4.0)
 //   import { verifyChain, verifyRecord, recordSha256, draw, commitmentClaimText, fetchOperatorKeys } from "./tsugi_verify.mjs"
 //
 // chain.json is either an array of records or an object { records: [...], operator_public_key_ed25519_b64?: "..." }
@@ -57,7 +58,7 @@ async function tsugiMain() {
     const pk = b64Exact(k, 32);
     if (!pk || !ed25519KeyOk(pk)) { console.error("tsugi-verify: operator key " + JSON.stringify(k) + " is not canonical base64 of a usable Ed25519 key"); process.exit(2); }
   }
-  if (a.pool || a.q || a.k || a.beacon || a["require-commitment"] || a["anchor-height"]) {
+  if (a.pool || a.q || a.k || a.beacon || a["require-commitment"] || a["anchor-height"] || a["require-v24"] || a["beacon-time"]) {
     opts.witnessQuorum = {};
     if (a.pool) opts.witnessQuorum.pool = JSON.parse(readFileSync(a.pool, "utf8"));
     if (a.q) opts.witnessQuorum.q = Number(a.q);
@@ -65,6 +66,8 @@ async function tsugiMain() {
     if (a.beacon) opts.witnessQuorum.beaconHash = String(a.beacon);
     if (a["require-commitment"]) opts.witnessQuorum.requireCommitment = true;
     if (a["anchor-height"]) opts.witnessQuorum.commitmentAnchor = { height: String(a["anchor-height"]), ...(a["anchor-hash"] ? { hash: String(a["anchor-hash"]) } : {}) };
+    if (a["require-v24"]) opts.witnessQuorum.requireV24 = true;
+    if (a["beacon-time"]) opts.witnessQuorum.beaconTime = String(a["beacon-time"]);
   }
   const report = await verifyChain(records, opts);
   const out = { verifier: "tsugi_verify " + VERIFIER_VERSION, mode: { operator_keys: opts.operatorKeys ? opts.operatorKeys.length : 0, witness_quorum: opts.witnessQuorum || null }, ...report,

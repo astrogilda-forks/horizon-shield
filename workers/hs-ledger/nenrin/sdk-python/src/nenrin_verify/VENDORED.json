@@ -761,8 +761,8 @@
   },
   "_repo/recovery-v0/recovery_verify.py": {
     "source": "workers/hs-ledger/nenrin/recovery-v0/recovery_verify.py",
-    "source_sha256": "e9bc9c11dd7d9aefaab3bff525909866ab0cab58d20dcd6e90932bfa5be2de3a",
-    "vendored_sha256": "e9bc9c11dd7d9aefaab3bff525909866ab0cab58d20dcd6e90932bfa5be2de3a"
+    "source_sha256": "fd4c93f015f6b4957c03b2fe4f4a32d6f814da36fad90c18a3ed9b79cca6a962",
+    "vendored_sha256": "fd4c93f015f6b4957c03b2fe4f4a32d6f814da36fad90c18a3ed9b79cca6a962"
   },
   "_repo/trace-bind-v0/expected.json": {
     "source": "workers/hs-ledger/nenrin/trace-bind-v0/expected.json",

@@ -6,7 +6,7 @@
 import functools as _functools
 import json, hashlib, re, base64
 
-VERIFIER_VERSION = "0.3.1"
+VERIFIER_VERSION = "0.4.0"
 SCHEMAS = {"drift": "nenrin-drift-record-v1", "proposal": "nenrin-repair-proposal-v1",
            "authorization": "nenrin-authorization-v1", "execution": "nenrin-repair-execution-v1",
            "verify": "nenrin-verify-record-v1",
@@ -148,6 +148,20 @@ def validate(rec):
                         if not _is_hex(c.get("claim_sha256")): refuse("bad_draw", "draw.commitment.claim_sha256 must be 64 hex")
                         a = c.get("anchor")
                         if not (_is_obj(a) and _is_str(a.get("kind")) and _is_digits(a.get("height")) and _is_hex(a.get("hash"))): refuse("bad_draw", "draw.commitment.anchor needs kind, height (digits as a string) and hash (64 hex)")
+                        # v2.4: a v2 commitment also fixes the pool and k (red team R5-F1). Both or neither.
+                        if ("pool_sha256" in c) != ("k_requested" in c): refuse("bad_draw", "draw.commitment carries pool_sha256 and k_requested together (v2) or neither (v1)")
+                        if "pool_sha256" in c and not _is_hex(c.get("pool_sha256")): refuse("bad_draw", "draw.commitment.pool_sha256 must be 64 hex")
+                        if "k_requested" in c and not _is_digits(c.get("k_requested")): refuse("bad_draw", "draw.commitment.k_requested must be digits as a string")
+                # v2.4 (red team R2-1): the request body and the requested k travel with the draw. Optional, strict when present.
+                if "k_requested" in d and not _is_digits(d.get("k_requested")): refuse("bad_draw", "draw.k_requested must be digits as a string")
+                if "request" in d:
+                    q_ = d.get("request")
+                    if not _is_obj(q_): refuse("bad_draw", "draw.request must be an object (the request body sent to every drawn witness)")
+                    else:
+                        if not (_is_hex(q_.get("subject_sha256")) and _is_hex(q_.get("pool_sha256"))): refuse("bad_draw", "draw.request needs subject_sha256 and pool_sha256 (64 hex)")
+                        qb = q_.get("beacon")
+                        if not (_is_obj(qb) and _is_str(qb.get("kind")) and _is_digits(qb.get("height")) and _is_hex(qb.get("hash"))): refuse("bad_draw", "draw.request.beacon needs kind, height (digits as a string) and hash (64 hex)")
+                        if not (_is_str(q_.get("endpoint")) and _is_str(q_.get("requested_at"))): refuse("bad_draw", "draw.request needs endpoint and requested_at strings")
         if not _is_hex(rec.get("prev")): refuse("bad_prev", "verify must link to the execution")
         elif rec.get("prev") != rec.get("execution_sha256"): refuse("prev_mismatch", "verify.prev must equal execution_sha256")
     elif s == SCHEMAS["observation"]:
@@ -216,6 +230,14 @@ def commitment_claim_text(subject_sha256):
     if not _is_hex(subject_sha256): raise ValueError("subject_sha256 must be 64 hex")
     return "# " + COMMITMENT_SCHEMA + "\n\nsubject_sha256: " + subject_sha256 + "\n\nThis entry commits the record named by subject_sha256 (a TSUGI execution record) to the ledger before any re-verification witness is drawn. The draw's beacon must be the Bitcoin block after the block this entry is anchored to. Establishes: that subject_sha256 existed no later than the anchor block. Does not establish: anything about the record's content.\n"
 
+# v2.4 (2026-10-22, red team R5-F1): the v2 commitment fixes the subject, the pool hash and the requested k together.
+COMMITMENT_SCHEMA_V2 = "tsugi-draw-commitment-v2"
+def commitment_claim_text_v2(subject_sha256, pool_sha256, k_requested):
+    if not _is_hex(subject_sha256): raise ValueError("subject_sha256 must be 64 hex")
+    if not _is_hex(pool_sha256): raise ValueError("pool_sha256 must be 64 hex")
+    if not (isinstance(k_requested, str) and re.fullmatch(r"0|[1-9][0-9]*", k_requested)): raise ValueError("k_requested must be digits as a string")
+    return "# " + COMMITMENT_SCHEMA_V2 + "\n\nsubject_sha256: " + subject_sha256 + "\npool_sha256: " + pool_sha256 + "\nk_requested: " + k_requested + "\n\nThis entry commits the record named by subject_sha256 (a TSUGI execution record), the witness pool named by pool_sha256 and the number of witnesses to draw, before any re-verification witness is drawn. The draw's beacon must be the Bitcoin block after the block this entry is anchored to. Establishes: that subject, pool and k were fixed no later than the anchor block. Does not establish: anything about the record's content or about the witnesses in the pool.\n"
+
 def subset_matches(expected, observed):
     if isinstance(expected, dict) and isinstance(observed, dict):
         return all(k in observed and subset_matches(expected[k], observed[k]) for k in expected)
@@ -229,19 +251,59 @@ def verify_witnesses(verify, own_host=None, endpoint=None, execution_sha256=None
     pool = quorum.get("pool"); beacon_hash = (quorum.get("beaconHash") or quorum.get("beacon_hash") or "").lower() or None
     d = verify.get("draw"); drawn = d.get("drawn", []) if isinstance(d, dict) else []
     own = own_host.lower() if own_host else ""
+    # 0.4.0 (v2.4): requireV24 refuses a draw in the older form; beaconTime is the beacon block time from the reader's own chain source
+    require_v24 = bool(quorum.get("requireV24") or quorum.get("require_v24"))
+    beacon_time = str(quorum.get("beaconTime") or quorum.get("beacon_time") or "") or None
+    forms = []
+    requested_at = None
     if d:
         if execution_sha256 and d.get("subject_sha256") != execution_sha256: refuse("draw_subject_mismatch", "draw.subject_sha256 is not the execution record_sha256")
         if own and any(str(x).lower() == own for x in drawn): refuse("self_witness", "the draw lists the endpoint's own host as a witness (11.4)")
         if beacon_hash and str(d.get("beacon", {}).get("hash", "")).lower() != beacon_hash: refuse("beacon_mismatch", "draw.beacon.hash is not the beacon the verifier fetched")
         k_expected = str(quorum["k"]) if quorum.get("k") is not None else None
         if k_expected and d.get("k") != k_expected and d.get("pool_size") != "0" and int(d.get("k", "0")) < int(k_expected): refuse("draw_mismatch", "draw.k is below the policy k (the operator may not shorten the draw)")
+        # 0.4.0 (red team R2-1): k is held to the policy in both directions
+        if "k_requested" in d:
+            if k_expected and d.get("k_requested") != k_expected: refuse("draw_k_mismatch", "draw.k_requested is not the policy k (the operator may not widen or shorten the draw)")
+            if int(d.get("k", "0")) > int(d.get("k_requested", "0")): refuse("draw_k_mismatch", "draw.k is above draw.k_requested")
+        else:
+            forms.append("k_not_recorded")
+            if require_v24: refuse("draw_k_unrecorded", "policy requires a v2.4 draw; draw.k_requested is absent")
+            if k_expected and int(d.get("k", "0")) > int(k_expected): refuse("draw_k_mismatch", "draw.k is above the policy k (the operator may not widen the draw)")
+        # 0.4.0 (red team R2-1): the request travels with the draw and must name this draw's subject, pool and beacon
+        if "request" in d:
+            rq = d.get("request") or {}
+            rs = sha256_hex(_cu(rq))
+            if rs != d.get("request_sha256"): refuse("draw_request_mismatch", "sha256 of draw.request is not draw.request_sha256")
+            rb = rq.get("beacon") if isinstance(rq.get("beacon"), dict) else {}
+            db = d.get("beacon") if isinstance(d.get("beacon"), dict) else {}
+            same_beacon = bool(rb) and str(rb.get("kind")) == str(db.get("kind")) and str(rb.get("height")) == str(db.get("height")) and str(rb.get("hash", "")).lower() == str(db.get("hash", "")).lower()
+            if rq.get("subject_sha256") != d.get("subject_sha256") or rq.get("pool_sha256") != d.get("pool_sha256") or not same_beacon: refuse("draw_request_unbound", "draw.request names another subject, pool or beacon than the draw")
+            if endpoint and _host(rq.get("endpoint", "")) != _host(endpoint): refuse("draw_request_unbound", "draw.request is about another endpoint than the segment")
+            if beacon_time and str(rq.get("requested_at", "")) < beacon_time: refuse("request_before_beacon", "draw.request.requested_at is before the beacon block time")
+            requested_at = str(rq.get("requested_at", ""))
+        else:
+            forms.append("request_not_carried")
+            if require_v24: refuse("draw_request_absent", "policy requires a v2.4 draw; draw.request is absent, so request_sha256 is not tied to this subject, pool and beacon")
         c = d.get("commitment")
+        if not c: forms.append("pool_not_committed")
         if quorum.get("requireCommitment") and not c: refuse("draw_uncommitted", "policy requires the draw's subject to be anchored on the ledger before the beacon block; draw.commitment is absent")
         if c:
             if c.get("subject_sha256") != d.get("subject_sha256"): refuse("draw_subject_mismatch", "draw.commitment.subject_sha256 is not draw.subject_sha256")
-            try: claim = sha256_hex(commitment_claim_text(c.get("subject_sha256", "")))
-            except Exception: claim = ""
-            if c.get("claim_sha256") != claim: refuse("commitment_claim_mismatch", "the ledger entry named does not commit this subject")
+            if "pool_sha256" in c:
+                # 0.4.0 (red team R5-F1): a v2 commitment fixes the pool and k before the beacon
+                claim = None
+                try: claim = sha256_hex(commitment_claim_text_v2(c.get("subject_sha256", ""), c.get("pool_sha256", ""), c.get("k_requested")))
+                except Exception as e: refuse("bad_draw", "draw.commitment v2 fields: " + str(e))
+                if claim and c.get("claim_sha256") != claim: refuse("commitment_claim_mismatch", "the ledger entry named does not commit this subject, pool and k")
+                if c.get("pool_sha256") != d.get("pool_sha256"): refuse("commitment_pool_mismatch", "the draw uses another pool than the commitment fixed before the beacon")
+                if c.get("k_requested") != d.get("k_requested"): refuse("commitment_k_mismatch", "the draw requested another k than the commitment fixed before the beacon")
+            else:
+                try: claim = sha256_hex(commitment_claim_text(c.get("subject_sha256", "")))
+                except Exception: claim = ""
+                if c.get("claim_sha256") != claim: refuse("commitment_claim_mismatch", "the ledger entry named does not commit this subject")
+                forms.append("pool_not_committed")
+                if require_v24: refuse("draw_pool_uncommitted", "policy requires a v2.4 draw; draw.commitment is v1 and does not fix the pool")
             try: nxt = str(int(c.get("anchor", {}).get("height", "x")) + 1)
             except Exception: nxt = ""
             if nxt != str(d.get("beacon", {}).get("height")): refuse("beacon_not_next_block", "the beacon must be the block after the one the subject is anchored to")
@@ -251,10 +313,11 @@ def verify_witnesses(verify, own_host=None, endpoint=None, execution_sha256=None
                 if ca.get("hash") and str(ca["hash"]).lower() != str(c.get("anchor", {}).get("hash", "")).lower(): refuse("commitment_mismatch", "the anchor block hash the reader verified is not the one in the record")
         if pool is not None:
             try:
-                re_ = draw(pool, d["beacon"]["hash"], d["subject_sha256"], d["k"], exclude_host=own or None)
+                re_ = draw(pool, d["beacon"]["hash"], d["subject_sha256"], d["k_requested"] if "k_requested" in d else d["k"], exclude_host=own or None)
                 if re_["pool_sha256"] != d.get("pool_sha256"): refuse("pool_mismatch", "the pool given to the verifier hashes differently from the record")
                 elif _cu(re_["drawn"]) != _cu(drawn): refuse("draw_mismatch", "recomputing the draw gives " + ", ".join(re_["drawn"]) + ", the record says " + ", ".join(drawn))
                 elif re_["pool_size"] != d.get("pool_size"): refuse("draw_mismatch", "draw.pool_size is not the size of the pool given")
+                elif re_["k"] != d.get("k"): refuse("draw_mismatch", "drawing k_requested from the pool given draws another number than the record says")
             except Exception as e: refuse("bad_pool", "the pool given to the verifier is malformed: " + str(e))
     by_domain = None
     if pool is not None:
@@ -276,6 +339,8 @@ def verify_witnesses(verify, own_host=None, endpoint=None, execution_sha256=None
         if not any(str(x).lower() == dom for x in drawn): refuse("witness_not_drawn", tag + ": " + rec["source"]["signed_domain"] + " was not drawn"); continue
         if endpoint and _host(rec.get("endpoint", "")) != _host(endpoint): refuse("witness_endpoint_mismatch", tag + ": observation is about another endpoint"); continue
         if d and rec.get("request_sha256") != d.get("request_sha256"): refuse("witness_request_mismatch", tag + ": observation answers another request"); continue
+        if requested_at and rec.get("recorded_at", "") < requested_at: refuse("witness_before_request", tag + ": observation recorded before the request it answers was made"); continue
+        if beacon_time and rec.get("recorded_at", "") < beacon_time: refuse("witness_before_beacon", tag + ": observation recorded before the beacon block time that drew this witness"); continue
         if execution_at and rec.get("recorded_at", "") < execution_at: refuse("witness_before_execution", tag + ": observation recorded before the execution it re-verifies"); continue
         if by_domain is not None:
             pe = by_domain.get(dom)
@@ -288,7 +353,9 @@ def verify_witnesses(verify, own_host=None, endpoint=None, execution_sha256=None
         (agreeing if subset_matches(verify.get("expected_after", {}), rec.get("observed", {})) else disagreeing).append(dom)
     if q is not None and verify.get("recovered") is True and len(agreeing) < q:
         refuse("witness_quorum_short", "recovered is true but %d of the required %d drawn witnesses observed the expected state (drawn %d, answered %d, disagreeing %d)" % (len(agreeing), q, len(drawn), len(answered), len(disagreeing)))
-    return {"refusals": refs, "drawn": list(drawn), "answered": answered, "agreeing": agreeing, "disagreeing": disagreeing}
+    out = {"refusals": refs, "drawn": list(drawn), "answered": answered, "agreeing": agreeing, "disagreeing": disagreeing}
+    if d: out["forms"] = forms
+    return out
 
 _B64_STD = re.compile(r"[A-Za-z0-9+/]*={0,2}")
 
@@ -450,7 +517,9 @@ def verify_chain(records, operator_keys=None, witness_quorum=None):
         witness = verify_witnesses(verify, own_host=_host(records[0].get("endpoint", "")), endpoint=records[0].get("endpoint"), execution_sha256=hashes[i + 2], quorum=witness_quorum, execution_at=(execution or {}).get("recorded_at"))
         for x in witness["refusals"]: refuse(x["code"], x["why"])
     seg = {"drifts": drifts, "complete": len(rest) == 4}
-    if witness is not None: seg["witness"] = {k: witness[k] for k in ("drawn", "answered", "agreeing", "disagreeing")}
+    if witness is not None:
+        seg["witness"] = {k: witness[k] for k in ("drawn", "answered", "agreeing", "disagreeing")}
+        if "forms" in witness: seg["witness"]["forms"] = witness["forms"]
     return {"ok": len(refs) == 0, "refusals": refs, "segment": seg}
 
 def sign_record(rec, priv):

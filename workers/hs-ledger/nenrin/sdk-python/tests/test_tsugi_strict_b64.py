@@ -27,7 +27,7 @@ def _variants(s):
 
 def test_the_real_signature_verifies():
     assert tsugi.verify_signature(_signed()) == {"ok": True}
-    assert tsugi.VERIFIER_VERSION == "0.3.1"
+    assert tsugi.VERIFIER_VERSION == "0.4.0"
 
 
 def test_lenient_spellings_are_refused():

@@ -73,6 +73,24 @@ chk("CLI: witness fixture with pool, q, k, commitment: exit 0", c4.code === 0 &&
 const c5 = cli([new URL("../recovery-v0/witness_fixture_20260920.json", import.meta.url).pathname, "--pool", poolPath.pathname, "--q", "3"]);
 chk("CLI: quorum 3 against 2 answers: exit 1, witness_quorum_short", c5.code === 1 && /witness_quorum_short/.test(c5.out));
 chk("CLI: report carries does_not_establish", /does_not_establish/.test(c1.out));
+const c6 = cli([new URL("../recovery-v0/witness_fixture_20260920.json", import.meta.url).pathname, "--pool", poolPath.pathname, "--q", "2", "--k", "3", "--require-v24"]);
+chk("CLI (0.4.0): the v2.2 fixture under --require-v24: exit 1, draw_request_absent", c6.code === 1 && /draw_request_absent/.test(c6.out), c6.out.slice(0, 300));
+const c7 = cli([new URL("../recovery-v0/witness_fixture_20260920.json", import.meta.url).pathname, "--pool", poolPath.pathname, "--q", "2", "--beacon-time", "2026-09-20T08:04:30Z"]);
+chk("CLI (0.4.0): observations before --beacon-time: exit 1, witness_before_beacon", c7.code === 1 && /witness_before_beacon/.test(c7.out));
+
+// 0.4.0 (v2.4, red team R2-1 and R5-F1): the single file gives the reference module's answer on every attack and control case
+{
+  const { buildV24Cases } = await import("../recovery-v0/witness_v24_cases.mjs");
+  const cases = await buildV24Cases();
+  let same = 0;
+  for (const c of cases) {
+    const a = await SDK.verifyChain(c.records, { witnessQuorum: c.quorum });
+    const b = await MOD.verifyChain(c.records, { witnessQuorum: c.quorum });
+    if (JSON.stringify(a) === JSON.stringify(b)) same++;
+    else chk("v2.4 SDK == module: " + c.name, false, JSON.stringify({ sdk: a.refusals, mod: b.refusals }).slice(0, 300));
+  }
+  chk("v2.4: the SDK and the module agree byte for byte on all " + cases.length + " attack and control cases", same === cases.length);
+}
 
 console.log(fail ? ("\n" + fail + " FAILED") : "\nALL PASS (tsugi_verify.mjs: single-file TSUGI verifier is a faithful copy and verifies offline)");
 process.exit(fail ? 1 : 0);

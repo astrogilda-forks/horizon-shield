@@ -9,7 +9,7 @@ HORIZON SHIELD 第2の柱 TSUGI (継)。検証の次に置く、回復を証明�
 | file | 名乗り | 中身 |
 |---|---|---|
 | recovery_schema.mjs | library | 5 記録の型 (drift / proposal / authorization / execution / verify) + 埋め込み観測 1 種 (witness-observation)、カタログ 5 プリミティブ、型検査 |
-| recovery_verify.mjs | library | 1 記録と連鎖の検証器 (0.3.0)。canonical は agreement_canonical.canonicalUtf8 をそのまま使う。sha256 と Ed25519 は WebCrypto。v2: 籤の再計算と定足数。v2.2: 錨打ち (draw.commitment) の検査、requireCommitment / commitmentAnchor の方針 |
+| recovery_verify.mjs | library | 1 記録と連鎖の検証器 (0.4.0)。canonical は agreement_canonical.canonicalUtf8 をそのまま使う。sha256 と Ed25519 は WebCrypto。v2: 籤の再計算と定足数。v2.2: 錨打ち (draw.commitment) の検査、requireCommitment / commitmentAnchor の方針 |
 | witness_draw.mjs | library (CLI) | 籤。beacon (Bitcoin ブロック hash) + 池の hash + 対象記録の hash から、決定的な Fisher-Yates で k 人引く。誰でも再計算できる。v2.2: `--commit-seed` が subject を台帳に錨打ちする seed を出し、`--commit-height H` が錨の次のブロック H+1 を beacon に取って commitment を焼く |
 | witness_request.mjs | library | 引いた証人への依頼 (目隠し: 期待値を渡さん) と、返った観測の受け入れ (conduct-v1.1 11.4 の規則そのまま) |
 | witness_fixture_build.mjs | library | 今週の事故の再検証を籤で回した形の fixture を焼く。鍵は seed から (決定的)。beacon は Bitcoin やない、と記録が自分で言う |
@@ -84,6 +84,16 @@ Shield は再検証の証人を自分で選ばん。公開の池 (witness_pool.j
 
 今日の池は空や。空なら籤は引けず、定足数は does_not_establish (witness_quorum_short) になる。それでええ。仕組みは池が育っても変わらん。v0 の fixture (今週の実事故) を定足数付きで回すと witness_quorum_short になる = 今週の再検証は籤を引いとらん、を記録が自分で言う。
 
+## 籤の使い回しと池の選び直し (v2.4、2026-10-22)
+
+2026-10-09 の社内 red team の 2 件を、記録の形と検証器で塞いだ。
+
+- **R2-1 依頼の使い回し**: v2.2 までの籤の記録は依頼を hash (request_sha256) でしか持たない。前の事故の依頼の hash を書けば、その依頼に答えた署名つきの観測が、別の事故の定足数にそのまま数えられた。k を方針より大きくすれば、使い回したい証人が籤に入るまで籤を広げられた。v2.4 の籤の記録は依頼の本文 (`draw.request`) と頼んだ数 (`draw.k_requested`) を持つ。検証器は本文の hash を計算し直し、依頼が籤の主題・池・beacon を名指すか (`draw_request_unbound`)、k が方針と同じか (`draw_k_mismatch`、大きくても小さくても断る) を見る。観測が依頼より前 (`witness_before_request`) か、読む側が自分で取った beacon のブロックの時刻より前 (`witness_before_beacon`、`--beacon-time`) なら数えない。
+- **R5-F1 池の選び直し**: v2.2 の約束 (tsugi-draw-commitment-v1) は主題しか固めていなかった。beacon を見てから池を選び直せた (答えない候補を落とす、Sybil を足す)。v2 の約束 (tsugi-draw-commitment-v2、`commitmentClaimTextV2`) は主題・池の hash・k を一緒に固める。検証器は籤の池と k を約束と照らす (`commitment_pool_mismatch`、`commitment_k_mismatch`)。
+- **前の記録**: v2.2 の形の記録は読めるまま。検証器は報告の `segment.witness.forms` に印を付ける (`k_not_recorded`、`request_not_carried`、`pool_not_committed`)。読む側が `requireV24` (`--require-v24`) を求めた時だけ断る (`draw_k_unrecorded`、`draw_request_absent`、`draw_pool_uncommitted`)。
+- **試験**: 攻めと対照は witness_v24_cases.mjs (15 件)、採点は witness_v24_test.mjs。同じ入力を recovery_twin_test.py (Python と node)、sdk/tsugi_verify.test.mjs (1 ファイルの SDK)、sdk-python の固定の試験と生の突き合わせに通す。直す前の検証器 (0.3.1) では、v2.2 の形の攻めは全部通っていた。
+- **言わないこと**: 依頼を結び付けても、証人が本物で独立かは言わない。池は今も空で、v2.4 が効くのは池に人が入ってからになる。
+
 ## 手 (v2.2): 隔離だけを持つ executor
 
 `executor.mjs` は proposal を読んで動く手や。持つのはカタログの auto プリミティブ 1 つ、quarantine_endpoint (と --lift の解除、可逆) だけ。人間承認の 4 つ (redeploy_pinned / resign_agent_card / revert_to_last_witnessed_good / rotate_credential) は持たん。人の手と署名でやる (authorize.mjs と deploy_gate.sh)。扉の `POST /register/quarantine` (0.4.10、x-sweep-token) を叩き、authorization (policy:auto、期限 1 時間、署名無し。カタログが auto と言うとるので strict でも通る) → execution (before / after は register の status、steps、outcome ok / failed) → verify (recovered、external は空。籤は別の手順) の 3 記録を drift_runs/ に書く。token は --token-file (既定 ~/.hs_sweep_token) から読み、記録には書かん。隔離は「止める」であって「判定」やない、と扉の応答が自分で言う (establishes / does_not_establish)。隔離された endpoint は sweep から外れ (skipped、理由付き)、/register と lookup に quarantined が出る。解除は quarantine_lifted として残る (消さん)。
@@ -115,7 +125,7 @@ Shield は再検証の証人を自分で選ばん。公開の池 (witness_pool.j
 - 強い信号 (同じ支配の疑い、1 つの塊にまとめる): 同じ登録ドメイン、同じ IP /24、同じ鍵、同じ独自ネームサーバー。推移的に繋ぐ。
 - 弱い信号 (数えるが塊にはせん): 同じ ASN、同じ大手 DNS 事業者、同じホスティング基盤 (workers.dev など)。大手 CDN を使うだけで重なるので、強いに数えたら正直な証人に濡れ衣を着せる。
 - `diversityReport` は塊の数、各 distinct の数、共有された信号と所属、findings (shared_control_suspected、shared_infrastructure、facts_missing、single_control_cluster) を返す。点は付けん。事実の無い項は「別人」と数えず facts_missing を出す。
-- 池に入った経路 (arrival、2026-09-30): `witness_arrivals.json` に運営者が各項の経路を申告する。invited (運営者が声を掛けた、公開の招待があれば ref に URL)、referred (池の誰かが紹介、referred_by)、unsolicited (自分で来た)。報告は arrived_via で数え、arrivals_sha256 で固定し、申告の無い項は undisclosed と数えて自発には数えん。申告のある項が全部 invited なら operator_outreach_only を出す。経路は塊にも pool_sha256 にも籤にも効かん (数に見せるだけ)。発端は「こっちが選んだ証人は多様性の報告を不正直にする」という外部証人の指摘。
+- 池に入った経路 (arrival、2026-09-30): `witness_arrivals.json` に運営者が各項の経路を申告する。invited (運営者が声を掛けた、公開の招待があれば ref に URL)、referred (池の誰かが紹介、referred_by)、unsolicited (自分で来た)。報告は arrived_via で数え、arrivals_sha256 で固定し、申告の無い項は undisclosed と数えて自発には数えない。申告のある項が全部 invited なら operator_outreach_only を出す。経路は塊にも pool_sha256 にも籤にも効かん (数に見せるだけ)。発端は「こっちが選んだ証人は多様性の報告を不正直にする」という外部証人の指摘。
 - `drawDiverse` (籤 0.2.0、rule one_per_control_cluster): draw() と同じ seed で最後まで並べ、その順に歩いて、既に引いた項と同じ塊の項を飛ばす。飛ばした項と理由を記録する。全部の項が別の塊なら draw() の頭 k 人と完全に同じ (互換、試験で確認)。
 - 証さんこと: 別の塊でも同じ人が支配しとる可能性 (本気の Sybil は業者を変える。この計器は Sybil を高く付かせるだけ)、DNS の答えの真偽、証人の観測の正しさ。
 
@@ -132,4 +142,4 @@ Shield は再検証の証人を自分で選ばん。公開の池 (witness_pool.j
 - 台帳 (hs-ledger) への intake と JIDEC への anchor。記録の型はそのために witness intake と同じ規律にしてある。
 - beacon の予備 (drand)。今は mempool.space と blockstream.info。
 - OTS 証明の検証は検証器の中に無い。読む側が台帳 entry の .ots を ots で確かめ、得た錨の高さと hash を commitmentAnchor に渡す。検証器は記録の中の整合 (subject、固定文、H+1) までを見る。
-- 手は隔離しか持たん。他の 4 つを自動にする予定は無い (設計判断。人の署名が要る物は人が動かす)。
+- 手は隔離しか持たない。他の 4 つを自動にする予定は無い (設計判断。人の署名が要る物は人が動かす)。

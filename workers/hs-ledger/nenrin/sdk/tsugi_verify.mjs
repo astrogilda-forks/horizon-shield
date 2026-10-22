@@ -8,6 +8,7 @@
 //   node tsugi_verify.mjs chain.json                                  # lenient: hashes, links, order, catalog
 //   node tsugi_verify.mjs chain.json --operator-key <b64>             # strict: human-approval repairs need a signed, trusted, unexpired authorization
 //   node tsugi_verify.mjs chain.json --operator-key <b64> --pool pool.json --q 2 --k 3 --beacon <block hash> --require-commitment --anchor-height H --anchor-hash <hash>
+//        add --require-v24 to refuse draws in the older form, --beacon-time <ISO> for the beacon block time you fetched (0.4.0)
 //   import { verifyChain, verifyRecord, recordSha256, draw, commitmentClaimText, fetchOperatorKeys } from "./tsugi_verify.mjs"
 //
 // chain.json is either an array of records or an object { records: [...], operator_public_key_ed25519_b64?: "..." }
@@ -697,6 +698,21 @@ const CHECK = {
             if (!isHttps(c.ledger_url)) refuse("bad_draw", "draw.commitment.ledger_url must be https");
             if (!isHex(c.claim_sha256)) refuse("bad_draw", "draw.commitment.claim_sha256 must be 64 hex");
             if (!isObj(c.anchor) || !isStr(c.anchor.kind) || !isDigits(c.anchor.height) || !isHex(c.anchor.hash)) refuse("bad_draw", "draw.commitment.anchor needs kind, height (digits as a string) and hash (64 hex)");
+            // v2.4: a v2 commitment also fixes the pool and k (red team R5-F1). Both or neither.
+            if ((c.pool_sha256 !== undefined) !== (c.k_requested !== undefined)) refuse("bad_draw", "draw.commitment carries pool_sha256 and k_requested together (v2) or neither (v1)");
+            if (c.pool_sha256 !== undefined && !isHex(c.pool_sha256)) refuse("bad_draw", "draw.commitment.pool_sha256 must be 64 hex");
+            if (c.k_requested !== undefined && !isDigits(c.k_requested)) refuse("bad_draw", "draw.commitment.k_requested must be digits as a string");
+          }
+        }
+        // v2.4 (red team R2-1): the request body and the requested k travel with the draw. Optional, strict when present.
+        if (d.k_requested !== undefined && !isDigits(d.k_requested)) refuse("bad_draw", "draw.k_requested must be digits as a string");
+        if (d.request !== undefined) {
+          const q = d.request;
+          if (!isObj(q)) refuse("bad_draw", "draw.request must be an object (the request body sent to every drawn witness)");
+          else {
+            if (!isHex(q.subject_sha256) || !isHex(q.pool_sha256)) refuse("bad_draw", "draw.request needs subject_sha256 and pool_sha256 (64 hex)");
+            if (!isObj(q.beacon) || !isStr(q.beacon.kind) || !isDigits(q.beacon.height) || !isHex(q.beacon.hash)) refuse("bad_draw", "draw.request.beacon needs kind, height (digits as a string) and hash (64 hex)");
+            if (!isStr(q.endpoint) || !isStr(q.requested_at)) refuse("bad_draw", "draw.request needs endpoint and requested_at strings");
           }
         }
       }
@@ -833,6 +849,42 @@ export function commitmentClaimText(subjectSha256) {
   // 台帳の record_canonical そのもの。1 バイトも自由度を持たせん (持たせたら研磨の余地になる)。
   return "# " + COMMITMENT_SCHEMA + "\n\nsubject_sha256: " + subjectSha256 + "\n\nThis entry commits the record named by subject_sha256 (a TSUGI execution record) to the ledger before any re-verification witness is drawn. The draw's beacon must be the Bitcoin block after the block this entry is anchored to. Establishes: that subject_sha256 existed no later than the anchor block. Does not establish: anything about the record's content.\n";
 }
+// ---- v2.4 (2026-10-22, red team R2-1 and R5-F1) ----
+// R5-F1: the v1 commitment fixes the subject only, so the pool could be chosen after the beacon was known (drop a
+// candidate, add a Sybil). The v2 commitment fixes the subject, the pool hash and the requested k together, before the
+// beacon block exists. The verifier checks the draw's pool_sha256 and k_requested against it.
+// R2-1: a draw named its request only by hash, so an old request (another incident's) could be named and its signed
+// observations counted again. A v2.4 draw carries the request body; the verifier recomputes its hash and checks that
+// the request names this draw's subject, pool and beacon. A v2.4 draw also records k_requested, so the verifier can
+// hold the operator to the policy k exactly (a larger k widens the draw until the wanted witnesses are in it).
+// Records in the v2.2 form stay readable; the verifier marks them (request_not_carried, k_not_recorded,
+// pool_not_committed) and refuses them only when the reader's policy asks for v2.4.
+export const COMMITMENT_SCHEMA_V2 = "tsugi-draw-commitment-v2";
+export function commitmentClaimTextV2(subjectSha256, poolSha256, kRequested) {
+  if (!HEX64.test(String(subjectSha256 || ""))) throw new Error("subjectSha256 must be 64 hex");
+  if (!HEX64.test(String(poolSha256 || ""))) throw new Error("poolSha256 must be 64 hex");
+  if (!/^(0|[1-9][0-9]*)$/.test(String(kRequested))) throw new Error("kRequested must be digits as a string");
+  return "# " + COMMITMENT_SCHEMA_V2 + "\n\nsubject_sha256: " + subjectSha256 + "\npool_sha256: " + poolSha256 + "\nk_requested: " + String(kRequested) + "\n\nThis entry commits the record named by subject_sha256 (a TSUGI execution record), the witness pool named by pool_sha256 and the number of witnesses to draw, before any re-verification witness is drawn. The draw's beacon must be the Bitcoin block after the block this entry is anchored to. Establishes: that subject, pool and k were fixed no later than the anchor block. Does not establish: anything about the record's content or about the witnesses in the pool.\n";
+}
+export async function commitmentSeedV2(subjectSha256, poolSha256, kRequested) {
+  const record_canonical = commitmentClaimTextV2(subjectSha256, poolSha256, kRequested);
+  return { claim_sha256: await drawSha256(record_canonical), record_canonical, work: "TSUGI draw commitment v2: fixes the subject, the pool and k of a witness draw on Bitcoin before the beacon block exists" };
+}
+// The v2.4 draw field. request is the body sent to every drawn witness (witness_request.buildRequest); its hash is
+// request_sha256. commitment (v2) is { subject_sha256, pool_sha256, k_requested, ledger_entry, ledger_url, claim_sha256, anchor }.
+export function drawFieldV24(d, beacon, subjectSha256, request, requestSha256, commitment) {
+  const f = drawField(d, beacon, subjectSha256, requestSha256, null);
+  f.k_requested = String(d.k_requested);
+  f.request = JSON.parse(JSON.stringify(request));
+  if (commitment) f.commitment = {
+    subject_sha256: String(commitment.subject_sha256),
+    // a v1 commitment (no pool_sha256) is carried as v1; the verifier marks it pool_not_committed
+    ...(commitment.pool_sha256 !== undefined ? { pool_sha256: String(commitment.pool_sha256), k_requested: String(commitment.k_requested) } : {}),
+    ledger_entry: String(commitment.ledger_entry), ledger_url: String(commitment.ledger_url), claim_sha256: String(commitment.claim_sha256),
+    anchor: { kind: String(commitment.anchor.kind), height: String(commitment.anchor.height), hash: String(commitment.anchor.hash) },
+  };
+  return f;
+}
 export async function commitmentSeed(subjectSha256) {
   const record_canonical = commitmentClaimText(subjectSha256);
   return { claim_sha256: await drawSha256(record_canonical), record_canonical, work: "TSUGI draw commitment: fixes the subject of a witness draw on Bitcoin before the beacon block exists, so the operator cannot re-grind the draw by editing the record." };
@@ -895,7 +947,7 @@ export async function bitcoinBeaconAfter(isoTime, { fetchImpl = globalThis.fetch
 // 二本立てにせん。hash は record_sha256 と署名 2 欄を除いた canonical bytes に対して取る。
 // 非同期な理由は agreement_verify.mjs と同じ: sha256 も Ed25519 も WebCrypto。Worker に同期の口が無い。
 
-export const VERIFIER_VERSION = "0.3.1"; // v2: random witness draw + quorum (v1: signed operator authorization); 0.3.1: canonical base64 only
+export const VERIFIER_VERSION = "0.4.0"; // v2: random witness draw + quorum (v1: signed operator authorization); 0.3.1: canonical base64 only; 0.4.0: v2.4 draws (request body, k_requested, v2 commitment), red team R2-1 and R5-F1
 
 export async function sha256Hex(bytes) {
   const b = typeof bytes === "string" ? enc.encode(bytes) : bytes;
@@ -989,6 +1041,12 @@ export async function verifyWitnesses(verify, { ownHost, endpoint, executionSha2
   const kExpected = quorum && quorum.k !== undefined && quorum.k !== null ? String(quorum.k) : null;
   const requireCommitment = !!(quorum && quorum.requireCommitment);
   const commitmentAnchor = quorum && quorum.commitmentAnchor ? quorum.commitmentAnchor : null;   // 読む側が台帳の entry の .ots から自分で得た { height, hash }
+  // 0.4.0 (v2.4). requireV24: refuse a draw in the older form (no request body, no k_requested, a v1 commitment).
+  // beaconTime: the beacon block's time as the reader got it from its own chain source (ISO 8601, UTC).
+  const requireV24 = !!(quorum && quorum.requireV24);
+  const beaconTime = quorum && quorum.beaconTime ? String(quorum.beaconTime) : null;
+  const forms = [];
+  let requestedAt = null;
   const d = verify.draw;
   const drawn = d && Array.isArray(d.drawn) ? d.drawn : [];
   const own = ownHost ? String(ownHost).toLowerCase() : "";
@@ -997,13 +1055,49 @@ export async function verifyWitnesses(verify, { ownHost, endpoint, executionSha2
     if (own && drawn.some((x) => String(x).toLowerCase() === own)) refuse("self_witness", "the draw lists the endpoint's own host " + ownHost + " as a witness (11.4)");
     if (beaconHash && String(d.beacon.hash).toLowerCase() !== beaconHash) refuse("beacon_mismatch", "draw.beacon.hash " + d.beacon.hash + " is not the beacon the verifier fetched " + beaconHash);
     if (kExpected && d.k !== kExpected && d.pool_size !== "0" && Number(d.k) < Number(kExpected)) refuse("draw_mismatch", "draw.k " + d.k + " is below the policy k " + kExpected + " (the operator may not shorten the draw)");
+    // 0.4.0 (red team R2-1): k is held to the policy in both directions. A larger k widens the draw until the wanted
+    // witnesses are in it. A v2.4 draw records k_requested; an older one only the number actually drawn.
+    if (d.k_requested !== undefined) {
+      if (kExpected && d.k_requested !== kExpected) refuse("draw_k_mismatch", "draw.k_requested " + d.k_requested + " is not the policy k " + kExpected + " (the operator may not widen or shorten the draw)");
+      if (Number(d.k) > Number(d.k_requested)) refuse("draw_k_mismatch", "draw.k " + d.k + " is above draw.k_requested " + d.k_requested);
+    } else {
+      forms.push("k_not_recorded");
+      if (requireV24) refuse("draw_k_unrecorded", "policy requires a v2.4 draw; draw.k_requested is absent");
+      if (kExpected && Number(d.k) > Number(kExpected)) refuse("draw_k_mismatch", "draw.k " + d.k + " is above the policy k " + kExpected + " (the operator may not widen the draw)");
+    }
+    // 0.4.0 (red team R2-1): the request travels with the draw and must name this draw's subject, pool and beacon.
+    if (d.request !== undefined) {
+      const rq = d.request;
+      const rs = await sha256Hex(canonicalUtf8(rq));
+      if (rs !== d.request_sha256) refuse("draw_request_mismatch", "sha256 of draw.request is " + rs + ", draw.request_sha256 says " + d.request_sha256);
+      const sameBeacon = rq.beacon && String(rq.beacon.kind) === String(d.beacon.kind) && String(rq.beacon.height) === String(d.beacon.height) && String(rq.beacon.hash).toLowerCase() === String(d.beacon.hash).toLowerCase();
+      if (rq.subject_sha256 !== d.subject_sha256 || rq.pool_sha256 !== d.pool_sha256 || !sameBeacon) refuse("draw_request_unbound", "draw.request names subject " + rq.subject_sha256 + ", pool " + rq.pool_sha256 + " and beacon " + (rq.beacon && rq.beacon.hash) + "; the draw is for subject " + d.subject_sha256 + ", pool " + d.pool_sha256 + " and beacon " + d.beacon.hash);
+      if (endpoint && hostOf(rq.endpoint) !== hostOf(endpoint)) refuse("draw_request_unbound", "draw.request is about " + rq.endpoint + ", the segment is about " + endpoint);
+      if (beaconTime && String(rq.requested_at) < beaconTime) refuse("request_before_beacon", "draw.request.requested_at " + rq.requested_at + " is before the beacon block time " + beaconTime);
+      requestedAt = String(rq.requested_at);
+    } else {
+      forms.push("request_not_carried");
+      if (requireV24) refuse("draw_request_absent", "policy requires a v2.4 draw; draw.request is absent, so request_sha256 is not tied to this subject, pool and beacon");
+    }
     // v2.2 commit-then-reveal: subject が beacon より前に錨打ちされとるか
     const c = d.commitment;
+    if (!c) forms.push("pool_not_committed");
     if (requireCommitment && !c) refuse("draw_uncommitted", "policy requires the draw's subject to be anchored on the ledger before the beacon block; draw.commitment is absent (the operator could have re-ground the draw)");
     if (c) {
       if (c.subject_sha256 !== d.subject_sha256) refuse("draw_subject_mismatch", "draw.commitment.subject_sha256 is not draw.subject_sha256");
-      const claim = await sha256Hex(commitmentClaimText(c.subject_sha256));
-      if (c.claim_sha256 !== claim) refuse("commitment_claim_mismatch", "draw.commitment.claim_sha256 " + c.claim_sha256 + " is not sha256(commitmentClaimText(subject)) " + claim + ": the ledger entry named does not commit this subject");
+      if (c.pool_sha256 !== undefined) {
+        // 0.4.0 (red team R5-F1): a v2 commitment fixes the pool and k before the beacon.
+        let claim = null;
+        try { claim = await sha256Hex(commitmentClaimTextV2(c.subject_sha256, c.pool_sha256, c.k_requested)); } catch (e) { refuse("bad_draw", "draw.commitment v2 fields: " + String(e && e.message || e)); }
+        if (claim && c.claim_sha256 !== claim) refuse("commitment_claim_mismatch", "draw.commitment.claim_sha256 " + c.claim_sha256 + " is not sha256(commitmentClaimTextV2(subject, pool, k)) " + claim + ": the ledger entry named does not commit this subject, pool and k");
+        if (c.pool_sha256 !== d.pool_sha256) refuse("commitment_pool_mismatch", "the draw uses pool " + d.pool_sha256 + ", the commitment fixed pool " + c.pool_sha256 + " before the beacon");
+        if (c.k_requested !== d.k_requested) refuse("commitment_k_mismatch", "the draw requested k " + d.k_requested + ", the commitment fixed k " + c.k_requested + " before the beacon");
+      } else {
+        const claim = await sha256Hex(commitmentClaimText(c.subject_sha256));
+        if (c.claim_sha256 !== claim) refuse("commitment_claim_mismatch", "draw.commitment.claim_sha256 " + c.claim_sha256 + " is not sha256(commitmentClaimText(subject)) " + claim + ": the ledger entry named does not commit this subject");
+        forms.push("pool_not_committed");
+        if (requireV24) refuse("draw_pool_uncommitted", "policy requires a v2.4 draw; draw.commitment is v1 and does not fix the pool, so the pool could have been chosen after the beacon");
+      }
       if (String(Number(c.anchor.height) + 1) !== String(d.beacon.height)) refuse("beacon_not_next_block", "beacon.height " + d.beacon.height + " is not anchor.height + 1 (" + c.anchor.height + " + 1): the beacon must be the block after the one the subject is anchored to");
       if (commitmentAnchor) {
         if (String(commitmentAnchor.height) !== c.anchor.height) refuse("commitment_mismatch", "the ledger entry's OTS proof anchors at height " + commitmentAnchor.height + ", the record says " + c.anchor.height);
@@ -1012,10 +1106,11 @@ export async function verifyWitnesses(verify, { ownHost, endpoint, executionSha2
     }
     if (pool) {
       try {
-        const re = await drawWitnesses({ pool, beaconHash: d.beacon.hash, subjectSha256: d.subject_sha256, k: d.k, excludeHost: own || undefined });
+        const re = await drawWitnesses({ pool, beaconHash: d.beacon.hash, subjectSha256: d.subject_sha256, k: d.k_requested !== undefined ? d.k_requested : d.k, excludeHost: own || undefined });
         if (re.pool_sha256 !== d.pool_sha256) refuse("pool_mismatch", "the pool given to the verifier hashes to " + re.pool_sha256 + ", the record says " + d.pool_sha256);
         else if (canonicalUtf8(re.drawn) !== canonicalUtf8(drawn)) refuse("draw_mismatch", "recomputing the draw from beacon, pool and subject gives [" + re.drawn.join(", ") + "], the record says [" + drawn.join(", ") + "]");
         else if (re.pool_size !== d.pool_size) refuse("draw_mismatch", "draw.pool_size " + d.pool_size + " is not the size of the pool given (" + re.pool_size + ")");
+        else if (re.k !== d.k) refuse("draw_mismatch", "drawing k_requested " + d.k_requested + " from the pool given draws " + re.k + ", the record says " + d.k);
       } catch (e) { refuse("bad_pool", "the pool given to the verifier is malformed: " + String(e && e.message || e)); }
     }
   }
@@ -1036,6 +1131,8 @@ export async function verifyWitnesses(verify, { ownHost, endpoint, executionSha2
     if (!drawn.some((x) => String(x).toLowerCase() === dom)) { refuse("witness_not_drawn", tag + ": " + rec.source.signed_domain + " was not drawn"); continue; }
     if (endpoint && hostOf(rec.endpoint) !== hostOf(endpoint)) { refuse("witness_endpoint_mismatch", tag + ": observation is about " + rec.endpoint + ", the segment is about " + endpoint); continue; }
     if (d && rec.request_sha256 !== d.request_sha256) { refuse("witness_request_mismatch", tag + ": observation answers request " + rec.request_sha256 + ", the draw sent " + d.request_sha256); continue; }
+    if (requestedAt && rec.recorded_at < requestedAt) { refuse("witness_before_request", tag + ": observation recorded_at " + rec.recorded_at + " is before the request it answers was made (" + requestedAt + ")"); continue; }
+    if (beaconTime && rec.recorded_at < beaconTime) { refuse("witness_before_beacon", tag + ": observation recorded_at " + rec.recorded_at + " is before the beacon block time " + beaconTime + " that drew this witness"); continue; }
     if (executionAt && rec.recorded_at < executionAt) { refuse("witness_before_execution", tag + ": observation recorded_at " + rec.recorded_at + " is before the execution " + executionAt + " it is supposed to re-verify"); continue; }
     if (poolByDomain) {
       const pe = poolByDomain.get(dom);
@@ -1049,7 +1146,7 @@ export async function verifyWitnesses(verify, { ownHost, endpoint, executionSha2
     (subsetMatches(verify.expected_after, rec.observed) ? agreeing : disagreeing).push(dom);
   }
   if (q !== null && verify.recovered === true && agreeing.length < q) refuse("witness_quorum_short", "recovered is true but " + agreeing.length + " of the required " + q + " drawn witnesses observed the expected state (drawn " + drawn.length + ", answered " + answered.length + ", disagreeing " + disagreeing.length + ")");
-  return { refusals, drawn: drawn.slice(), answered, agreeing, disagreeing };
+  return { refusals, drawn: drawn.slice(), answered, agreeing, disagreeing, ...(d ? { forms } : {}) };
 }
 
 // 連鎖 (1 事故 = 1 区間) の検証。records は記録順。
@@ -1117,7 +1214,7 @@ export async function verifyChain(records, opts = {}) {
     witness = await verifyWitnesses(verify, { ownHost: hostOf(records[0].endpoint), endpoint: records[0].endpoint, executionSha256: hashes[i + 2], executionAt: execution && execution.recorded_at, quorum: witnessQuorum });
     for (const x of witness.refusals) refuse(x.code, x.why);
   }
-  return { ok: refusals.length === 0, refusals, segment: { drifts, hashes, complete: rest.length === 4, ...(witness ? { witness: { drawn: witness.drawn, answered: witness.answered, agreeing: witness.agreeing, disagreeing: witness.disagreeing } } : {}) } };
+  return { ok: refusals.length === 0, refusals, segment: { drifts, hashes, complete: rest.length === 4, ...(witness ? { witness: { drawn: witness.drawn, answered: witness.answered, agreeing: witness.agreeing, disagreeing: witness.disagreeing, ...(witness.forms ? { forms: witness.forms } : {}) } } : {}) } };
 }
 
 // 信用アンカーを gate から取る (0.4.8 の /keys/operator.json)。404 = まだ配っとらん = 空の集合 (strict は全部 authorization_untrusted_key になる。それが正しい)。
@@ -1154,7 +1251,7 @@ async function tsugiMain() {
     const pk = b64Exact(k, 32);
     if (!pk || !ed25519KeyOk(pk)) { console.error("tsugi-verify: operator key " + JSON.stringify(k) + " is not canonical base64 of a usable Ed25519 key"); process.exit(2); }
   }
-  if (a.pool || a.q || a.k || a.beacon || a["require-commitment"] || a["anchor-height"]) {
+  if (a.pool || a.q || a.k || a.beacon || a["require-commitment"] || a["anchor-height"] || a["require-v24"] || a["beacon-time"]) {
     opts.witnessQuorum = {};
     if (a.pool) opts.witnessQuorum.pool = JSON.parse(readFileSync(a.pool, "utf8"));
     if (a.q) opts.witnessQuorum.q = Number(a.q);
@@ -1162,6 +1259,8 @@ async function tsugiMain() {
     if (a.beacon) opts.witnessQuorum.beaconHash = String(a.beacon);
     if (a["require-commitment"]) opts.witnessQuorum.requireCommitment = true;
     if (a["anchor-height"]) opts.witnessQuorum.commitmentAnchor = { height: String(a["anchor-height"]), ...(a["anchor-hash"] ? { hash: String(a["anchor-hash"]) } : {}) };
+    if (a["require-v24"]) opts.witnessQuorum.requireV24 = true;
+    if (a["beacon-time"]) opts.witnessQuorum.beaconTime = String(a["beacon-time"]);
   }
   const report = await verifyChain(records, opts);
   const out = { verifier: "tsugi_verify " + VERIFIER_VERSION, mode: { operator_keys: opts.operatorKeys ? opts.operatorKeys.length : 0, witness_quorum: opts.witnessQuorum || null }, ...report,

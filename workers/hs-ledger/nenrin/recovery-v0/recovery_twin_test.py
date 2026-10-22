@@ -125,6 +125,30 @@ st = R.verify_chain(inc["records"], operator_keys=[inc["operator_public_key_ed25
 t("incident 2: python strict verify_chain ok and complete", st["ok"] and st["segment"]["complete"], json.dumps(st["refusals"]))
 t("incident 2: python asked for a quorum says witness_quorum_short", "witness_quorum_short" in codes(R.verify_chain(inc["records"], operator_keys=[inc["operator_public_key_ed25519_b64"]], witness_quorum={"q": 1, "pool": json.load(open(os.path.join(HERE, "witness_pool.json"), encoding="utf-8"))})))
 
+# 8. v2.4 (red team R2-1 と R5-F1、2026-10-22): node が作った攻めと対照の 15 件を、python と node の両方に通し、
+#    可否、拒否コードの並び、古い形の印 (forms) が同じかを見る。node の答えは同じ入力を node の verifyChain に通した物。
+with tempfile.TemporaryDirectory() as td:
+    cpath = os.path.join(td, "v24.json")
+    subprocess.run(["node", os.path.join(HERE, "witness_v24_cases.mjs"), cpath], check=True, cwd=HERE)
+    js_src = ("import { readFileSync } from 'node:fs'; import { verifyChain } from " + json.dumps("file://" + os.path.join(HERE, "recovery_verify.mjs")) + ";"
+              " const { cases } = JSON.parse(readFileSync(process.argv[2], 'utf8')); const out = [];"
+              " for (const c of cases) { const r = await verifyChain(c.records, { witnessQuorum: c.quorum });"
+              " out.push({ ok: r.ok, codes: r.refusals.map((x) => x.code), forms: r.segment && r.segment.witness ? r.segment.witness.forms : null }); }"
+              " console.log(JSON.stringify(out));")
+    jpath = os.path.join(td, "run.mjs")
+    open(jpath, "w").write(js_src)
+    js_out = json.loads(subprocess.run(["node", jpath, cpath], check=True, capture_output=True, text=True, cwd=HERE).stdout)
+    v24 = json.load(open(cpath, encoding="utf-8"))["cases"]
+for c, j in zip(v24, js_out):
+    r = R.verify_chain(c["records"], witness_quorum=c["quorum"])
+    py = {"ok": r["ok"], "codes": codes(r), "forms": (r.get("segment", {}).get("witness") or {}).get("forms")}
+    t("v2.4 python == node: " + c["name"], py == j, json.dumps({"py": py, "node": j}))
+    want = c["new"]
+    t("v2.4 python as expected: " + c["name"], py["ok"] == want["ok"] and all(x in py["codes"] for x in want.get("codes", [])) and ("forms" not in want or py["forms"] == want["forms"]), json.dumps(py))
+t("v2.4 python: claim text v2 is byte-identical to node (honest case claim_sha256 recomputes)",
+  R.sha256_hex(R.commitment_claim_text_v2(v24[2]["records"][6]["draw"]["commitment"]["subject_sha256"], v24[2]["records"][6]["draw"]["commitment"]["pool_sha256"], v24[2]["records"][6]["draw"]["commitment"]["k_requested"])) == v24[2]["records"][6]["draw"]["commitment"]["claim_sha256"])
+t("v2.4 python: verifier version is 0.4.0", R.VERIFIER_VERSION == "0.4.0")
+
 print("\n".join(out))
 print("=== %d / %d 合格 (recovery-twin: python が node と byte 一致、v2 籤も同じ k 人) ===" % (p, p + f))
 if f: sys.exit(1)

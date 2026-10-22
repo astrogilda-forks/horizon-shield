@@ -137,6 +137,21 @@ const CHECK = {
             if (!isHttps(c.ledger_url)) refuse("bad_draw", "draw.commitment.ledger_url must be https");
             if (!isHex(c.claim_sha256)) refuse("bad_draw", "draw.commitment.claim_sha256 must be 64 hex");
             if (!isObj(c.anchor) || !isStr(c.anchor.kind) || !isDigits(c.anchor.height) || !isHex(c.anchor.hash)) refuse("bad_draw", "draw.commitment.anchor needs kind, height (digits as a string) and hash (64 hex)");
+            // v2.4: a v2 commitment also fixes the pool and k (red team R5-F1). Both or neither.
+            if ((c.pool_sha256 !== undefined) !== (c.k_requested !== undefined)) refuse("bad_draw", "draw.commitment carries pool_sha256 and k_requested together (v2) or neither (v1)");
+            if (c.pool_sha256 !== undefined && !isHex(c.pool_sha256)) refuse("bad_draw", "draw.commitment.pool_sha256 must be 64 hex");
+            if (c.k_requested !== undefined && !isDigits(c.k_requested)) refuse("bad_draw", "draw.commitment.k_requested must be digits as a string");
+          }
+        }
+        // v2.4 (red team R2-1): the request body and the requested k travel with the draw. Optional, strict when present.
+        if (d.k_requested !== undefined && !isDigits(d.k_requested)) refuse("bad_draw", "draw.k_requested must be digits as a string");
+        if (d.request !== undefined) {
+          const q = d.request;
+          if (!isObj(q)) refuse("bad_draw", "draw.request must be an object (the request body sent to every drawn witness)");
+          else {
+            if (!isHex(q.subject_sha256) || !isHex(q.pool_sha256)) refuse("bad_draw", "draw.request needs subject_sha256 and pool_sha256 (64 hex)");
+            if (!isObj(q.beacon) || !isStr(q.beacon.kind) || !isDigits(q.beacon.height) || !isHex(q.beacon.hash)) refuse("bad_draw", "draw.request.beacon needs kind, height (digits as a string) and hash (64 hex)");
+            if (!isStr(q.endpoint) || !isStr(q.requested_at)) refuse("bad_draw", "draw.request needs endpoint and requested_at strings");
           }
         }
       }
