@@ -13,6 +13,8 @@ Revision 0.5, 2026-10-19: two statements about the reference were wrong and are 
 
 Revision 0.6, 2026-10-20: two places where a third independent implementation found the text and the vectors pulling apart are now stated (NOTES.md N20): in 6.0, a strictly signed record whose body is not strict is set aside as well as adding its reason; in 4.3, failing 4.1 with the parent supplied adds only `parent_narrowing_failed`, never `contract_not_verified`. Both sentences say what the vectors already expected. No rule of the reference, reason or vector changed.
 
+Revision 0.7, 2026-10-20: one consequence of 8.1 and 7.1 that the text implied but did not state (NOTES.md N21): the anchor is unsigned and an extra key in it is strict, so whoever holds the copies can choose the record_sha256 order of two same-block executions, and with it which of the two is reported `conditional` when they compete for one single use approval. The verdict, the codes and the bond outcome do not move. 8.3 now says so. No rule of the reference, reason or vector changed.
+
 ## 0. Why this document exists
 
 Until now the MUSUBI settle function was defined only by Python code (settle_v1.py to settle_v1_16.py, each layer importing the ones below it).
@@ -451,6 +453,7 @@ Each event has a kind: `execution`, `revocation` or `revocation_ack`, by schema.
 ### 8.3 Same block
 
 Two records in the same block are not ordered by their bytes for any rule that matters. Section 10 says how same-block cases are decided. The order of 8.1 only fixes the listing and the order in which single use approvals are consumed (10.4).
+That order is not a signed fact: the anchor is unsigned (7.1) and an extra key in it passes 6.0, so whoever holds the copies can change a record's record_sha256 without touching its body or its proof. When two executions in one block compete for one single use approval carried by an earlier record, the holder can therefore choose which of the two is reported `conditional`. The verdict, the deviation codes and the bond outcome do not change (NOTES.md N21).
 
 ### 8.4 Horizon
 

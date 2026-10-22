@@ -97,7 +97,7 @@ Checked by running the reference on extra inputs (not all are vectors):
 - An expired action is still checked against the other rules, so an expired prohibited act gives two codes. Not a vector, but the rule is short (10.2).
 - delivery_ack: an acknowledgement anchored before its revocation (it can name the revocation's body digest before the revocation is anchored) sets the end of authority at the acknowledgement's height, so an act between the two anchors is revoked. Arguably right (the contractor acknowledged), but surprising. Not a vector.
 - An approval carried by a record in the same block as the act never counts, even if the record's sha256 sorts first. Vector synth_conditional_approval_same_block_other_record.
-- Which of two same-block executions consumes a single use approval depends on record_sha256 order. The deviation codes do not change; which record gets the deviation does (informative).
+- Which of two same-block executions consumes a single use approval depends on record_sha256 order. The deviation codes do not change; which record gets the deviation does (informative). record_sha256 covers the unsigned anchor, so the holder of the copies can pick that order (N21).
 
 ## N7. Collapse can keep a copy that predates the checkpoint
 
@@ -217,6 +217,16 @@ He recorded two places where the text and the vectors pull apart, as section 15 
 2. 4.3, parent narrowing. "Does not pass 4.1 with the parent supplied" read like a failure of the contract door. The vectors give `parent_narrowing_failed` alone, without `contract_not_verified`, and the walk still runs. The section now says the narrowing is judged by 4.3.1 and adds only that reason, while `contract_not_verified` is decided by 4.1 on the contract on its own.
 
 No rule of the reference, no reason and no vector changed; 128/128 and EXERCISE.txt are unchanged. The draft (draft-oga-musubi-settlement) carries these two sentences in its next revision.
+
+## N21. The holder of the copies chooses which same-block execution is blamed (revision 0.7)
+
+Status: stated in 8.3. Informative only; no rule, reason or vector changed.
+
+Carried in our notes since settle v1.15 (2026-10-10) as the one open point of the ordering rule, and checked against the reference on 2026-10-20 with an input built by the `gen_vectors.py` helpers (not a vector): one principal approval for `refund` (single use) carried by a record at height 800002, then two contractor-signed executions of `refund` in one block at 800003, differing only in `nenrin_ref`. The reference reports `conditional` on the execution whose record_sha256 sorts second. Adding one extra key to the anchor of the first execution (`"zz_extra": "pad-0"`, an ASCII key with a short string, so the anchor stays strict and the proof still reaches the merkle root, since proofs start from the body digest) moves its record_sha256 above the other's, and the deviation moves to the first execution. In both runs the verdict is `deviation`, the only code is `conditional`, and the bond outcome is `forfeited`.
+
+So anyone holding the two records, including a third party who republishes them, decides which of the two the listing blames. Nothing a party signed decides it. The verdict and the bond are the same either way, which is why 8.3 already said the same-block order fixes only the listing and the consumption of single use approvals.
+
+A later version that wants this order to be a signed fact would sort same-height records by the body digest (3.3) instead of record_sha256. That changes the reference and the expected results of the vectors that have two records in one block, so it is not done in core v0; the three implementations that agree on the 128 vectors would all have to change. Until then, a contract that cares which same-block execution is blamed should not rely on the listing; the parties can avoid the case by not sharing one single use approval between two executions in one block.
 
 ## What I could not pin down
 
