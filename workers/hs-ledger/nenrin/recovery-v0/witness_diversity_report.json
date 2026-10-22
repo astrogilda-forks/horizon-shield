@@ -1,14 +1,14 @@
 {
   "schema": "nenrin-witness-diversity-v0",
-  "pool_sha256": "11d4d2fb95917d915f317ef5e8750308c08978c10a228a0a7159b551b2aeb364",
-  "facts_sha256": "f6a52cbb2f1ebe1b344fb28405febed0d762be553cf6092127ba0570233cebfd",
-  "arrivals_sha256": "96f6bec3dfbddb984e2fa0c5df0626630fce883d1c1dea95d03d411dcd21d9d9",
-  "pool_size": "1",
-  "entries_with_facts": "1",
-  "control_clusters": "1",
+  "pool_sha256": "f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799",
+  "facts_sha256": "e65b18b5f64c235f86394cb9f16620991894fcb2110bfc40f7a4bdd81eeb78a3",
+  "arrivals_sha256": "248a26e81a4e264cf525204489562cc7cae30fa1b990900f4c05286bddd35a08",
+  "pool_size": "2",
+  "entries_with_facts": "2",
+  "control_clusters": "2",
   "entries_declaring_legal_entity": "0",
   "arrived_via": {
-    "invited": "1",
+    "invited": "2",
     "referred": "0",
     "unsolicited": "0",
     "undisclosed": "0"
@@ -17,13 +17,18 @@
     {
       "signed_domain": "api.babyblueviper.com",
       "via": "invited"
+    },
+    {
+      "signed_domain": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+      "via": "invited",
+      "ref": "https://github.com/ogasurfproject-jpg/horizon-shield/issues/56"
     }
   ],
   "distinct": {
-    "registrable_domains": "1",
-    "public_keys": "1",
-    "ip_prefixes": "1",
-    "asns": "1",
+    "registrable_domains": "2",
+    "public_keys": "2",
+    "ip_prefixes": "3",
+    "asns": "2",
     "legal_entities": "0",
     "dns_operators": "1"
   },
@@ -33,18 +38,23 @@
       "members": [
         "api.babyblueviper.com"
       ]
+    },
+    {
+      "id": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+      "members": [
+        "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com"
+      ]
     }
   ],
   "strong_shared": [],
   "weak_shared": [],
   "findings": [
     "legal_entity_undeclared",
-    "single_control_cluster",
     "operator_outreach_only"
   ],
   "establishes": [
-    "the pool has 1 entries that fall into 1 control clusters, where two entries share a cluster when they share a registrable domain, a public key, an IP prefix, a custom nameserver or a declared legal entity identifier",
-    "arrival is disclosed for 1 of 1 entries: 1 invited by the operator, 0 referred by a pool member, 0 unsolicited",
+    "the pool has 2 entries that fall into 2 control clusters, where two entries share a cluster when they share a registrable domain, a public key, an IP prefix, a custom nameserver or a declared legal entity identifier",
+    "arrival is disclosed for 2 of 2 entries: 2 invited by the operator, 0 referred by a pool member, 0 unsolicited",
     "every count is recomputable from pool_sha256, facts_sha256 and arrivals_sha256 with this file"
   ],
   "does_not_establish": [

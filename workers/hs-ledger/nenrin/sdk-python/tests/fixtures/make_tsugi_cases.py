@@ -101,7 +101,11 @@ def build():
     case("witness: policy k 4, beacon in capitals, anchor at another height and hash", WCHAIN,
          ["--pool", "pool.json", "--k", "4", "--beacon", BEACON.upper(), "--anchor-height", "7", "--anchor-hash", "ab" * 32], POOL)
     case("witness: beacon not the one fetched", WCHAIN, ["--beacon", "0" * 64])
-    case("witness: the live one-entry pool", WCHAIN, ["--pool", "pool.json", "--q", "2"], load("witness_pool.json"))
+    # The live pool as it was from 2026-09-23 to 2026-10-22 (one entry), frozen here so that the pool growing does not
+    # move this case (recovery-v0/witness_pool.json is the live pool; it has two entries from 2026-10-22, horizon-shield #56).
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "witness_pool_one_entry_20260923.json"), encoding="utf-8") as f:
+        one_entry_pool = json.load(f)
+    case("witness: the live one-entry pool", WCHAIN, ["--pool", "pool.json", "--q", "2"], one_entry_pool)
     case("witness: flags without values", WCHAIN, ["--q", "--k", "--beacon", "--anchor-height", "--require-commitment"])
     case("witness: q and k not numbers", WCHAIN, ["--q", "two", "--k", "1e1", "--pool", "pool.json"], POOL)
     case("witness: q and k hexadecimal beyond a double", WCHAIN, ["--q", "0x" + "f" * 260, "--k", "0X" + "F" * 14, "--pool", "pool.json"], POOL)

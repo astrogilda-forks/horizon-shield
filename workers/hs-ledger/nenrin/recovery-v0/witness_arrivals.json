@@ -6,6 +6,11 @@
     "api.babyblueviper.com": {
       "via": "invited",
       "note": "asked directly by the operator in private messages after he had cross-checked NENRIN records on his own; no public invitation to link"
+    },
+    "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com": {
+      "via": "invited",
+      "ref": "https://github.com/ogasurfproject-jpg/horizon-shield/issues/56",
+      "note": "kuangmi-bit, asked in a public issue on 2026-10-22; accepted there with a self-check of the four conditions"
     }
   }
 }

@@ -19,6 +19,7 @@ const SUBJECT = "c92bf886".padEnd(64, "0");
 // ---- 1. 登録ドメインと基盤 ----
 t("registrable: a.alice.com and b.alice.com share alice.com", registrableDomain("a.alice.com").registrable === "alice.com" && registrableDomain("b.alice.com").registrable === "alice.com");
 t("registrable: x.co.jp keeps two labels of suffix (shop.example.co.jp -> example.co.jp)", registrableDomain("shop.example.co.jp").registrable === "example.co.jp");
+t("platform: two Tencent CloudBase hosts are different registrable names on one platform", registrableDomain("qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com").registrable === "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com" && registrableDomain("other-env-0001.service.tcloudbase.com").registrable === "other-env-0001.service.tcloudbase.com" && registrableDomain("other-env-0001.service.tcloudbase.com").platform === "service.tcloudbase.com");
 t("platform: alice.workers.dev and bob.workers.dev are different registrable domains on one platform", registrableDomain("api.alice.workers.dev").registrable === "alice.workers.dev" && registrableDomain("bob.workers.dev").registrable === "bob.workers.dev" && registrableDomain("bob.workers.dev").platform === "workers.dev");
 t("nameserver: cloudflare NS is a shared provider (weak), ns1.alice-corp.com is custom (strong)", nsOperator("jake.ns.cloudflare.com").shared_provider === true && nsOperator("ns1.alice-corp.com").shared_provider === false && nsOperator("ns1.alice-corp.com").operator === "alice-corp.com");
 t("ip prefix: v4 /24", ipPrefix("203.0.113.77") === "203.0.113.0/24");

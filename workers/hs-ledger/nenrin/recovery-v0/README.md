@@ -15,7 +15,7 @@ HORIZON SHIELD 第2の柱 TSUGI (継)。検証の次に置く、回復を証明�
 | witness_fixture_build.mjs | library | 今週の事故の再検証を籤で回した形の fixture を焼く。鍵は seed から (決定的)。beacon は Bitcoin やない、と記録が自分で言う |
 | witness_fixture_20260920.json | 表 | 池 6 (証人 5 + 自分)、籤で 3 人、2 人が署名付きで答え 1 人は答えず。v2.2 で commitment 付き (錨は高さ 0、beacon は高さ 1、台帳 entry 0。Bitcoin やない、と記録が自分で言う)。手で触らん |
 | witness_kuji_test.mjs | suite | 籤が再計算できる、fixture が byte 一致、変異 (drawn 改竄、別の池、別の beacon、引かれとらん証人、鍵違い、別の依頼、自分自身、commitment 無し、別の subject、beacon が錨の次やない、読む側の錨と違う) が全部落ちる、依頼と受け入れ |
-| witness_pool.json | 表 | 本番の池。今は空。入る条件は下の「籤」を見る |
+| witness_pool.json | 表 | 本番の池。2026-10-22 から 2 件(api.babyblueviper.com と kuangmi-bit の CloudBase の host)、支配の塊も 2 つ。入る条件は下の「籤」を見る |
 | incident_20260920_resign_chain.json | 表 | 実事件 2: 日次証人が見つけた card の署名切れ (version bump を 2 回、署名し直さず撒いた) を、R3 の提案 → 運営者鍵で署名した許可 → 再署名と deploy_gate.sh → 0 drift の再検証、の 12 記録に閉じた物。strict で通る。定足数を問えば正直に witness_quorum_short |
 | incident_20260920_test.mjs | suite | 上の連鎖が今も再計算でき、鍵で閉じた許可として通り、籤を引いとらんことを正直に言うか |
 | recovery_fixture_build.mjs | library | 今週の事故 (生 deploy → 署名不一致 + challenge 消失 → 外部証人 → 切り分け → redeploy_pinned → verify TRUE) を 7 記録に焼く |
@@ -82,7 +82,7 @@ Shield は再検証の証人を自分で選ばん。公開の池 (witness_pool.j
 
 7 月の OpenAI / Hugging Face の事件で根本原因に挙がった「他エージェントの指示を検証せずに受け入れる」への手当は、この形そのもの: 見知らぬエージェントから受け取るのは署名付きの観測だけで、その中身は hash を比べる以外に使わん。Shield エージェントの LLM の prompt には外部証人の文字列を一文字も入れん (buildPrompt が拒否する)。
 
-今日の池は空や。空なら籤は引けず、定足数は does_not_establish (witness_quorum_short) になる。それでええ。仕組みは池が育っても変わらん。v0 の fixture (今週の実事故) を定足数付きで回すと witness_quorum_short になる = 今週の再検証は籤を引いとらん、を記録が自分で言う。
+2026-10-22 の時点で池は 2 件、支配の塊は 2 つ(witness_diversity_report.json)。池が空か 1 件の間は籤で 2 人を引けず、定足数は does_not_establish (witness_quorum_short) になっていた。仕組みは池が育っても変わらない。v0 の fixture (今週の実事故) を定足数付きで回すと witness_quorum_short になる = 今週の再検証は籤を引いとらん、を記録が自分で言う。
 
 ## 籤の使い回しと池の選び直し (v2.4、2026-10-22)
 

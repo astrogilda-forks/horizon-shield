@@ -56,6 +56,7 @@ export const PLATFORM_SUFFIXES = [
   "workers.dev", "pages.dev", "github.io", "vercel.app", "netlify.app", "herokuapp.com", "fly.dev", "onrender.com",
   "railway.app", "deno.dev", "web.app", "firebaseapp.com", "appspot.com", "azurewebsites.net", "cloudfront.net",
   "replit.app", "glitch.me", "ngrok.app", "ngrok-free.app", "trycloudflare.com",
+  "service.tcloudbase.com",   // Tencent CloudBase: one owner per <env>.service.tcloudbase.com host (horizon-shield #56)
 ];
 
 export function registrableDomain(host) {

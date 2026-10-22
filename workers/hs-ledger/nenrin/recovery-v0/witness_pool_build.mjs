@@ -7,8 +7,11 @@
 //
 // 入る条件 (新しい規則は作らん。conduct-v1.1 の 11.4 と 11.6 をそのまま読む):
 //   1. /.well-known/agent-card.json が conduct-v1 拡張を宣言 (uri は 2 つの正確な文字列のどちらか、12.2)
-//   2. /.well-known/mcp-conduct.json の witness_policy.reciprocal が true (11.5、11.6: 呼ばれたら測る、と自分で言うた者)
-//   3. 鍵: consent の witness_key_url (https、host が origin と同じ) か、無ければ <origin>/keys/witness.json が {"public_key_ed25519_b64"} を配る (11.4: key_url の host が身元)
+//   2. witness_policy.reciprocal が true (11.5、11.6: 呼ばれたら測る、と自分で言うた者)。読む所は 2 つ: card の conduct 拡張の params
+//      (BECOME_A_WITNESS.md と witness_selfcheck.mjs が案内する所) と、/.well-known/mcp-conduct.json (前からの書き方)。どちらかが true で、
+//      もう片方が false と言うていなければ足りる。片方でも false と言うたら、持ち主は「測らん」と言うたものとして断る。
+//   3. 鍵: consent の witness_key_url、無ければ card の params.witness_reply.key_url、無ければ <origin>/keys/witness.json
+//      (どれも https、host が origin と同じ) が {"public_key_ed25519_b64"} を配る (11.4: key_url の host が身元)
 //   4. host が自分と違う (self_witness)
 //   5. --min-walked N > 0 なら、扉の /register/lookup の last_ring.walked_as_witness が N 以上 (14.6 の Sybil 手当。既定 0 = ADR で決めるまで見ん)
 // 運営者は選ばん。条件を満たす card は全部入る。落ちた候補は report に理由付きで残す (池には書かん)。
@@ -18,7 +21,7 @@ import path from "node:path";
 import { normalizePool, poolSha256, POOL_SCHEMA } from "./witness_draw.mjs";
 import { targetAllowed } from "./witness_reply.mjs";
 
-export const BUILD_VERSION = "0.1.0";
+export const BUILD_VERSION = "0.2.0";
 export const CONDUCT_URIS = ["https://gate.horizonshield.dev/ext/conduct/v1", "https://w3id.org/horizonshield/conduct/v1"];
 const UA = { "user-agent": "nenrin-witness-pool-build/" + BUILD_VERSION };
 const hostOf = (u) => { try { return new URL(u).host.toLowerCase(); } catch { return ""; } };
@@ -35,6 +38,13 @@ export function declaresConduct(card) {
   return exts.some((e) => e && CONDUCT_URIS.includes(e.uri));
 }
 
+// The conduct extension's params on the card, read the way witness_selfcheck.mjs reads them.
+export function conductParams(card) {
+  const exts = card && card.capabilities && Array.isArray(card.capabilities.extensions) ? card.capabilities.extensions : [];
+  for (const e of exts) if (e && CONDUCT_URIS.includes(e.uri) && e.params && typeof e.params === "object") return e.params;
+  return null;
+}
+
 // 1 候補の審査。ok なら entry。落ちたら refusals。
 export async function admit(candidate, { ownHost, fetchImpl = globalThis.fetch, minWalked = 0, gateOrigin = "https://gate.horizonshield.dev", allowPrivateTargets = false } = {}) {
   const origin = String(candidate.origin || candidate).replace(/\/+$/, "");
@@ -48,11 +58,14 @@ export async function admit(candidate, { ownHost, fetchImpl = globalThis.fetch, 
   const card = await getJson(fetchImpl, origin + "/.well-known/agent-card.json");
   if (!card.json) refuse("no_card", "GET /.well-known/agent-card.json answered " + card.status);
   else if (!declaresConduct(card.json)) refuse("no_conduct_ext", "the card does not declare conduct-v1 (" + CONDUCT_URIS.join(" or ") + ")");
+  const params = card.json ? conductParams(card.json) : null;
   const consent = await getJson(fetchImpl, origin + "/.well-known/mcp-conduct.json");
-  const wp = consent.json && consent.json.witness_policy;
-  if (!consent.json) refuse("no_consent_file", "GET /.well-known/mcp-conduct.json answered " + consent.status);
-  else if (!(wp && wp.reciprocal === true)) refuse("not_reciprocal", "witness_policy.reciprocal is not true (11.6): the owner has not said it measures when asked");
-  let keyUrl = consent.json && typeof consent.json.witness_key_url === "string" ? consent.json.witness_key_url : origin + "/keys/witness.json";
+  const said = [params && params.witness_policy ? params.witness_policy.reciprocal : undefined,
+                consent.json && consent.json.witness_policy ? consent.json.witness_policy.reciprocal : undefined];
+  if (said.includes(false)) refuse("not_reciprocal", "witness_policy.reciprocal is false on the card or in /.well-known/mcp-conduct.json (11.6): the owner has said it does not measure when asked");
+  else if (!said.includes(true)) refuse("not_reciprocal", "witness_policy.reciprocal is not true on the card's conduct params nor in /.well-known/mcp-conduct.json (answered " + consent.status + ") (11.6): the owner has not said it measures when asked");
+  const cardKeyUrl = params && params.witness_reply && typeof params.witness_reply.key_url === "string" ? params.witness_reply.key_url : null;
+  let keyUrl = consent.json && typeof consent.json.witness_key_url === "string" ? consent.json.witness_key_url : (cardKeyUrl || origin + "/keys/witness.json");
   if (!/^https:\/\//.test(keyUrl) || hostOf(keyUrl) !== host) { refuse("bad_key_url", "witness_key_url must be https on the same host (11.4): " + keyUrl); keyUrl = ""; }
   let pub = "";
   if (keyUrl) {

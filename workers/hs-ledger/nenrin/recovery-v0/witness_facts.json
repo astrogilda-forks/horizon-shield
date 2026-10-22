@@ -1,10 +1,24 @@
 {
   "schema": "nenrin-witness-facts-v0",
-  "collected_by": "witness_diversity_collect.mjs 0.1.1",
+  "collected_by": "witness_diversity_collect.mjs 0.2.0",
   "facts": {
+    "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com": {
+      "observed_at": "2026-10-22T14:42:30.837Z",
+      "method": "doh:cloudflare+google cymru-origin-asn collect/0.2.0",
+      "ips": [
+        "110.40.162.120",
+        "111.231.184.212"
+      ],
+      "asns": [
+        "45090"
+      ],
+      "ns": [],
+      "legal_entity": null,
+      "legal_entity_source": "not_declared"
+    },
     "api.babyblueviper.com": {
-      "observed_at": "2026-09-27T11:18:04.036Z",
-      "method": "doh:cloudflare+google cymru-origin-asn collect/0.1.1",
+      "observed_at": "2026-10-22T14:42:32.372Z",
+      "method": "doh:cloudflare+google cymru-origin-asn collect/0.2.0",
       "ips": [
         "5.78.69.36"
       ],
@@ -14,7 +28,9 @@
       "ns": [
         "ns33.domaincontrol.com",
         "ns34.domaincontrol.com"
-      ]
+      ],
+      "legal_entity": null,
+      "legal_entity_source": "not_declared"
     }
   }
 }

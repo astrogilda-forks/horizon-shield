@@ -150,6 +150,17 @@ const reqHash = await requestSha256(req);
   mk("noext.example", { ext: false }); mk("norecip.example", { reciprocal: false }); mk("nokey.example", { key: false });
   mk("badkeyhost.example", { keyUrl: "https://elsewhere.example/k.json" }); mk(OWN_HOST);
   mk("w3id.example"); sites["https://w3id.example/.well-known/agent-card.json"].capabilities.extensions = [{ uri: "https://w3id.org/horizonshield/conduct/v1" }];
+  // reciprocal on the card's conduct params only, as BECOME_A_WITNESS.md says (no /.well-known/mcp-conduct.json at all)
+  const cardOnly = (host, params, keyPath = "/keys/witness.json") => {
+    const origin = "https://" + host;
+    sites[origin + "/.well-known/agent-card.json"] = { name: host, url: origin + "/a2a", capabilities: { extensions: [{ uri: "https://gate.horizonshield.dev/ext/conduct/v1", params }] } };
+    sites[origin + keyPath] = { public_key_ed25519_b64: edPubFromSeed(host) };
+  };
+  cardOnly("cardonly.example", { witness_policy: { reciprocal: true } });
+  cardOnly("cardkey.example", { witness_policy: { reciprocal: true }, witness_reply: { key_url: "https://cardkey.example/k/w.json" } }, "/k/w.json");
+  cardOnly("cardfalse.example", { witness_policy: { reciprocal: false } });
+  cardOnly("cardnone.example", {});
+  mk("conflict.example"); sites["https://conflict.example/.well-known/agent-card.json"].capabilities.extensions[0].params = { witness_policy: { reciprocal: false } };
   const rings = { "https://good-a.example/mcp": { present: true, walked_as_witness: 3 }, "https://good-b.example/mcp": { present: false } };
   const fakeFetch = async (url) => {
     const u = new URL(url);
@@ -166,11 +177,18 @@ const reqHash = await requestSha256(req);
   t("pool: w3id identifier counts as conduct-v1 (12.2)", (await admit({ origin: "https://w3id.example" }, lab)).ok);
   t("pool: no conduct extension -> no_conduct_ext", (await admit({ origin: "https://noext.example" }, lab)).refusals.some((r) => r.code === "no_conduct_ext"));
   t("pool: reciprocal false -> not_reciprocal", (await admit({ origin: "https://norecip.example" }, lab)).refusals.some((r) => r.code === "not_reciprocal"));
+  const co = await admit({ origin: "https://cardonly.example" }, lab);
+  t("pool: reciprocal on the card's conduct params only, no consent file -> admitted (as BECOME_A_WITNESS.md and witness_selfcheck.mjs read it)", co.ok && co.entry.signed_domain === "cardonly.example" && co.entry.key_url === "https://cardonly.example/keys/witness.json");
+  const ck = await admit({ origin: "https://cardkey.example" }, lab);
+  t("pool: the card's witness_reply.key_url is used when there is no consent file", ck.ok && ck.entry.key_url === "https://cardkey.example/k/w.json");
+  t("pool: reciprocal false on the card, no consent file -> not_reciprocal", (await admit({ origin: "https://cardfalse.example" }, lab)).refusals.some((r) => r.code === "not_reciprocal"));
+  t("pool: reciprocal on neither the card nor a consent file -> not_reciprocal", (await admit({ origin: "https://cardnone.example" }, lab)).refusals.some((r) => r.code === "not_reciprocal"));
+  t("pool: true in the consent file but false on the card -> not_reciprocal (the owner said no somewhere)", (await admit({ origin: "https://conflict.example" }, lab)).refusals.some((r) => r.code === "not_reciprocal"));
   t("pool: no key served -> no_key", (await admit({ origin: "https://nokey.example" }, lab)).refusals.some((r) => r.code === "no_key"));
   t("pool: witness_key_url on another host -> bad_key_url (11.4)", (await admit({ origin: "https://badkeyhost.example" }, lab)).refusals.some((r) => r.code === "bad_key_url"));
   t("pool: a private or IP-literal origin is refused before any fetch (not_public)", (await admit({ origin: "https://10.1.2.3" }, { ownHost: OWN_HOST, fetchImpl })).refusals[0].code === "not_public" && (await admit({ origin: "https://witness.internal" }, { ownHost: OWN_HOST, fetchImpl })).refusals[0].code === "not_public");
   t("pool: own host -> self_witness, never admitted", (await admit({ origin: "https://" + OWN_HOST }, lab)).refusals[0].code === "self_witness");
-  t("pool: unreachable origin -> no_card and no_consent_file", (await admit({ origin: "https://nowhere.example" }, lab)).refusals.map((r) => r.code).join(",").includes("no_card"));
+  t("pool: unreachable origin -> no_card", (await admit({ origin: "https://nowhere.example" }, lab)).refusals.map((r) => r.code).join(",").includes("no_card"));
   const walked = await admit({ origin: "https://good-a.example", endpoint: "https://good-a.example/mcp" }, { ...lab, minWalked: 2, gateOrigin: "https://gate.test" });
   const notWalked = await admit({ origin: "https://good-b.example", endpoint: "https://good-b.example/mcp" }, { ...lab, minWalked: 2, gateOrigin: "https://gate.test" });
   t("pool: --min-walked 2 admits a domain with 3 walks in the ring and refuses one with no ring (14.6)", walked.ok && !notWalked.ok && notWalked.refusals.some((r) => r.code === "not_enough_walks"));
