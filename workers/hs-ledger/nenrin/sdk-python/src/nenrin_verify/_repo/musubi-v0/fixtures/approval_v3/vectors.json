@@ -1,0 +1,896 @@
+{
+ "contract": {
+  "agreed_at": "2026-10-10T00:00:00Z",
+  "bond": {
+   "amount": 1000,
+   "currency": "JPY"
+  },
+  "contract_id": "0123456789abcdef0123456789abcd03",
+  "does_not_establish": [
+   "that HS enforced any of this at runtime",
+   "that the contractor obeyed the grant, only that its recorded acts match or deviate from it",
+   "that HS judges liability or fault; the verdict is a function anyone recomputes",
+   "that a prohibited action was impossible, only that performing one is a provable deviation",
+   "that this is a legal contract or determines legal responsibility"
+  ],
+  "establishes": [
+   "that both parties signed these grant bytes at the stated time"
+  ],
+  "expiry": null,
+  "grant": {
+   "approval_policy": {
+    "allow_unscoped": false,
+    "approvers": [
+     {
+      "actions": [
+       "emit_witness",
+       "pay_large"
+      ],
+      "name": "approver.example",
+      "public_key_ed25519_b64": "UNBXn0C5fM1GmP8q+o0gWbgG0VwC8JfxlYNXwY5VcHM="
+     }
+    ]
+   },
+   "authorized_actions": [
+    "read",
+    "emit_witness",
+    "pay"
+   ],
+   "conditional": [
+    {
+     "action": "emit_witness",
+     "requires": "approver"
+    },
+    {
+     "action": "pay_large",
+     "requires": "approver"
+    }
+   ],
+   "delegation": {
+    "allowed": []
+   },
+   "finality": {
+    "depth": 3,
+    "max_target_bits": "207fffff"
+   },
+   "limits": {
+    "pay": {
+     "max_amount": 100000,
+     "unit": "JPY"
+    },
+    "pay_large": {
+     "max_amount": 1000000,
+     "unit": "JPY"
+    }
+   },
+   "prohibited_actions": [
+    "delete"
+   ],
+   "revocation": {
+    "effective_at": "anchor"
+   },
+   "witnesses": [
+    {
+     "name": "nenrin-walker",
+     "public_key_ed25519_b64": "Q20IA8sWHr6GX9veF8BJuNVAphg7AGybc2gqWntQvgQ="
+    }
+   ]
+  },
+  "liability_boundary": [],
+  "lower_bound": {
+   "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+   "height": 97,
+   "kind": "bitcoin_block"
+  },
+  "nonce": "33333333333333333333333333333333",
+  "parent_contract": null,
+  "parties": [
+   {
+    "domain": "a.example",
+    "key_url": "https://a.example/k.json",
+    "public_key_ed25519_b64": "24TstH6z4BOWTVi4h7i1NWE3z6rk2b7ULB4D15m3lo0=",
+    "role": "principal"
+   },
+   {
+    "domain": "b.example",
+    "key_url": "https://b.example/k.json",
+    "public_key_ed25519_b64": "c6p08Jg51clRjAEVF/lAd3GrxZlAmvuvOug8FcVMv7U=",
+    "role": "contractor"
+   }
+  ],
+  "requirements": {
+   "admission": "required_before_execution",
+   "evidence": "nenrin_required",
+   "recovery": "tsugi_required"
+  },
+  "schema": "a2a-contract-v0",
+  "selection_provenance": null,
+  "signatures": [
+   {
+    "alg": "ed25519",
+    "domain": "a.example",
+    "signature": "B1cwCPp2FI5lQUg5tb0V3OHCQQ3kihUfI1i3gVMRcE8qnhtK+nf4eTr7dIiDquJFA4UwWKQZWFllsLXlWC7FBg=="
+   },
+   {
+    "alg": "ed25519",
+    "domain": "b.example",
+    "signature": "EZ/hAMRY9NxotxWh/sRPocWcwkdFqJuVWFYd7JAz9XsIsxVPJwT4F+0498AGF9erL07gHN/zqyIF1uSRmhRRCQ=="
+   }
+  ],
+  "task": {
+   "a2a_task_id": "t-v3",
+   "payload_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "purpose": "approval_v3_vectors"
+  }
+ },
+ "contract_sha256": "ef0c061aabbf54ed0c2ae1a85491bda3262ccbca0dc64a94b18e93fb09b447cb",
+ "covers": [
+  {
+   "amount": 150000,
+   "covers": true,
+   "max_amount": "150000"
+  },
+  {
+   "amount": 149999,
+   "covers": true,
+   "max_amount": "150000"
+  },
+  {
+   "amount": 150001,
+   "covers": false,
+   "max_amount": "150000"
+  },
+  {
+   "amount": 0,
+   "covers": true,
+   "max_amount": "0"
+  },
+  {
+   "amount": 1,
+   "covers": false,
+   "max_amount": "0"
+  },
+  {
+   "amount": 9007199254740991,
+   "covers": true,
+   "max_amount": "999999999999999999"
+  },
+  {
+   "amount": 9007199254740991,
+   "covers": false,
+   "max_amount": "9007199254740990"
+  }
+ ],
+ "note": "Keys are derived from public labels: seed = sha256('musubi-approval-v3-fixture:' + label) for label in principal, contractor, witness, approver, stranger. No key bytes are in this file. approval_v3.py --selftest regenerates it byte for byte; approval_v3.test.mjs reads it in JavaScript.",
+ "schema": "a2a-approval-v3-vectors",
+ "v2_vectors": [
+  {
+   "approval": {
+    "action": "pay_large",
+    "approver": "approver.example",
+    "by": "approver",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "uwroUIc/VNwdHbngaG9d7g6RrHwy3IUZE3caDmaHNq8pmDqrv5q41ay5XXC9vvKlX+lt4GdKH2Y3w6WVgcQMDg==",
+    "single_use": true,
+    "valid_until_height": 500
+   },
+   "expect_v0": {
+    "reason": null,
+    "result": "approved"
+   },
+   "expect_v1_13": {
+    "reason": null,
+    "result": "approved"
+   },
+   "id": "v2/approved"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approver": "approver.example",
+    "by": "approver",
+    "nonce": "abababababababababababababababab\n",
+    "sig_b64": "mXNiJeKZctG+2iple/AdqIcrWhgYkgHjH+twRW6lwuPnj1ELTqYvZuvd596TP1hw8SN6tEkPtgoahz1AHNFMBw==",
+    "single_use": true,
+    "valid_until_height": 500
+   },
+   "expect_v0": {
+    "reason": null,
+    "result": "approved"
+   },
+   "expect_v1_13": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v2/nonce_trailing_newline"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approver": "approver.example",
+    "by": "approver",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "valid_until_height": 500
+   },
+   "expect_v0": {
+    "reason": "bad_signature",
+    "result": "approval_unverified"
+   },
+   "expect_v1_13": {
+    "reason": "bad_signature",
+    "result": "approval_unverified"
+   },
+   "id": "v2/v3_signature_presented_as_v2"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "binding": "contract_sha256",
+    "by": "principal",
+    "contract_sha256": "ef0c061aabbf54ed0c2ae1a85491bda3262ccbca0dc64a94b18e93fb09b447cb",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "AGWKqHYuwArUzNo8xbpy2VOEVk3blQZ0KHCsVSAw3KlywYqZcRqprRjb7ACmUevBtCUeTJlJtxzQNj4ePYk8CA==",
+    "single_use": true,
+    "valid_until_height": 500
+   },
+   "expect_v0": {
+    "reason": "not_an_approver_approval",
+    "result": "approval_unverified"
+   },
+   "expect_v1_13": {
+    "reason": "not_an_approver_approval",
+    "result": "approval_unverified"
+   },
+   "id": "v2/principal_signature"
+  }
+ ],
+ "vectors": [
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": null,
+    "result": "approved"
+   },
+   "id": "v3/approved"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "0",
+    "nonce": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+    "sig_b64": "wzx0ti8uOyU0H3s2+jWpup/gXnTpF4Fa5mQ/HHW4BZ5gb8z+Xzb8EGQiY6bKuyYc8SZH+F5SMwoTwZ80QGSNAw==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": null,
+    "result": "approved"
+   },
+   "id": "v3/approved_zero"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "cececececececececececececececece",
+    "sig_b64": "eA9hj0AZcb6As+NNFOTUlSoknuRSRvYHQxbUGHW2MVmpW76mjRaHHUkyV12MhBHzx7rZ5e6uUhtMV1nWyDFJAw==",
+    "single_use": false,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": null,
+    "result": "approved"
+   },
+   "id": "v3/approved_reusable"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "999999999999999999",
+    "nonce": "cfcfcfcfcfcfcfcfcfcfcfcfcfcfcfcf",
+    "sig_b64": "YmzGORfqFsM2stxRKzJi5PD108RXu99ZUNQlKQm//i5uQ+GmWTrwvEhQhYJLeXxyC6fgjFHc8o4TaqbR4TzLCA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": null,
+    "result": "approved"
+   },
+   "id": "v3/approved_18_digits"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "not_a_v3_approval",
+    "result": "approval_unverified"
+   },
+   "id": "v3/not_v3_marker_missing"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v2",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "not_a_v3_approval",
+    "result": "approval_unverified"
+   },
+   "id": "v3/not_v3_other_marker"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "principal",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "not_a_v3_approval",
+    "result": "approval_unverified"
+   },
+   "id": "v3/not_v3_by_principal"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": 150000,
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_number"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000.0",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_float_string"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "0150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_leading_zero"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "-1",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_negative"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "1e5",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_exponent"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "1000000000000000000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_19_digits"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000\n",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_trailing_newline"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_amount_empty"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_unit_empty"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "J PY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_unit_space"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab\n",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_nonce_trailing_newline"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "ABABABABABABABABABABABABABABABAB",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_nonce_upper"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": -1
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_height_negative"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": true
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_height_bool"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 9007199254740992
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_height_above_2_53"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_single_use_missing"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "contract_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_extra_key"
+  },
+  {
+   "approval": {
+    "action": "",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed",
+    "result": "approval_unverified"
+   },
+   "id": "v3/malformed_action_empty"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "other.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0",
+    "sig_b64": "77qGdUAHhLEQMu2wQnfqiBYQLNGmRh8Lpcuw9KMugzXKxfi6JmRVT8C7zRUNR3+awvIL6089hGWO6LAb0aMfAQ==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "approver_not_pinned",
+    "result": "approval_unverified"
+   },
+   "id": "v3/approver_not_pinned"
+  },
+  {
+   "approval": {
+    "action": "pay",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
+    "sig_b64": "Km6937CJSnpZBsc6Y1Bb630ol1Vmry63TGRYiSjjvV19Ot1IITPFKJkRtCnDLVxVDGf3eV9xTMT3pkaEBHFtCg==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "action_not_permitted_for_approver",
+    "result": "approval_unverified"
+   },
+   "id": "v3/action_not_permitted"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "not base64",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "malformed_key_or_signature",
+    "result": "approval_unverified"
+   },
+   "id": "v3/signature_not_base64"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2",
+    "sig_b64": "NtB1evORuRHiS+6nJOw6TE0VNlOxmYsEI8qvOrnKGw7VuNxsHq9WOy/YQHUu3tqFAK/3pHxfhBXO7+ERN7lUDQ==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "bad_signature",
+    "result": "approval_unverified"
+   },
+   "id": "v3/stranger_key"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "1500000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "bad_signature",
+    "result": "approval_unverified"
+   },
+   "id": "v3/amount_raised_after_signing"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "VyMpya7b6kKv+FBuJYUxmqjt8T3mwdKyGZ6w5r1UxOEB6ihTh8Z/yRIvXcMdc2F8UgZhvsa0fdUeyyJNYC9rDA==",
+    "single_use": true,
+    "unit": "USD",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "bad_signature",
+    "result": "approval_unverified"
+   },
+   "id": "v3/unit_changed_after_signing"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "abababababababababababababababab",
+    "sig_b64": "uwroUIc/VNwdHbngaG9d7g6RrHwy3IUZE3caDmaHNq8pmDqrv5q41ay5XXC9vvKlX+lt4GdKH2Y3w6WVgcQMDg==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "bad_signature",
+    "result": "approval_unverified"
+   },
+   "id": "v3/v2_signature_presented_as_v3"
+  },
+  {
+   "approval": {
+    "action": "emit_witness",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3",
+    "sig_b64": "j6TU+GJcGB95fHils/+CE0/W79XhTdpxG7sHfSDPvVffN8+h1DI4hbXVcsmIloQLxeXEsLjKWMDn9wYbuHMtCw==",
+    "single_use": true,
+    "unit": "JPY",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "action_has_no_limit",
+    "result": "approval_unverified"
+   },
+   "id": "v3/no_limit_for_action"
+  },
+  {
+   "approval": {
+    "action": "pay_large",
+    "approval": "a2a-approval-v3",
+    "approver": "approver.example",
+    "by": "approver",
+    "max_amount": "150000",
+    "nonce": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
+    "sig_b64": "3yi0jxWuh55N9RjPi/gC0cMR0SDtWIuGsJc4NRjuW5dEu+0IrgCV7SghZ4b4pyppphx9HPqXSPpRrtz+DaFyAA==",
+    "single_use": true,
+    "unit": "USD",
+    "valid_until_height": 500
+   },
+   "expect": {
+    "reason": "unit_differs_from_limit",
+    "result": "approval_unverified"
+   },
+   "id": "v3/unit_differs_from_limit"
+  }
+ ]
+}

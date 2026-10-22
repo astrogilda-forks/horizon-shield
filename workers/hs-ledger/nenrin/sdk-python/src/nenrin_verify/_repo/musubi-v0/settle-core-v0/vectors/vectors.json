@@ -1,0 +1,2554 @@
+{
+ "schema": "settle-core-v0-vectors",
+ "spec": "SETTLE_CORE_v0.md",
+ "reference": "settle_v1_16.settle_v1_16(contract, events, view, parent=..., nenrin_records=...) in musubi-v0 (a2a-settlement-v1.16), binding mode strict, one view",
+ "core_fields": [
+  "contract_sha256",
+  "verdict",
+  "status",
+  "bond_outcome",
+  "deviation_codes",
+  "underspecified_reasons",
+  "event_set",
+  "dispositions"
+ ],
+ "synthetic_keys": {
+  "synthetic-principal": "rrXBDf5mF249t6wdmMvKtkcBXZmVVfcfYFBBjIpSttE=",
+  "synthetic-contractor": "hl3xmxz86HFYXTczn/5HZw4Jkb3i0nL7iig/2GXZrcs=",
+  "synthetic-witness": "gMKIYPPIjG6r9mt8ybr3dIGGm6LYxkngSym9ltvHNtY=",
+  "synthetic-stranger": "YmzNu/v6K9wUOtcmnssHABVLBDuLBqMcZnM0NL+32rU="
+ },
+ "vectors": [
+  {
+   "id": "real_p31_baseline",
+   "family": "real",
+   "spec_section": "8,9",
+   "description": "The first contract between two outside parties, its anchored execution record and the 359 header view, unchanged. The reference reproduces the core fields of peer31/settlement.json from these files.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "26855410656e32a5716cc92e0a5cb687f67c50b3a903418e9a7602bf01d05be3",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_tip_too_shallow",
+   "family": "real",
+   "spec_section": "8.5",
+   "description": "The view ends 2 blocks above the anchor block (tip 970482). With finality depth 6 the horizon is 970477, below the anchor height 970480: status provisional.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "provisional",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "62ad8bfbd27a54cf29e8df02dfbff2515ca57e9a63ee66da4ae3719a10d0f17f",
+    "view.json": "1a16a968a8accb25da22f777f01b44ae265ff5733369f4df01d1ee53897b5230"
+   }
+  },
+  {
+   "id": "real_p31_tip_exactly_deep_enough",
+   "family": "real",
+   "spec_section": "8.5",
+   "description": "The view ends 5 blocks above the anchor block (tip 970485). The horizon is tip - depth + 1 = 970480, equal to the anchor height: final (the horizon is inclusive).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "26855410656e32a5716cc92e0a5cb687f67c50b3a903418e9a7602bf01d05be3",
+    "view.json": "117ad9068ec4c87bde930cb2ce42c51196632558123c22d7df47a93bda2c9457"
+   }
+  },
+  {
+   "id": "real_p31_view_missing_anchor_block",
+   "family": "real",
+   "spec_section": "7.4",
+   "description": "The view ends one block below the anchor block (tip 970479). The anchor names a height the view does not hold: anchor_beyond_observed_chain, no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_beyond_observed_chain"
+    ]
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "24597e8f7068d95a299c354a16706d1b14fc32addb75445fc8d5d90788cb2170",
+    "view.json": "135e69221ae4b9a876e7c2af92a46814d676cb225d9b38ad479b37b5c2137676"
+   }
+  },
+  {
+   "id": "real_p31_view_without_checkpoint",
+   "family": "real",
+   "spec_section": "5",
+   "description": "The view starts one block above the contract checkpoint 970190, so the checkpoint the contract signed is not in it: chain_view_rejected.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected"
+    ]
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "990db62a1c4f310ad3778222228c172a91ef0b80a388604db5ba541143a51eba",
+    "view.json": "5fe7b4e198b64da3bc86c642c04bafcae7c095ebe78e53749021b375d39851af"
+   }
+  },
+  {
+   "id": "real_p31_anchor_names_other_height",
+   "family": "real",
+   "spec_section": "7.4",
+   "description": "The anchor's height is moved to 970481 and its block_hash left as is. The view holds a different block at that height, so the record is orphaned: excluded, listed, and its height still counts toward finality. With no other record nothing was executed: nothing_to_settle.",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "748e66a9c8639aac21d911940dafb8f4fb8ebb6e0f72b3797d9e18bce4e549a2",
+    "expected.json": "99eca3f693bc1e23cfa20c0e9092a28c0d3dfa396e5ce77b9ad33f8b59fb860a",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_anchor_below_checkpoint",
+   "family": "real",
+   "spec_section": "7.4",
+   "description": "The anchor claims height 970100, below the contract checkpoint 970190 (before the earliest block the contract allows). No honest anchor can have that height: the body names this contract, which commits to the checkpoint's hash. The record is signed by the contractor, so the settlement fails closed: anchor_below_lower_bound, no verdict. (settle v1.10 to v1.15 dropped it as predates_contract and said within_grant on an empty event set. See NOTES.md N11.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_below_lower_bound"
+    ]
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "9a839ccf5f444fff50bb537e1a6301ac3c7551e93a073fa8336794d2f4784d44",
+    "expected.json": "7f36e3f0a9379ae11d00419288365aa31700a1983fbe63ad28529ed891df7931",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_anchor_missing",
+   "family": "real",
+   "spec_section": "7.4",
+   "description": "The anchor object is removed. A bound, authenticated record with no anchor: anchor_incomplete, no verdict for the whole settlement.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_incomplete"
+    ]
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "11a2ec6cbdde5a10f8fce9b5a82ae80a458626c78e2bd5683a4f3517140564ef",
+    "expected.json": "e05e9a73db31a444e40e1c271997dea391ffab1fa793a6fffc7b31c662a3413b",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_proof_operand_changed",
+   "family": "real",
+   "spec_section": "7.5",
+   "description": "One hex digit of the first proof operand is changed. The proof no longer reaches the merkle root of block 970480: anchor_proof_invalid.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_proof_invalid"
+    ]
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "e0abd7765f6ea91115fb43c25f982d68755c6697e5e7be7363f9d1955c9d6a7f",
+    "expected.json": "1e7c1493f55220a7e91ae2a14e7a4d358e384d100e6433cea442f27599ece5ea",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_proof_operand_trailing_newline",
+   "family": "real",
+   "spec_section": "6.7,7.5",
+   "description": "The first proof operand gets a trailing line feed. Operands are lowercase hex of whole bytes and nothing else, so the anchor is not strict. It is the only copy of the contractor's record: anchor_not_strict, no verdict. (settle v1.10 to v1.15 matched the pattern before the final newline, bytes.fromhex skipped it and the record was accepted. See NOTES.md N1.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "0a6e014b535ec136f40be2d5fd4f12aa769fe23ed69f3a7093b3dd483c4a7575",
+    "expected.json": "8a9da10a6fb4ac6a5899a7efc4bae7ce7597b122aa1a4e80acd5feb2d64c5189",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_proof_operand_trailing_newline_beside_good",
+   "family": "real",
+   "spec_section": "6.7",
+   "description": "The real record, plus the copy whose first proof operand ends in a line feed. The anchor is not signed, so anyone holding the record can make such a copy: it is set aside (anchor_not_strict) because another copy of the same signed body is in the input, and the settlement is the baseline's.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "events/e01.json": "0a6e014b535ec136f40be2d5fd4f12aa769fe23ed69f3a7093b3dd483c4a7575",
+    "expected.json": "66cfe69d9f6bbd016c43497bd25302f724bdfe920e7d706555d26209a4b6dd08",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_block_hash_trailing_newline",
+   "family": "real",
+   "spec_section": "6.7,7.4",
+   "description": "anchor.block_hash gets a trailing line feed. It is not 64 lowercase hex characters, so the anchor is not strict, and it is the only copy: anchor_not_strict, no verdict. (settle v1.10 to v1.15 accepted it as well formed, found it differed from the view and orphaned the record, within_grant on an empty event set. See NOTES.md N1.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "bc6b6f40f5277b53d7323ee9b033d8538dc909d828e734a6638e82a3ef1c3b0f",
+    "expected.json": "fde6330b23a28f56a9cec7b29afd88d7a507d85d3f006026097fde6aed93db42",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_same_record_twice",
+   "family": "real",
+   "spec_section": "6.3",
+   "description": "The same record bytes are supplied twice. The event set is content addressed: one record, the same settlement as the baseline.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "events/e01.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "26855410656e32a5716cc92e0a5cb687f67c50b3a903418e9a7602bf01d05be3",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_two_anchorings_one_body",
+   "family": "real",
+   "spec_section": "6.4",
+   "description": "Two copies of the same signed body: the real one, and one whose anchor names the next height (it does not verify there). Copies are grouped by body digest and the earliest copy whose anchor verifies is kept; the other is listed as dropped.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "748e66a9c8639aac21d911940dafb8f4fb8ebb6e0f72b3797d9e18bce4e549a2",
+    "events/e01.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "0b4b47f8cfa511d7469fe270302462d65e3fbabee3700b7e171fedc8d2f1ae2c",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_copy_with_junk_signature_entry",
+   "family": "real",
+   "spec_section": "6.4,7.5 (written behaviour)",
+   "description": "The real record, plus a copy with one junk entry appended to its signatures list and the genuine anchor. The signed bytes are the same, so the two are one record (signed body collapse): the copy is dropped and the settlement is the baseline's. (settle v1.10 to v1.14 read the copy as a different body whose proof fails: anchor_proof_invalid, no verdict, so anyone holding one record could block a verdict. See NOTES.md N10.)",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "8633b800f04b36654f517b35cee8d673c716ceccd36db49fbb2f4be8545f1fcb",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "events/e01.json": "55e3d87ba5bcf204d534f3f29a10307bf33151ee09b0f0b939b189f3bae51d0b",
+    "expected.json": "2c182afcb0d9994eaa77efccd6d7a0ceceec66bf60e00cfbf5f6a1019ffc5355",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_contract_bad_principal_signature",
+   "family": "real",
+   "spec_section": "4",
+   "description": "The principal's contract signature (agent-passport.org) has its first base64 character changed. The contract does not verify: contract_not_verified, no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified",
+     "contract_signature_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "e78c0a93497ee5d21d2596f35220f3bb8c00db969bba890d3718118ba0c33429",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "5f2b2fe8d9025ce4125d0062646995607ded7e59b4413a0612e220bb29586baa",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_contract_bad_contractor_signature",
+   "family": "real",
+   "spec_section": "4",
+   "description": "The contractor's contract signature (kuangmi-bit.github.io) has its first base64 character changed: contract_not_verified, no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified",
+     "contract_signature_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "aaa9b9a27170770e511633541e65a6b9a6cf91d0eebbbb97441b17807b48c85a",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "5f2b2fe8d9025ce4125d0062646995607ded7e59b4413a0612e220bb29586baa",
+    "view.json": "990f1a78fbe14033dac8ebcdfcbc640b84b882fd6b54fc1ebbc7c234afb27246"
+   }
+  },
+  {
+   "id": "real_p31_bad_contract_and_bad_view",
+   "family": "real",
+   "spec_section": "2.3,4,5",
+   "description": "TWO changes on purpose: the principal's contract signature is broken and the view lacks the checkpoint. Both reasons are reported (contract_not_verified and chain_view_rejected): a settler checks the view even when the contract fails, and reports every reason it found.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected",
+     "contract_not_verified",
+     "contract_signature_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "e78c0a93497ee5d21d2596f35220f3bb8c00db969bba890d3718118ba0c33429",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "45a317ef2b43bf1ed07f569fd10aa3cf06620c6741dd8ad3441af53a10ac52dc",
+    "view.json": "5fe7b4e198b64da3bc86c642c04bafcae7c095ebe78e53749021b375d39851af"
+   }
+  },
+  {
+   "id": "real_cross_record_names_other_contract",
+   "family": "real",
+   "spec_section": "6.1",
+   "description": "The peer31 execution record settled against the run0002 contract and view. Its contract_ref.contract_sha256 names other terms: foreign, never settled. Nothing is bound, so nothing_to_settle (status final: no height to wait for).",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "cf31fe816140345526e3c0b1822833625c93906a09d30630f44bfa6aa7390b41",
+    "events/e00.json": "a1293dbc9e289ef4079ff0b4cc83a421b5f4612c7766f0aad46067f85bba3d34",
+    "expected.json": "7b29726042af762e53cff77a8f830f96945267069896c7d559c9517320431925",
+    "view.json": "0720f48c1ca9e3139959063e7a782f6a2085180a20aee1e3ebbcc8e8d6884a15"
+   }
+  },
+  {
+   "id": "real_r2_baseline",
+   "family": "real",
+   "spec_section": "7.6,8,11",
+   "description": "Our run0002 contract, its execution anchored through a NENRIN agreement batch (hexlify batch leg), the 535 header view and the walk the record cites, unchanged. settlement_walk2.json was produced by settle_v1_6; the reference gives the same core fields.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "cf31fe816140345526e3c0b1822833625c93906a09d30630f44bfa6aa7390b41",
+    "events/e00.json": "b13a38692a9b170199d26618f52afe773c0c7d6a90eb73def2736a9abd9b0221",
+    "expected.json": "3c39cf0935fde6e314f03a82ac56c9d39fe4e43980ecd683e1a58026bf89077c",
+    "nenrin/n00.json": "8bf29f1ad15165b970b508703a5b49cbd816cbfcc4a3fb6f77a9f80a4cb69771",
+    "view.json": "0720f48c1ca9e3139959063e7a782f6a2085180a20aee1e3ebbcc8e8d6884a15"
+   }
+  },
+  {
+   "id": "real_r2_hexlify_not_leading",
+   "family": "real",
+   "spec_section": "7.6",
+   "description": "An empty prepend is put in front of the hexlify operation. An empty operand is strict (zero whole bytes) and the proof still reaches the merkle root, but a proof that uses hexlify must start with it: anchor_batch_leg_refused (detail hexlify_not_leading), no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_batch_leg_refused"
+    ]
+   },
+   "files": {
+    "contract.json": "cf31fe816140345526e3c0b1822833625c93906a09d30630f44bfa6aa7390b41",
+    "events/e00.json": "1ba0f19b484f8f0f516a8de2039c24a97ad47df78a6eb78b2ef731a409732ef3",
+    "expected.json": "5528497996493151ea226a96431b6a5e55da5da5723125e5956066a75b9c6f14",
+    "nenrin/n00.json": "8bf29f1ad15165b970b508703a5b49cbd816cbfcc4a3fb6f77a9f80a4cb69771",
+    "view.json": "0720f48c1ca9e3139959063e7a782f6a2085180a20aee1e3ebbcc8e8d6884a15"
+   }
+  },
+  {
+   "id": "real_r2_batch_leg_extra_empty_append",
+   "family": "real",
+   "spec_section": "7.6",
+   "description": "An empty append is inserted right after hexlify. The proof still verifies and the batch rebuilt from the operands is unchanged, so the batch leg rule accepts it: the record settles as in the baseline (its record sha256 changes).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "cf31fe816140345526e3c0b1822833625c93906a09d30630f44bfa6aa7390b41",
+    "events/e00.json": "cc93d55ab50b9b807515cb5468d9000de477327154a4d72a4edfbd038c100909",
+    "expected.json": "013940cbebc3fa70a183c828c3822d755eff6682a815d6d9b05c510e816eb0a5",
+    "nenrin/n00.json": "8bf29f1ad15165b970b508703a5b49cbd816cbfcc4a3fb6f77a9f80a4cb69771",
+    "view.json": "0720f48c1ca9e3139959063e7a782f6a2085180a20aee1e3ebbcc8e8d6884a15"
+   }
+  },
+  {
+   "id": "synth_baseline",
+   "family": "synth",
+   "spec_section": "8,9",
+   "description": "The synthetic baseline: the peer31 contract shape with synthetic parties and a synthetic regtest chain. One contractor-signed execution of read, anchored by a merkle path at 800002, 6 blocks of depth: within_grant, final.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a4d4045ea2462c6e45cff72d9a29783cbae26900abe2ded7e5710eb11e04a46e",
+    "expected.json": "5d12dc06c6f327438ee6a877c1d83f8ba826c8f9a5e3cab4a3acbf256820018e",
+    "view.json": "0a603ee38dbf3d39c8deecba5ef8389f30b391a7c0189c809741e7caacb30f27"
+   }
+  },
+  {
+   "id": "synth_exec_signed_by_stranger",
+   "family": "synth",
+   "spec_section": "6.5",
+   "description": "The execution record says role contractor but is signed by synthetic-stranger, a key the contract does not pin: rejected, not settled. Nothing else is bound, so nothing_to_settle (a frame attempt does not charge the contractor).",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "ae733fbe54389e985f9ec6c65f3dcecbc17070912bf35939723e42a16f8c87b7",
+    "expected.json": "5a57b4e99b5b821c11050342b9ba323d18d8121572864dc81dc20fa4c0d23640",
+    "view.json": "f495dcfb2487f0070eb4860ffb422e5c143daeb94c0595834b2ce657eb6f3c5c"
+   }
+  },
+  {
+   "id": "synth_exec_unsigned",
+   "family": "synth",
+   "spec_section": "6.5",
+   "description": "The execution record of a prohibited action carries no signatures: rejected (unsigned), not settled; nothing_to_settle.",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "8c6366d281643414135bfe1072fd9338a9dae6de0db6ace976a687d3044333cb",
+    "expected.json": "f70cf4d65434df2ea99a97270622953c298b60dfae6be05d516895be5bd54d10",
+    "view.json": "e190cd1a206ab903faeef1b95d8243083b5003ea6e66431e09f29a6ebcc7b96e"
+   }
+  },
+  {
+   "id": "synth_prohibited_action",
+   "family": "synth",
+   "spec_section": "10.3",
+   "description": "The contractor signs an execution of delete, which grant.prohibited_actions lists: deviation prohibited.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "prohibited"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "76751128e0d6e41a0f25fdaa687490a625fde35e7422e9d0995588996b48226c",
+    "expected.json": "ac71357aadb402d54ad9cce12ce7782ea497878e696b57437456d9343014dbd8",
+    "view.json": "d8495cc6a969fd661b077c64b376176410b3444afbf9b43df2a3c5d3cbb902ee"
+   }
+  },
+  {
+   "id": "synth_action_not_authorized",
+   "family": "synth",
+   "spec_section": "10.3",
+   "description": "The contractor signs an execution of write, which is neither authorized, prohibited nor conditional: deviation unauthorized.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "unauthorized"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "5cc8e0419d222040bf9cbcd037e244fc16d7f2462b8dfdd04d3b190ad06e3e8c",
+    "expected.json": "b713d2befdeef7ae20de03ec275836198aa9415d6ffca729708d8aad3e16696b",
+    "view.json": "608016e6bd7d0d6aebd9ed21b253bcbe0a2d13ca5569e57a55bef6915dba3481"
+   }
+  },
+  {
+   "id": "synth_action_name_not_canonical",
+   "family": "synth",
+   "spec_section": "6.6,10.3",
+   "description": "The contractor signs an execution of Read (capital R). Action names must match ^[a-z][a-z0-9_.:-]{0,63}$, so the record is nonconforming; it is still judged, and Read is not an authorized name: deviations nonconforming_record and unauthorized.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "nonconforming_record",
+     "unauthorized"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "f841d575ab66d35184bb6f4bc058100970185b01b5f902d004744981c83c92e0",
+    "expected.json": "21b1fc56ec6691788c3f9173b8a809ef6e0c676bdb471db7baee43a9c5e45209",
+    "view.json": "e2e5a5b629862a310f881edee9fabeeedc547d6ff39d060437128b7f2285b5ef"
+   }
+  },
+  {
+   "id": "synth_action_name_trailing_newline",
+   "family": "synth",
+   "spec_section": "6.7",
+   "description": "The contractor signs an execution of delete followed by a line feed. A control character in a signed string is not strict, and the record is the contractor's own signed statement: record_not_strict, no verdict. (settle v1.10 to v1.15 matched the action pattern before the final newline and read the record as unauthorized. See NOTES.md N1.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "40a02bf39581dbba7d23ae554a6a172e7778e92afd9e69846c0e47e905e80f63",
+    "expected.json": "4b1b9827f79c539341a39b25e9d74ee9a41dae6aea79ec6e4fe0d63d9144ec74",
+    "view.json": "055d35ffd7159dd4aeb232f289b3a97dd44bda9686382a084654bc6ff862cb01"
+   }
+  },
+  {
+   "id": "synth_record_field_outside_schema",
+   "family": "synth",
+   "spec_section": "6.6",
+   "description": "The contractor's execution record carries a field outside the schema (failed_actions). Hiding an attempt outside performed_actions is itself a deviation: nonconforming_record. read itself is within the grant.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "nonconforming_record"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "c13c2152e7c4ad7a297f858290429a006b4ff38bb3a498f065f7856af8ab5f53",
+    "expected.json": "36c776ac69c6d5eae72037f5ab465b6d0784cda3cecbd1ec3893df4ac37848f4",
+    "view.json": "5da0a88f5c1cf95f661eeb1f4bb3e788c4c3385ad7501462d39a19bf030c3947"
+   }
+  },
+  {
+   "id": "synth_outcome_error_does_not_excuse",
+   "family": "synth",
+   "spec_section": "6.6,10.3",
+   "description": "The contractor records delete with outcomes {delete: error}. The schema allows outcomes; an error never excuses scope: deviation prohibited.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "prohibited"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "5cdb68a9b2682e5b87b692d439274077ff733fee8f37c9d26fe085448255af59",
+    "expected.json": "5c92dcd75a5c96acb14bad551c5aed6e2a9cd31cf59212bb484b634fe07ecf99",
+    "view.json": "e1b1929b97ccd35fb84c2c63866159f58c4c9a218da7a9968ee133331752aa9c"
+   }
+  },
+  {
+   "id": "synth_after_expiry",
+   "family": "synth",
+   "spec_section": "10.2",
+   "description": "grant.expiry_height is 800002; the execution is anchored at 800003: deviation after_expiry.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "after_expiry"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "d102f833d0629c33b2766dfb417ce2f93320be0c74c487ef3d3ef9d2a1c62b32",
+    "events/e00.json": "f42f233fafae4d10fc6f7159b0458138217391bd2cbddb66c15761e040e38862",
+    "expected.json": "d2e9c73c7dfdb98cb77cb1aba22701d16e784139eed29e833449888067a6ae02",
+    "view.json": "5b02fd21712727b1183c0fa01b66dedbaece89ea3dfab21fdf5bef362d363f3c"
+   }
+  },
+  {
+   "id": "synth_at_expiry_height",
+   "family": "synth",
+   "spec_section": "10.2",
+   "description": "grant.expiry_height is 800002 and the execution is anchored exactly at 800002: within_grant (expiry is exclusive above, h > expiry_height).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "d102f833d0629c33b2766dfb417ce2f93320be0c74c487ef3d3ef9d2a1c62b32",
+    "events/e00.json": "1037f03a0dfddd9c39516587cde126fab1e87370334b29ba1e1e27be5f686da0",
+    "expected.json": "1c62f26130d8f8720ebee919f2483e843dff33cfe74f7707b3f6b6589b2e74b9",
+    "view.json": "2f9f90c8d6873c2b3eeaaa106d606d7fba9011f83e1b636f7cb388183b1e80bf"
+   }
+  },
+  {
+   "id": "synth_tip_too_shallow",
+   "family": "synth",
+   "spec_section": "8.5,9",
+   "description": "The execution sits 3 blocks below the tip; depth 6 needs 5: status provisional, and with a bond the outcome is pending_finality.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "provisional",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a4d4045ea2462c6e45cff72d9a29783cbae26900abe2ded7e5710eb11e04a46e",
+    "expected.json": "396f96424843a9ceefbf066be4a224caf121f53525075fd0b9e68bdfbfa3ccc8",
+    "view.json": "854a43487971aba39393ce0b98d3b4b5ce8f77205c8bc1980f1a67ae6e4ff546"
+   }
+  },
+  {
+   "id": "synth_payload_digest_mismatch",
+   "family": "synth",
+   "spec_section": "6.1",
+   "description": "The signed record carries this contract's contract_sha256 and contract_id but another payload_digest: inconsistent, never settled; nothing_to_settle.",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "b53a65fdacca9b44ee320e8c01e7ab2dff28c42916f0bec6a18d45de50e0d63d",
+    "expected.json": "53d7e585f652bc1ee06eac4c119f225096f928c9be6a50fe5d035882ef5004a7",
+    "view.json": "2e634dd261eb98b6395b6f8e25997b93fb84d9fe51f290f15ea4b771a7867c50"
+   }
+  },
+  {
+   "id": "synth_label_only_reference",
+   "family": "synth",
+   "spec_section": "6.1",
+   "description": "The signed record names the contract_id and payload_digest but no contract_sha256 (a pre-v1.5 label binding): unbound, not settled in strict mode; nothing_to_settle.",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "684326146f39f5ab13b1bcb8ecbe6d147425db5773148b05f49d9870cc149967",
+    "expected.json": "10970434861e9d6738c29fdf54566d9a342329811612a9892326299793d9099e",
+    "view.json": "dd1786bcec1ed1e5d809d01d89fde6734222aa72f80b93e6e6d7814194514fd2"
+   }
+  },
+  {
+   "id": "synth_witness_attests_prohibited",
+   "family": "synth",
+   "spec_section": "6.5,10.3",
+   "description": "grant.witnesses names synthetic-witness. An execution of delete signed only by that witness is accepted as evidence of the act: deviation prohibited.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "prohibited"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "6116cb4ca595b360a04d55844f73da627e38e436531496c526edb2df8977a13b",
+    "events/e00.json": "6420c61d7faae2529330c60b9f8bd181e6e04653de0b245f4f8328dbeabf8466",
+    "expected.json": "d8de631a834198771229301c79f68c67bc90e28baaea887e601381e49cd6843b",
+    "view.json": "2faf281580462572bdd1094fc225c0fa1ed3b62a5f78b04915b1f23c9dcfefec"
+   }
+  },
+  {
+   "id": "synth_witness_key_is_principal_key",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.witnesses pins the principal's own key as the witness key. Keys must be pairwise distinct: key_conflict, no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "key_conflict"
+    ]
+   },
+   "files": {
+    "contract.json": "1dac75e9f74bd46a93c594d260ddc03262c78fa382647160739ff59367cf877e",
+    "events/e00.json": "7752a7bc391e97f41d33bbffacdb3e85b3b43ed1743af157c84a6fe38a0f7c4f",
+    "expected.json": "6e5fba276a55122448012af17a828f6e31edec82bb5081b471b3d0f097472506",
+    "view.json": "a54d0ba9e86bbc0b2530fc725368ac33deffb69636e2237d0d5e14a8fba8ca9b"
+   }
+  },
+  {
+   "id": "synth_conditional_without_approval",
+   "family": "synth",
+   "spec_section": "10.4",
+   "description": "grant.conditional requires principal_approval for refund. The contractor performs refund with no approval: deviation conditional.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "6ccef7fe4140037d369bf62e089034c6343cf2100a4f9cba02b33a73c52d8023",
+    "expected.json": "955014d43d9c7733270b9c80f9b6a9739d363916ab21a75eb76632f166fefac2",
+    "view.json": "501e34b9f923e20e6ada7e6f7b9d25bd3913fe75cb73471a1a73351f5f433008"
+   }
+  },
+  {
+   "id": "synth_conditional_approved_same_record",
+   "family": "synth",
+   "spec_section": "10.4",
+   "description": "refund carries a principal-signed a2a-approval-v2 in the same record (valid_until_height above the block, single use): counted, within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "071b233b60037e80353113d09e1ad5937b3aae7fcb0ddfd84a6e39fbc6970e57",
+    "expected.json": "f9a28e114458b22a44d9f9dfe53cc119faf1687038f001c9025936840323030c",
+    "view.json": "76a407de719b8a5bb40f812a899c39f5831f634774e6ffbee933452ef4640db2"
+   }
+  },
+  {
+   "id": "synth_conditional_approval_same_block_other_record",
+   "family": "synth",
+   "spec_section": "10.4",
+   "description": "The approval is carried by another record anchored in the same block as the refund. Authority is granted only from an earlier block or the same record: not counted, deviation conditional.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "5ac50eb6ac49a0d9702ee83e31445cd91b0d1a527dd6c0820cc879322107c089",
+    "events/e01.json": "20e3b3bb5fe2572506e65dae92dddc22c6b92a9039b14c96a29207ee0146b9cf",
+    "expected.json": "2242ce7163ec484fcd07e0d9f62ead33d0b17241c4b81e3633a9841ebaa0dc17",
+    "view.json": "bb3fb6bb0b6b444281e509abc2c52f38677b54a9f04f83ef08b13005d7fe735a"
+   }
+  },
+  {
+   "id": "synth_conditional_approval_earlier_block",
+   "family": "synth",
+   "spec_section": "10.4",
+   "description": "The approval is carried by a record anchored one block before the refund: counted, within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "de8f820faf6f43934ef0a9a6855a6fd1d7044657e26b1f76a4dd31a123d946c9",
+    "events/e01.json": "22c8526c81049c26730c849010eae7a93f534a5c06faf997b53240df7c870529",
+    "expected.json": "e6223783847dfcd1778d24758d399a208e458dabbfc3fdd6fdc8c4e55082b165",
+    "view.json": "503056b4a6a57608987f828c23bd79292efa4630fc1b79452df235f53ac9315e"
+   }
+  },
+  {
+   "id": "synth_conditional_approval_expired",
+   "family": "synth",
+   "spec_section": "10.4",
+   "description": "The approval's valid_until_height is 800001; the refund carrying it is anchored at 800002: not counted (approval_expired), deviation conditional.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "c868256e303aef5b5f454c9028b2a79ee0b883b0b804fb3db9d61ee7aaea050e",
+    "expected.json": "7f3b0ce7e5c544ff84f2f409298730aac35f6c5c0cc8fa89fd3936dc7c7289b7",
+    "view.json": "7e26c3d5932a40263ed0e03d7ebc99e8e872655499a2b53f1a1d09a117fa1d71"
+   }
+  },
+  {
+   "id": "synth_conditional_approval_reused",
+   "family": "synth",
+   "spec_section": "10.4",
+   "description": "One single_use approval, then two refunds in two later blocks. The first consumes the nonce; the second finds it used: deviation conditional (approval_reused).",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "de8f820faf6f43934ef0a9a6855a6fd1d7044657e26b1f76a4dd31a123d946c9",
+    "events/e01.json": "22c8526c81049c26730c849010eae7a93f534a5c06faf997b53240df7c870529",
+    "events/e02.json": "1d026c3e38f3556f9d0def234295586151c688a5cd8cf65d6d989616beff13cb",
+    "expected.json": "99ac976150923977b96f3ef52739fdf640e34fc673d395f94db93c1374ed9223",
+    "view.json": "750f2621e81a96ccf953cbc912e81218394ce34898b761589b4c690e0ec95777"
+   }
+  },
+  {
+   "id": "synth_approval_signed_by_contractor",
+   "family": "synth",
+   "spec_section": "10.4,10.5",
+   "description": "The refund carries an approval that says by principal but is signed with the contractor's key: forged_approval, and the refund is unapproved (conditional).",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional",
+     "forged_approval"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "bfca5b801a8d72c3276e70602ff48d1a3fa864a7a77f4b3d74c0261f9c970fe5",
+    "expected.json": "4ce99cfbe5e83f3d7821112245ec864e17b99bb0bc69835c096cd29f40c3f6c7",
+    "view.json": "4e8c5dfe747dc98ced5199dc9dd709ad37d19831336428c803f60ceef4433753"
+   }
+  },
+  {
+   "id": "synth_approval_label_bound",
+   "family": "synth",
+   "spec_section": "10.4",
+   "description": "The refund carries a genuine principal signature over the old a2a-approval-v0 bytes (contract_id, payload_digest, action). It is label_bound: listed, not counted, not forged. Deviation conditional only.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "e9d28bd04144e8a840cf7e6a0efce176151c5116222e79d6e91679678462a2d3",
+    "expected.json": "7af2008d6684ca2c13c5f0b104c462663000d558dd32647e467bedf0204686e1",
+    "view.json": "8a81acd5b08f51be0a985b42eff60c6a94df1652f9b1a067cb22f174d90004f5"
+   }
+  },
+  {
+   "id": "synth_approval_nonce_trailing_newline",
+   "family": "synth",
+   "spec_section": "6.7",
+   "description": "The approval's nonce is 32 hex digits plus a trailing line feed, signed as such, inside the contractor's signed record: record_not_strict, no verdict. (settle v1.10 to v1.15 matched the nonce pattern before the final newline and counted the approval: within_grant. See NOTES.md N1.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "3b83ab88712c96f64cf024042bb3ab1cc3151c083289b838d47d2691212b82e3",
+    "expected.json": "203717bcad250072e581c3ae59255386ee1d691839fd107ec2d40d2e36fd48f5",
+    "view.json": "fcd9c4f1a8a1bc93318f6cdd8c0b5c40faafc9da9492ac8f71fca9b7ca502ea1"
+   }
+  },
+  {
+   "id": "synth_delegation_not_allowed",
+   "family": "synth",
+   "spec_section": "10.3",
+   "description": "grant.delegation.allowed is empty; the record names delegated_to [helper.synthetic.invalid]: deviation delegation.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "delegation"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a184970b586d5fa50c5b83c778c1bd5cbc6a4fee0338d22b8b460f7d4fa4d25e",
+    "expected.json": "5ca3c8f51d2798a018e313b981aec189c9fcf348bb1c9d9c02d65cef1d336caf",
+    "view.json": "01e52cf67a7c0a46b7a00c15b8220583e5f16409e9312699ef12e2b197363c58"
+   }
+  },
+  {
+   "id": "synth_revoked_same_block",
+   "family": "synth",
+   "spec_section": "10.1",
+   "description": "A principal-signed revocation (effective_at anchor) and an execution anchored in the same block. Authority ends at the revocation's block, inclusive: deviation revoked.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "revoked"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "ecb0b75226dd8b886b0f2539dbcc7f429ef9ede64081cfa1b3fec211217fee02",
+    "events/e01.json": "fde5654f0f9e35378cbe021a082d7f75cd2f935569d5ea6167c373fa9e58be72",
+    "expected.json": "c0f28924bb96456309577d22c756b928afca685e4265de9c8a78249ee4cb15d6",
+    "view.json": "1d5925d349db979f2e692d2313604e611718172ce0624ef253727bd712443fea"
+   }
+  },
+  {
+   "id": "synth_revocation_signed_by_contractor",
+   "family": "synth",
+   "spec_section": "6.5,10.1",
+   "description": "A revocation that says revoked_by principal is signed with the contractor's key (role principal claimed). It does not authenticate: rejected, the grant stands, within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "289bcbcb54dd79da41442b73f0f2c4edc8137aafeb801876cdf87cfcbe118d7c",
+    "events/e01.json": "b5dd40704864bacaaaf2b5036ba83af3b060ff867855728140037e57c95a21a7",
+    "expected.json": "2229c13cd79ed556784d36832b94cd206a8e8b88ee648b08c36084e9feffeb5c",
+    "view.json": "8671ec01489bb2609aede19030e67c552712f5e7478ce499f67ad39fd74aaf9d"
+   }
+  },
+  {
+   "id": "synth_revocation_by_non_principal",
+   "family": "synth",
+   "spec_section": "6.5,10.1",
+   "description": "A revocation correctly signed by the principal but whose revoked_by field says contractor: ignored, the grant stands, within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "7c3f8abf983b5f897ea957c8937f830d6f9d1ffda5a4f7406cc41381c2b473b1",
+    "events/e01.json": "f9ad063f445cad27355c8c957877b67e306458f7860f555737013006e32fef6e",
+    "expected.json": "c682362463bbd47fda0b514575eabe8bf2eb795d0b275eb765b2798c69b5f578",
+    "view.json": "87e31d3a278d9273ae847a9a6a0e7c0a27a3138fe06723ca4088d4615874bafa"
+   }
+  },
+  {
+   "id": "synth_delivery_ack_window",
+   "family": "synth",
+   "spec_section": "10.1",
+   "description": "effective_at delivery_ack with ack_window 2 and no acknowledgement. Revocation at h, executions at h+1 and h+2. Authority ends at min(ack height, h + window) = h+2, inclusive: the act at h+1 stands, the act at h+2 is revoked.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "revoked"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "f828decd0d3badae3e6a0614950e29842b7d23ef708dea16e9341a5aa07a52e0",
+    "events/e00.json": "8d41d36a07d7b46a8ca1f65be68dc04873fa295a5c8baefb075b716de1a54150",
+    "events/e01.json": "ac6fd1d1e10df5e2b59344f056148f8fb94e3bf9ff17f7491e6103e04691cec2",
+    "events/e02.json": "62ae9357a7c3d9cf5829cc4c7e3d087937e7e07f3b3a2d6afda96f8308884b60",
+    "expected.json": "5d6c27e2c48a94149c2199ced73ddcf76c2e483e432788aca51d9ab7d46c680f",
+    "view.json": "e6d41e31c65237b91db416288879bbc868e59251780d64506e6450577db2de6c"
+   }
+  },
+  {
+   "id": "synth_tie_policy_record_sha256",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.ordering.same_height is record_sha256, which a record author can grind: tie_policy_refused, no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "tie_policy_refused"
+    ]
+   },
+   "files": {
+    "contract.json": "05102b3f99a9b9daaad726ff8c9f3564f32918c1768793e4d1046cfd1df55fdf",
+    "events/e00.json": "6e15a6078481f3ecb978b3c817db816a0b84c3baa9162b9505aa60e115ccc9f2",
+    "expected.json": "a8b35b5e645c10a696231b0f24f0716b4d477a577934e658f082a8bc391c7e28",
+    "view.json": "ae843be3e31ce67b79fff161c92f0bc3ffeb2f3677c4b3875ae6568d108bdcdf"
+   }
+  },
+  {
+   "id": "synth_nenrin_walk_names_other_contract",
+   "family": "synth",
+   "spec_section": "11",
+   "description": "The execution's nenrin_ref is the sha256 of a supplied walk record whose context.contract_sha256 names other terms: deviation evidence_names_other_contract.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "evidence_names_other_contract"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "2aab49eb9b184c3cda383fff2f03592159e5cb2cd2222fe924cb82800243a2f7",
+    "expected.json": "1516801167c550fbdcd01064fef5cdc3c696edde9359b9dbd22bfc53179a7a40",
+    "nenrin/n00.json": "8a6de46b81cb4ee0b1e6fb0308dea7709ba948f4e951053c29b41e219a3bdb54",
+    "view.json": "a4d25c83f52b63cb35b839489ec5a463c899d322c31168a2a5bc0968aff233e9"
+   }
+  },
+  {
+   "id": "synth_nenrin_check_reads_rejected_record",
+   "family": "synth",
+   "spec_section": "6.5,11",
+   "description": "An honest signed execution of read, plus an UNSIGNED, unanchored record bound to the contract whose nenrin_ref cites a walk made under other terms. The unsigned record is rejected, and no check reads a rejected record: within_grant, the bond held. (settle v1.10 to v1.15 ran the nenrin cross check over every bound record: deviation evidence_names_other_contract, the bond forfeited, a charge anyone could add. See NOTES.md N2.)",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a4d4045ea2462c6e45cff72d9a29783cbae26900abe2ded7e5710eb11e04a46e",
+    "events/e01.json": "b2861f0c4c15bb5cebde3d05907da693dd5161ca3f6f60cd128503aaa89700db",
+    "expected.json": "3bdbfcaafa830ad8789fb2299b1cd29cb9a7c803076b0c4644435c6bc01a27ec",
+    "nenrin/n00.json": "8a6de46b81cb4ee0b1e6fb0308dea7709ba948f4e951053c29b41e219a3bdb54",
+    "view.json": "0a603ee38dbf3d39c8deecba5ef8389f30b391a7c0189c809741e7caacb30f27"
+   }
+  },
+  {
+   "id": "synth_batch_leg_listed",
+   "family": "synth",
+   "spec_section": "7.6",
+   "description": "The execution is anchored through a nenrin-agreement-batch-v1 batch that lists its digest as records[0].sha with kind execution: the batch leg is accepted, within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "7b33db5e8673f31c89f0bd93b857749ddba106dcc975be3684217cb0a52d5ff7",
+    "expected.json": "d2558629217dee0e57bc5ce5858913d56c6152712eb46667cd353bada55fe2a5",
+    "view.json": "b66e570d033d946d408b97a74f876f14a227ec636e89588c75f734e599c319e6"
+   }
+  },
+  {
+   "id": "synth_batch_leg_not_listed",
+   "family": "synth",
+   "spec_section": "7.6",
+   "description": "The batch bytes contain the record's digest only inside a rejected list; records[] lists another sha. The proof reaches the merkle root, but the digest is not a listing: anchor_batch_leg_refused (detail record_not_listed_in_batch), no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_batch_leg_refused"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a84f7d607b1f0c145e4ed5e68bebf5c1f32b26f98d8feceb1b4379223cc3c306",
+    "expected.json": "e2a9bdbb405125e81a97d394ba6a935a4795e825b1071e5ca1985203a3f65fcf",
+    "view.json": "40f34d3c5991c68b27b45178c310fc3ca01d0e1a212960f8c9c56b74051df155"
+   }
+  },
+  {
+   "id": "synth_batch_leg_kind_mismatch",
+   "family": "synth",
+   "spec_section": "7.6",
+   "description": "The batch lists the digest as records[0].sha but with kind agreement; the record is an a2a-execution-v0: anchor_batch_leg_refused (detail record_kind_mismatch).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "anchor_batch_leg_refused"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "32b32290b66f5114846326280c64cf8680c2d6fd660d90dc30fca5ac855b889a",
+    "expected.json": "7069e3e2ae70cb746c4e028fd18e358c3b320f4c2ba69228c1d5a88061c3bc4a",
+    "view.json": "3e427dc36064ec41f61608e863d8ffbaf2a69b7de792620f0d715179759e85f7"
+   }
+  },
+  {
+   "id": "synth_approval_signature_key_only",
+   "family": "synth",
+   "spec_section": "10.4,10.5",
+   "description": "The refund carries a principal-signed a2a-approval-v2 whose signature is under the key signature instead of sig_b64. Only sig_b64 is verified: forged_approval, and the refund is unapproved (conditional). Revision 0.1, NOTES.md N13.",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "conditional",
+     "forged_approval"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "8da5e910366aec10c75863f0190e30e1fe5a73203201a792b472c8a1e24f9eb2",
+    "expected.json": "91dee04fdf5c0d795e037642bcef9a64870e1116d43acfa9ea36cddf8312649b",
+    "view.json": "7f8fb54cfac9ef4b4375f95cd0a20159284d6211f285169576e8d37624980f61"
+   }
+  },
+  {
+   "id": "synth_approval_lax_signature_beside_good_sig_b64",
+   "family": "synth",
+   "spec_section": "6.0",
+   "description": "The approval's sig_b64 is a strict, valid principal signature; beside it, signature holds the same signature with S + L. Each key is checked for strictness on its own: the contractor-signed body is not strict, record_not_strict. Revision 0.1, NOTES.md N13.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "d4a29e4b13e81f9bdc23b95459628e3e3083ba10b785432b03d2440c3b7aeec3",
+    "expected.json": "18fea2bab2f0f3a77d1ceb705599567081af008aebc4166c7863478215e64859",
+    "view.json": "4d505ecc944dbafae5a179af2727ac40500c58a644ad507a389d661000fbc33a"
+   }
+  },
+  {
+   "id": "synth_approval_signature_key_same_value",
+   "family": "synth",
+   "spec_section": "6.0,10.4",
+   "description": "Control: sig_b64 and signature hold the same strict, valid principal signature. The approval is counted: within_grant. Revision 0.1, NOTES.md N13.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "a4cd5086b7c0e2442d5234650f7ae007bf145304795010a6a72c60fc1b61e78b",
+    "events/e00.json": "a0a4e3b365f25ff224a3352cc14082ea74d747a07d96e86e1db47c5075b4a9e4",
+    "expected.json": "e28b0c3bf8d51325e94c8ca60b7094ab9624a8404d04b50704b35d4c53afb130",
+    "view.json": "f1be855a62ebfba95f488d5f4623df9afef49533b13391ee18cef83c32aeee35"
+   }
+  },
+  {
+   "id": "synth_nothing_to_settle",
+   "family": "synth",
+   "spec_section": "9",
+   "description": "No record at all. Nothing was executed, so nothing is within the grant or outside it: nothing_to_settle, final, the bond held.",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "expected.json": "38185053ee05a4a2d49017c362ad50def47fe754004f03a431caf98d02380acd",
+    "view.json": "73de01a9a38a271b0925c6bd21673d0be4c0e4f99275858e59f37ca309479cd0"
+   }
+  },
+  {
+   "id": "synth_delegated_to_object",
+   "family": "synth",
+   "spec_section": "6.7",
+   "description": "The contractor signs an execution whose delegated_to holds an object, not a string: record_not_strict, no verdict. (settle v1.7 to v1.15 stopped with an exception on this input. See NOTES.md N6.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "daefe2b3ce993be5be26e02275ec0cbcff06c64232a9fa7382635ebf5380df38",
+    "expected.json": "dc721e944595718b0522859d0a677ff0705037cbd87b75d4ea7d7ab8fbb40b1c",
+    "view.json": "52f6229ff891330f09061e9a887c0348cba2f3f07307c34c59e143f19222486a"
+   }
+  },
+  {
+   "id": "synth_float_in_signed_body",
+   "family": "synth",
+   "spec_section": "6.7",
+   "description": "The contractor signs an execution whose outcomes carry 0.5. A number that is not an integer has no canonical form shared by every runtime: record_not_strict, no verdict. See NOTES.md N4.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "51563f8555ff51ff37c1b367b8a0dd286574c6f04b16f3cbc63c3f59da593423",
+    "expected.json": "7795e69c6ab0745ea7427a20b01d72d6e4e13c3c7999b6d65f771db3fd92b45a",
+    "view.json": "4ec0ea2b5179b2bb5ad06a05080e131a482a122fdb7225a6b9f4944ed68dd415"
+   }
+  },
+  {
+   "id": "synth_unsafe_integer_in_signed_body",
+   "family": "synth",
+   "spec_section": "6.7",
+   "description": "The contractor signs an execution whose outcomes carry 2^53. A JavaScript reader cannot hold it exactly: record_not_strict, no verdict. See NOTES.md N4.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "bc96d28239b61a83b4ea1b1887f5491b92a0af0163c9c68fe6915d6103720627",
+    "expected.json": "8c972dbb9fd00a3e54e68f2a136c67f254518452fc4a1f168cf1f668fec8be98",
+    "view.json": "5ae0a642e73291e01e76e394f7e20ca50793fd5ef9bdebbe07f193b915b166f9"
+   }
+  },
+  {
+   "id": "synth_unsigned_float_beside_good",
+   "family": "synth",
+   "spec_section": "6.7",
+   "description": "An honest signed execution of read, plus an unsigned record of delete carrying a float. Nobody signed it, so it cannot change anything: set aside (record_not_strict), within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a4d4045ea2462c6e45cff72d9a29783cbae26900abe2ded7e5710eb11e04a46e",
+    "events/e01.json": "5d52ff792acd65161302a6b38500f077a395932fdf30e4ccc329ab079db2d42d",
+    "expected.json": "5011fa10dab758b4613e82f94a69532d5c740a78d2ea7a4584004fa38c104ce6",
+    "view.json": "0a603ee38dbf3d39c8deecba5ef8389f30b391a7c0189c809741e7caacb30f27"
+   }
+  },
+  {
+   "id": "synth_revocation_irrevocable_grant",
+   "family": "synth",
+   "spec_section": "6.7,10.1",
+   "description": "The grant has no revocation block. A principal-signed revocation, then an execution of read: the contract cannot be revoked, so the revocation is set aside (revocation_not_provided_for) and the execution is within_grant. (settle v1.7 to v1.15 stopped with an exception. See NOTES.md N6.)",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "2022f8f26b5a1b82d79b8fabc094d9e8ae45dd2d79646e0958e62a35befd66ba",
+    "events/e00.json": "d576b3e409579a299eef7d77b15768b59ffc2201cc645a0ea83c09a6982904db",
+    "events/e01.json": "0362a04a161707d937dcf4d4296a009b4e4dac9761deb0f38cc9cb0e21e256e0",
+    "expected.json": "2bd74d01dc50c5cc34fb06e7d7a67a3d18c811c6a6b338da6d5052e35497bf3b",
+    "view.json": "0853c972cc99183635cfc60104488e0970f728c4e6efe22a6d754f48a9e6b294"
+   }
+  },
+  {
+   "id": "synth_signature_s_plus_l",
+   "family": "synth",
+   "spec_section": "6.5",
+   "description": "The contractor's signature with S + L in place of S (L the group order). Its only signature is not strict, so the record is not strictly signed: rejected, nothing_to_settle. See NOTES.md N9.",
+   "expect": {
+    "verdict": "nothing_to_settle",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "697b61c284aedabea3339b58ac4dffa4d753b9d0e4f95041f613ab55140ce929",
+    "expected.json": "7d7898b49ffa9c31ffb59b3c838fd94a05e84a1da5e312e15ad16a937acd59c3",
+    "view.json": "790dc9d645288d2aa9e974ff1944194432fb18dcd20df132831f333446fec756"
+   }
+  },
+  {
+   "id": "synth_strict_signature_beside_malleated",
+   "family": "synth",
+   "spec_section": "6.5",
+   "description": "The contractor's strict signature, plus a second entry carrying the same signature with S + L. One strict signature from an allowed role authenticates the record; the other entry is ignored: within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "47445a9ed68bb42a1a60a84b298705ada6a75b0bafe4b30a4228355c25578ede",
+    "expected.json": "24d92979edb49b9ab6fa52bbffc9d9c1273cd65f4132c746b4e59c5b246379a5",
+    "view.json": "199ea06caa6ac7c8ae13daa483ac544d8c0b2a47924e68ffc2066b5dc4a3c437"
+   }
+  },
+  {
+   "id": "synth_bond_empty_list",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "The contract's bond is []. A bond is null, or an object whose amount is a positive integer: bond_malformed, no verdict. (settle v1.10 to v1.15 read [] as no bond; a JavaScript reader reads it as a bond. See NOTES.md N8.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "bond_malformed"
+    ]
+   },
+   "files": {
+    "contract.json": "4c3fb53b2ce246d54a509490f5f15c0bda75862d16a4aa590d34cdf82ea2272c",
+    "events/e00.json": "bef2332de2e8d8c4ccbb81d569c0a6005c9abe7e61e3b10fb1022e8f14dd2abe",
+    "expected.json": "037abcfa8cd29b4ad7cb53e0fddec183fb6d7e52ed7bf9567731bec067d9b43f",
+    "view.json": "c69b7f3a685a713c813276e49f83863a4798ff27396a4e972e3f1d7660227a1c"
+   }
+  },
+  {
+   "id": "synth_bond_amount_string",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "The contract's bond amount is the string 1000: bond_malformed, no verdict. See NOTES.md N8.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "bond_malformed"
+    ]
+   },
+   "files": {
+    "contract.json": "5dbcbcd345228d9e3b847fd3f0c58c8758c21fcbbfb982efa0edd4bbe10008c7",
+    "events/e00.json": "fd088f6cb0da00a0a7ebf93e574fa4063e952eb7549b37b3bc89599b209bb791",
+    "expected.json": "aaf4458967c9057064ff310afabac3c29d7e8c20772b0972e1de77ec1e476b51",
+    "view.json": "282c1de97f3f23c613b8298eb3f74fa9f8318dcb35a977a75a131e8597cd89f1"
+   }
+  },
+  {
+   "id": "synth_parent_not_supplied",
+   "family": "synth",
+   "spec_section": "4.4",
+   "description": "The contract names a parent_contract and no parent is supplied: parent_not_supplied, no verdict. (settle v1.10 to v1.15 never looked. See NOTES.md N11.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_not_supplied"
+    ]
+   },
+   "files": {
+    "contract.json": "0fabaec36ee9439b941a9e8c4c0d2436221e86dc3c5b9df1c9f37c18cd615a4c",
+    "events/e00.json": "3e53ffd223e5f6c94156a6703c2a7b801f37f2ee6610df15ecef5a811812be5a",
+    "expected.json": "8bc02cfa15b83597161a4fd667911ba6b23c1824c82681a1b8b97437bd121baa",
+    "view.json": "28dbc3f033b4b66e110afd223ea866127983b47b4921275246fd414baa41d142"
+   }
+  },
+  {
+   "id": "synth_parent_supplied_narrows",
+   "family": "synth",
+   "spec_section": "4.4",
+   "description": "The same child contract with its parent supplied (parent.json). The child's grant is the parent's: it verifies under the parent, within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "0fabaec36ee9439b941a9e8c4c0d2436221e86dc3c5b9df1c9f37c18cd615a4c",
+    "events/e00.json": "3e53ffd223e5f6c94156a6703c2a7b801f37f2ee6610df15ecef5a811812be5a",
+    "expected.json": "4a0dc2f20e380e2f5313faf64c14a67c1ad77a19f1347cba6a0a5afa9f6cf95a",
+    "parent.json": "142fc3bb53585bc9c7e5f6c8f165c8b45b2fc40f4eadf39e3bf98cd9afd45859",
+    "view.json": "28dbc3f033b4b66e110afd223ea866127983b47b4921275246fd414baa41d142"
+   }
+  },
+  {
+   "id": "synth_parent_widened",
+   "family": "synth",
+   "spec_section": "4.4",
+   "description": "A child contract that adds write to the parent's authorized actions, with the parent supplied: parent_narrowing_failed, no verdict.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "19762685e450447bff5c2084f6457b07afec9ad03fb033c0f72ceb80183e00a7",
+    "events/e00.json": "7e7754558b245bf8724a6691b5fc41c90844fc856b2e3054e9657d56710e1a35",
+    "expected.json": "7178028f5feceefc57e5c2257000b9367feae28c647ac0039934e01fed0a79e4",
+    "parent.json": "142fc3bb53585bc9c7e5f6c8f165c8b45b2fc40f4eadf39e3bf98cd9afd45859",
+    "view.json": "d3ed092b298d2d3cb2d4dd671e966648a7eb6eda67c5046afd49ef65078f5059"
+   }
+  },
+  {
+   "id": "synth_nenrin_required_without_ref",
+   "family": "synth",
+   "spec_section": "11",
+   "description": "requirements.evidence is nenrin_required; the contractor's execution of read carries no nenrin_ref: deviation evidence_missing. (settle v1.10 to v1.15 never read requirements.evidence. See NOTES.md N11.)",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "evidence_missing"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "4515bc194d01798a510d9b30e36192fd5f0aeed14155aeb9997a448acd5ed542",
+    "expected.json": "94279ed7acc974f4f1f088bc3d032e242ee1d55f4f22f5c58635be60cb25cdb9",
+    "view.json": "a15197d6fb851baadc8c50e7864f83b1400aaa01183064dba907b1921ff9b822"
+   }
+  },
+  {
+   "id": "synth_unsigned_copies_anchored_first",
+   "family": "synth",
+   "spec_section": "6.5",
+   "description": "The contractor's signed execution of delete, and two unsigned copies of its body (no signatures key; an empty signatures list) anchored in the two blocks before it. Records that are not strictly signed are rejected before anything else reads the input, so no copy collapse or check sees them: deviation prohibited, the bond forfeited. (A rule that dropped rejected records only once let the second unsigned copy displace the signed record: nothing_to_settle, the bond held.)",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "prohibited"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "8c6366d281643414135bfe1072fd9338a9dae6de0db6ace976a687d3044333cb",
+    "events/e01.json": "832529ded5a0298f591e245f2f2b56d0f6b86185e9054ecc55e2ab39ede9e7e9",
+    "events/e02.json": "1555368a344ff1093292b6e059011cc2b9ef0db84fe4f4d234d7cbe3bb68d15a",
+    "expected.json": "229b4f3f3d134d87a7ac608640ecc23a4548af2b461ccf1ffe2ef2951ff8d174",
+    "view.json": "90b14885915ba2d933bb3bf7a94a4da8c7843eb18c55295b62ef2fed241f8c91"
+   }
+  },
+  {
+   "id": "synth_earlier_terms_record_bad_anchor",
+   "family": "synth",
+   "spec_section": "6.1,6.7",
+   "description": "Same contract_id, two sets of terms. An honest execution under these terms, and the contractor's record under the earlier terms with its block_hash in upper case. Binding is by contract_sha256, so the earlier record is foreign and never triaged: within_grant.",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a4d4045ea2462c6e45cff72d9a29783cbae26900abe2ded7e5710eb11e04a46e",
+    "events/e01.json": "6487a731a4ac0b8b0f87c7887b26dafb689c4a0233f358aa955833bd0e0e873b",
+    "expected.json": "f363f5516ed7eba36368b9f7650e7090d488d43127d4d35c56c5dec0e880cf4b",
+    "view.json": "2ed4ae9146234f0487dc6a4e515a32055b962c096554648bcf35927a58c37e92"
+   }
+  },
+  {
+   "id": "synth_cited_walk_not_strict",
+   "family": "synth",
+   "spec_section": "11",
+   "description": "The contractor's execution cites, by nenrin_ref, a supplied walk that carries a float. The walk cannot be read strictly and the contractor chose to cite it: walk_not_strict, no verdict. (Leaving it out silently would hide the evidence_names_other_contract it shows.)",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "walk_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "d63e220312d24d8cfa4607d62aad497670366341ba0e0eb7dfd259a17ccec7d1",
+    "expected.json": "82cad57384e7b1a14978facfa9d120115a74093ca17e75bb5980d1b30543eaaf",
+    "nenrin/n00.json": "f7a47a887a68474646367ff4ef689ab3989066c283311781143dc0177b9c2e4d",
+    "view.json": "7c7e8bcc7b250c803518aa44c153a892c85dc3dde2a8712f909603abb4da3ebb"
+   }
+  },
+  {
+   "id": "synth_view_header_trailing_newline",
+   "family": "synth",
+   "spec_section": "5",
+   "description": "The baseline, with the view's first header ending in a line feed. A header is 160 lowercase hex characters and nothing else: view_not_strict, no verdict. See NOTES.md N1.",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "view_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "a4d4045ea2462c6e45cff72d9a29783cbae26900abe2ded7e5710eb11e04a46e",
+    "expected.json": "d2b51a33791cf8fbf6acc7c0770554e74acefb6e7d62188d5ef50f7049382c98",
+    "view.json": "aa9967c6ef90860231656f1849e17787a87219f0dbc78447dc5650f8b37a0033"
+   }
+  },
+  {
+   "id": "synth_contract_not_object",
+   "family": "synth",
+   "spec_section": "9.1",
+   "description": "The contract is a JSON list, not an object. There is nothing to digest: contract_sha256 is null, contract_not_verified. Revision 0.2 (A1).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "49a64717d5d4cb19952e6eac2946415cf6879adacf9908e7d872332d32c6e684",
+    "expected.json": "7712e1b0f879005affe87f2ddd8a30758e0d5ea8b4eb55ea3aa6813f72b342d5",
+    "view.json": "73de01a9a38a271b0925c6bd21673d0be4c0e4f99275858e59f37ca309479cd0"
+   }
+  },
+  {
+   "id": "synth_nan_in_signed_body",
+   "family": "synth",
+   "spec_section": "2.2,6.0",
+   "description": "The contractor signs an execution whose body holds the token NaN. The reader takes NaN as a number that is not an integer, so the signed body is not strict: record_not_strict. It is not a parse error. Revision 0.2 (A15).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "0e9b92394f0660b3efdb60cba7a9b31c18f701501d7e2d80696531c35946cfb5",
+    "expected.json": "9b98befb315459e59fb637ec50e1cc7d21aaa9f731a0f49891de9157c7f2cfb2",
+    "view.json": "44c497f9e3b9eda559c09642002a5364be66abb1e241fe5675dcdbaf881df10f"
+   }
+  },
+  {
+   "id": "synth_batch_bytes_with_nan",
+   "family": "synth",
+   "spec_section": "7.6",
+   "description": "The execution is anchored through a nenrin-agreement-batch-v1 batch whose bytes also carry \"note\":NaN. Batch bytes are read by the same reader, which takes NaN as a number: the batch leg is accepted, within_grant. Revision 0.2 (A12).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "96c0f4c675086571e9669d3c496d6a22d500395a0a6414ad1056783df850760f",
+    "expected.json": "3cc05e96934aa3d16e5a8227cc8b03474b233634063fcd6591a327104023bfb3",
+    "view.json": "1a43e3f98d8fb2f0a716fa455643bde146da24df5bc9526a42f10d6c73c0e1f6"
+   }
+  },
+  {
+   "id": "synth_domain_leading_tab",
+   "family": "synth",
+   "spec_section": "4.1",
+   "description": "The principal's domain is written with a leading tab. Normalization strips every leading and trailing whitespace character (Python str.strip), then lowercases, then removes trailing dots: the domain is the signature's, within_grant. Revision 0.2 (A6).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "4fa6490b6dbb91367ae83f995be67a1f2b2a2cb125ffd34daff20a6cb7c61047",
+    "events/e00.json": "a05ff701fd3e6b953157524e588f91a231f62e04bde2d5f9c5a1396a78118e8d",
+    "expected.json": "e4558b211344289295fa82e641e7711ba7c4579eb3a19c463d76b7b897a35e92",
+    "view.json": "aa3ba60765f1f279d23c94b868f71ada9f46b67c8ce26e5945588fc5cab3e877"
+   }
+  },
+  {
+   "id": "synth_delegation_empty_object",
+   "family": "synth",
+   "spec_section": "4.1",
+   "description": "grant.delegation is {}. delegation must carry allowed: contract_not_verified. Revision 0.2 (A7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "b0d3deb796820305f66f71afae2726632017e00d7a6b19990e1856cf68bd257f",
+    "events/e00.json": "502706de9082d89e4dc719bab310624a24744fc40ba4f5ca472f00fae4afb461",
+    "expected.json": "b56e9a51aadb729fabf928489764e221a3cbfbadd02db770cf2f3654ed7da186",
+    "view.json": "f834b12b14d93b0432d493bdcffc24dd58c6960ccb614bd60deff83ea980b9c9"
+   }
+  },
+  {
+   "id": "synth_ordering_empty_object",
+   "family": "synth",
+   "spec_section": "4.1",
+   "description": "grant.ordering is {}. same_height is optional, so the empty object is accepted: within_grant. Revision 0.2 (A7).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "6fe3d02056d580d995b1241825cd9c9aa478a5259bd0dd73011959d1dd03e1c7",
+    "events/e00.json": "174bf8776ca0174bc2002d57fb4e1e1335ec17ef45432a20ec914c4c413e1b0b",
+    "expected.json": "8eeb339bae3ed3e217d14f24b17d98bb19cc9f7a3edc45c0820a3eaee7d4cbc9",
+    "view.json": "0675b38b47e119b8d6adb7617ded8ca16f0cfc49e95e11920563d73e4fcfa1bb"
+   }
+  },
+  {
+   "id": "synth_view_not_an_object",
+   "family": "synth",
+   "spec_section": "5.1",
+   "description": "The view is a JSON list. It is rejected (chain_view_rejected); rule 9 is not applied to a view that is not an object with a headers list, so view_not_strict is not added. Revision 0.2 (A16).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "expected.json": "85664eaf8b67bf4502826570c34e9619c3db6f09310e260bfeee986f70fa89b4",
+    "view.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+   }
+  },
+  {
+   "id": "synth_view_headers_not_a_list",
+   "family": "synth",
+   "spec_section": "5.1",
+   "description": "view.headers is an object. chain_view_rejected only, as for a view that is not an object. Revision 0.2 (A16).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "expected.json": "85664eaf8b67bf4502826570c34e9619c3db6f09310e260bfeee986f70fa89b4",
+    "view.json": "6483b69eec05dc560278666d103ecb5bec1dc5617645dc10aa33c9f310fea818"
+   }
+  },
+  {
+   "id": "synth_limits_null",
+   "family": "synth",
+   "spec_section": "1",
+   "description": "grant.limits is present with the value null. A null limits is not carried (section 1), so the contract is in core: within_grant. Revision 0.2 (A20).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "bc7c8c2961a29c0e381305a21c53a9c87a2f794d424c9aff6864eab204108690",
+    "events/e00.json": "3bcfe5387dc517a866702b92ed63666830353d4564ed5d6a429ba1e113bb8678",
+    "expected.json": "ad4661fcadc49e571cd985db311c58c5ef6595a3c36cb1208a1da6e5ab62220f",
+    "view.json": "2b469284a17c47a53c6b1407c511db62831b6be9acf9d9667842deb2cd85745a"
+   }
+  },
+  {
+   "id": "synth_admission_null",
+   "family": "synth",
+   "spec_section": "1",
+   "description": "requirements.admission is present with the value null: not carried, in core, within_grant. Revision 0.2 (A20).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "24eb060425903b69e0c1be41b17dfbe73ba408c6a7a791e49f8ff02f97e6ed07",
+    "events/e00.json": "b68563be1679b0fe9e1873d5097358c02982411c12f5ab6f2e209b4bcf01af30",
+    "expected.json": "2cb5af0b562f2f1d539b97eab8a2b61a191765d401756b93c3d79019bc11ec87",
+    "view.json": "b5385fa725fdcf66e0bccdafb2a966ad8f2e8304050454880b1b3239d335dbb7"
+   }
+  },
+  {
+   "id": "synth_cited_walk_orphaned_execution",
+   "family": "synth",
+   "spec_section": "11.1",
+   "description": "An execution cites a walk made under other terms, and its anchor names a height whose block is another: the execution is orphaned and leaves the event set, but the cross check reads every execution left after 6.4 whatever its anchor result: evidence_names_other_contract. WRITTEN BEHAVIOUR, revision 0.2 (A14).",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "evidence_names_other_contract"
+    ],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "ac19534326c05db90fa873dd81ec160f449247a01c152aa837623f56619c28aa",
+    "events/e01.json": "b84036d2da7247fd750b6b7261c0c0414fa8025fb9bc8738c2145dc61ea91c1b",
+    "expected.json": "383a779d489e575ab255726f39a6e7bc25181cd1969a27a4bca8bd4bbd0ccdd1",
+    "nenrin/n00.json": "8a6de46b81cb4ee0b1e6fb0308dea7709ba948f4e951053c29b41e219a3bdb54",
+    "view.json": "ca082416b815b060653c049aac262423c166947ba9eb2d25b502d36c0588f62d"
+   }
+  },
+  {
+   "id": "synth_floor_zero_mantissa",
+   "family": "synth",
+   "spec_section": "4.1,5.1",
+   "description": "grant.finality.max_target_bits is 20000000, whose mantissa is zero. 5.2 decodes it to no target, so the door refuses the contract and 5.1 rule 1 rejects the view: contract_not_verified and chain_view_rejected. Revision 0.2 (A21).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "chain_view_rejected",
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "eb767741760ac4d5aa742a5a98544fddae7b7d9c319353bac31abb5f1b5e4107",
+    "events/e00.json": "2aea5d74006864b61b0bd2f6a73c6a2524a760184cf7bc3c422464acdf0049a1",
+    "expected.json": "28f4beb983ad9a9fb08f8dfe639b72f7ac6937bc759ac0967c978c16f36035fa",
+    "view.json": "7e34011074cee98676848457d4beed4f649ea98a41ec429d4efc502978b745c2"
+   }
+  },
+  {
+   "id": "synth_ack_names_dropped_copy",
+   "family": "synth",
+   "spec_section": "10.1",
+   "description": "delivery_ack with ack_window 10. The revocation is anchored twice; the later copy is dropped (6.4). An acknowledgement two blocks later names the dropped copy's record_sha256. A copy 6.4 dropped no longer names the revocation, so the acknowledgement does not end authority; the window does (h + 10), and the act one block after the acknowledgement stands: within_grant. WRITTEN BEHAVIOUR, revision 0.2 (A22).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "4307d447f1ecf92b1df87e3fd7cda3797dad3c245d7a3996aa9e80c4b71d22fb",
+    "events/e00.json": "9a79c99cc0045c0551611c352b1af024f579636712f9360b8c1a3f9276eb3c2a",
+    "events/e01.json": "a6838cff0dd7ae94c04e35ac32d7ba6e60c0ad01ef7b464ee67e3ae29d0ca481",
+    "events/e02.json": "6b49b93ca6da8c78c519efcb78e7382f9019ed42ddfb1f9a65fb119e7b3aa996",
+    "events/e03.json": "94034af9bc394f7b09737d5839234a93bfc268359438ae9a5f78113673aa8374",
+    "expected.json": "92d163b6bec643a2707c77f29708f43116954180bdfcc73f1b529fee7e8e99a0",
+    "view.json": "f1aba809d4925031654cf55d8e1299d1605b97ac1858b4b37b1516e90ad848ea"
+   }
+  },
+  {
+   "id": "synth_parent_full_identical",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent's grant byte for byte, max_hops 2 included. A child must take at most the parent's max_hops minus 1, so an identical grant is not within: parent_narrowing_failed. Every other vector below keeps max_hops 1. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "25d1c711e3b0c4c15f3ed243a649cd5dfea459dd81964b4ee79f4d1f9f0d102f",
+    "events/e00.json": "4ee452c47993c18f2677d0fa9993d8ec7ff93619c81abb44a50f2587510b83e6",
+    "expected.json": "8aff86f2f66fc5180b1dffbd9fd446b3319a248ef80c4e5415a49f3d8b8ca678",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "4da55a6fc86993f4aaf4a4f6c9b05d5c7bf98cb661eb579554b347d70747aef9"
+   }
+  },
+  {
+   "id": "synth_parent_full_baseline",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent's grant with max_hops 1: within, within_grant. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "cdb4dec79829e033f481a09c4104003920dd89b90eb5de66f52eff077c58981e",
+    "events/e00.json": "dab5c5862188217643b3a2a8bcf538714ade551956d892fa9f71374842ac8210",
+    "expected.json": "423e8cef663ec8ac2ab55ede86d48f884e8b66f907f0f0fbc1c431bf7163474e",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "5f73a753f9897b10c6b665993f8edb9adeb3f2f077f7c59625c4833a7405dc61"
+   }
+  },
+  {
+   "id": "synth_parent_full_drops_prohibited",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: payment is no longer prohibited: parent_narrowing_failed. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "66a0529d806481df1452c7c17bcd1843a84059356273aa0f711249a7802de8b1",
+    "events/e00.json": "b2d492e99ff78a7200023fec25976c353edc5930c67d77478688ee32f550bfe4",
+    "expected.json": "e21dae7addf8afb2db61ea084a01b0ed5ae580a8eeec2261293c1e0dd6ee9e07",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "3a789ed74c58cdc137d4baab221ce992d2cefb88c8a32caaa8292b9a2023b4c4"
+   }
+  },
+  {
+   "id": "synth_parent_full_adds_data_access",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: an entry the parent lacks: parent_narrowing_failed. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "e4adfcac4e2c5867cc2c40ea26739b23580966979c2575187d5eaa77e25670de",
+    "events/e00.json": "71f0b1fe08d3e323eadc756f37b96e5ce70d95767da2cd88ddb8f7218fdaf016",
+    "expected.json": "9dc82c097b13430302e651866a089c49d5f16fb1395a61a7d44e371646fc9eca",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "f4aac5b14a0cfa17cf5da922988fc8a7d567148bba917793a0f1dabf6d436e5e"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_data_access",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: no data_access at all is narrower: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "f83e517d7b28fd1cfb5da59b72b98f1bf605d8257b1c814a915c6a746ca5e782",
+    "events/e00.json": "4773283e847c9b0160daf1d5fd23aa4f05d0fd28c26a774f8a08a5f74893fc40",
+    "expected.json": "30cf12c90ce0b964451df3e892891e2cb5ea0f04058a87a55640ab9078ac89ab",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "e19607df5c98596a8198d5265b7c86478fe6cb0a6b3b5c3a51784f0d716d0bc5"
+   }
+  },
+  {
+   "id": "synth_parent_full_max_hops_equal",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: max_hops must be at most the parent's minus 1; 2 under 2 fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "909977a3bd39d6db1e72275fc9cb4f0abd046f9c86030b0da43cc7420310cb20",
+    "events/e00.json": "cfb77bc721485fbdfd57ef61487f0f7ca83298e646b97efcb4d17889dc8c51fc",
+    "expected.json": "efdb28a5608af886de7b8e5261f8fcbc36c9a55b889c55d6b96b0a8229a907a7",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "f2c5690c07ceb3dc059654bd0a7443520e495bdb6fa7fe3adcc862aef315bd49"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_max_hops",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent limits hops and the child has none: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "9dd376b47429704155d2f89eec92ceb45411b9c4a187d83a3120c12dff1b14f2",
+    "events/e00.json": "9a682ba57d04b7b7d65d7d60dd1183838960f7e763617b2000b76e264514c883",
+    "expected.json": "c4f6736fc6f38cd64407b1ea5682e2b6dfd93d4b85ef38b63ee79792bacd0464",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "d56390afcc8617dc911b178661c04f18d4f7a3673fed84f587fb1666e8ecac80"
+   }
+  },
+  {
+   "id": "synth_parent_full_adds_delegate",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: a delegate the parent does not allow: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "13fc403c53dc0f1c22d92576afdd5aecafd4b35ccdd3f4e4690e0aaa0e611f68",
+    "events/e00.json": "d7c15596ee3ce34eeccdc85e1916816e3ba8c3ed5d48eae5d6b65b507e7cf515",
+    "expected.json": "1fbdb6d4e14a3556987cee12d231fd0c0d7c2931436a37e17ea921aed4907bcd",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "c1731356a0981ccb7505a7a689ce75c8819374d32607e2e55ca34bc7db4aa627"
+   }
+  },
+  {
+   "id": "synth_parent_full_drops_conditional_action",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: refund neither conditional nor authorized: the child cannot do it at all, within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "7af3eaad5d0b65549df67e0d8c797889377b549dc4789111cdf4f236fd0c1ca4",
+    "events/e00.json": "96bd26c81f788e8345a35f88712cd6117e411363b86d7adb8d350a5f0a7b8a22",
+    "expected.json": "aea774ed14c169ed7188b9ea5ce646cf92ff36c9130449983ab0a0aba2d11195",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "14ed45c8929f07250991021441e249ae61691d9cb564827f45cdb3bad6a65b94"
+   }
+  },
+  {
+   "id": "synth_parent_full_authorizes_conditional_action",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: refund authorized without the parent's condition: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "ac4455c1bbd8a6355aac8f6430d4c638002b1d0e00bb017c9efbbecef0ca39a6",
+    "events/e00.json": "4cef69ac1e3a8ac65b4b7d05419c0c6afcfae563845718b4cf4a12d1b499c9ef",
+    "expected.json": "3d0c36308814211de40b2f9f98998bb79d9b40cc9569813239755e4fe580a154",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "204d6677d70e81740cb576db983d2e47254a5fbc863ed9a1c77e0c7c08f504d4"
+   }
+  },
+  {
+   "id": "synth_parent_full_adds_conditional_action",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: a conditional action the parent neither authorizes nor makes conditional: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "213b1aecdb52a1da8a05ca47970b8f23992ecc9dc592caf0522dc7aa15556a8f",
+    "events/e00.json": "0c657aa52b4be6d4b48bcf44006f2d66b0db200e6b4c5b47c2cea6ad2219be19",
+    "expected.json": "ad0efa7c2e0a26417ae8de8333ffa8d406d14288cc0f6d78f6b141b06f1b6cf9",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "d34b40fed8417d39378ca3bfbce2e5375fd7e0b01299497aebd409e06e38959b"
+   }
+  },
+  {
+   "id": "synth_parent_full_expiry_later",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: expiry above the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "d885c352dcaa7212cd8eeacab6310735cbb8bc1c178aaa0c064bc6977526c087",
+    "events/e00.json": "ac53aa69bf21266045c897af21b09ccbdbdcb2370704793371a4d109e9216ef8",
+    "expected.json": "1192fc6346540c93a55b4e252ba6e40884d41ffe11f7f44e840bb3e247b675dc",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "2c0627314d69fab3add36d17ea753b87327e4e915f0123655db9def2834a5b9d"
+   }
+  },
+  {
+   "id": "synth_parent_full_expiry_earlier",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: expiry below the parent's: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "c60be450078bbdc3ea5e6aec0a46d4a4752ceb5930ca2e549a102094348c5590",
+    "events/e00.json": "40e0842eb116746328d0696bc7f2ebda5e72d0e4fdafd2f893589de9f534ca89",
+    "expected.json": "494bbe1c77a4f57429f4e66a3e922df048640ca0e7834821931f5baadd03101c",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "ed6605b5f49c45c08470d63672ebf205f1aacf391ff8d287ed2e95d5b2055968"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_expiry",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent expires and the child does not: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "2e5dd10b697f749f79bb704ed68e999cfa054d6bb00c2dc6ed8bfcf912f495e9",
+    "events/e00.json": "f4cf2f44e05f13200e8c74d31d65154d5841e3daa27c66d9726c7ff0c711a722",
+    "expected.json": "730704af23d6989faa37fb9d72dd0f3b6975b9b81ed73b9fff9f23bf61d4b5ea",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "ce467202a2603c2434303dfff53a1dcbdb7b764ff13f323ac5f0b7f8010eb9bc"
+   }
+  },
+  {
+   "id": "synth_parent_full_revocation_anchor",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: anchor ends authority sooner than delivery_ack: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "d7b29dc3797c36b0d69dfbacca1f4c42a069135dc094611ac9af83cce611a0d8",
+    "events/e00.json": "cba09b86a0cf94d55feae70024caa30246ed1219aba97fbfcd321e935916b3ef",
+    "expected.json": "ad0732d1afe1f05bd4ad5af4ad50949c823ac5bc2c9a33be952fd4de047e7d5e",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "642131afd3adcedda2a6ae18b980dca37ca6ed1881163526e98afddf4944b716"
+   }
+  },
+  {
+   "id": "synth_parent_full_revocation_wider_window",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: ack_window above the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "33c1d1729d2d6211fa47b39ce41c24cf10c78e386b39a9fc57a79ea7343f4aa8",
+    "events/e00.json": "8fb7b175aeda3903350372ca4735c6e71c6e99248d49fe1cc780859c2a989f37",
+    "expected.json": "cbe287ec6b487da9b64ca1e4ac662151e0e966d0932347a3084e00a34899fe21",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "d79c6bae9136b2b75ed588b311bd3c5fd23f1d8178a478aebaee0771a20d1b96"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_revocation",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent can be revoked and the child cannot: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "3f9e8a78465620d8f51838c74ee563638eb73e13c97a1e6b6b9ce212d58ecdf6",
+    "events/e00.json": "3774093ce40803a77a4bc41f4393a5e2bc04f704f34e31c0edb898ed44d0130a",
+    "expected.json": "0c32503398dfc643de09cde43984cdaf67f8d5d62567c6d264b93a3fe79d83f4",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "b6c87bfa28cf6b4e47d4c60f19c1a7ab517c5ba42105c64451dfd884d4c7e3da"
+   }
+  },
+  {
+   "id": "synth_parent_full_finality_shallower",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: depth below the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "bbc69b167fd917cd4964248b9e619ae3d736fc36df523f666466f0ceda3cb65b",
+    "events/e00.json": "4482d19e499bc82852f45f2212b8f05b5a363329ae3bfef697010447d83dddcc",
+    "expected.json": "69e8624e05928eeafbed10320d577bde13342e99270032b900f24f31d169932c",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "b8738087b2b0c3165b495dbe7ec91c0adf5920dafe7961f19fd4bc9b5706a85b"
+   }
+  },
+  {
+   "id": "synth_parent_full_finality_deeper",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: depth above the parent's: within. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "fc07dd7b4433968c6fc23abff9b22e7960a9d27d83cab18b93b9456ba51b78af",
+    "events/e00.json": "3e04a5a83fe333188d5e40dc4c09eaecd4b39bfba6fc10d135feefc51f12e7d3",
+    "expected.json": "b97cd1d5e0b50da9e3ebeb5930643bc6fd0d6ca740495741c4581773f7e618fa",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "245fa59cae3df23104ecb78d4aa502a93e7548de9d56d53a177a0c3af4995333"
+   }
+  },
+  {
+   "id": "synth_parent_full_drops_witness",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent's witness key is gone: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "3fedec438674c6b7b8291fc3be7b2f5c8b379b1ef4e5424774cc77669e8c89cb",
+    "events/e00.json": "1b40fafc320a3e14408dbdfeb0bc3a4bdff3f5fedcd9b67a458f538093087312",
+    "expected.json": "d864e245ff338c8761c05aae179c3436a197ef3dc943b23748f05498e58ab8e2",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "b25286084d9328d6472a44a4b522d410972940b130e86e1d31bf6d6c4bd42e19"
+   }
+  },
+  {
+   "id": "synth_parent_full_witness_renamed",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the same witness key under another name: within (witnesses are compared by key). Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "4af887e5fd0f22a2b7511953a7852462d4eca9e098b8cfc4ec844ecb6ebfd0f2",
+    "events/e00.json": "47b643b4c4596f8235939ef29fee1c80a098ce27fcc5e7981affbf05fb4dd7c8",
+    "expected.json": "8308b8589a0627aa91c4e41d2d26f09fdebac50c916a328284e54c4ebb3603b5",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "65a0282bd7c148323bcaf575e77f68e438b8be1506a2f0c9ca88aa9648fc23c1"
+   }
+  },
+  {
+   "id": "synth_parent_full_privacy_changed",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: privacy differs from the parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "1e606446ccea38b69cbce5dd803bbc97c7cabc200924d2e3ce3329b86e8d4f29",
+    "events/e00.json": "d40cd9c19b76dc355ef98a96d96d53ea120e0d874fadc3248bc79ecfa9598016",
+    "expected.json": "1d17fb54c8a898ce636c149a4225138609ee9f2b661f61d26075d04e2998f38f",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "daf94c696f98287e0f18e2c62eb4136823d0d13d886dc286d307f92f49dbf70d"
+   }
+  },
+  {
+   "id": "synth_parent_full_without_ordering",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: the parent sets ordering and the child has none: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "a1dcc851eef7de97119ec4a643491b79de8569d782e659edf45ed21e19c3c4ab",
+    "events/e00.json": "bec6e3cb4edd9cb3d9372bf282f5ea0192c96355e19b9849e2a1c0af4bf2c603",
+    "expected.json": "7df98a4fe54a26f6b751137c038908023e73f35033c7eb3909a159b2b1fbcbbc",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "5166f0fc886e2a1800c47c08298bb276e380f285a68c4cb2ca97cb8773d195f3"
+   }
+  },
+  {
+   "id": "synth_parent_full_allow_unscoped",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: unscoped approvals turned on: fails, and 4.2 also refuses unscoped approvals. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed",
+     "unscoped_approvals_refused"
+    ]
+   },
+   "files": {
+    "contract.json": "e32e98d31ff9100898b17fc32586a5cab19bd0a534e38a97030d5a777b172f3f",
+    "events/e00.json": "b3502d1f1e3172b0f664d0950d93dc8723ea1eb163e2686260ba21a2d71fb3a5",
+    "expected.json": "5a0b743c24db96e4c986719fc391fd90edc62d41be6197e390885a0942586a3c",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "fc346027ce7381a1f4dc6b858c801cd45839a17635bbebaf9425a51a88d6cb04"
+   }
+  },
+  {
+   "id": "synth_parent_full_names_other_parent",
+   "family": "synth",
+   "spec_section": "4.3",
+   "description": "Parent narrowing against a parent that sets every axis of 4.3: parent_contract.contract_id is not the supplied parent's: fails. Revision 0.2 (A10).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "350668901f5c908f0eb6c019c881a897f11f302225babe3cbc8d7d7f4981e5e4",
+    "events/e00.json": "27863e2659d59246ef05c9370ed3718bc413ef15063ec2b976d29f6272711e31",
+    "expected.json": "ea6926c312019aac522e75f21e9489a79b3aba4810105155211e33028e1a5aea",
+    "parent.json": "8137a8cc47fafda3f51184052e540b355210e61b630a7e4a907cd249aedb0a46",
+    "view.json": "30b92b72e2fc49ae0274b77410a5ea7850158f84f58d18fc5bfec0b12af225f7"
+   }
+  },
+  {
+   "id": "synth_infinity_in_signed_body",
+   "family": "synth",
+   "spec_section": "2.2,3.1,6.0",
+   "description": "The contractor signs an execution whose body holds Infinity. Canonical form writes the token Infinity (3.1 item 6), so the signature verifies; the body is not strict: record_not_strict. Revision 0.3 (B2).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "4dd0fa1bfc0ecfab8b4f53359884c47f208b43929033d31637ffe0b49bf92585",
+    "expected.json": "ba0351cb8add8aabf1601d34c0fbeecb5fa65a29aedf90affed4c381fa1d1f45",
+    "view.json": "ad3788f34ae36676ae1dbfd353ab4cfc046878996ae642fb5ddead1302f335aa"
+   }
+  },
+  {
+   "id": "synth_negative_infinity_in_signed_body",
+   "family": "synth",
+   "spec_section": "2.2,3.1,6.0",
+   "description": "The same with -Infinity: the signature verifies over the token -Infinity, record_not_strict. Revision 0.3 (B2).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "record_not_strict"
+    ]
+   },
+   "files": {
+    "contract.json": "b05abf56f1a07dee83bc9a3ceb5fa82b61ad80ef9356ca0f04aa14c80152e8c9",
+    "events/e00.json": "3ede2a52f213df226fd28920f41d33abd6de1bd4a3e4be538ef29a434d98b157",
+    "expected.json": "adb364693921958e30aae0ca7da22f3cc3b4b0d7e90a84b9d10f5dd09d52c8af",
+    "view.json": "2e6191bd8da2f28454d5a6ebca8b07af733303e96679dca8d83dd96c2b27d50f"
+   }
+  },
+  {
+   "id": "synth_approvers_object",
+   "family": "synth",
+   "spec_section": "1,4.1",
+   "description": "grant.approval_policy.approvers is {}. Only a well formed approver list (4.1 rule 10) is carried and out of scope; any other value refuses the contract: contract_not_verified. Revision 0.3 (B7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "59fc93db72a64f244dd6307b0a31d4c88d9d2edc0f29b4b91e348c7ef5e060e7",
+    "events/e00.json": "2b3f4271c0ffa434f0050271d16435fdc92831e4ff56ee99fb90ae95d3bf9204",
+    "expected.json": "a34642cc510a77b7e7ac05b4fe0806c598e17cfce75dd86655ecf88563cce7b9",
+    "view.json": "f7d204332dd02f2e24e0b3818b46da3d15f1afb8492626f2cf787c78f4ddce9b"
+   }
+  },
+  {
+   "id": "synth_approvers_string",
+   "family": "synth",
+   "spec_section": "1,4.1",
+   "description": "grant.approval_policy.approvers is \"\". Only a well formed approver list (4.1 rule 10) is carried and out of scope; any other value refuses the contract: contract_not_verified. Revision 0.3 (B7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "aa1ccbc97d7db1f4011c4f49ed2809695cdba6d7ad0da5b78f1834e3a4658799",
+    "events/e00.json": "a6b43164c6bdd157196d78a511408dcc34906e639df1ba8447971dd6fda437f2",
+    "expected.json": "fc270752e6a35e995b9a5102328c2c18fd21c3b34e814b490e803e5482e9b301",
+    "view.json": "b6a021845016d06b5b0aec997715f7fee7fef3f4aba13468a58af625530bd769"
+   }
+  },
+  {
+   "id": "synth_approvers_zero",
+   "family": "synth",
+   "spec_section": "1,4.1",
+   "description": "grant.approval_policy.approvers is 0. Only a well formed approver list (4.1 rule 10) is carried and out of scope; any other value refuses the contract: contract_not_verified. Revision 0.3 (B7).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "contract_not_verified"
+    ]
+   },
+   "files": {
+    "contract.json": "166ddbf04df7a33920b877924e2c63d575d767bc43cb798c5eaf081c5cd4ad89",
+    "events/e00.json": "4426bee592ce21dc7a950c1f5cf2943b9b7457260d7b398f7bdec62142c8c859",
+    "expected.json": "2dd7974f08403ceddd6b5312441d28673896909120c92c3ba3f61219ea96131b",
+    "view.json": "3e87d585d879f4761738e160621d13e848772ef1422551b47ba63e5ffb13506d"
+   }
+  },
+  {
+   "id": "synth_parent_approvers_child_drops",
+   "family": "synth",
+   "spec_section": "4.3.1",
+   "description": "The parent pins approvers and the child has none. Rule 14 applies to the parent: a child must keep the parent's approvers exactly, so parent_narrowing_failed. (A child that keeps them carries approvers itself and is out of scope.) Revision 0.3 (B5).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "parent_narrowing_failed"
+    ]
+   },
+   "files": {
+    "contract.json": "9c53ecc0ff007918d63daed0851c11f12f182bb714cfc3205596dc28b5d22095",
+    "events/e00.json": "e8c986a31a57238fbd355325c48bdbd23632e33f148d2962fbe2c4d98a1b2a9a",
+    "expected.json": "03f83b60f20f9ef88d1b79f1c2b4d9ed6447c0cc750d6910a8b522a05988d43b",
+    "parent.json": "268077bdff3cc51eff7fcfbf548b8b2be5e821073de512db868b34c9165e9155",
+    "view.json": "af208d07a609d8da366535be360a9cfdebf4d43db8fc8c31e7be542dc09f3c4c"
+   }
+  },
+  {
+   "id": "synth_grant_action_name_invalid",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.authorized_actions lists Write (capital W). 4.1 rule 9 only asks for non-empty strings, so the door accepts; 4.2 then finds a name that does not match ^[a-z][a-z0-9_.:-]{0,63}$: grant_action_name_invalid, no verdict. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "grant_action_name_invalid"
+    ]
+   },
+   "files": {
+    "contract.json": "8d20b2bf7f6b83899c793988e98220a14dd9cae91971d93e97515bded6737893",
+    "events/e00.json": "90dc9d532503c8fec1b93c9f4ba3bbcf23c85bbf260ee4ed64064f13ece9576f",
+    "expected.json": "51a3eda0af06fd779cb1951b22853ede4fdfa1d77e9c33bb3ae8d959c7731c27",
+    "view.json": "ea7919838a86bc5d2c599fddd6b3a23adf3ff486bba061718187841e6d61c738"
+   }
+  },
+  {
+   "id": "synth_too_many_witnesses",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.witnesses lists 33 witnesses with distinct names and keys. 4.1 sets no count; 4.2 allows at most 32: too_many_witnesses, no verdict. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "too_many_witnesses"
+    ]
+   },
+   "files": {
+    "contract.json": "e8ecddd67dc0eebb94fe8ba9cca85de0c11ed48d73ef7f0ce0b42eee7fbee227",
+    "events/e00.json": "442698fa8319181339295d8f9acd08db0b39fb116dcd999a2a2d3ef5ae5df0bd",
+    "expected.json": "a4533d9af15f640472da25d038f608da5c49611b0d26470d6e7e7b1e45f27005",
+    "view.json": "2a73fec3d098a675ea8ce4c73ffe8a9efeac2fe1ae68394c2a1d17a2f182dfd8"
+   }
+  },
+  {
+   "id": "synth_witnesses_32",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "The same with 32 witnesses: within the limit, within_grant. With synth_too_many_witnesses it pins the boundary. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "underspecified_reasons": []
+   },
+   "files": {
+    "contract.json": "54866268ed08f0c1e7ad600abb52712b2e719a696d73f124d85bf65f64f59370",
+    "events/e00.json": "98730a3e25935cc823968d296780c07a302591881e35712adbc99d573460c61e",
+    "expected.json": "3f6045049041cfa4cfd11bab863eb8f077e5026cccde8577e0ed3e7ebd84ec83",
+    "view.json": "eb1bc83bc1b98ee56c6ee2235f52aaea1cf436473598b9dbf381a9317c8c2e10"
+   }
+  },
+  {
+   "id": "synth_delivery_ack_without_window",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.revocation is {effective_at: delivery_ack} with no ack_window. 4.1 rule 10 allows ack_window to be absent; 4.2 needs it for delivery_ack: ack_window_missing, no verdict. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "ack_window_missing"
+    ]
+   },
+   "files": {
+    "contract.json": "719fa4605ccc18ab651a8b9441ff7f1e9298792c307b8374f0a08976c40ce61b",
+    "events/e00.json": "c65e2684bcdc635873d41376c302fc8e7ebd917172490560d32ec8a8d3d32519",
+    "expected.json": "85abbde3699397fa6ce9ab100a383b71273214cb69644293fb4f7d6d9cad88b1",
+    "view.json": "0efffa43ad938a347c2af2043b71f2864a37fe82999614fa4ae23607e050c082"
+   }
+  },
+  {
+   "id": "synth_finality_without_depth",
+   "family": "synth",
+   "spec_section": "4.2",
+   "description": "grant.finality is {max_target_bits: 207fffff} with no depth. 4.1 rule 10 allows depth to be absent; 4.2 needs an integer depth >= 1: finality_policy_missing, no verdict. The floor is still read, so the view is accepted. Revision 0.4 (N17).",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "underspecified_reasons": [
+     "finality_policy_missing"
+    ]
+   },
+   "files": {
+    "contract.json": "ac82fb290710878e211d6a69a4d404c91edfeecd79083c8e1f008a7294d06071",
+    "events/e00.json": "6829fc694e0406c25432210ff86a52b41036393e2942b28e197b79131ac0d626",
+    "expected.json": "95edaa05d75dc5da314d5a2c5675ddeaa219495c544937dc6ca5e0e3d7180d2c",
+    "view.json": "09d4b4f4737fa8523f5ac87b83a7d63fee7562bc0dd008301fca87f401d9a8df"
+   }
+  }
+ ]
+}

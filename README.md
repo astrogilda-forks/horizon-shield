@@ -117,7 +117,7 @@ Breaking a parser, a signature or a chain is the attack this repository was buil
 
 One verifier threads the contract rows together: [`spine_verify.py`](https://github.com/ogasurfproject-jpg/horizon-shield/blob/main/workers/hs-ledger/nenrin/musubi-v0/spine_verify.py) reads a contract from what it was agreed to mean (`terms_sha256`), through who agreed and who did it, to who measured done, in entities, inside a block window. The first three rows share a limit worth naming once: the verifiers exist and are tested against their own attacks, but a verifier nobody's contract invokes proves only that it would work. The next contract that pays for real work is the one that has to state an independence quorum, name its deliverables from a vocabulary and require corroboration. Since 2026-10-02 the contract itself can make that binding: settle v1.8 (`requirements.spine`) refuses `final` until every stage is in place, and settle v1.9 (`requirements.convergence`) adds measurers nobody chose. What is still missing is a signed contract that uses them, and one between two parties neither of which is this project.
 
-All of MUSUBI also installs without a clone: `pip install nenrin-verify` (0.4.9) carries `musubi-v0/` byte for byte, settle v1 to v1.10 included, and `musubi-verify settle_v1_10 --selftest` or `musubi-verify --run0002` runs the same files.
+All of MUSUBI also installs without a clone: `pip install 'nenrin-verify[ca2a]'` (0.7.0) carries `musubi-v0/` byte for byte, settle v1 to v1.16 and settle core v0 with its 128 vectors included. `musubi-verify --settle-core`, `musubi-verify --pilot51-set2` and `musubi-verify --run0002` recompute them; [QUICKSTART.md](QUICKSTART.md) takes five minutes.
 
 ## One timeline: what each record answers
 

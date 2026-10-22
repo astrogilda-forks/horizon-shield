@@ -1,0 +1,12 @@
+{
+ "bond_outcome": "undetermined",
+ "contract_sha256": "d2d12140597b64d7de507f093f14013cfe523244abe3bc3dfd5c3365740f91f3",
+ "deviation_codes": [],
+ "dispositions": {},
+ "event_set": [],
+ "status": "undetermined",
+ "underspecified_reasons": [
+  "contract_not_verified"
+ ],
+ "verdict": "underspecified"
+}

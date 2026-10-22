@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nenrin-verify"
-version = "0.6.0"
+version = "0.7.0"
 description = "Recompute NENRIN evidence yourself, offline: A2A task provenance, two-party agreement records, TSUGI recovery chains and MUSUBI contracts, and whether a door's signed admissions in a mirror form one history (nenrin-track). Record every A2A call your agent makes as a signed witness record (two lines, official A2A SDK), and apply your own rule to a resume."
 readme = "README.md"
 license = "MIT"
@@ -27,6 +27,7 @@ Source = "https://github.com/ogasurfproject-jpg/horizon-shield"
 
 [project.optional-dependencies]
 a2a = ["a2a-sdk>=1.0"]
+ca2a = ["ca2a-runtime==0.4.0"]
 
 [project.scripts]
 nenrin-verify = "nenrin_verify.cli:main"
@@ -49,7 +50,7 @@ nenrin_verify = ["VENDORED.json", "py.typed", "selftest.json", "tsugi_selftest.j
                  "_repo/musubi-v0/*.md", "_repo/musubi-v0/run0002/*", "_repo/musubi-v0/fixtures/babyblueviper1_leg1/*",
                  "_repo/musubi-v0/fixtures/babyblueviper1_approver_v2/*",
                  "_repo/musubi-v0/fixtures/ADMISSION_FIXTURES.sha256", "_repo/musubi-v0/fixtures/admission_intake/*",
-                 "_repo/musubi-v0/fixtures/contract_door/*", "_repo/musubi-v0/fixtures/settle_admission/*", "_repo/musubi-v0/fixtures/admission_immune/*", "_repo/recovery-v0/*.py",
+                 "_repo/musubi-v0/fixtures/contract_door/*", "_repo/musubi-v0/fixtures/settle_admission/*", "_repo/musubi-v0/fixtures/admission_immune/*", "_repo/musubi-v0/fixtures/approval_v3/*", "_repo/recovery-v0/*.py",
                  "_repo/interop-v0/*.json", "_repo/interop-v0/fixtures/*.json", "_repo/interop-v0.1/*.json",
                  "_repo/interop-v0.1/fixtures/*.json", "_repo/interop-v0.2/edge/*.json", "_repo/interop-v0.2/edge/fixtures/*.json",
                  "_repo/interop-v0.2/action-presence/*.json", "_repo/interop-v0.2/action-presence/fixtures/*.json",
@@ -58,4 +59,8 @@ nenrin_verify = ["VENDORED.json", "py.typed", "selftest.json", "tsugi_selftest.j
                  "_repo/trace-intake-v0/*.json", "_repo/trace-intake-v0/fixtures/*.json", "_repo/trace-bind-v0/*.json",
                  "_repo/trace-bind-v0/fixtures/*.json", "_repo/trace-span-v0/*.json", "_repo/trace-span-v0/fixtures/*.json",
                  "_repo/track-v0/*.py", "_repo/track-v0/vectors/*.json", "_repo/track-v0/vectors/*/*.json",
-                 "_repo/track-v0/vectors/*/ledger/*", "_repo/track-v0/vectors/*/objects/*"]
+                 "_repo/track-v0/vectors/*/ledger/*", "_repo/track-v0/vectors/*/objects/*",
+                 "_repo/musubi-v0/settle-core-v0/*", "_repo/musubi-v0/settle-core-v0/inputs/*", "_repo/musubi-v0/settle-core-v0/vectors/*",
+                 "_repo/musubi-v0/settle-core-v0/vectors/*/*", "_repo/musubi-v0/ca2a-companion-v0/*.py",
+                 "_repo/musubi-v0/ca2a-companion-v0/pilot51/set2/*", "_repo/musubi-v0/ca2a-companion-v0/pilot51/set2/log/*",
+                 "_repo/musubi-v0/ca2a-companion-v0/pilot51/set2/log/entries/*"]

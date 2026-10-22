@@ -3,4 +3,6 @@ recursive-include tests *.py *.mjs *.json
 include tools/vendor.py
 recursive-include src/nenrin_verify/_repo *.py *.json *.mjs *.md *.ots *.raw SHA256SUMS *.sha256
 recursive-include src/nenrin_verify/_repo/track-v0 *
+recursive-include src/nenrin_verify/_repo/musubi-v0/settle-core-v0 *
+recursive-include src/nenrin_verify/_repo/musubi-v0/ca2a-companion-v0 *
 global-exclude __pycache__ *.pyc

@@ -1,0 +1,18 @@
+{
+ "bond_outcome": "held",
+ "contract_sha256": "0a293d3fa171343ddff3851d66c313c7c93528d848543e6639b69840e29827de",
+ "deviation_codes": [],
+ "dispositions": {
+  "4773283e847c9b0160daf1d5fd23aa4f05d0fd28c26a774f8a08a5f74893fc40": "accepted"
+ },
+ "event_set": [
+  {
+   "height": 800002,
+   "kind": "execution",
+   "sha256": "4773283e847c9b0160daf1d5fd23aa4f05d0fd28c26a774f8a08a5f74893fc40"
+  }
+ ],
+ "status": "final",
+ "underspecified_reasons": [],
+ "verdict": "within_grant"
+}

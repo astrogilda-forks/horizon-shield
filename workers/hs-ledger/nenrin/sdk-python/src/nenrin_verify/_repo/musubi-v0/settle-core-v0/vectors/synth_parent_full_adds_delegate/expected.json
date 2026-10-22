@@ -1,0 +1,20 @@
+{
+ "bond_outcome": "undetermined",
+ "contract_sha256": "1682d7c65793601b44b83e9083f4d45dcc8f683a50f3c5d4d37e8b55f6e42501",
+ "deviation_codes": [],
+ "dispositions": {
+  "d7c15596ee3ce34eeccdc85e1916816e3ba8c3ed5d48eae5d6b65b507e7cf515": "accepted"
+ },
+ "event_set": [
+  {
+   "height": 800002,
+   "kind": "execution",
+   "sha256": "d7c15596ee3ce34eeccdc85e1916816e3ba8c3ed5d48eae5d6b65b507e7cf515"
+  }
+ ],
+ "status": "undetermined",
+ "underspecified_reasons": [
+  "parent_narrowing_failed"
+ ],
+ "verdict": "underspecified"
+}

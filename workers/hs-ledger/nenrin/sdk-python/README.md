@@ -146,6 +146,18 @@ gives values a numeric comparator cannot order, `new URL(s).host`) goes through 
 whitespace, strings and numbers as JSON.stringify writes them. The JavaScript side of the same hash is
 `tests/parity/js_canon.mjs` (twelve lines).
 
+## 0.7.0 (2026-10-22)
+
+- settle v1.13 to v1.16 and approval_v3, so the package carries the reference of settle core v0
+  (draft-oga-musubi-settlement), and settle core v0 itself: the text, the notes, the 128 vectors, run_reference.py and
+  exercise_inputs.py, byte for byte from the repository (VENDORED.json). `musubi-verify --settle-core` runs the 128
+  vectors and the exercised inputs, with no clone: "128/128 vectors agree with the reference; EXERCISE.txt agrees".
+- The cA2A companion's settler (companion_v0, companion_v0_1, pilot_v0) and the #51 set 2 run of 22 October.
+  `musubi-verify --pilot51-set2` recomputes its settlement and checks the published sha256 (`18a19f8a...`). It needs
+  the new extra `nenrin-verify[ca2a]` (ca2a-runtime 0.4.0, Python 3.11 or later); without it the command says what is
+  missing and exits 3.
+- `musubi-verify --selftest` now also runs the self-tests of the five added modules.
+
 ## 0.6.0 (2026-10-22)
 
 - TSUGI witness draws v2.4 (`nenrin_verify.tsugi`, verifier 0.4.0), red team R2-1 and R5-F1, fixed in horizon-shield

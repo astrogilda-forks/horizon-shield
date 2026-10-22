@@ -36,6 +36,11 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_repo")
 MUSUBI_DIR = os.path.join(ROOT, "musubi-v0")
 AGREEMENT_DIR = os.path.join(ROOT, "agreement-v0")
 
+# The #51 set 2 settlement (pilot51/set2/README.md): sha256 of `pilot_v0.py --settle bundle.json` stdout.
+PILOT51_SET2 = "18a19f8a1eb62593b857241f34c07b1d96550b93d5c9ea17184b2ac695818fbd"
+SETTLE_CORE_DIR = os.path.join(MUSUBI_DIR, "settle-core-v0")
+COMPANION_DIR = os.path.join(MUSUBI_DIR, "ca2a-companion-v0")
+
 RUN0002 = {
     "anchored": "b13a38692a9b170199d26618f52afe773c0c7d6a90eb73def2736a9abd9b0221",
     "settlement": "11c27fcfe18895cef09f9683136984a50ffdf2bea10f0d9a44566653f052243f",
@@ -168,8 +173,32 @@ def recompute_run0002():
     return {"ok": got == RUN0002, "got": got, "want": dict(RUN0002)}
 
 
+def settle_core():
+    """settle core v0, offline: the 128 vectors against settle_v1_16 (run_reference.py) and EXERCISE.txt."""
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+    r = subprocess.run([sys.executable, os.path.join(SETTLE_CORE_DIR, "run_reference.py")], capture_output=True, text=True, env=env)
+    e = subprocess.run([sys.executable, os.path.join(SETTLE_CORE_DIR, "exercise_inputs.py"), "--check"], capture_output=True, text=True, env=env)
+    last = lambda p: (p.stdout.strip().splitlines() or [""])[-1]
+    vectors = hashlib.sha256(open(os.path.join(SETTLE_CORE_DIR, "vectors", "vectors.json"), "rb").read()).hexdigest()
+    ok = r.returncode == 0 and last(r).startswith("128/128") and e.returncode == 0 and last(e) == "EXERCISE.txt agrees"
+    return {"ok": ok, "vectors": last(r).split(" (")[0], "exercise": last(e), "vectors_json_sha256": vectors,
+            "why": "" if ok else (r.stderr or e.stderr or r.stdout)[-400:]}
+
+
+def pilot51_set2():
+    """The #51 set 2 settlement, offline: pilot_v0.py --settle on the published bundle; stdout must hash as published."""
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+    p = subprocess.run([sys.executable, os.path.join(COMPANION_DIR, "pilot_v0.py"), "--settle",
+                        os.path.join(COMPANION_DIR, "pilot51", "set2", "bundle.json")], capture_output=True, env=env)
+    if b"No module named 'ca2a_runtime'" in p.stderr or b"No module named 'rfc8785'" in p.stderr:
+        return {"ok": False, "why": "needs ca2a-runtime: pip install 'nenrin-verify[ca2a]'", "missing": True}
+    got = hashlib.sha256(p.stdout).hexdigest()
+    return {"ok": p.returncode == 0 and got == PILOT51_SET2, "got": got, "want": PILOT51_SET2,
+            "why": p.stderr.decode("utf-8", "replace")[-400:]}
+
+
 USAGE = ("usage: musubi-verify <module> [arguments]   (as python3 <module>.py [arguments] in musubi-v0)\n"
-         "       musubi-verify --list | --selftest [--no-reuse] | --run0002")
+         "       musubi-verify --list | --selftest [--no-reuse] | --run0002 | --settle-core | --pilot51-set2")
 
 
 def main(argv=None):
@@ -189,6 +218,19 @@ def main(argv=None):
             return 0
         print("run0002 does not recompute: %s" % (r.get("why") or r), file=sys.stderr)
         return 1
+    if argv[0] == "--settle-core":
+        r = settle_core()
+        print("settle core v0: %s; %s; vectors.json sha256 %s" % (r["vectors"], r["exercise"], r["vectors_json_sha256"]))
+        if not r["ok"]:
+            print(r["why"], file=sys.stderr)
+        return 0 if r["ok"] else 1
+    if argv[0] == "--pilot51-set2":
+        r = pilot51_set2()
+        if r["ok"]:
+            print("#51 set 2 recomputes: settlement output sha256 %s (as published in pilot51/set2/README.md)" % r["got"])
+            return 0
+        print("#51 set 2 does not recompute: %s" % (r.get("why") or r), file=sys.stderr)
+        return 3 if r.get("missing") else 1
     try:
         return run(argv[0], argv[1:]).returncode
     except ValueError as e:

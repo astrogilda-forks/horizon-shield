@@ -72,6 +72,11 @@ account, no token, no trust in HS. A mismatch exits 2 and prints the two trees t
 attestation (who built it, from which commit) and this script (what that commit builds, on your
 machine), the chain source to package is closed at both ends by the reader, not by the operator.
 
+## 0.7.0 (2026-10-22): no JavaScript change; the version follows the Python package
+
+The JavaScript files are the same as in 0.6.0. 0.7.0 is published so that npm and PyPI keep one version number; the
+change is in the Python package, which now carries settle core v0 and the #51 set 2 run (see its README).
+
 ## 0.6.0 (2026-10-22): TSUGI witness draws v2.4 (`tsugi-verify` 0.4.0), red team R2-1 and R5-F1
 
 Two holes in the TSUGI witness draw, found by an internal review on 2026-10-09 and fixed in horizon-shield 3252f5ea.

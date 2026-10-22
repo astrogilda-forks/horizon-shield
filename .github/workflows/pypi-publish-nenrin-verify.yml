@@ -60,7 +60,7 @@ jobs:
       - name: Test the built wheel, not the tree (frozen parity, live differential, agreement)
         run: |
           python -m venv /tmp/w
-          /tmp/w/bin/pip install dist/*.whl pytest
+          /tmp/w/bin/pip install "$(ls dist/*.whl)[ca2a]" pytest
           cd tests && /tmp/w/bin/python -m pytest -q -s -p no:cacheprovider --rootdir=. --import-mode=importlib .
       # CycloneDX SBOM of the built wheel's dependency set: the wheel is installed alone into a clean venv
       # (pip and setuptools removed after), and cyclonedx-py reads that venv. The dependency versions are the
