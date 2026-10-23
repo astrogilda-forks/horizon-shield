@@ -1,0 +1,71 @@
+{
+ "schema": "settle-core-fuzz-implementations-v0",
+ "spec": "workers/hs-ledger/nenrin/musubi-v0/settle-core-v0/SETTLE_CORE_v0.md",
+ "core_fields": ["contract_sha256", "verdict", "status", "bond_outcome", "deviation_codes", "underspecified_reasons", "event_set", "dispositions"],
+ "set_fields": ["deviation_codes", "underspecified_reasons"],
+ "implementations": [
+  {
+   "name": "reference",
+   "adapter": "reference",
+   "language": "Python",
+   "repo": "self",
+   "subdir": "workers/hs-ledger/nenrin/musubi-v0",
+   "pinned_at_commit": "f23867e0ca40471abbe432997b3f4cdfc61c8a3f",
+   "pinned_note": "settle_v1_16.py at its settle core v0 revision 0.9 contents (NOTES.md N23: unscoped_approvals_refused only when 4.1 accepts); run_reference.py and gen_vectors.py as at f23867e0",
+   "files_sha256": {
+    "settle_v1_16.py": "a7a1621224a63ef2240a6b0d6ba2c80372ae8d2f0fbeb7bbc0d3c0d3473d76b4",
+    "settle-core-v0/run_reference.py": "13dd7c7e9ee1428d4958ed7e707e9746a57b3af4b762f2378b972f1375fe78a4",
+    "settle-core-v0/gen_vectors.py": "b326bf2104b5c3605ca801dfaeb8aeb600f5c8787df179962df4ca11c2dbf643"
+   },
+   "call": "settle_v1_16.settle_v1_16(contract, events, view, parent=..., nenrin_records=...) on the files read as run_reference.settle_dir reads them (parse_strict); a reader error is no settlement (2.2)",
+   "projection": "run_reference.core_fields(settlement)"
+  },
+  {
+   "name": "aeoess",
+   "adapter": "aeoess",
+   "language": "Python",
+   "repo": "https://github.com/aeoess/musubi-settle-core-check",
+   "dir": "aeoess",
+   "commit": "53cfafb4460c06060d44cd7423ace06cc0196dd3",
+   "tree": "00aec800829982923c11bf443987ce10590e3079",
+   "files_sha256": {
+    "impl/settle_core.py": "1f7b646f172b3b54a626487667f90a1c0ba52dba4c0c34498f000ec0e2ca72fa",
+    "impl/run_all.py": "d1ce2e9c0f13ff3aabd1670afbb32bc6b02858eb64dc210a831c743d0226113b"
+   },
+   "requires": "Python 3.13 or later, cryptography",
+   "call": "impl/run_all.py run_one(<input dir name>) with run_all.VEC set to the parent of the input dir (the layout its build scripts make: input/vectors/<id>/)",
+   "projection": "{k: res[k] for k in run_all.FIELDS} through settle_core.canonical, as run_all.main writes out/<id>.json; compare/compare.py compares deviation_codes and underspecified_reasons as sets. All eight fields 'UNASSESSED: input not readable' is no settlement; any other UNASSESSED field (section 1 scope) is counted, not compared"
+  },
+  {
+   "name": "kuangmi-bit/cryptography",
+   "adapter": "kuangmi",
+   "options": {"have_crypto": true},
+   "language": "Python",
+   "repo": "https://github.com/kuangmi-bit/nenrin-independent-verifiers",
+   "dir": "kuangmi-bit",
+   "commit": "bbe455c06a5e18dd67ff951051971ad535cab401",
+   "tree": "3ad637e6bd29ab33c24176e2c6703db0b1ce8856",
+   "files_sha256": {
+    "settle-core-v0/settle_core_v0.py": "669fd8b3a42d0185addc4899d407da7d5d537d228776e7f314105b364f61373e"
+   },
+   "call": "settle-core-v0/settle_core_v0.py load_vector(<input dir>) then settle(contract, events, view, nenrin, parent), as its main() does for one vector; a reader error is no settlement",
+   "projection": "the eight core fields of the returned object (its --check compares exactly these keys)"
+  },
+  {
+   "name": "kuangmi-bit/rfc8032",
+   "adapter": "kuangmi",
+   "options": {"have_crypto": false},
+   "language": "Python",
+   "repo": "https://github.com/kuangmi-bit/nenrin-independent-verifiers",
+   "dir": "kuangmi-bit",
+   "commit": "bbe455c06a5e18dd67ff951051971ad535cab401",
+   "tree": "3ad637e6bd29ab33c24176e2c6703db0b1ce8856",
+   "files_sha256": {
+    "settle-core-v0/settle_core_v0.py": "669fd8b3a42d0185addc4899d407da7d5d537d228776e7f314105b364f61373e"
+   },
+   "call": "the same, with the module's HAVE_CRYPTO set to False after import, so Ed25519 runs on its own RFC 8032 verifier (the path it takes when cryptography is not installed)",
+   "projection": "the eight core fields of the returned object"
+  }
+ ],
+ "not_present": "No JavaScript or Go implementation of settle core v0 exists in this repository (sdk/, sdk-go/, workers/hs-ledger/nenrin/ searched at f23867e0)."
+}

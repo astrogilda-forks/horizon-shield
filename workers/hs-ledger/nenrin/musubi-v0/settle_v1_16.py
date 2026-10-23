@@ -58,7 +58,9 @@ The contract, the view and the walks (rule 4). A contract that is not an object,
 while the contract door refuses it: contract_not_verified. A contract signature that is not strict
 (contract_signature_not_strict), a bond that is not null or an object with a positive integer amount (bond_malformed),
 a parent_contract with no parent supplied (parent_not_supplied), or a parent that does not verify or under which the
-contract does not verify (parent_narrowing_failed): underspecified. A header that is not strict: view_not_strict. A
+contract does not verify (parent_narrowing_failed): underspecified. When the contract door refuses the contract, the
+reason unscoped_approvals_refused that settle v1.6 adds is dropped, since the settleable terms are read only when the
+door accepts (settle core v0 revision 0.9). A header that is not strict: view_not_strict. A
 supplied walk that is not strict is left out of the NENRIN index (v1_16.walks_set_aside); if an execution v1.15 read
 cites it by nenrin_ref, the settlement is underspecified (walk_not_strict). Events that are not a list, or any other
 shape that stops a lower layer: input_not_settleable.
@@ -473,6 +475,12 @@ def settle_v1_16(contract, events, view, parent=None, **kw):
 
     out = s
     out["schema"], out["settled_under"] = SETTLE_SCHEMA, s.get("schema")
+    # settle core v0 4.2 applies only when the contract door (4.1) accepts; settle v1.6 adds unscoped_approvals_refused
+    # even when it refused (SETTLE_CORE_v0.md revision 0.9, NOTES.md N23)
+    under = [u for u in out.get("underspecified") or [] if isinstance(u, dict)]
+    if any(u.get("reason") == "contract_not_verified" for u in under):
+        out["underspecified"] = [u for u in out.get("underspecified") or []
+                                 if not (isinstance(u, dict) and u.get("reason") == "unscoped_approvals_refused")]
     out["binding"] = binding
     out["rejected"] = sorted({canonical(x): x for x in rejected + seen_rej}.values(), key=canonical)
     refused.sort(key=canonical)
@@ -788,13 +796,21 @@ def _selftest():
                   "unsigned records; an integer too long to digest: no effect. A cited walk with a float: underspecified walk_not_strict. "
                   "A contract, events, view, walks or parent of the wrong shape: a settlement, never an exception")
 
+    CU = dup(C); CU["grant"]["approval_policy"] = {"allow_unscoped": True}; CU["signatures"] = []
+    v0.sign_contract(CU, ka, pa, "a.example"); v0.sign_contract(CU, kb, pb, "b.example")
+    assert reasons(settle_v1_16(CU, [good], view)) == ["unscoped_approvals_refused"], reasons(settle_v1_16(CU, [good], view))
+    CR = dict(dup(CU), signatures=CU["signatures"][:1])
+    assert reasons(settle_v1_16(CR, [good], view)) == ["contract_not_verified"], reasons(settle_v1_16(CR, [good], view))
+    n += 1; print("[11] allow_unscoped true: unscoped_approvals_refused when the door accepts the contract; only contract_not_verified "
+                  "when it refuses it (settle core v0 4.2, revision 0.9)")
+
     r = subprocess.run([sys.executable, os.path.join(HERE, "settle_v1_15.py"), "--selftest"], capture_output=True, text=True)
     assert r.returncode == 0 and "SELF-TEST PASSED" in r.stdout, (r.stdout[-300:], r.stderr[-300:])
-    n += 1; print("[11] settle_v1_15 self test (and every layer it runs) still passes")
+    n += 1; print("[12] settle_v1_15 self test (and every layer it runs) still passes")
 
     print("\nSELF-TEST PASSED: MUSUBI settle v1.16, %d checks (v1.15's answer where nothing is wrong; N2 the walk check reads accepted "
           "records only; N1 line feeds; N3 N4 N6 values and shapes; N8 bonds; N9 strict signatures; N11 parent, nenrin_required, "
-          "anchors below the lower bound, nothing to settle; the view; determinism and mutants; third parties; lower layers unchanged)" % n)
+          "anchors below the lower bound, nothing to settle; the view; determinism and mutants; third parties; 4.2 only when the door accepts; lower layers unchanged)" % n)
 
 
 # --------------------------------------------------------------------------- command line

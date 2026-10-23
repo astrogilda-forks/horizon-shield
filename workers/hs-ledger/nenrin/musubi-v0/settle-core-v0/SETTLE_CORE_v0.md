@@ -17,6 +17,8 @@ Revision 0.7, 2026-10-20: one consequence of 8.1 and 7.1 that the text implied b
 
 Revision 0.8, 2026-10-22: the file list in section 16 named two files at their revision 0.4 contents (NOTES.md N22). admission_verify_v0.py and recovery_verify.py changed since, in layers outside settle core; on the 128 vectors the complete output of the reference is the same before and after. The list now gives the current sha256 and the commit it was taken at. No rule, reason or vector changed.
 
+Revision 0.9, 2026-10-23: the reference added `unscoped_approvals_refused` when 4.1 rejected the contract, contrary to 4.2, which applies only when 4.1 accepts (NOTES.md N23). Differential fuzzing against two independent implementations that follow the text found it. The reference is fixed (settle_v1_16.py); on the 128 vectors its complete output is the same before and after. 2.3 and 9.2 now say plainly that every bound record is triaged (6.0) and keeps its disposition whatever sections 4 and 5 find, as the reference and the vectors already did. No rule, reason or vector changed; section 16 gives the new sha256 of settle_v1_16.py.
+
 ## 0. Why this document exists
 
 Until now the MUSUBI settle function was defined only by Python code (settle_v1.py to settle_v1_16.py, each layer importing the ones below it).
@@ -88,11 +90,12 @@ A JSON value is an "integer" in this document only if it is written as an intege
 ### 2.3 The computation in one paragraph
 
 Compute contract_sha256 (3.3) and bind records by it (6.1).
-Triage every bound record (6.0): records not strictly signed by a party are rejected or set aside here, and no later step sees them.
+Triage every bound record (6.0), whatever sections 4 and 5 find: records not strictly signed by a party are rejected or set aside here with their dispositions (9.2), and no later step sees them.
 Check the contract's terms (section 4) and verify the header view (section 5).
 Every problem found so far is collected; none of them stops the other checks in this paragraph.
-If a problem was found in 4.1, 4.2 or 5.1 rules 1 to 8, no record is examined further.
-Otherwise: collapse copies of one signed body (6.4), check conformance (6.6), check anchors (section 7).
+If 5.1 rules 1 to 8 passed, collapse copies of one signed body (6.4), whether or not section 4 found a problem.
+If a problem was found in 4.1, 4.2 or 5.1 rules 1 to 8, no record is examined further: the dispositions given by 6.0 and 6.4 stand, the `revoked_by` test of 6.5, 6.6 and section 7 do not run, the event set is empty, and a bound record kept by 6.0 and not dropped by 6.4 has no disposition (revision 0.9).
+Otherwise: check conformance (6.6), check anchors (section 7).
 Records that pass are the event set, ordered by anchor height then record sha256 (section 8).
 Walk the event set against the grant (section 10), add the NENRIN checks (section 11), and decide the verdict (section 12), status (8.5) and bond outcome (9.3).
 The checks of 4.3, 5.1 rule 9, 6.0 (a record that fails closed), 7.4 (below the lower bound) and 11 (a cited walk) are collected in the same way and make the settlement underspecified; they never stop the computation of the event set.
@@ -502,7 +505,7 @@ A second implementation MUST reproduce these exactly. They are what the vectors'
 | `orphaned` | 7.4 |
 | `accepted` | in the event set |
 
-A bound record that the computation never examined (because sections 4, 5 or 6.2 failed) has no disposition.
+Every bound record is triaged (6.0) whatever sections 4 and 5 find, so a record that 6.0 rejects or sets aside always has its disposition, and so does a copy that 6.4 drops whenever 6.4 runs (2.3). A bound record kept by 6.0 that the computation examined no further, because 4.1, 4.2, 5.1 rules 1 to 8 or 6.2 failed, has no disposition (revision 0.9).
 A record that is not ours (6.1, dropped silently) has no disposition. A record set aside because it cannot be digested has no record_sha256 and so no disposition; it is counted in the informative `v1_16.refused`.
 Every record has at most one disposition.
 
@@ -734,7 +737,7 @@ Synthetic vectors use keys named synthetic-principal, synthetic-contractor, synt
 `exercise_inputs.py` builds in memory the inputs the vector layout cannot carry (events that are not a list, 10001 records) and the inputs of the four rows of 4.2 that cannot fire, runs the reference on them, and compares its lines with `EXERCISE.txt` (`--check`).
 
 The reference, as run for these vectors (first 16 hex digits of each file's sha256):
-settle_v1.py 0e51350331c8931c, settle_v1_1.py a2391a5db199bcda, settle_v1_10.py 34beeebaa1397059, settle_v1_11.py fb03687cbacd2713, settle_v1_12.py 40a8fbb82a8e7680, settle_v1_13.py eb02b3a6544b1bf1, settle_v1_14.py 7d0704fa060adafd, settle_v1_15.py a2be5de8ba60656e, settle_v1_16.py ec332ecb387e9b56, settle_v1_2.py 6c674fd54a1a5c89, settle_v1_3.py 17119bbc7802647f, settle_v1_4.py ef3779d05fc98e40, settle_v1_5.py f9b313566713cdc4, settle_v1_6.py 6752a748ed7b6e3b, settle_v1_7.py 878a3a3697775d3a, settle_v1_8.py fe61f67c1593c776, settle_v1_9.py 7a84302be1ec38a1, admission_verify_v0.py 4bc36aa7a34ec024, agreement_verify.py fd8c34ce8a11cf42 (agreement-v0/agreement_verify.py, the copy settle_v1_16.py imports), anchor_compose.py a661f673c05dbe6e, approval_v3.py e8dde985dbe6fbf4, clause_eval_v0.py fee48c3a66c28fe1, contract_v0.py 211a568783705e11, convergence_v0.py 65a267380fa623f5, corroboration_v0.py 62ae1d6c27a92228, independence_v0.py 50964883c27896de, recovery_verify.py fd4c93f015f6b495, spine_verify.py ad2076d49be6763e, terms_v0.py 6532d5c6160a3974, as of commit 9ab4a004. Python 3.14.7, cryptography 50.0.1. Two of these files changed after revision 0.4 without changing any output on the vectors (NOTES.md N22).
+settle_v1.py 0e51350331c8931c, settle_v1_1.py a2391a5db199bcda, settle_v1_10.py 34beeebaa1397059, settle_v1_11.py fb03687cbacd2713, settle_v1_12.py 40a8fbb82a8e7680, settle_v1_13.py eb02b3a6544b1bf1, settle_v1_14.py 7d0704fa060adafd, settle_v1_15.py a2be5de8ba60656e, settle_v1_16.py a7a1621224a63ef2, settle_v1_2.py 6c674fd54a1a5c89, settle_v1_3.py 17119bbc7802647f, settle_v1_4.py ef3779d05fc98e40, settle_v1_5.py f9b313566713cdc4, settle_v1_6.py 6752a748ed7b6e3b, settle_v1_7.py 878a3a3697775d3a, settle_v1_8.py fe61f67c1593c776, settle_v1_9.py 7a84302be1ec38a1, admission_verify_v0.py 4bc36aa7a34ec024, agreement_verify.py fd8c34ce8a11cf42 (agreement-v0/agreement_verify.py, the copy settle_v1_16.py imports), anchor_compose.py a661f673c05dbe6e, approval_v3.py e8dde985dbe6fbf4, clause_eval_v0.py fee48c3a66c28fe1, contract_v0.py 211a568783705e11, convergence_v0.py 65a267380fa623f5, corroboration_v0.py 62ae1d6c27a92228, independence_v0.py 50964883c27896de, recovery_verify.py fd4c93f015f6b495, spine_verify.py ad2076d49be6763e, terms_v0.py 6532d5c6160a3974, as of commit f23867e0, except settle_v1_16.py, which is its revision 0.9 copy (NOTES.md N23; ec332ecb387e9b56 at f23867e0). Python 3.14.7, cryptography 50.0.1. Two of these files changed after revision 0.4 without changing any output on the vectors (NOTES.md N22).
 The reference is called as a library, `settle_v1_16.settle_v1_16(contract, events, view, parent=..., nenrin_records=...)`. Its command line (`--settle`, `--event`, `--view`, `--nenrin`, `--parent`) first checks each view's strict form and runs fork choice, and for a view that does not pass prints why and writes no settlement.
 
 ## Appendix A. Codes
