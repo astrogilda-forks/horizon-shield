@@ -1,0 +1,37 @@
+{
+  // hs-sweep-kicker: asks the verify gate (hs-verify-gate) for one more sweep on a day when its 18:00 UTC sweep left
+  // rows skipped for capacity. A stopgap until gate 0.4.21 covers its whole due list itself. See README.md.
+  //
+  // Secret (owner only, never in this file or in GitHub): SWEEP_TOKEN, the same value as the gate's SWEEP_TOKEN.
+  //   cd workers/hs-sweep-kicker && npx wrangler secret put SWEEP_TOKEN
+  // Without it the Worker still reads /sweep/last and writes its log, and records token_not_configured instead of calling.
+  //
+  // The KV id below is written by the owner's script (ops-private sweep_daily_20261023/toshi_stage1.sh) when it
+  // creates the namespace, before the commit, the same way as hs-ms-marketplace. All zeros means not created yet.
+  "$schema": "https://unpkg.com/wrangler@4.149.0/config-schema.json",
+  "name": "hs-sweep-kicker",
+  "main": "src/worker.js",
+  "account_id": "c15ff64aba400e541853dec1fbe5e76a",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": true, "logs": { "enabled": true } },
+
+  // UTC. The gate's own sweep runs at 18:00 UTC and finishes within a minute or two. Three chances, at most one call
+  // each, and the Worker also stops at 3 calls a UTC day. JST: 04:17, 04:41, 05:13.
+  "triggers": {
+    "crons": ["17 19 * * *", "41 19 * * *", "13 20 * * *"]
+  },
+
+  // One key per UTC day (log:YYYY-MM-DD), 400 days. Only decisions and counts; no token, no headers.
+  "kv_namespaces": [
+    { "binding": "KICK_LOG", "id": "efed7b325db74c549042a41d3832967f" }
+  ],
+
+  // How the gate is reached. "url" (default): the public https://gate.horizonshield.dev, so the gate's sweep runs in a
+  // request of its own. "binding": the service binding below (the way hs-ledger reaches the gate). See README.md.
+  "vars": { "GATE_VIA": "url" },
+  "services": [
+    { "binding": "GATE", "service": "hs-verify-gate" }
+  ]
+}

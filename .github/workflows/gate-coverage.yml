@@ -1,0 +1,97 @@
+# gate coverage: once a day, check that the verify gate measured every row it owed that UTC day.
+#
+# tools/gate_coverage/coverage.mjs reads only public GETs of the gate (/watchlist, /sweep/last, /nenrin/window,
+# /history), none of which the gate counts in /usage. At 23:30 UTC it checks the UTC day whose sweeps are over
+# (the gate's cron at 18:00 UTC and hs-sweep-kicker's calls up to 20:13 UTC), where /sweep/last says exactly which
+# free rows were due. Run by hand with a day to check another one.
+#
+# When a row is missing the job fails and the result goes to ONE open issue with the label gate-coverage: a comment
+# on it when one is open, a new issue only when none is open. So a gap that lasts a week is one issue with seven
+# comments, not seven issues. The issue is closed by a person once the cause is fixed; this workflow never closes it.
+# A run that could not read the gate (exit 2) fails without writing to the issue: that is not a finding about coverage.
+# Not on push: the result depends on the gate, not on this repository.
+name: gate-coverage
+
+on:
+  schedule:
+    - cron: "30 23 * * *"
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "UTC day to check (YYYY-MM-DD); empty for the default"
+        type: string
+        default: ""
+
+permissions: {}
+
+concurrency:
+  group: gate-coverage
+  cancel-in-progress: false
+
+jobs:
+  coverage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      DAY_INPUT: ${{ github.event.inputs.day }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
+          node-version: "22"
+      - name: The checker, offline (fake gate)
+        run: node tools/gate_coverage/coverage_test.mjs
+      - name: Coverage of the day
+        id: cov
+        run: |
+          set +e
+          if [ -n "$DAY_INPUT" ]; then
+            node tools/gate_coverage/coverage.mjs --day "$DAY_INPUT" --json cov.json --md cov.md
+          else
+            node tools/gate_coverage/coverage.mjs --json cov.json --md cov.md
+          fi
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          [ -f cov.md ] && cat cov.md >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+      - name: Record a missing row on the gate-coverage issue
+        if: steps.cov.outputs.rc == '1'
+        run: |
+          set -euo pipefail
+          DAY=$(jq -r '.day' cov.json)
+          SHA=$(jq -r '.result_sha256' cov.json)
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          {
+            echo "### $DAY (UTC): the gate did not measure every row it owed"
+            echo
+            cat cov.md
+            echo
+            echo "result_sha256 \`$SHA\` (canonical JSON of the result; rerun \`node tools/gate_coverage/coverage.mjs --day $DAY\` to recompute while /sweep/last is still from that day). Run: $RUN_URL"
+          } > body.md
+          gh label create gate-coverage --color b60205 --description "A UTC day on which the verify gate did not measure every row it owed" --force >/dev/null
+          OPEN=$(gh issue list --label gate-coverage --state open --limit 20 --json number --jq '[.[].number] | length')
+          if [ "$OPEN" -gt 0 ]; then
+            NUM=$(gh issue list --label gate-coverage --state open --limit 20 --json number --jq '[.[].number] | min')
+            gh issue comment "$NUM" --body-file body.md
+            echo "commented on #$NUM" >> "$GITHUB_STEP_SUMMARY"
+          else
+            gh issue create --title "Gate coverage: rows not measured on their day" --label gate-coverage --body-file body.md
+            echo "opened a gate-coverage issue" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Result
+        run: |
+          rc="${{ steps.cov.outputs.rc }}"
+          case "$rc" in
+            0) echo "covered" ;;
+            1) echo "missing rows (recorded on the gate-coverage issue)"; exit 1 ;;
+            2) echo "could not read the gate; nothing concluded, nothing recorded"; exit 1 ;;
+            *) echo "checker failed (exit $rc)"; exit 1 ;;
+          esac
