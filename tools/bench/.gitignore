@@ -1,0 +1,6 @@
+# Generated data is never committed. The default output is the temp directory; these catch an --out inside the tree.
+*.jsonl
+out/
+settle_*/
+faults-*/
+nenrin-verify-go
