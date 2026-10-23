@@ -198,6 +198,15 @@
       "date": "2026-10-15"
     },
     {
+      "who": "astrogilda, Probity AI",
+      "author": "astrogilda",
+      "kind": "reproduction",
+      "subject": "priorseal-reader-v0",
+      "what": "Reran our PriorSeal exact-call v1.0.1 reader (horizon-shield bfde94be9d80, workers/hs-ledger/nenrin/priorseal-reader-v0) against PriorSeal 2ff89d86: 89 fields equal, 0 different and 13 not comparable, the same as our run, with report.json byte-identical apart from the Python version it records. The reader is ours and is answer-exposed (the expected results were read before it was written)",
+      "evidence": "https://github.com/probityai/agent-evidence/issues/30#issuecomment-6247270386",
+      "date": "2026-10-13"
+    },
+    {
       "who": "kuangmi-bit",
       "author": "kuangmi-bit",
       "kind": "implementation",
