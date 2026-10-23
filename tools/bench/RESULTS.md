@@ -87,4 +87,9 @@ Each fault also has a control row (the unchanged input); all four pass clean.
 
 ## Other machines
 
+Rows from other people's machines, added from issues opened with the [bench result form](https://github.com/ogasurfproject-jpg/horizon-shield/issues/new?template=bench-result.yml). A row is added only when its verdict sha256, and every other sha it reports (input sha256, `core_sha256`, `rows_sha256`), match the expected shas above for the commit it names. A result whose shas do not match is not added here; it stays in its issue, where we look into it as a finding about the generator, a verifier or the settlement code. Rows are credited by GitHub handle.
+
+| handle | commit | OS and CPU | Node / Python / Go | bundles | keys | JS s | Python s | Go s | verdict sha matches | issue |
+| --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | --- | --- |
+
 None yet.

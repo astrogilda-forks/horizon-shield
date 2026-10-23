@@ -41,6 +41,13 @@ Each command prints one JSON line (faults.py prints a table and `rows_sha256`). 
 
 ## A row from your machine
 
-Run the one-line command above at the commit named in RESULTS.md and keep the JSON lines, the output of `uname -a`,
+Run the one-line command above at the commit named in RESULTS.md and keep the JSON lines, the output of `uname -srm`,
 your CPU model and the versions of Node, Python, Go and cryptography. Rows from other machines go in their own table
 in RESULTS.md, apart from ours.
+
+To send it, open an issue with the [bench result form](https://github.com/ogasurfproject-jpg/horizon-shield/issues/new?template=bench-result.yml):
+the commit you ran, your OS and CPU, the version of each verifier, your numbers in the same table as RESULTS.md, and
+the shas. Your row is added to the "Other machines" table in RESULTS.md only when the verdict sha256 (and every other
+sha you report) matches RESULTS.md. A result that does not match stays in its issue, and we look into it there: a
+mismatch is a finding about the code, not about your machine. Please do not paste a host name or your real name
+(`uname -a` prints the host name; `uname -srm` does not).

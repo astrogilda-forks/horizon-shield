@@ -1,0 +1,63 @@
+name: Add a tools/bench row from your machine
+description: Your run of tools/bench at a named commit. A row goes into tools/bench/RESULTS.md only when its shas match.
+title: "[bench] "
+labels: ["bench-result"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run the one-line command in [tools/bench/README.md](https://github.com/ogasurfproject-jpg/horizon-shield/blob/main/tools/bench/README.md)
+        at the commit named in [tools/bench/RESULTS.md](https://github.com/ogasurfproject-jpg/horizon-shield/blob/main/tools/bench/RESULTS.md),
+        then fill in the fields below. Times and memory are yours. The shas are not: on every machine they must be the
+        ones in RESULTS.md.
+
+        **The rule.** A row is added to the "Other machines" table only when its verdict sha256 (and, for the rows you
+        report, the input sha256, `core_sha256` and `rows_sha256`) match RESULTS.md. A result whose shas do not match is
+        not added to the table. It stays in this issue, and we look into it here with you, because a mismatch is a
+        finding about the generator, a verifier or the settlement code, not about your machine.
+
+        Rows are credited by your GitHub handle only. Please do not paste a host name or your real name; `uname -a` prints the host name, so use `uname -srm`.
+  - type: input
+    id: commit
+    attributes:
+      label: The commit you ran
+      description: The full 40-character commit of horizon-shield you ran (`git rev-parse HEAD`).
+      placeholder: "186ee6b41d843a21ff73a307b2b16a94119924e2"
+    validations:
+      required: true
+  - type: textarea
+    id: machine
+    attributes:
+      label: OS and CPU
+      description: The output of `uname -srm` (it leaves out the host name), and the CPU model (macOS `sysctl -n machdep.cpu.brand_string`, Linux `lscpu | grep "Model name"`). Say if the machine was doing other work.
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: The version of each verifier and tool
+      description: Node (`node --version`), Python (`python3 --version`), cryptography, Go (`go version`), and opentimestamps if installed (it is needed for fault 3c).
+    validations:
+      required: true
+  - type: textarea
+    id: table
+    attributes:
+      label: Your numbers, in the same table as RESULTS.md
+      description: The rows you ran, with the columns of the "Provenance verifiers" table in RESULTS.md (bundles, keys, and for JS, Python and Go the seconds, the microseconds per bundle and the RSS in MB). Add settlement and fault rows if you ran them.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: shas
+    attributes:
+      label: The shas
+      description: For each run, the input sha256 and the verdict_sha256 printed by bench_verify.py (one per verifier; they must be equal). Add core_sha256 from bench_settle.py and rows_sha256 from faults.py if you ran them.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: raw
+    attributes:
+      label: The JSON lines (optional)
+      description: The JSON lines the scripts printed, as they came out. They let us check the shas without asking again.
+      render: json
