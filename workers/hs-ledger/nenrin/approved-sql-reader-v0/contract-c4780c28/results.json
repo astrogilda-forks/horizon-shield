@@ -1,0 +1,87 @@
+{
+  "ambiguous-execution.json": {
+    "result": "ambiguous_database_join",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "application-record-missing.json": {
+    "result": "application_record_missing",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "approval-not-granted.json": {
+    "result": "approval_not_granted",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "approved-audit-incomplete.json": {
+    "result": "insufficient_audit_evidence",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "approved-no-match-declared-scope.json": {
+    "result": "no_match_in_declared_complete_scope",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "commit-unknown.json": {
+    "result": "commit_not_established",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "contract-c4780c28/approval-not-granted-no-match.json": {
+    "result": "no_match_in_declared_complete_scope",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-database.json": {
+    "result": "execution_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-parameters.json": {
+    "result": "execution_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-principal.json": {
+    "result": "execution_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-schema.json": {
+    "result": "execution_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "different-sql.json": {
+    "result": "execution_differs_from_approval",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "matching-commit-later-change.json": {
+    "result": "recorded_commit_matches",
+    "later_state": "supplied_state_differs",
+    "exit": 0
+  },
+  "matching-commit.json": {
+    "result": "recorded_commit_matches",
+    "later_state": "not_supplied",
+    "exit": 0
+  },
+  "outcome-disagreement.json": {
+    "result": "application_audit_disagreement",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "rolled-back.json": {
+    "result": "transaction_rolled_back",
+    "later_state": "not_supplied",
+    "exit": 1
+  },
+  "statement-failed.json": {
+    "result": "statement_failed",
+    "later_state": "not_supplied",
+    "exit": 1
+  }
+}

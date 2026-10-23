@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
-"""Clean-room reader for the oel-approved-sql-illustration/v1 profile.
+"""Reader for the oel-approved-sql-illustration/v1 profile (clean-room at 5037ecf8, revised to the contract 2026-10-24).
 
-Written only from INPUT-CONTRACT.md and the fixture shapes. Python 3 stdlib only.
+The clean-room version (5037ecf8) was written only from INPUT-CONTRACT.md and the fixture shapes. Python 3 stdlib only.
+
+Revision 2026-10-24 (not clean-room): the result names, the check order and the later_state values now follow
+INPUT-CONTRACT.md at probityai/agent-evidence@c4780c28 (site/examples/approved-sql/docs/INPUT-CONTRACT.md), which
+lists all eleven results and their order. This revision was made by the operator's AI agent, which had seen the manifest
+since the comparison; it read no other reader's code. The clean-room version is 5037ecf8. Line numbers below are of that file.
 
 Usage: python3 reader.py <fixture.json>
 Exit:  0 recorded_commit_matches, 1 any other assessment, 2 invalid input.
@@ -14,21 +19,25 @@ import sys
 PROFILE = "oel-approved-sql-illustration/v1"
 ORIGIN = "author-created-fixture"
 
-# Result names. Only RESULT_MATCH and RESULT_NO_MATCH appear verbatim in the
-# contract; the others are spelled by this reader (see GAPS.md).
-RESULT_MATCH = "recorded_commit_matches"                      # contract
-RESULT_NO_MATCH = "no_match_in_declared_complete_scope"       # contract
-RESULT_INSUFFICIENT = "insufficient_evidence"                 # contract prose "insufficient evidence"
-RESULT_AMBIGUOUS = "ambiguous"                                # contract prose "is ambiguous"
-RESULT_NOT_GRANTED = "approval_not_granted"                   # invented
-RESULT_CALL_DIFFERS = "call_differs_from_approval"            # invented
-RESULT_APP_DISAGREES = "application_disagrees_with_audit"     # invented
-RESULT_NOT_COMMIT = "recorded_outcome_not_successful_commit"  # invented
-RESULT_INVALID = "invalid_input"                              # invented
+# Result names, exactly as INPUT-CONTRACT.md lines 40-54 list them (c4780c28).
+RESULT_NO_MATCH = "no_match_in_declared_complete_scope"       # line 44
+RESULT_INSUFFICIENT = "insufficient_audit_evidence"           # line 45
+RESULT_AMBIGUOUS = "ambiguous_database_join"                  # line 46
+RESULT_NOT_GRANTED = "approval_not_granted"                   # line 47
+RESULT_CALL_DIFFERS = "execution_differs_from_approval"       # line 48
+RESULT_APP_MISSING = "application_record_missing"             # line 49
+RESULT_APP_DISAGREES = "application_audit_disagreement"       # line 50
+RESULT_STATEMENT_FAILED = "statement_failed"                  # line 51
+RESULT_ROLLED_BACK = "transaction_rolled_back"                # line 52
+RESULT_COMMIT_UNKNOWN = "commit_not_established"              # line 53
+RESULT_MATCH = "recorded_commit_matches"                      # line 54
+RESULT_INVALID = "invalid_input"                              # not a result; exit 2 (line 38)
 
-LATER_ABSENT = "not_supplied"          # invented
-LATER_UNCHANGED = "unchanged"          # invented
-LATER_CHANGED = "changed"              # invented
+# later_state values, INPUT-CONTRACT.md line 57.
+LATER_ABSENT = "not_supplied"
+LATER_NOT_COMPARABLE = "target_not_comparable"
+LATER_UNCHANGED = "supplied_state_unchanged"
+LATER_CHANGED = "supplied_state_differs"
 
 STATEMENTS = ("succeeded", "failed")
 TRANSACTIONS = ("committed", "rolled_back", "unknown")
@@ -270,6 +279,8 @@ def _later_state(v):
         "target_matches_approval": later["target"] == v["approval_call"]["target"],
         "bytes_differ": later["at_commit"] != later["later"],
     }
+    if not detail["target_matches_approval"]:
+        return LATER_NOT_COMPARABLE, detail          # line 57: the later read names another target
     return (LATER_CHANGED if detail["bytes_differ"] else LATER_UNCHANGED), detail
 
 
@@ -284,10 +295,7 @@ def assess(v):
         out["later_state_detail"] = later_detail
     out["later_change_attribution"] = "not_assessed"
 
-    if not v["granted"]:
-        out["result"] = RESULT_NOT_GRANTED
-        return out
-
+    # The join comes first (lines 26-29, 44-46); the approval is read only once one record matches (lines 47, 56).
     scope = v["scope"]
     scope_matches = scope["request_id"] == rid and scope["target"] == approval["target"]
     out["audit_scope"] = {
@@ -298,30 +306,33 @@ def assess(v):
 
     matches = [r for r in v["records"] if r["call"]["request_id"] == rid]
     if len(matches) > 1:
-        out["result"] = RESULT_AMBIGUOUS
+        out["result"] = RESULT_AMBIGUOUS                  # line 46
         out["matching_event_ids"] = [r["event_id"] for r in matches]
         return out
     if not matches:
         if v["complete"] and scope_matches:
-            out["result"] = RESULT_NO_MATCH
+            out["result"] = RESULT_NO_MATCH               # line 44 (line 28)
         else:
-            out["result"] = RESULT_INSUFFICIENT
+            out["result"] = RESULT_INSUFFICIENT           # line 45
             out["reason"] = ("audit_scope_differs_from_approval" if not scope_matches
                              else "audit_collection_not_declared_complete")
         return out
 
+    # One matching record: the rows from approval_not_granted down, first that applies (line 56).
     rec = matches[0]
     out["matched_event_id"] = rec["event_id"]
+    if not v["granted"]:
+        out["result"] = RESULT_NOT_GRANTED                # line 47 (lines 34-35)
+        return out
     diffs = _call_diffs(approval, rec["call"])
     if diffs:
-        out["result"] = RESULT_CALL_DIFFERS
+        out["result"] = RESULT_CALL_DIFFERS               # line 48 (line 30)
         out["differing_fields"] = diffs
         return out
 
     app = v["application"]
     if app is None:
-        out["result"] = RESULT_INSUFFICIENT
-        out["reason"] = "application_record_absent"
+        out["result"] = RESULT_APP_MISSING                # line 49 (lines 34-35)
         return out
     app_diffs = _call_diffs(rec["call"], app["call"])
     if app["outcome"][0] != rec["outcome"][0]:
@@ -329,7 +340,7 @@ def assess(v):
     if app["outcome"][1] != rec["outcome"][1]:
         app_diffs.append("outcome.transaction")
     if app_diffs:
-        out["result"] = RESULT_APP_DISAGREES
+        out["result"] = RESULT_APP_DISAGREES              # line 50 (line 31)
         out["differing_fields"] = app_diffs
         out["audit_outcome"] = {"statement": rec["outcome"][0],
                                 "transaction": rec["outcome"][1]}
@@ -339,10 +350,14 @@ def assess(v):
 
     st, tx = rec["outcome"]
     out["recorded_outcome"] = {"statement": st, "transaction": tx}
-    if st == "succeeded" and tx == "committed":
-        out["result"] = RESULT_MATCH
+    if st == "failed":
+        out["result"] = RESULT_STATEMENT_FAILED           # line 51
+    elif tx == "rolled_back":
+        out["result"] = RESULT_ROLLED_BACK                # line 52
+    elif tx == "unknown":
+        out["result"] = RESULT_COMMIT_UNKNOWN             # line 53
     else:
-        out["result"] = RESULT_NOT_COMMIT
+        out["result"] = RESULT_MATCH                      # line 54 (line 33)
     return out
 
 

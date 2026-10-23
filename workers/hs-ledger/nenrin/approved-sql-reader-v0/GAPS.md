@@ -60,6 +60,7 @@ Other reading: checking application presence before the audit join would turn ap
 ### G9. Meaning of "agree with the audit on the request"
 Contract: "The application record must also agree with the audit on the request and outcome."
 Chosen: "request" = the whole call (request_id, SQL bytes, parameters, target, principal), mirroring the table's description of `approval.call` as "The request identifier, exact SQL bytes, ...". Other reading: only `request_id`. In every fixture the application call equals the audit call, so no change.
+Still open after the 2026-10-24 revision: the contract at agent-evidence c4780c28 keeps the same words (line 31), and the revised reader keeps the whole-call reading, which is wider than "request and outcome" if "request" means only `request_id`.
 
 ### G10. Parsing "An empty incomplete or differently scoped collection"
 Chosen: completeness and scope only matter when no record joins. Zero joined records and (not complete or scope differs) gives `insufficient_evidence`, whether or not the collection holds records for other requests. An incomplete collection with exactly one joined record is evaluated normally.

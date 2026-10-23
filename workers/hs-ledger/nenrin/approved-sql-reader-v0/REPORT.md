@@ -69,3 +69,26 @@ e1d96d3f07742de5f8923307bbf517b1e9b731a7d65ccca846c7860306d1d2ff  fixtures/diffe
 0dfba3c606df2d85bbc55d19ce181be2563ae693e470ccb04c13cd7ad596aded  fixtures/rolled-back.json
 8736af34200fab34a098df933a77755872862196e7f57f2455015c0f6d8b9dd8  fixtures/statement-failed.json
 ```
+
+## Revision to the contract at agent-evidence c4780c28 (2026-10-24)
+
+After this comparison the author's input contract
+([`INPUT-CONTRACT.md` at c4780c28](https://github.com/probityai/agent-evidence/blob/c4780c28f6a6e5836a629cbc09fbe7473a4b68dc/site/examples/approved-sql/docs/INPUT-CONTRACT.md))
+listed all eleven results, the order they are checked in, and the four `later_state` values. `reader.py` now
+follows that text: the audit join first (lines 26 to 28, 44 to 46), then, with one matching record, the rows from
+`approval_not_granted` down, first that applies (line 56). Each check names the contract line it follows.
+
+This revision is not clean-room. It was made by the operator's AI agent, which had seen the manifest; it read no
+other reader's code. The clean-room reader stays at `5037ecf8` and the comparison above is of that version.
+
+| Compared over the 16 fixtures | 5037ecf8 | this revision |
+|---|---|---|
+| Exit code | 16 of 16 | 16 of 16 |
+| `result` string, exactly | 4 of 16 | 16 of 16 |
+| `later_state` string, exactly | 15 of 16 | 16 of 16 |
+
+The contract exposed one case no fixture covers: `approval.granted: false` with no matching audit record in a
+declared complete, matching scope. `contract-c4780c28/approval-not-granted-no-match.json` is
+`approval-not-granted.json` with its one audit record removed. `5037ecf8` gives `approval_not_granted`; this
+revision gives `no_match_in_declared_complete_scope`, as the contract's order does. Both exit 1.
+`contract-c4780c28/results.json` holds this revision's output for all 17.
