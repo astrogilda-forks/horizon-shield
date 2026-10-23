@@ -1,16 +1,254 @@
 {
-  "drill_at": "2026-10-22T08:42:03Z",
+  "anchors": {
+    "confirmed": 142,
+    "explorers": [
+      "blockstream.info",
+      "mempool.space"
+    ],
+    "failed": [],
+    "first_block": 959118,
+    "last_block": 972686,
+    "pending": []
+  },
+  "chain": {
+    "broken_at": null,
+    "head": "f66fbe17fac50ad9a7cb8d55dfc4b69abe7207756d8c614de6d6d231cf15f551",
+    "rebuilt_through": 142,
+    "stamped_heads": [
+      {
+        "carried_by": 58,
+        "head_n": 57,
+        "result": "match"
+      },
+      {
+        "carried_by": 61,
+        "head_n": 60,
+        "result": "match"
+      },
+      {
+        "carried_by": 65,
+        "head_n": 64,
+        "result": "match"
+      },
+      {
+        "carried_by": 66,
+        "head_n": 65,
+        "result": "match"
+      },
+      {
+        "carried_by": 67,
+        "head_n": 66,
+        "result": "match"
+      },
+      {
+        "carried_by": 68,
+        "head_n": 67,
+        "result": "match"
+      },
+      {
+        "carried_by": 70,
+        "head_n": 69,
+        "result": "match"
+      },
+      {
+        "carried_by": 71,
+        "head_n": 70,
+        "result": "match"
+      },
+      {
+        "carried_by": 72,
+        "head_n": 71,
+        "result": "match"
+      },
+      {
+        "carried_by": 73,
+        "head_n": 72,
+        "result": "match"
+      },
+      {
+        "carried_by": 74,
+        "head_n": 73,
+        "result": "match"
+      },
+      {
+        "carried_by": 75,
+        "head_n": 74,
+        "result": "match"
+      },
+      {
+        "carried_by": 76,
+        "head_n": 75,
+        "result": "match"
+      },
+      {
+        "carried_by": 77,
+        "head_n": 76,
+        "result": "match"
+      },
+      {
+        "carried_by": 78,
+        "head_n": 77,
+        "result": "match"
+      },
+      {
+        "carried_by": 79,
+        "head_n": 78,
+        "result": "match"
+      },
+      {
+        "carried_by": 82,
+        "head_n": 81,
+        "result": "match"
+      },
+      {
+        "carried_by": 84,
+        "head_n": 83,
+        "result": "match"
+      },
+      {
+        "carried_by": 87,
+        "head_n": 86,
+        "result": "match"
+      },
+      {
+        "carried_by": 89,
+        "head_n": 88,
+        "result": "match"
+      },
+      {
+        "carried_by": 93,
+        "head_n": 92,
+        "result": "match"
+      },
+      {
+        "carried_by": 96,
+        "head_n": 95,
+        "result": "match"
+      },
+      {
+        "carried_by": 99,
+        "head_n": 98,
+        "result": "match"
+      },
+      {
+        "carried_by": 100,
+        "head_n": 99,
+        "result": "match"
+      },
+      {
+        "carried_by": 103,
+        "head_n": 102,
+        "result": "match"
+      },
+      {
+        "carried_by": 106,
+        "head_n": 102,
+        "result": "match"
+      },
+      {
+        "carried_by": 107,
+        "head_n": 106,
+        "result": "match"
+      },
+      {
+        "carried_by": 110,
+        "head_n": 109,
+        "result": "match"
+      },
+      {
+        "carried_by": 111,
+        "head_n": 110,
+        "result": "match"
+      },
+      {
+        "carried_by": 116,
+        "head_n": 115,
+        "result": "match"
+      },
+      {
+        "carried_by": 119,
+        "head_n": 115,
+        "result": "match"
+      },
+      {
+        "carried_by": 121,
+        "head_n": 120,
+        "result": "match"
+      },
+      {
+        "carried_by": 125,
+        "head_n": 120,
+        "result": "match"
+      },
+      {
+        "carried_by": 128,
+        "head_n": 127,
+        "result": "match"
+      },
+      {
+        "carried_by": 131,
+        "head_n": 130,
+        "result": "match"
+      },
+      {
+        "carried_by": 133,
+        "head_n": 132,
+        "result": "match"
+      },
+      {
+        "carried_by": 136,
+        "head_n": 132,
+        "result": "match"
+      },
+      {
+        "carried_by": 138,
+        "head_n": 137,
+        "result": "match"
+      },
+      {
+        "carried_by": 141,
+        "head_n": 137,
+        "result": "match"
+      }
+    ],
+    "stamped_heads_matched": 39
+  },
+  "digests": {
+    "failed": [],
+    "ok": 142
+  },
+  "does_not_establish": [
+    "that any claim in the ledger is true",
+    "that the copy is complete past its highest entry; the newest entries may not have reached the custodian yet",
+    "that two explorers agreeing is Bitcoin consensus; check headers against your own node for that",
+    "anything about entries whose proofs are still pending; they are listed, not counted"
+  ],
+  "drill_at": "2026-10-23T08:37:13Z",
+  "entries": 142,
+  "establishes": [
+    "these ledger bytes were rebuilt from the named custodian without connecting to any operator host",
+    "every digest, the jidec-chain-v1 head, the stamped heads and the Bitcoin anchors were recomputed from the copy and two public explorers"
+  ],
   "fence": {
     "host": "ledger.horizonshield.dev",
     "reachable": false,
     "why": "sinkholed:0.0.0.0"
   },
-  "outcome": "custodian_unavailable",
-  "report_sha256": "151828bd63fe2ba18ed6fc92f61b55b93515789bc81f8b00948e010dfd0e28ab",
+  "outcome": "rebuilt",
+  "range": [
+    1,
+    142
+  ],
+  "report_sha256": "21ffe369b814d48ea5d4b40278d66137bb14ff964567bc1fec2ddd2e2030d406",
   "schema": "nenrin-survive-drill-v0",
   "source": {
-    "requested": "swh"
+    "archive_sha256": "d38d0591cfcb501985cc29f5b6048ead1698b0a74a3c028c8922cab450d93065",
+    "custodian": "software-heritage",
+    "directory": "swh:1:dir:aae1d862e0c81e66553b8c9be5c28e9b261df433",
+    "operator_controlled": false,
+    "revision": "d1eb072260a273a4cd3f363c0eacac660247c42d",
+    "snapshot": "9215069f2f77ea2620d65cb93b8714e137094e77",
+    "visit_date": "2026-10-23T08:36:44.423000+00:00"
   },
-  "version": "0.1.0",
-  "why": "RuntimeError: Software Heritage vault did not finish: new"
+  "version": "0.1.0"
 }
