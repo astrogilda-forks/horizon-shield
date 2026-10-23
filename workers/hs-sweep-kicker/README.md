@@ -33,7 +33,7 @@ On each one it reads `GET /sweep/last` from the gate and calls the gate's own `P
 | 2 | the last sweep is from today (UTC day of `at`) | `skip` / `not_today` |
 | 3 | it says `ran: true` | `skip` / `not_ran` |
 | 4 | a skipped row's reason starts with `over MAX_PER_SWEEP` or `subrequest budget` (the gate's exact words) | `skip` / `no_capacity_skips` |
-| 5 | at least one of those rows was not measured today: an `over MAX_PER_SWEEP` row whose reason says `last measured <time>` with a time before today, or `never`; every `subrequest budget` row (its reason does not say when) | `skip` / `all_capacity_skips_measured_today` |
+| 5 | at least one of those rows was not measured today: an `over MAX_PER_SWEEP` row whose reason says `last measured <time>` with a time before today, or `never`; a `subrequest budget` row whose last record in the gate's public `GET /history` is not from today, or could not be read (see below) | `skip` / `all_capacity_skips_measured_today` |
 | 6 | this Worker has called `POST /sweep` fewer than 3 times this UTC day | `skip` / `daily_cap_reached` |
 | 7 | the secret `SWEEP_TOKEN` is set on this Worker | `record_only` / `token_not_configured` |
 | | all hold | `kick`: one `POST /sweep`, never retried |
@@ -47,12 +47,25 @@ Condition 5 is stricter than "a skipped row says over MAX_PER_SWEEP": the gate s
 last measured, so after one kick the rows it just measured sit at the end of the list and are skipped
 `over MAX_PER_SWEEP` again with today's time. Without condition 5 every day would use all 3 calls.
 
+A `subrequest budget` reason does not say when the row was last measured. Since 0.1.1, when such rows are the only
+ones still counted as pending (every `over MAX_PER_SWEEP` row was measured today, the sweep is from today and ran,
+and calls are left today), the Worker reads `GET /history?endpoint=<row>` from the gate for each of them, at most
+`MAX_HISTORY_READS = 8` a run, and counts a row as measured today when its last record's `at` is from today. A row
+whose history could not be read (non-200, no answer), or that is past the 8, counts as not measured today: the
+Worker may then call once more, but it never leaves a row out. Why it mattered: the gate sorts due rows by when they
+were last measured and the budget runs out at the end of its 8 seats, so after two kicks the row skipped for budget
+is usually one measured earlier that day. On the 2026-10-22 shape (9 self rows over `MAX_PER_SWEEP`, 1 free row
+over `MAX_PER_SWEEP`, 1 free row for budget), 0.1.0 called at 19:17, 19:41 and 20:13, and the third call only
+re-measured; 0.1.1 calls twice and every one of the 18 rows is measured (test `10/22 shape`).
+
 ## The log
 
 Every decision and result is written to the KV namespace `KICK_LOG`, one key per UTC day (`log:YYYY-MM-DD`, kept
 400 days), as `{ schema: "hs-sweep-kicker-log-v1", day, entries: [...] }`. Each entry has `at`, `scheduled_at`,
 `cron`, `sweep_last` (counts only: `ran`, `at`, `is_today`, `watched_total`, `measured`, `skipped_total`,
-`skipped_over_max`, `skipped_over_max_measured_today`, `skipped_budget`, `pending_not_measured_today`), `kicks_before`,
+`skipped_over_max`, `skipped_over_max_measured_today`, `skipped_budget`, `skipped_budget_measured_today`,
+`pending_not_measured_today`), `budget_history` (`null` when not read, else counts only: `rows`, `read`, `today`,
+`earlier`, `unknown`, `cap`), `kicks_before`,
 `decision`, `reason`, `why`, and `post` (`http`, `ran`, `at`, `measured`, `error`, the same skipped counts of the
 sweep it caused, `meaning`, `retried: false`) or `null`.
 
@@ -74,8 +87,13 @@ service binding call shares the caller's subrequest allowance on Workers Free wa
 `GET /probe` cannot read the gate.
 
 Every request carries `User-Agent: hs-sweep-kicker/<version> (+https://github.com/ogasurfproject-jpg/horizon-shield/tree/main/workers/hs-sweep-kicker)`
-and `x-hs-requester: operator`. The gate does not count `GET /sweep/last` or `POST /sweep` in `/usage` at all (it
-counts only `POST /check`, `POST /a2a`, MCP `tools/call`, `/spec` and the testbed). The sweep a kick causes does what
+and `x-hs-requester: operator`. The gate does not count `GET /sweep/last`, `GET /history` or `POST /sweep` in `/usage` at
+all (it counts only `POST /check`, `POST /a2a`, MCP `tools/call`, `/spec` and the testbed: its counters `bumpUsage`,
+`bumpRequests` and `noteRequesterNetwork` are called from none of those three handlers). A test reads the gate's
+`src/worker.js` in this repository and fails if its `/history` handler ever calls one of them.
+
+Outbound requests per run: 1 `GET /sweep/last`, up to 8 `GET /history`, up to 1 `POST /sweep`, so at most 10,
+inside the 50 subrequests a Workers Free invocation allows (the KV reads and the write are on a separate allowance). The sweep a kick causes does what
 the 18:00 cron does: when it measures the gate's own `/mcp` (a self row with tool-call consent), those `tools/call`
 requests arrive through the relay and are counted under `requesters` like the cron's are.
 
@@ -85,7 +103,7 @@ requests arrive through the relay and are counted under `requesters` like the cr
   its due list. A kicked sweep takes the 8 least recently measured due rows; when fewer than 8 are still unmeasured,
   the rest of its 8 seats go to rows already measured earlier that day, so those get a second record that day.
 - **It adds requests to the gate.** Up to 3 sweeps a day more than the gate's own one, each up to about 50 outbound
-  requests from the gate to the measured endpoints, plus 1 to 2 requests from this Worker per cron.
+  requests from the gate to the measured endpoints, plus 1 to 10 requests from this Worker per cron.
 - **A kicked sweep probes the gate's own zone through the relay.** `POST /sweep` runs in the gate's HTTP context, where
   the gate reaches every endpoint of its own zone (the self rows) through `RELAY_URL` instead of directly, as the
   operator's manual `POST /sweep` always has (the cron goes direct to every row but the gate itself). The records
@@ -119,4 +137,7 @@ node test/run_all.mjs
 
 Offline: the gate is a fake `fetch` that records every request, KV is a `Map` that can be made to fail. They cover
 each row of the table above, the cap of 3, 403/409/503/no answer recorded without a retry, an unreadable
-`/sweep/last` or own log, and that `/log` and `/health` never show the token.
+`/sweep/last` or own log, and that `/log` and `/health` never show the token. Since 0.1.1 also: the `/history` check
+of budget rows (today, earlier, 503, no answer, the cap of 8, not read when an `over MAX_PER_SWEEP` row is still
+pending), the 2026-10-22 shape run through a fake gate that sorts and seats rows the way the gate does, and the gate
+source check that `/history` counts nothing in `/usage`.

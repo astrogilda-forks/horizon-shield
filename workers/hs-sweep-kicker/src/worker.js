@@ -12,14 +12,16 @@
 //   - POST /sweep only when all hold: the last sweep is from today (UTC) and ran: true; skipped has a row whose
 //     reason starts with "over MAX_PER_SWEEP" or "subrequest budget" (the gate's own words, worker.js of the gate);
 //     at least one of those rows was not measured today; this Worker has called POST /sweep fewer than 3 times
-//     this UTC day.
+//     this UTC day. A "subrequest budget" reason does not say when the row was last measured, so for those rows
+//     (and only when it decides the call) the Worker reads the gate's public GET /history and looks at the last
+//     record's day, at most MAX_HISTORY_READS rows a run (0.1.1).
 //   - Never retry. An unreadable /sweep/last, a 403, 409 or 503, a timeout: written down, nothing else.
 //   - Every decision is written to KV, one key per UTC day, and served at GET /log?day=YYYY-MM-DD.
 //     The token, request headers and response headers are never written and never served.
 //   - When this Worker's own log cannot be read, it does not know how many times it has called today, so it does
 //     not call and does not write (a failed read is not an empty day; issue #13 of this repository).
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";
 export const GATE_ORIGIN = "https://gate.horizonshield.dev";
 export const USER_AGENT = "hs-sweep-kicker/" + VERSION + " (+https://github.com/ogasurfproject-jpg/horizon-shield/tree/main/workers/hs-sweep-kicker)";
 export const CRONS = ["17 19 * * *", "41 19 * * *", "13 20 * * *"];
@@ -27,6 +29,10 @@ export const MAX_KICKS_PER_DAY = 3;
 // The gate writes these at the start of a skipped row's reason (hs-verify-gate src/worker.js, runDailySweepUnleased).
 export const REASON_OVER_MAX = "over MAX_PER_SWEEP";
 export const REASON_BUDGET = "subrequest budget";
+// /history reads per run, for subrequest budget rows only. The gate puts at most MAX_PER_SWEEP = 8 rows in a run, and only
+// rows of the run can be skipped for budget, so 8 covers them all. With /sweep/last and POST /sweep a run makes at most
+// 10 outbound requests, well inside the 50 a Workers Free invocation allows.
+export const MAX_HISTORY_READS = 8;
 export const LOG_TTL_SECONDS = 60 * 60 * 24 * 400;   // the gate keeps its usage counters 400 days; the same here
 const GET_TIMEOUT_MS = 20000;
 const POST_TIMEOUT_MS = 10 * 60 * 1000;   // a sweep of 8 rows takes tens of seconds; the cron may run 15 minutes
@@ -67,9 +73,11 @@ export function lastMeasuredFromReason(reason) {
 }
 
 // What /sweep/last said, in counts. Endpoint URLs are not copied into the log: the gate already publishes them.
-export function summarizeSweep(sl, today) {
+// budgetSeen (optional): Map endpoint -> "today" | "earlier" | "unknown", what /history said about a budget row.
+// A budget row counts as measured today only when its /history was read and its last record is from today.
+export function summarizeSweep(sl, today, budgetSeen) {
   const skipped = Array.isArray(sl && sl.skipped) ? sl.skipped : [];
-  let overMax = 0, budget = 0, overMaxMeasuredToday = 0, pending = 0;
+  let overMax = 0, budget = 0, overMaxMeasuredToday = 0, budgetMeasuredToday = 0, pending = 0;
   for (const s of skipped) {
     const r = String((s && s.reason) || "");
     if (r.startsWith(REASON_OVER_MAX)) {
@@ -79,7 +87,10 @@ export function summarizeSweep(sl, today) {
       else pending++;
     } else if (r.startsWith(REASON_BUDGET)) {
       budget++;
-      pending++;   // the budget reason does not say when the row was last measured, so it counts as not measured today
+      // The budget reason does not say when the row was last measured. Without a /history reading that says today,
+      // the row counts as not measured today (the side that may call once more, never the side that misses a row).
+      if (budgetSeen && s && budgetSeen.get(s.endpoint) === "today") budgetMeasuredToday++;
+      else pending++;
     }
   }
   const at = sl && typeof sl.at === "string" ? sl.at : null;
@@ -94,6 +105,7 @@ export function summarizeSweep(sl, today) {
     skipped_over_max: overMax,
     skipped_over_max_measured_today: overMaxMeasuredToday,
     skipped_budget: budget,
+    skipped_budget_measured_today: budgetMeasuredToday,
     pending_not_measured_today: pending,
     error: sl && typeof sl.error === "string" ? sl.error.slice(0, 80) : null
   };
@@ -138,6 +150,41 @@ export async function readSweepLast(env) {
     return { readable: false, http: res.status, body: null, error: body && typeof body.error === "string" ? body.error.slice(0, 80) : "not_json_or_not_200" };
   }
   return { readable: true, http: res.status, body, error: null };
+}
+
+// Only the budget rows can need /history, and only when they alone decide the call: the sweep is from today and ran,
+// no over MAX_PER_SWEEP row is still pending, a budget row is, and calls are left today.
+export function needsHistory(summary, kicksToday) {
+  return !!(summary && summary.is_today && summary.ran === true && kicksToday < MAX_KICKS_PER_DAY &&
+    summary.skipped_budget > 0 && summary.pending_not_measured_today === summary.skipped_budget);
+}
+
+// GET /history?endpoint= for up to MAX_HISTORY_READS budget rows. Public, no token; the gate does not count it in
+// /usage (its /history handler calls none of its counters). "today" when the last record's at is from today,
+// "earlier" when it is from before (or there is no record), "unknown" when it could not be read or was beyond the cap.
+export async function readBudgetHistories(env, sl, today) {
+  const rows = (Array.isArray(sl && sl.skipped) ? sl.skipped : [])
+    .filter((s) => s && typeof s.endpoint === "string" && String(s.reason || "").startsWith(REASON_BUDGET));
+  const seen = new Map();
+  const stats = { rows: rows.length, read: 0, today: 0, earlier: 0, unknown: 0, cap: MAX_HISTORY_READS };
+  for (const [i, s] of rows.entries()) {
+    let v = "unknown";
+    if (i < MAX_HISTORY_READS) {
+      stats.read++;
+      try {
+        const res = await gateFetch(env, "/history?endpoint=" + encodeURIComponent(s.endpoint), { method: "GET", headers: baseHeaders(), signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
+        let body = null;
+        try { body = await res.json(); } catch (_e) { body = null; }
+        if (res.status === 200 && body && Array.isArray(body.entries)) {
+          const last = body.entries.length ? String((body.entries[body.entries.length - 1] || {}).at || "") : "";
+          v = last.slice(0, 10) === today ? "today" : "earlier";
+        }
+      } catch (_e) { v = "unknown"; }
+    }
+    seen.set(s.endpoint, v);
+    stats[v]++;
+  }
+  return { seen, stats };
 }
 
 export function summarizePost(status, body, today) {
@@ -197,13 +244,20 @@ export async function runOnce(env, scheduledTime, cron) {
   }
   const kicksToday = kicksIn(log);
   const sl = await readSweepLast(env);
-  const summary = sl.readable ? summarizeSweep(sl.body, today) : null;
+  let summary = sl.readable ? summarizeSweep(sl.body, today) : null;
+  let budgetHistory = null;
+  if (sl.readable && needsHistory(summary, kicksToday)) {
+    const h = await readBudgetHistories(env, sl.body, today);
+    budgetHistory = h.stats;
+    summary = summarizeSweep(sl.body, today, h.seen);
+  }
   const d = decide({ readable: sl.readable, http: sl.http, summary: summary || {}, kicksToday, tokenConfigured: !!(env && env.SWEEP_TOKEN) });
   const entry = {
     at: new Date().toISOString(),
     scheduled_at: new Date(now).toISOString(),
     cron: cron || null,
     sweep_last: sl.readable ? Object.assign({ http: sl.http }, summary) : { http: sl.http, readable: false, error: sl.error },
+    budget_history: budgetHistory,   // counts only (rows, read, today, earlier, unknown, cap); null when not needed
     kicks_before: kicksToday,
     decision: d.decision,
     reason: d.reason,
