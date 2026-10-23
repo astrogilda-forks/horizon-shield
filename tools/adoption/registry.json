@@ -36,7 +36,7 @@
       "date": "2026-10-01"
     },
     {
-      "who": "Sankalp Gilda (astrogilda)",
+      "who": "astrogilda",
       "author": "astrogilda",
       "kind": "implementation",
       "subject": "a2a-card-sign-v01",
@@ -63,7 +63,7 @@
       "date": "2026-09-28"
     },
     {
-      "who": "Sankalp Gilda (astrogilda), Probity AI",
+      "who": "astrogilda, Probity AI",
       "author": "astrogilda",
       "kind": "implementation",
       "subject": "a2a-card-sign-v01",
@@ -81,7 +81,7 @@
       "date": "2026-10-02"
     },
     {
-      "who": "Sankalp Gilda (astrogilda), Probity AI",
+      "who": "astrogilda, Probity AI",
       "author": "astrogilda",
       "kind": "implementation",
       "subject": "a2a-card-sign-v01",
@@ -135,7 +135,7 @@
       "date": "2026-10-09"
     },
     {
-      "who": "Sankalp Gilda (astrogilda), Probity AI",
+      "who": "astrogilda, Probity AI",
       "author": "astrogilda",
       "kind": "implementation",
       "subject": "nenrin-witness-reader",
@@ -153,7 +153,7 @@
       "date": "2026-10-12"
     },
     {
-      "who": "Poke-nushi (Takao Sato), VATE",
+      "who": "Poke-nushi, VATE",
       "author": "Poke-nushi",
       "kind": "reproduction",
       "subject": "nenrin-provenance",
@@ -171,7 +171,7 @@
       "date": "2026-10-11"
     },
     {
-      "who": "Sankalp Gilda (astrogilda), Probity AI",
+      "who": "astrogilda, Probity AI",
       "author": "astrogilda",
       "kind": "implementation",
       "subject": "nenrin-action-presence",
@@ -180,7 +180,7 @@
       "date": "2026-10-12"
     },
     {
-      "who": "Federico Blanco Sánchez-Llanos (babyblueviper1)",
+      "who": "babyblueviper1",
       "author": "babyblueviper1",
       "kind": "implementation",
       "subject": "nenrin-provenance",
@@ -189,7 +189,7 @@
       "date": "2026-10-15"
     },
     {
-      "who": "Sankalp Gilda (astrogilda), Probity AI",
+      "who": "astrogilda, Probity AI",
       "author": "astrogilda",
       "kind": "implementation",
       "subject": "a2a-card-walk",

@@ -63,7 +63,7 @@
           "link_ok": true
         },
         {
-          "who": "Sankalp Gilda (astrogilda)",
+          "who": "astrogilda",
           "author": "astrogilda",
           "kind": "implementation",
           "subject": "a2a-card-sign-v01",
@@ -93,7 +93,7 @@
           "link_ok": true
         },
         {
-          "who": "Sankalp Gilda (astrogilda), Probity AI",
+          "who": "astrogilda, Probity AI",
           "author": "astrogilda",
           "kind": "implementation",
           "subject": "a2a-card-sign-v01",
@@ -113,7 +113,7 @@
           "link_ok": true
         },
         {
-          "who": "Sankalp Gilda (astrogilda), Probity AI",
+          "who": "astrogilda, Probity AI",
           "author": "astrogilda",
           "kind": "implementation",
           "subject": "a2a-card-sign-v01",
@@ -173,7 +173,7 @@
           "link_ok": true
         },
         {
-          "who": "Sankalp Gilda (astrogilda), Probity AI",
+          "who": "astrogilda, Probity AI",
           "author": "astrogilda",
           "kind": "implementation",
           "subject": "nenrin-witness-reader",
@@ -193,7 +193,7 @@
           "link_ok": true
         },
         {
-          "who": "Poke-nushi (Takao Sato), VATE",
+          "who": "Poke-nushi, VATE",
           "author": "Poke-nushi",
           "kind": "reproduction",
           "subject": "nenrin-provenance",
@@ -213,7 +213,7 @@
           "link_ok": true
         },
         {
-          "who": "Sankalp Gilda (astrogilda), Probity AI",
+          "who": "astrogilda, Probity AI",
           "author": "astrogilda",
           "kind": "implementation",
           "subject": "nenrin-action-presence",
@@ -223,7 +223,7 @@
           "link_ok": true
         },
         {
-          "who": "Federico Blanco Sánchez-Llanos (babyblueviper1)",
+          "who": "babyblueviper1",
           "author": "babyblueviper1",
           "kind": "implementation",
           "subject": "nenrin-provenance",
@@ -233,7 +233,7 @@
           "link_ok": true
         },
         {
-          "who": "Sankalp Gilda (astrogilda), Probity AI",
+          "who": "astrogilda, Probity AI",
           "author": "astrogilda",
           "kind": "implementation",
           "subject": "a2a-card-walk",
