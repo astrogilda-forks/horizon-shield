@@ -1,5 +1,5 @@
 // rda.mjs  RDA の canonical・rda_id・検証・nullifier (SPEC_v1)。
-// canonical は再帰キーソート (配列順は保つ) = Federico の Node 再現と同じ規約。rda_id = SHA-256(canonical(rda_id 抜き))。
+// canonical は再帰キーソート (配列順は保つ) = babyblueviper1 の Node 再現と同じ規約。rda_id = SHA-256(canonical(rda_id 抜き))。
 // 検証は fail-closed (E8): 証拠 4 参照が揃う、splits が 10000、recipe が成立より前に commit (G3)、rda_id 再計算、
 // settlement_ref / agreement_ref が使い捨て (G2 nullifier)。どれか欠けたら ok:false。
 import { computeSplits, RECIPE } from "./recipe.mjs";

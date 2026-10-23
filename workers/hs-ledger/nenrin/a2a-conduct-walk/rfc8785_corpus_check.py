@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """rfc8785() in a2a_conduct_walk.py against the rfc8785 target of the a2a-tck canonicalization corpus
-(vectors-a2a-jcs-v01) that agent-evidence-vectors ships. Suggested by Sankalp Gilda (astrogilda) on
+(vectors-a2a-jcs-v01) that agent-evidence-vectors ships. Suggested by astrogilda on
 probityai/agent-evidence-vectors#55, whose run of 0.20.0 found nine non-integer numbers refused.
 
     pip install agent-evidence-vectors==0.20.0

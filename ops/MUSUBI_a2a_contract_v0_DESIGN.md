@@ -197,11 +197,11 @@ purpose, payload digest, expiry, nonce を具体的 Message に binding する�
 
 ---
 
-## 11. 最初の一本（プラットフォーム建設やない、Federico と1回）
+## 11. 最初の一本（プラットフォーム建設やない、babyblueviper1 と1回）
 
 1. `a2a-contract-v0` を agreement-v1.1 の拡張として実装（schema + builder + verifier + settle()。
    既存の agreement_sign.py / agreement_verify.py を土台に、Grant・委任 ⊆ 検査・Settlement 関数・脅威 vector を足す）。
-2. **Federico と実契約を1回**：範囲を絞ったタスク（例「api.babyblueviper.com を、read/observe 許可・payment/delete/redelegate 禁止で歩け」）
+2. **babyblueviper1 と実契約を1回**：範囲を絞ったタスク（例「api.babyblueviper.com を、read/observe 許可・payment/delete/redelegate 禁止で歩け」）
    を両者署名 → 実行 → NENRIN（contract_ref 付き）→ settle() で照合 → 錨打ち。bond は最初は null で可。
 3. 拡張仕様を扉で公開（`/ext/contract/v1`）。
 4. **それから宣伝**：「これは生きた A2A 契約や。settle() を自分で再計算して within_grant を確かめろ」。vapor やのうて動く1本。
@@ -213,4 +213,4 @@ purpose, payload digest, expiry, nonce を具体的 Message に binding する�
 1. `agreement_verify.py` / `agreement_sign.py` を読み、`a2a-contract-v0` の canonical・signing_bytes を同じ規律で定義。
 2. builder（契約を組む）+ verifier（両署名 + grant 整合 + 委任 ⊆ + overclaim/dne + 脅威 vector）。
 3. `settle()`（決定論。契約 + NENRIN refs -> verdict、誰でも再計算）+ settlement builder/verifier。
-4. Federico 1本 → 錨打ち → 拡張仕様公開 → 宣伝。
+4. babyblueviper1 1本 → 錨打ち → 拡張仕様公開 → 宣伝。

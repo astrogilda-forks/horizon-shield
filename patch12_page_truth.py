@@ -16,7 +16,7 @@
   - probed_via フィールドの存在
   - 非対称: 夜の掃引は中継を使えないので、夜の台帳では held のまま。
     オンデマンドでは測れる。両方の記録を残し、どちらにも合わせて書き換えない。
-  - 発見者 Federico Blanco Sanchez-Llanos の名前(本人が名指しを許諾)
+  - 発見者 babyblueviper1 の名前(本人が名指しを許諾)
 
 使い方:
   cd ~/Desktop/hs-docfix
@@ -33,7 +33,7 @@ R1 = '''      <p>On the first run, our own servers did not meet a single one of 
 
 F2 = '''        <p>Answers "who verifies the verifier" by going first — and then fails its own test. It now speaks MCP at <span class="mono">/mcp</span>, so the tool that lets you distrust the issuer is <b>provided by the issuer</b>. Its endpoint row reads <b>served, not measured by us</b>: a Worker cannot fetch its own hostname. For a while the record carried <span class="mono">pass: true</span> on that row anyway, which made the gate's own verdict read verified. <b>It was the only server this gate was lenient with, so we removed the leniency.</b> The verdict now reads <span class="mono">pending</span>, and the row stays visible rather than being quietly dropped.</p></div>'''
 
-R2 = '''        <p>Answers "who verifies the verifier" by going first — and then fails its own test. It now speaks MCP at <span class="mono">/mcp</span>, so the tool that lets you distrust the issuer is <b>provided by the issuer</b>. For a while its endpoint row carried <span class="mono">pass: true</span> on a condition it openly had not measured, which made its own verdict read verified. <b>It was the only server this gate was lenient with, so we removed the leniency</b> and the verdict fell to <span class="mono">pending</span>. On 2026-08-15, after Federico Blanco Sanchez-Llanos reproduced our check from his own network and caught on-demand probes of our own zone failing with 522, those probes were rerouted over the public edge — and the gate measured its own endpoint for the first time: <span class="mono">reachable: true</span>, still <span class="mono">pending</span>, because determinism stays unmeasured without consent, including for us. The row stays visible either way.</p></div>'''
+R2 = '''        <p>Answers "who verifies the verifier" by going first — and then fails its own test. It now speaks MCP at <span class="mono">/mcp</span>, so the tool that lets you distrust the issuer is <b>provided by the issuer</b>. For a while its endpoint row carried <span class="mono">pass: true</span> on a condition it openly had not measured, which made its own verdict read verified. <b>It was the only server this gate was lenient with, so we removed the leniency</b> and the verdict fell to <span class="mono">pending</span>. On 2026-08-15, after babyblueviper1 reproduced our check from an outside network and caught on-demand probes of our own zone failing with 522, those probes were rerouted over the public edge — and the gate measured its own endpoint for the first time: <span class="mono">reachable: true</span>, still <span class="mono">pending</span>, because determinism stays unmeasured without consent, including for us. The row stays visible either way.</p></div>'''
 
 
 def main():
@@ -63,7 +63,7 @@ def main():
 
     checks = [
         ("probed_via の説明が1回入った",         out.count("probed_via") == 1),
-        ("発見者の名前が1回入った",              out.count("Federico Blanco Sanchez-Llanos") == 1),
+        ("発見者の名前が1回入った",              out.count("babyblueviper1 reproduced our check") == 1),
         ("held · http 522 は歴史として1回残る", out.count("held · http 522") == 1),
         ("初の自己測定を2箇所で言う",            out.count("measured itself for the first time") + out.count("measured its own endpoint for the first time") == 2),
         ("非対称を明記",                         "cannot use the relay" in out),

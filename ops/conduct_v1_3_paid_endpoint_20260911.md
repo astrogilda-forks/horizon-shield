@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-11. **Status:** draft. Nothing changed in the walk yet.
 **Found by:** pointing `a2a_conduct_walk.py` at a real agent for the first time in weeks:
-`api.babyblueviper.com`, Federico Blanco Sánchez-Llanos's `invinoveritas-reasoning-agent`.
+`api.babyblueviper.com`, babyblueviper1's `invinoveritas-reasoning-agent`.
 **Record:** `ops/first_record_prep_out/walk_babyblueviper.json`, sha256
 `e43f4fad0bcf124953893618489a6f6e01ff9c18d30c8c9ed4affa5bb8a7ab3b`, verdict FAIL 1/5.
 

@@ -8,7 +8,7 @@
 2. 世界で一番近いのは NTT やなく **Agenstry(アムステルダム)**。A2A agent を 100 点法で週 1 回以上再測定し、agent ごとの履歴と生 card と監査 JSON を公開し、日次で Merkle root を出しとる。ただし外部錨(chain)は未着手、外の証人の口は無い、MCP は生死だけで採点無し。
 3. ChatGPT の分析には 3 つ誤りがある。KanseiLink は日本企業やなく **シンガポールの Synapse Arrows**(格付けされる SaaS 側が月 149 ドルで報告書を買う、根拠の個別公開無し、履歴無し)。a2a-router は **1 人の MVP**(2026-05、pledge は自己宣言、「Public Trust Ledger」は planned で 404、star 3)。「NTT DATA のトラスト×AI」という物は見つからず、レジストリ試作は **NTT ドコモビジネス**(旧 NTT Com)の 2026-05-12 発表で、VC で属性を検証する「身元」層。
 4. **「証人 + 錨 + 振る舞い」の 3 つを同時に、現に動かしとる物は、今回の調べでは HORIZON SHIELD 以外に見つからんかった**(調査エージェントの結論、公開ページだけで確認)。近い物は 1F916 Agent Record(IETF 個人草案、SCITT 型、証人が署名するのは「登録簿の一貫性」であって振る舞いやない)、Cedulon(決済の領収書)、Asqav(運営者自身のログを OTS)。
-5. 一方で **HORIZON SHIELD を独立した第三者が公に言及した例はゼロ**。全部が自分の投稿か、README の自動転載(Glama、mcpservers.org、mcp.so)か、台帳の中に名前がある協力者(Federico)。#2211 は 0 コメント、#1631 の返信にも反応無し、awesome-mcp-servers に無し。技術の位置は珍しい、世間の位置はまだ無い。次の勝負が「第三者採用」というのは、その意味で正しい。
+5. 一方で **HORIZON SHIELD を独立した第三者が公に言及した例はゼロ**。全部が自分の投稿か、README の自動転載(Glama、mcpservers.org、mcp.so)か、台帳の中に名前がある協力者(babyblueviper1)。#2211 は 0 コメント、#1631 の返信にも反応無し、awesome-mcp-servers に無し。技術の位置は珍しい、世間の位置はまだ無い。次の勝負が「第三者採用」というのは、その意味で正しい。
 
 ## 1. 物差し(7 軸)
 
@@ -70,17 +70,17 @@ AGNTCon + MCPCon Japan 2026 [V]: 9/10〜11、ベルサール渋谷ガーデン�
 
 生きた面: 扉 0.3.4、red team 82/82、register 9 行(6 verified、2 pending、TWZRD は測定 0)、台帳 37 entry 全部 confirmed(block 959118〜965717)、**entry 37(仕様 v1 の錨)は block 965717 で確定済み**、/ext/conduct/v1 の sha は 3aa5a50d(#1631 の 09-06 の書き込みと一致)。
 
-露出: 公式 MCP registry に 7 サーバー 30 版(自分)、Glama は A(自動、README 転載)、mcpservers.org と mcp.so は自分の提出、Smithery 無し、PulseMCP 無し、awesome-mcp-servers 無し、Anthropic connectors の一覧に未掲載(09-05 に approved、アイコン待ち)。#2211 は 0 コメント。#1631 の 2 本の書き込みに返信も反応も無し(スレッドは 16 名参加、最終の他者コメントは 08-30)。Federico の公開 repo(invinoveritas、invinoveritas-mcp)と Substack に HORIZON SHIELD / NENRIN / JIDEC の記述無し、彼の名は台帳 entry 20 / 25 の中だけ。grep.app で horizonshield.dev の外部参照 0。X / LinkedIn / note / Zenn / Qiita の他者投稿 0。**独立した第三者の公の言及: 0。**
+露出: 公式 MCP registry に 7 サーバー 30 版(自分)、Glama は A(自動、README 転載)、mcpservers.org と mcp.so は自分の提出、Smithery 無し、PulseMCP 無し、awesome-mcp-servers 無し、Anthropic connectors の一覧に未掲載(09-05 に approved、アイコン待ち)。#2211 は 0 コメント。#1631 の 2 本の書き込みに返信も反応も無し(スレッドは 16 名参加、最終の他者コメントは 08-30)。babyblueviper1 の公開 repo(invinoveritas、invinoveritas-mcp)と Substack に HORIZON SHIELD / NENRIN / JIDEC の記述無し、babyblueviper1 の名は台帳 entry 20 / 25 の中だけ。grep.app で horizonshield.dev の外部参照 0。X / LinkedIn / note / Zenn / Qiita の他者投稿 0。**独立した第三者の公の言及: 0。**
 
 ## 7. だから何か(番人の線)
 
 技術の位置: 「他人が測った振る舞いを、外の証人も書き込める形で、Bitcoin に錨打ちして、点数を付けずに、報酬の出所まで開示する」の組み合わせは、日本には無く、世界でも現に動いとる物は見つからん。部品は全部既存(仕様 9 節に書いたとおり)。ここは変えん。
 
-相手の位置: 競合は NTT やない。NTT / NEC / SoftBank は身元と門(gateway)の層で、扉と食い合わん。**補完**や(§8)。現物で近いのは Agenstry で、向こうは規模と身元検証、こっちは証人と外部錨と無採点。ぶつけるより、Agenstry を証人 1 主体として口説くのが早い(彼らは毎週測っとる、その観測を witness intake に流すだけで「外部証人」になる。向こうも外部錨が未着手で、JIDEC を錨に使える)。
+相手の位置: 競合は NTT やない。NTT / NEC / SoftBank は身元と門(gateway)の層で、扉と食い合わん。**補完**や(§8)。現物で近いのは Agenstry で、向こうは規模と身元検証、こっちは証人と外部錨と無採点。ぶつけるより、Agenstry を証人 1 主体として口説くのが早い(Agenstry は毎週測っとる、その観測を witness intake に流すだけで「外部証人」になる。向こうも外部錨が未着手で、JIDEC を錨に使える)。
 
 弱点: 第三者採用がゼロ。#2211 は sponsor が要る。AGNTCon は CFP 締切済み、登壇は無理でも、飯島(SoftBank、trust boundary PoC)、日立(AAIF Ambassador)、David Soria Parra(MCP)に「扉の /check を 1 回叩いてもらう」だけで足りる。持って行く物は 1 枚: 「あなたの agent card を扉に入れると、10 秒で、あなたが書いとらん記録が 1 行できる」。
 
-順番: (1) 扉 0.3.5(今夜の掃引で derived を履歴に)。(2) witness を「AI が 1 回呼べば提出まで済む」MCP tool と skill に(他人の AI を証人にする)。(3) 証人候補の口説き: Agenstry、1F916(SCITT 型の証人設計、相互に証人になれる)、Sigstore-a2a(card 署名の Rekor 記録と補完)、Federico に続く 2 人目。(4) 身元層の受け口: conduct-v1.1 の params に OPTIONAL の `identity`(VC か DID の pointer)を足す案。NTT ドコモビジネスのレジストリや KYA が本番になったら、扉の行がその VC を指し、向こうの登録が扉の記録を指す。v1 は錨打ち済みなので v1.1(同じ URI、新 sha)で。
+順番: (1) 扉 0.3.5(今夜の掃引で derived を履歴に)。(2) witness を「AI が 1 回呼べば提出まで済む」MCP tool と skill に(他人の AI を証人にする)。(3) 証人候補の口説き: Agenstry、1F916(SCITT 型の証人設計、相互に証人になれる)、Sigstore-a2a(card 署名の Rekor 記録と補完)、babyblueviper1 に続く 2 人目。(4) 身元層の受け口: conduct-v1.1 の params に OPTIONAL の `identity`(VC か DID の pointer)を足す案。NTT ドコモビジネスのレジストリや KYA が本番になったら、扉の行がその VC を指し、向こうの登録が扉の記録を指す。v1 は錨打ち済みなので v1.1(同じ URI、新 sha)で。
 
 ## 8. TOshi の 4 つの案への番人の答え
 

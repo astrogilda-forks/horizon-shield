@@ -189,7 +189,7 @@ CANARY_EXPECT = "C025E288675EE898"
 
 
 def walk_entry4(base, pdfgen, transport=urllib_transport, clock=time.time, walked_at=None):
-    """Walk the same route Federico walked: live /canary self-match, then the
+    """Walk the same route babyblueviper1 walked: live /canary self-match, then the
     anchored entry-#4 source, and confirm both carry the same canary constant."""
     r = PathRecorder(
         base=base,

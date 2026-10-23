@@ -87,7 +87,7 @@ python3 ~/jidec/jidec_stamp.py
 
 `[3] stamp rc=0 ...` と出れば OK。数時間後に Bitcoin に取り込まれる。
 
-### 7. フェデリコに返信の追加コメント（任意）
+### 7. babyblueviper1 に返信の追加コメント（任意）
 
 entry #3 の URL が生きたら、LinkedIn の該当スレッドに補足コメントとして投稿できます：
 
@@ -103,4 +103,4 @@ entry #3 の URL が生きたら、LinkedIn の該当スレッドに補足コメ
 - entry #2: v1 スキーマ SPEC + 欠陥の宣言（誰から指摘があったかを含む）
 - entry #3: SPEC の finding を独立に再現するスクリプト、そのバイト SHA を Bitcoin に固定
 
-これで「主張 → 主張を裏付ける SPEC → SPEC の主張を再現する実行可能証拠」が三段階すべて on-chain になる。Federico が指摘した "the one link still resting on trust" が塞がる。
+これで「主張 → 主張を裏付ける SPEC → SPEC の主張を再現する実行可能証拠」が三段階すべて on-chain になる。babyblueviper1 が指摘した "the one link still resting on trust" が塞がる。

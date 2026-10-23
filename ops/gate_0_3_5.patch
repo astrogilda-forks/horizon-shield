@@ -187,7 +187,7 @@
 +export const BEACON_SOURCES = [
 +  { name: "mempool.space", tip: "https://mempool.space/api/blocks/tip/height", at: (h) => "https://mempool.space/api/block-height/" + h, block: (hash) => "https://mempool.space/api/block/" + hash },
 +  { name: "blockstream.info", tip: "https://blockstream.info/api/blocks/tip/height", at: (h) => "https://blockstream.info/api/block-height/" + h, block: (hash) => "https://blockstream.info/api/block/" + hash },
-+  // 0.3.5: 3 源目。運営者は別(emzy)やが mempool.space と同じ mempool codebase なので、そこは残る軸(Federico の verifier が名指しした residual と同じ)。
++  // 0.3.5: 3 源目。運営者は別(emzy)やが mempool.space と同じ mempool codebase なので、そこは残る軸(babyblueviper1 の verifier が名指しした residual と同じ)。
 +  // 一致は「2 源以上」のまま。源が増えるのは可用性のためで、規則は変えん。
 +  { name: "mempool.emzy.de", tip: "https://mempool.emzy.de/api/blocks/tip/height", at: (h) => "https://mempool.emzy.de/api/block-height/" + h, block: (hash) => "https://mempool.emzy.de/api/block/" + hash }
  ];

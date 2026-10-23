@@ -190,7 +190,7 @@ cd ~/horizon-shield && git add HORIZON_SHIELD_引き継ぎ_20260906_A2A第二波
 
 - 鍵マネージャ 13:30 版(番人が添付)を今の版と入れ替える。新しい行は「台帳・運用トークン」の「A2A card 署名鍵 hs-2026-09(EC P-256、ES256)」。値の欄は空のまま(鍵はファイル `~/.hs_card_key.pem`、貼る値は無い)。
 - `~/.hs_card_key.pem` がバックアップ(Time Machine か iCloud の手元の写し)に入っとるか。**無くしたら**: 5 worker の card 署名を新しい鍵で打ち直し(sign.mjs × 5、deploy × 5)、kid を hs-2026-10 などに変える、旧 kid の署名は検証不能になる。**漏れたら**: 同じ手順 + JWKS から旧鍵を外す。どちらも card の「判定」は変わらん(署名は detail)。
-- LinkedIn の Federico 宛て compose box に v2 の下書きが残っとらんか(11:41 に送信済み、二重送信の防止)。
+- LinkedIn の babyblueviper1 宛て compose box に v2 の下書きが残っとらんか(11:41 に送信済み、二重送信の防止)。
 - Smithery の Discord 投稿は出したか、出しとらんか(番人は状態を知らん。出しとらんなら次の波で文を書く)。
 
 ## 7. 終わったら番人に貼る物

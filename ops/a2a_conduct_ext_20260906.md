@@ -21,7 +21,7 @@ card の `capabilities.extensions[]` に 1 本置く。中身は「誰が払う�
 2. **両方あれば厳密一致**(省略した鍵は null、0 とは一致せん)。二つの申告を持つ card は、旧読者と新読者に別の顔を見せられる。それを潰す。
 3. **walk の verdict は `ok` と `outcome` の両方を持つ**。make_ring.py は `ok`/`result` を読み、JIDEC_PATH_SPEC_v1 は `outcome` と書いとる。どっちか片方だけの記録は二つの読者に別々に読まれる(縫い目、7 章)。
 4. **拡張は required: false 固定**。A2A の指針(data-only は required にしない)どおり。required: true の宣言は walk が落とす。
-5. **自社の walk は出さん**。輪は `witness.name` の異なりで数えるだけで、独立性は測れん。運営者が自分の endpoint を歩いて出すと「証人 1 人」の但し書きが消えるが、独立した 2 人目ではない。最初に出すのは Federico。
+5. **自社の walk は出さん**。輪は `witness.name` の異なりで数えるだけで、独立性は測れん。運営者が自分の endpoint を歩いて出すと「証人 1 人」の但し書きが消えるが、独立した 2 人目ではない。最初に出すのは babyblueviper1。
 
 ## 2. ローカル検証(番人が回した結果。TOshi が回し直すなら)
 
@@ -91,7 +91,7 @@ cd ~/horizon-shield/workers/hs-ledger/nenrin/ring-v1 && python3 ring_redteam.py
 
 commit されん物(意図): `*.20260906-a2a.bak`(gitignore の `*.bak`)、root の `patch_a2a_conduct_*.py` 3 本(root 直下 *.py は gitignore)、`__pycache__`。
 
-**番人が触っとらん変更が作業ツリーにある**: `ops/fed_reply_adapter_20260906.txt`(M、00:41 JST、別セッションの Federico 返信下書き。semantic-abi の slot の件)。下の add には入れとらん。そっちのセッションで扱うこと。git log には bc0ec786 / f8a3f719(00:38〜00:39 JST、Federico の 4.2 節・6 節の merge と house style)が既に入っとる = v35 の 17 章の質問 (a) の半分は答えが出とる。
+**番人が触っとらん変更が作業ツリーにある**: `ops/fed_reply_adapter_20260906.txt`(M、00:41 JST、別セッションの babyblueviper1 への返信下書き。semantic-abi の slot の件)。下の add には入れとらん。そっちのセッションで扱うこと。git log には bc0ec786 / f8a3f719(00:38〜00:39 JST、babyblueviper1 の 4.2 節・6 節の merge と house style)が既に入っとる = v35 の 17 章の質問 (a) の半分は答えが出とる。
 
 ```
 cd ~/horizon-shield && git add workers/hs-verify-gate/ext/CONDUCT_EXT_v1.md workers/hs-verify-gate/src/worker.js workers/hs-verify-gate/test/redteam_gate.mjs workers/hs-mcp/src/mcp.js workers/hs-ledger/src/worker.js workers/hs-jidec-mcp/src/worker.js workers/hs-ledger/test/ledger.test.mjs workers/hs-ledger/test/mcp.test.mjs workers/hs-ledger/nenrin/a2a-conduct-walk/a2a_conduct_walk.py workers/hs-ledger/nenrin/a2a-conduct-walk/walk_selftest.py llms.txt ops/a2a_conduct_ext_20260906.md ops/fed_dm_conduct_ext_20260906.txt
@@ -179,9 +179,9 @@ cd ~/horizon-shield/workers/hs-ledger/nenrin/a2a-conduct-walk && python3 a2a_con
 
 期待: PASS 5/5(ledger の A2A は /a2a。measured_endpoints は jidec.horizonshield.dev/mcp を指しとるので --endpoint で /a2a を名指し)。
 
-## 6. Federico への DM(配備後。`ops/fed_dm_conduct_ext_20260906.txt`、英語、ダッシュ無し)
+## 6. babyblueviper1 への DM(配備後。`ops/fed_dm_conduct_ext_20260906.txt`、英語、ダッシュ無し)
 
-頼むこと 3 つ: (1) 彼の VPS から walk を回して出す(9 月の mcp の輪の証人 2 人目、entry 34 の時と同じ「まず bytes」)、(2) invinoveritas の card に拡張を宣言する(公式レジストリ上の最初の外部の宣言。彼の card には pricing 欄が既にある)、(3) 「二つの申告は一致必須」と echo の規則を攻める。
+頼むこと 3 つ: (1) babyblueviper1 の VPS から walk を回して出す(9 月の mcp の輪の証人 2 人目、entry 34 の時と同じ「まず bytes」)、(2) invinoveritas の card に拡張を宣言する(公式レジストリ上の最初の外部の宣言。babyblueviper1 の card には pricing 欄が既にある)、(3) 「二つの申告は一致必須」と echo の規則を攻める。
 
 ## 7. 今日見つけた縫い目(直しとらん。記録だけ)
 
@@ -193,8 +193,8 @@ cd ~/horizon-shield/workers/hs-ledger/nenrin/a2a-conduct-walk && python3 a2a_con
 
 ## 8. 次(番人案、16 章の順のまま)
 
-1. Federico の行を登録簿に(DM 1 通、6 章)。
+1. babyblueviper1 の行を登録簿に(DM 1 通、6 章)。
 2. Smithery への 1 通(ops/doujin_20260904.md の A-2)。「一覧の横に conduct の欄を並べる」やなく「card に拡張があれば conduct_record へのリンクを出す」と頼む。向こうのコード変更が最小。
 3. SCITT / in-toto 写像(設計 1 週間)。仕様 6 節は「方向であって納品ではない」と書いた。嘘にならんうちに着手。
 4. w3id.org の永続 ID(PR 1 本、TOshi の GitHub)。
-5. 仕様の錨打ち(JIDEC entry)。TOshi と Federico が読んで直してから。錨打ちした後は直せん。
+5. 仕様の錨打ち(JIDEC entry)。TOshi と babyblueviper1 が読んで直してから。錨打ちした後は直せん。

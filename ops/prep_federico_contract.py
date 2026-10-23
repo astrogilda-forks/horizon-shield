@@ -4,14 +4,14 @@
 ops/prep_federico_contract.py  (番人 2026-09-24)
 
 Builds the FIRST live MUSUBI a2a-contract-v0 between HORIZON SHIELD (principal) and
-Federico / api.babyblueviper.com (contractor), fills it with live values, writes the UNSIGNED
+babyblueviper1 / api.babyblueviper.com (contractor), fills it with live values, writes the UNSIGNED
 canonical record, and prints the single command to sign as party A. It signs nothing and never
 touches a private key.
 
 Run this in YOUR OWN terminal (it needs the network). Then run the printed --sign command.
 
-Proposed task (adjust with Federico before signing if you both prefer another scope):
-  HS engages Federico to independently conduct-walk gate.horizonshield.dev/a2a under a scoped
+Proposed task (adjust with babyblueviper1 before signing if both sides prefer another scope):
+  HS engages babyblueviper1 to independently conduct-walk gate.horizonshield.dev/a2a under a scoped
   grant: read / observe / emit_witness ALLOWED; payment / delete / redelegate / send_pii
   PROHIBITED; evidence via NENRIN required. This formalises the witnessing you two already do
   into a signed, settle-able contract. Change task/grant here if you agree on a different scope.
@@ -86,12 +86,12 @@ def canonical(o):
 
 
 def main():
-    print("== prep first MUSUBI contract (HS principal, Federico contractor) ==")
+    print("== prep first MUSUBI contract (HS principal, babyblueviper1 contractor) ==")
     os.makedirs(OUT_DIR, exist_ok=True)
     height, bhash = bitcoin_tip()
 
     fed_sha, fb = card_sha(FED_CARD)
-    print("  Federico card: %s (%d bytes) LIVE" % (fed_sha, fb))
+    print("  babyblueviper1 card: %s (%d bytes) LIVE" % (fed_sha, fb))
     hs_sha, hb = card_sha(HS_CARD)
     print("  HS card:       %s (%d bytes) LIVE" % (hs_sha, hb))
     if hs_sha != HS_CARD_SHA:
@@ -154,7 +154,7 @@ def main():
     print("")
     print("  wrote unsigned contract: " + OUT)
     print("  bytes %d  sha256(unsigned) %s" % (len(text.encode("utf-8")), sha))
-    print("  Federico card_sha256 pinned: %s" % fed_sha)
+    print("  babyblueviper1 card_sha256 pinned: %s" % fed_sha)
     print("")
     print("  next -- sign as party A (principal, HS). Your key never leaves the Mac:")
     print("    python3 workers/hs-ledger/nenrin/musubi-v0/contract_v0.py \\")
@@ -162,9 +162,9 @@ def main():
     print("      --key ~/.hs_agreement_key.pem --domain horizonshield.dev \\")
     print("      --out ops/federico_contract_prep_out/contract_A.json")
     print("")
-    print("  then send contract_A.json to Federico (attach the file). He confirms his card sha,")
+    print("  then send contract_A.json to babyblueviper1 (attach the file). babyblueviper1 confirms the card sha,")
     print("  signs as contractor with:")
-    print("    python3 contract_v0.py --sign contract_A.json --key <his agreement key>.pem \\")
+    print("    python3 contract_v0.py --sign contract_A.json --key <babyblueviper1 agreement key>.pem \\")
     print("      --domain api.babyblueviper.com --out contract_AB.json")
     print("  and sends contract_AB.json back. Then verify both signatures:")
     print("    python3 workers/hs-ledger/nenrin/musubi-v0/contract_v0.py --verify ops/federico_contract_prep_out/contract_AB.json")

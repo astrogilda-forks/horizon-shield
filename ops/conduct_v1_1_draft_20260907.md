@@ -90,7 +90,7 @@ Red team vectors added to `walk_selftest.py` and the intake tests, each a refusa
 
 ## 9. Prior art added in this revision
 
-The `establishes` / `does_not_establish` pair follows a public finding by Federico Blanco Sánchez-Llanos (LinkedIn, 2026-09-07, about a TEE-attestation conformance spec in trustless-ai/recompute-kit): a record that could silently drop its "not judged correct" disclaimer and still pass conformance, repaired by a one-line fix and a new conformance vector the same day, and mirrored by the `vantage_limitation` field his invinoveritas review verdicts carry. This revision adopts the same discipline on the witness side: the disclaimer is a required field, its absence is a refusal, and the red team holds a vector for the omission. Signed witnesses with keys served from the witness's own domain follow the transparency-log witness model (Sigsum witnesses, Certificate Transparency gossip), applied to the conduct of a counterparty instead of the consistency of a log. Nothing else in this revision claims a new primitive.
+The `establishes` / `does_not_establish` pair follows a public finding by babyblueviper1 (LinkedIn, 2026-09-07, about a TEE-attestation conformance spec in trustless-ai/recompute-kit): a record that could silently drop its "not judged correct" disclaimer and still pass conformance, repaired by a one-line fix and a new conformance vector the same day, and mirrored by the `vantage_limitation` field the babyblueviper1 invinoveritas review verdicts carry. This revision adopts the same discipline on the witness side: the disclaimer is a required field, its absence is a refusal, and the red team holds a vector for the omission. Signed witnesses with keys served from the witness's own domain follow the transparency-log witness model (Sigsum witnesses, Certificate Transparency gossip), applied to the conduct of a counterparty instead of the consistency of a log. Nothing else in this revision claims a new primitive.
 
 ## 10. What this revision does not do
 
@@ -108,6 +108,6 @@ It does not make a witness trustworthy; it makes a signed witness attributable t
 
 穴 1(誘因): `notify`(宣言した endpoint にだけ、測るたびに 1 本 POST)、`witness_policy.reciprocal`(呼んできた agent をこっちから歩いて記録を渡す)、`/register/lookup`(繋ぐ前の 1 URL、点数無し)。hook の既定は local。
 
-Federico の今夜の投稿から取った物: `establishes` / `does_not_establish` を必須の欄にして、落としたら intake も red team も拒否する。9 節に公開投稿として名前を出した(私信は引用しとらん)。
+babyblueviper1 の今夜の投稿から取った物: `establishes` / `does_not_establish` を必須の欄にして、落としたら intake も red team も拒否する。9 節に公開投稿として名前を出した(私信は引用しとらん)。
 
 次: 台帳 intake の code(hs-ledger)、扉の lookup と notify(hs-verify-gate)、walk client の mode と署名、red team 10 本、ring builder の欄(10 月)。配備は全部 TOshi の手。

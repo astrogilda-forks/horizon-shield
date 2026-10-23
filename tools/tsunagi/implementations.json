@@ -686,7 +686,7 @@
     {
       "id": "probity-a2a-card-readers",
       "ours": false,
-      "author": "Sankalp Gilda (astrogilda), Probity AI",
+      "author": "astrogilda, Probity AI",
       "repo": "https://github.com/probityai/agent-evidence-vectors.git",
       "language": "Python",
       "license": "Apache-2.0",
@@ -771,7 +771,7 @@
     {
       "id": "agent-evidence-atlas-action-presence",
       "ours": false,
-      "author": "Sankalp Gilda (astrogilda), Probity AI",
+      "author": "astrogilda, Probity AI",
       "repo": "https://github.com/probityai/agent-evidence-atlas.git",
       "language": "Python",
       "license": "Apache-2.0",

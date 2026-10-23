@@ -6,7 +6,7 @@
   - HTTPで呼ばれた扉 → 自ゾーン(horizonshield.dev)のサーバー: 522 (全滅。mcp/hearingで確認)
   - cron起動の同じ扉 → 同じサーバー: 通る (昨夜の掃引6本成功)
   - 扉 → 別ゾーン(the-horizons-innovation.com): 通る (405実測)
-  - 最初に見つけたのは Federico の外部ネットワークからの1発。
+  - 最初に見つけたのは babyblueviper1 の外部ネットワークからの1発。
     内側からの測定は全部この穴を見られなかった。
 
 このパッチがやること:
@@ -56,7 +56,7 @@ R1 = '''function withTimeout(p, ms) {
 
 // ---- 測定経路 (2026-08-15) ----
 // 実測: HTTPで呼ばれたこのWorkerから自ゾーンへの subrequest は 522 になる。
-// cron起動なら通る。外部ゾーンへは通る。最初に外から見つけたのは Federico。
+// cron起動なら通る。外部ゾーンへは通る。最初に外から見つけたのは babyblueviper1。
 // 対象が自ゾーンのときだけ、別ゾーンの hs-verify-relay を経由して公開エッジで測る。
 // service binding は使わない。公開経路を測らない私道になるからだ。
 const PROBE_UA = "''' + UA + '''";

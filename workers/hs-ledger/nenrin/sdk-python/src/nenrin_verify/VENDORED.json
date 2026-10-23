@@ -451,8 +451,8 @@
   },
   "_repo/musubi-v0/README.md": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/README.md",
-    "source_sha256": "00e051f1d636d3e121c90b5a370d2c6983ee38aa6e9cbce034260e31856853f6",
-    "vendored_sha256": "00e051f1d636d3e121c90b5a370d2c6983ee38aa6e9cbce034260e31856853f6"
+    "source_sha256": "3bce73bcb4db3d7d43aa44fbfa20966213849bb5dfab7db016b691b365728f51",
+    "vendored_sha256": "3bce73bcb4db3d7d43aa44fbfa20966213849bb5dfab7db016b691b365728f51"
   },
   "_repo/musubi-v0/admission_verify_v0.mjs": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/admission_verify_v0.mjs",
@@ -736,8 +736,8 @@
   },
   "_repo/musubi-v0/fixtures/babyblueviper1_leg1/README.md": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/fixtures/babyblueviper1_leg1/README.md",
-    "source_sha256": "47ee07e40039dffe35e4acc8cfb17b9fe0e3636d893e34a30c34fdb2ba9a8d53",
-    "vendored_sha256": "47ee07e40039dffe35e4acc8cfb17b9fe0e3636d893e34a30c34fdb2ba9a8d53"
+    "source_sha256": "ec27411df0193416996751ec728d58bbe85326bfc55523c9d15f5c2c18a3deaa",
+    "vendored_sha256": "ec27411df0193416996751ec728d58bbe85326bfc55523c9d15f5c2c18a3deaa"
   },
   "_repo/musubi-v0/fixtures/babyblueviper1_leg1/SHA256SUMS": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/fixtures/babyblueviper1_leg1/SHA256SUMS",

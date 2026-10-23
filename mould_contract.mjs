@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// mould_contract.mjs ,  Federico's rule at the CONTRACT layer. READ-ONLY. Never tools/call.
+// mould_contract.mjs ,  babyblueviper1's rule at the CONTRACT layer. READ-ONLY. Never tools/call.
 //
-// Rule (Federico Blanco Sanchez-Llanos, "The Mould, Not the Letter", 2026-08-20):
+// Rule: "The Mould, Not the Letter" (named by babyblueviper1, 2026-08-20):
 //   never let "the fetch failed" and "the fetch succeeded and found nothing"
 //   collapse into the same downstream value.
 //
@@ -23,7 +23,7 @@
 //                              figure (96.7% cannot, on the 30-sample).
 //   v2  top-level structural   the same test, but ONLY on the envelope's own
 //                              properties, not fields nested inside the domain
-//                              payload. Federico's refinement, 2026-08-20. Strips
+//                              payload. The refinement babyblueviper1 proposed, 2026-08-20. Strips
 //                              the entity-nested false positive (a job's remote
 //                              boolean) without dropping a real read-state, which
 //                              all sit at the envelope. This is the ruler the live
@@ -36,7 +36,7 @@
 //                              Misses domain-specific names, so it OVERSTATES the
 //                              problem: an UPPER BOUND, not a measurement (99.1% on
 //                              the 30-sample). Kept only as the top of the band.
-//   The gap between v2 top-level structural and lexical is the residual Federico
+//   The gap between v2 top-level structural and lexical is the residual babyblueviper1
 //   named: a top-level metadata boolean (cache_hit) is structurally identical to a
 //   top-level read-state, and only meaning separates them. No shape rule crosses
 //   that line, so the field names are printed for a human to make the call.
@@ -154,7 +154,7 @@ function collectDeep(node, out = [], depth = 0) {
   return out;
 }
 
-// v2: top-level structural. Only the envelope's own properties. Federico's refinement.
+// v2: top-level structural. Only the envelope's own properties. The refinement babyblueviper1 proposed.
 function collectTopLevel(node, out = []) {
   const props = (node && node.properties && typeof node.properties === "object" && !Array.isArray(node.properties))
     ? node.properties : {};
@@ -203,7 +203,7 @@ function classifyTool(tool) {
 async function inspect(url) {
   // initialize, retrying across protocol versions; honour a server's advertised list.
   //
-  // v0.2 FIX ,  this function broke Federico's own rule.
+  // v0.2 FIX ,  this function broke babyblueviper1's rule, the one this file applies.
   //   v0.1 retried all three protocol versions whether the endpoint had REFUSED the
   //   version (a real answer: "not that one") or had simply not answered at all
   //   (a dead host, a timeout). Two different negative outcomes, collapsed into one
@@ -291,7 +291,7 @@ function report(label, results) {
     const pct = (n) => `${String(n).padStart(3)}/${tot} (${(100 * n / tot).toFixed(1)}%)`;
     console.log(`  CANNOT hold "failed" vs "found nothing", by ruler:`);
     console.log(`    v1 all-depth  structural (frozen ruler, reproduces mould-gh-12) : ${pct(cannot.v1)}`);
-    console.log(`    v2 top-level  structural (Federico refinement, live gate ruler) : ${pct(cannot.v2)}`);
+    console.log(`    v2 top-level  structural (babyblueviper1 refinement, live gate ruler) : ${pct(cannot.v2)}`);
     console.log(`    lexical field-name       (upper bound, overstates the problem)  : ${pct(cannot.lex)}`);
     console.log(`  servers where NOT ONE tool can hold the difference:`);
     console.log(`    v1: ${servers - canSrv.v1.size}/${servers}   v2: ${servers - canSrv.v2.size}/${servers}   lexical: ${servers - canSrv.lex.size}/${servers}`);
@@ -334,7 +334,7 @@ function liveLine(i, n, r) {
   console.log("                               the frozen mould-gh-12 figure.");
   console.log("    v2 top-level  structural : the same, but only on the envelope's own");
   console.log("                               properties, not fields nested in the payload.");
-  console.log("                               Federico's refinement; the live gate ruler.");
+  console.log("                               the refinement babyblueviper1 proposed; the live gate ruler.");
   console.log("    lexical field-name       : a known field NAME at any depth. Upper bound,");
   console.log("                               overstates the problem; kept as top of band.");
   console.log("  Field NAMES are not consulted by the structural rulers: the author owns");

@@ -48,9 +48,9 @@ card_sha "$B_CARD" "babyblueviper"   || true
 # ---------------------------------------------------------- 3. the conduct walk of party B
 # api.babyblueviper.com, not the apex. The apex is a Substack landing page and serves no
 # card. The subject is then a host UNDER the counterparty domain, which the verifier
-# accepts since yesterday, which is the rule Federico's own review produced.
+# accepts since yesterday, which is the rule babyblueviper1's own review produced.
 #
-# His card declares A2A 0.3.0 and no capabilities.extensions[], so conduct_ext_declared,
+# The babyblueviper1 card declares A2A 0.3.0 and no capabilities.extensions[], so conduct_ext_declared,
 # compensation_well_formed and extension_echoed will record FAIL. That is an observation,
 # not a verdict, and the walk writes the record either way. Read the FAILs before you
 # decide whether this is the record to pin on a first agreement.
@@ -129,5 +129,5 @@ cat <<'TXT'
 
   Still missing after this, and both are somebody's decision rather than a command:
     1. the HORIZON SHIELD agreement key            openssl genpkey -algorithm ed25519
-    6. Federico serves a key and signs             his hand, and see section 8
+    6. babyblueviper1 serves a key and signs       babyblueviper1's hand, and see section 8
 TXT

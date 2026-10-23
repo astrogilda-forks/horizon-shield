@@ -459,8 +459,8 @@ def main():
         all('"verified":true' not in W.canonical(r) and '"verified":false' not in W.canonical(r) for r in (unsigned, signed)),
         "the mock serves no JWKS: neither true nor false may be written")
 
-    # cs1 (2026-10-16): verify the card signature in the forms this client reproduces. Found by Sankalp Gilda's walk
-    # of gate.horizonshield.dev with his own verifier (probityai/agent-evidence-vectors#55): the record said "signed"
+    # cs1 (2026-10-16): verify the card signature in the forms this client reproduces. Found by astrogilda's walk
+    # of gate.horizonshield.dev with astrogilda's own verifier (probityai/agent-evidence-vectors#55): the record said "signed"
     # and could not say by whom. The card and JWKS here are the gate's own public bytes (fixtures_live_card).
     here = os.path.dirname(os.path.abspath(__file__))
     gfix = os.path.join(here, "..", "..", "..", "hs-verify-gate", "test", "fixtures_live_card")

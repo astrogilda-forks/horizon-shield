@@ -13,12 +13,12 @@ came from (a trailing space changes the sha; a hand typed key is unverifiable). 
 fills them, canonicalises exactly as the verifier does, and prints the signing commands.
 
     python3 ops/agreement_first_record_finalize.py \
-        --b-pubkey  '<Federico's public_key_ed25519_b64>' \
+        --b-pubkey  '<babyblueviper1's public_key_ed25519_b64>' \
         --b-key-url 'https://api.babyblueviper.com/keys/agreement.json' \
         --lb-height 967000 --lb-hash 0000...64hex \
-        [--a-conduct-sha <64hex>]   (only if party B was re-walked after he declared the extension)
-        [--b-conduct-sha <64hex> --b-conduct-url <https url>]   (only if he serves his own record of the gate)
-        [--a-card-sha <64hex> --b-card-sha <64hex>]   (from the same prep run; his card sha changes the moment he edits his card)
+        [--a-conduct-sha <64hex>]   (only if party B was re-walked after party B declared the extension)
+        [--b-conduct-sha <64hex> --b-conduct-url <https url>]   (only if party B serves its own record of the gate)
+        [--a-card-sha <64hex> --b-card-sha <64hex>]   (from the same prep run; party B's card sha changes the moment party B edits the card)
 
 Output: ops/first_record_prep_out/first_record_unsigned.json (canonical bytes, no signatures)
 plus the sha256 of those bytes and the exact next commands.
@@ -29,7 +29,7 @@ A_PUB_DEFAULT = "Q8DJu/tXWNNzsrmIkIUm4r2cR4MYaXNf1E2j+oZi+oo="     # gate 0.4.7,
 A_CARD_SHA = "f36353620147490a954f39862346d37bf7bbf48868a7b9fb5c69f61e16a90d6d"
 B_CARD_SHA = "d8013f58216c5400108365656eaa7c32fad59985bff1a048bd1bd2a89b3e175d"
 A_CONDUCT_SHA_DEFAULT = "9e058efa16789bb1911eb237a160f7c3bcebc520ba3ee4d74f6d469d02648eb8"   # HS walked api.babyblueviper.com, FAIL 3/5, ledger entry 41
-B_CONDUCT_SHA_DEFAULT = "da9289a1117598658d171ca89de03028ca497e54cfe9ad75aaad2f0075d7adff"   # Federico's witness of mcp.horizonshield.dev
+B_CONDUCT_SHA_DEFAULT = "da9289a1117598658d171ca89de03028ca497e54cfe9ad75aaad2f0075d7adff"   # babyblueviper1's witness of mcp.horizonshield.dev
 LEDGER = "https://ledger.horizonshield.dev"
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 B64_32 = re.compile(r"^[A-Za-z0-9+/]{43}=$")
@@ -47,14 +47,14 @@ def die(msg):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--b-pubkey", required=True, help="Federico's Ed25519 public key, canonical base64 (44 chars)")
+    ap.add_argument("--b-pubkey", required=True, help="babyblueviper1's Ed25519 public key, canonical base64 (44 chars)")
     ap.add_argument("--b-key-url", default="https://api.babyblueviper.com/keys/agreement.json", help="https URL under babyblueviper.com serving that key")
     ap.add_argument("--lb-height", type=int, required=True, help="Bitcoin block height for lower_bound (from a fresh header sync)")
     ap.add_argument("--lb-hash", required=True, help="that block's hash, 64 lowercase hex")
     ap.add_argument("--a-card-sha", default=A_CARD_SHA, help="sha256 of the exact bytes of mcp.horizonshield.dev's card (prep script step 4); default is the 2026-09-11 value")
-    ap.add_argument("--b-card-sha", default=B_CARD_SHA, help="sha256 of the exact bytes of api.babyblueviper.com's card (prep script step 4); it CHANGES if he edits his card, so take it from the same prep run as the walk")
-    ap.add_argument("--a-conduct-sha", default=A_CONDUCT_SHA_DEFAULT, help="sha256 of HS's walk of api.babyblueviper.com (re-walk only if he declared the extension)")
-    ap.add_argument("--b-conduct-sha", default=B_CONDUCT_SHA_DEFAULT, help="sha256 of his record of mcp.horizonshield.dev")
+    ap.add_argument("--b-card-sha", default=B_CARD_SHA, help="sha256 of the exact bytes of api.babyblueviper.com's card (prep script step 4); it CHANGES if party B edits the card, so take it from the same prep run as the walk")
+    ap.add_argument("--a-conduct-sha", default=A_CONDUCT_SHA_DEFAULT, help="sha256 of HS's walk of api.babyblueviper.com (re-walk only if party B declared the extension)")
+    ap.add_argument("--b-conduct-sha", default=B_CONDUCT_SHA_DEFAULT, help="sha256 of party B's record of mcp.horizonshield.dev")
     ap.add_argument("--b-conduct-url", default=None, help="where that record is served; default is the HS ledger witness URL for that sha")
     ap.add_argument("--b-measured-by", default="babyblueviper.com", help="measured_by_domain for party B's pinned record")
     ap.add_argument("--a-pubkey", default=A_PUB_DEFAULT, help=argparse.SUPPRESS)   # test only: never change for the real record
@@ -153,8 +153,8 @@ def main():
     print("next, in order (V = workers/hs-ledger/nenrin/agreement-v0):")
     print("  1. sign as party A (your key never leaves the Mac):")
     print("     python3 $V/agreement_sign.py " + out + " --key ~/.hs_agreement_key.pem --domain horizonshield.dev --out ops/first_record_prep_out/first_record_A.json")
-    print("  2. send first_record_A.json to Federico, byte for byte (attach the file, do not paste it), with:")
-    print("     python3 agreement_sign.py first_record_A.json --key <his.pem> --domain babyblueviper.com --out first_record_AB.json")
+    print("  2. send first_record_A.json to babyblueviper1, byte for byte (attach the file, do not paste it), with:")
+    print("     python3 agreement_sign.py first_record_A.json --key <babyblueviper1.pem> --domain babyblueviper.com --out first_record_AB.json")
     print("  3. when first_record_AB.json comes back, verify offline with both keys, then file:")
     print("     python3 $V/agreement_verify.py first_record_AB.json --keys keys.json      # expect accepted, findings: conduct_self_measured x2, operator_is_a_party")
     print("     curl -sS -X POST https://agreement.horizonshield.dev/agreement -H 'content-type: application/json' --data-binary @first_record_AB.json")

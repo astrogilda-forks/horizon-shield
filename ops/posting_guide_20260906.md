@@ -51,7 +51,7 @@ cd /tmp && uvx --from "git+https://github.com/ogasurfproject-jpg/horizon-shield#
 
 1. linkedin.com → 「投稿を開始」→ 文を貼る。link は本文の中の 2 本のまま(LinkedIn は本文の link を嫌うと言われるが、コメント欄に逃がすと読まれん。2 本なら本文でええ)。
 2. 画像は付けん(付けるなら AGNTCon の 1 枚を PDF にした物を画像化、それは次回)。
-3. 投稿。URL を番人に貼る。Federico が反応したら、返信は論文チャットの流儀(彼への返事はあっちが書く)。
+3. 投稿。URL を番人に貼る。babyblueviper1 が反応したら、返信は論文チャットの流儀(babyblueviper1 への返事はあっちが書く)。
 
 ## 5. dev.to(翌日)
 

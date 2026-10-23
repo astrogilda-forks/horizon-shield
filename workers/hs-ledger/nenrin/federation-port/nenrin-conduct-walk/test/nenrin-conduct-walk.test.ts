@@ -28,7 +28,7 @@ function canonical(v: unknown): string {
   return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + canonical(o[k])).join(',') + '}'
 }
 
-// a throwaway witness at witness.test: the real Pavlo record with the fields a test chooses, re-signed
+// a throwaway witness at witness.test: the real pipavlo82 record with the fields a test chooses, re-signed
 const { publicKey, privateKey } = generateKeyPairSync('ed25519')
 const TEST_PUB = (publicKey.export({ format: 'der', type: 'spki' }) as Buffer).subarray(12).toString('base64')
 const TEST = { 'witness.test': { public_key_ed25519_b64: TEST_PUB } }

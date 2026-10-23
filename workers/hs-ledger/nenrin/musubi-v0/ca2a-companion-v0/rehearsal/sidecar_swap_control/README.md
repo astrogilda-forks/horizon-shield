@@ -1,19 +1,19 @@
 # Sidecar-swap control (horizon-shield #51), by Poke-nushi
 
-A negative control for the acceptance row of the #51 comparison, prepared and published by Poke-nushi (Takao Sato, VATE) in [Poke-nushi/Verifiable-Agent-Trust-Envelope at `f8fa1478d6ac4bb454bb9bbf0bc46f941d316e36`](https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope/tree/f8fa1478d6ac4bb454bb9bbf0bc46f941d316e36/examples/interop/horizon51-sidecar-swap), and frozen here byte for byte as he offered on #51. It is a derived rehearsal control, not a pilot record.
+A negative control for the acceptance row of the #51 comparison, prepared and published by Poke-nushi (VATE) in [Poke-nushi/Verifiable-Agent-Trust-Envelope at `f8fa1478d6ac4bb454bb9bbf0bc46f941d316e36`](https://github.com/Poke-nushi/Verifiable-Agent-Trust-Envelope/tree/f8fa1478d6ac4bb454bb9bbf0bc46f941d316e36/examples/interop/horizon51-sidecar-swap), and frozen here byte for byte as Poke-nushi offered on #51. It is a derived rehearsal control, not a pilot record.
 
-The two rehearsal acceptance records Federico (babyblueviper1, invinoveritas) issued on `rehearsal/live_smoke` ([preaction-governance-conformance at `a77ff8fa`](https://github.com/babyblueviper1/preaction-governance-conformance/tree/a77ff8fabe46a30aaf3e50d10c8c3a9f003713f9/examples/work-acceptance-issuer)) each carry a signed `bindings_sidecar`. In each file here, only that complete top-level value was exchanged with the other record's, signature included. Every signature still verifies; only the join from each sidecar to the acceptance receipt it sits beside fails.
+The two rehearsal acceptance records babyblueviper1 (invinoveritas) issued on `rehearsal/live_smoke` ([preaction-governance-conformance at `a77ff8fa`](https://github.com/babyblueviper1/preaction-governance-conformance/tree/a77ff8fabe46a30aaf3e50d10c8c3a9f003713f9/examples/work-acceptance-issuer)) each carry a signed `bindings_sidecar`. In each file here, only that complete top-level value was exchanged with the other record's, signature included. Every signature still verifies; only the join from each sidecar to the acceptance receipt it sits beside fails.
 
 | File | SHA-256 of the file bytes |
 |---|---|
 | `hs51-rehearsal-caseA-audit-only.swapped-sidecar.json` | `32744cfc7104dcb5bb59daf7305f9b7fe4887ce4da81886040003f73ef836ada` |
 | `hs51-rehearsal-caseA-with-fixture.swapped-sidecar.json` | `561ce33bad29cac89261ae1a7d06a7c71a9d118103667e9ef940d04083846860` |
 
-`control-manifest.json`, `SHA256SUMS` and `UPSTREAM-LICENSE.txt` are his, unchanged (the source records are MIT).
+`control-manifest.json`, `SHA256SUMS` and `UPSTREAM-LICENSE.txt` are Poke-nushi's, unchanged (the source records are MIT).
 
 ## Checked here, independently
 
-`check_swap.py` is ours. It does not read the checker key from the files: it uses the invinoveritas key Federico posted on #51 (`invinoveritas-checker-a4cecab2`, `pY0UINp9HP6CVUTRBcOeKo5MPbhqRlEsuiAAw3JR3WU=`). It verifies both signatures in each file, computes the JCS SHA-256 of the inner acceptance receipt, and compares the sidecar's execution and occurrence digests with the bytes in `../live_smoke/` (`receipt.json` 1c01ea21…, JCS of `call.json` `request` 69546501…). Its lines are kept in `CHECK.txt`:
+`check_swap.py` is ours. It does not read the checker key from the files: it uses the invinoveritas key babyblueviper1 posted on #51 (`invinoveritas-checker-a4cecab2`, `pY0UINp9HP6CVUTRBcOeKo5MPbhqRlEsuiAAw3JR3WU=`). It verifies both signatures in each file, computes the JCS SHA-256 of the inner acceptance receipt, and compares the sidecar's execution and occurrence digests with the bytes in `../live_smoke/` (`receipt.json` 1c01ea21…, JCS of `call.json` `request` 69546501…). Its lines are kept in `CHECK.txt`:
 
 ```
 python3 check_swap.py --check     # CHECK.txt agrees, CONTROL_OK: 2 files

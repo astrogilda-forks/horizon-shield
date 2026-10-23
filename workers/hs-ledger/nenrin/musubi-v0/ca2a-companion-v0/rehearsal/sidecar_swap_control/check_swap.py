@@ -2,7 +2,7 @@
 """Independent check of Poke-nushi's sidecar-swap control (horizon-shield #51).
 
 Reads the two swapped files in this folder, the live_smoke records beside it (../live_smoke/receipt.json and
-call.json) and the invinoveritas checker key Federico posted on #51 (pinned below, not read from the files).
+call.json) and the invinoveritas checker key babyblueviper1 posted on #51 (pinned below, not read from the files).
 For each file it prints: whether the acceptance-record signature and the sidecar signature verify, the JCS
 SHA-256 of the inner acceptance receipt, the receipt digest the sidecar names, and whether the sidecar's
 execution and occurrence digests match the live_smoke bytes. Exits 0 only when every expectation in

@@ -15,7 +15,7 @@
 3. 資格は記録: 席に着けるのは、この台帳に自分の名前で witness 記録を出した者(walk 1 本以上)で、直近 3 か月に 1 本以上ある者。消えた証人は責めん、席が空くだけ。
 4. 各側の物は各側に: 証人の鍵は証人が自分の domain(か repo)で公開する。台帳は署名を写すだけ。混ぜん。
 5. 公開: 会員、鍵、副署、否決、全部が台帳と /spec と register README に出る。隠した統治は、扉が他人に禁じとる事そのもの。
-6. 記録は先、文は後: 副署される物は bytes の sha256 で、文やない(Federico との "bytes first" のまま)。
+6. 記録は先、文は後: 副署される物は bytes の sha256 で、文やない(babyblueviper1 との "bytes first" のまま)。
 
 ## 3. 何を副署するか
 
@@ -41,7 +41,7 @@ operator_signature: { kid: hs-2026-09, jwks: https://gate.horizonshield.dev/.wel
 quorum: { required: 2, present: 3 }
 ```
 
-規則: `countersignatures` が 2 名未満なら append せん(運営者だけでは通らん)。署名対象は文字列 `"nenrin-ring-list-v1:2026-09:<sha>"` の UTF-8。鍵は card 署名と同じ ES256(P-256)、JWKS の形も同じ。card 署名鍵をそのまま使える(Federico なら自分で作る)。
+規則: `countersignatures` が 2 名未満なら append せん(運営者だけでは通らん)。署名対象は文字列 `"nenrin-ring-list-v1:2026-09:<sha>"` の UTF-8。鍵は card 署名と同じ ES256(P-256)、JWKS の形も同じ。card 署名鍵をそのまま使える(babyblueviper1 なら自分で作る)。
 
 検証は誰でも: 一覧の bytes を取って sha256、各署名を各員の JWKS で verify。運営者を信じる所は無い。
 
@@ -66,8 +66,8 @@ quorum: { required: 2, present: 3 }
 
 ## 5. 立ち上げ
 
-- 1 人目: Federico(witness 記録 2 本、ring 再実装、論文共著)。頼むのは論文 2 の v0.5 と ETHOnline の審査期間が明けてから。頼み方は「うちに入ってくれ」やなく「あなたの鍵で、あなたの側から副署してくれ」。彼の JWKS は彼の domain(babyblueviper.com か invinoveritas の repo)。
-- 2 人目、3 人目の候補: Agenstry(毎週測っとる観測所、外部の錨が無い → JIDEC を錨に使える、互いに証人になれる)、1F916 Agent Record(SCITT 型の証人設計、同じ言葉で話せる)、trustless-ai の Merlini と Pavlo(審査明けに walk を 1 本ずつ)。
+- 1 人目: babyblueviper1(witness 記録 2 本、ring 再実装、論文共著)。頼むのは論文 2 の v0.5 と ETHOnline の審査期間が明けてから。頼み方は「うちに入ってくれ」やなく「あなたの鍵で、あなたの側から副署してくれ」。babyblueviper1 の JWKS は babyblueviper1 の domain(babyblueviper.com か invinoveritas の repo)。
+- 2 人目、3 人目の候補: Agenstry(毎週測っとる観測所、外部の錨が無い → JIDEC を錨に使える、互いに証人になれる)、1F916 Agent Record(SCITT 型の証人設計、同じ言葉で話せる)、trustless-ai の Merlini と pipavlo82(審査明けに walk を 1 本ずつ)。
 - 3 名揃うまでは 3a を「副署 0〜1 名でも append するが、entry に quorum 未達と書く」で回す。揃った月から quorum を効かせる。始めから閉じると、最初の月が来ん。
 
 ## 6. 台帳と扉に足す物(実装の量)
@@ -77,7 +77,7 @@ quorum: { required: 2, present: 3 }
 - register README: 「Council」節、会員の名前と JWKS の URL。
 - 証人側の道具: `a2a-conduct-walk countersign --month 2026-09 --key <pem>`(輪の一覧を取って sha を出して署名して JSON を吐く、提出は台帳の口 POST /council/countersign か GitHub の PR)。stdlib では ES256 署名ができんので `cryptography` か openssl の呼び出し。
 
-番人の見立てで 2〜3 日の仕事。3 名揃う前に作っても回らんので、順番は「Federico の返事 → 実装」。
+番人の見立てで 2〜3 日の仕事。3 名揃う前に作っても回らんので、順番は「babyblueviper1 の返事 → 実装」。
 
 ## 7. 消えた時、揉めた時
 
@@ -100,4 +100,4 @@ NTT ドコモビジネスの属性レジストリや NEC の KYA が本番にな
 1. quorum は 2 でええか(3 名の会で 2、5 名なら 3)。
 2. 運営者の票を quorum に数えん、でええか(番人の線: 数えん。数えたら「運営者 + 1 人」で通ってしまう)。
 3. 3b の対象に「登録簿からの行の削除」を入れるか(番人の線: 入れる。削除は一番濫用されやすい権限)。
-4. Federico への頼みの時期(番人の線: 論文 2 v0.5 の後、hackathon 明け)。
+4. babyblueviper1 への頼みの時期(番人の線: 論文 2 v0.5 の後、hackathon 明け)。

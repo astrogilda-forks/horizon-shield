@@ -1,4 +1,4 @@
-# The first agreement record: entry 34, with Federico Blanco Sánchez-Llanos
+# The first agreement record: entry 34, with babyblueviper1
 
 **Date:** 2026-09-10. **Status:** design. Nothing signed, nothing filed, nothing sent.
 **Schema:** `a2a-agreement-v1.1` (`ops/AGREEMENT_EXT_v0_1_DRAFT.md`).
@@ -27,7 +27,7 @@ Two holes, neither of which any fixture would have revealed. Both are closed, bo
    a fee basis unconditionally. Two peers agreeing about a fact owe each other nothing.
    `terms.consideration` is now `"money"` or `"none"`, REQUIRED, and `"none"` forbids every money
    field rather than leaving a reader to infer the absence from missing keys.
-2. **The conduct subject had to be an exact domain match.** Federico's witness record
+2. **The conduct subject had to be an exact domain match.** babyblueviper1's witness record
    `da9289a1117598658d171ca89de03028ca497e54cfe9ad75aaad2f0075d7adff` is about
    `mcp.horizonshield.dev`, while the party is `horizonshield.dev`. The rule as written rejected
    the only conduct record that actually exists between the two of us. The subject may now be the
@@ -40,8 +40,8 @@ The record below was built with dummy keys and dummy hashes and run through the 
 host corrections in section 8; re-run after them, same verdict). What matters is the
 three findings it carries, which the verifier writes and nobody can suppress:
 
-- `conduct_self_measured` twice. Federico measured the HORIZON SHIELD endpoint himself. HORIZON
-  SHIELD would measure his endpoint itself. **Neither conduct record was written by a third
+- `conduct_self_measured` twice. babyblueviper1 measured the HORIZON SHIELD endpoint directly. HORIZON
+  SHIELD would measure the babyblueviper1 endpoint itself. **Neither conduct record was written by a third
   party**, because in this world no third party has measured either of us yet. Both sides declare
   it, so the record is accepted, and the sentence "each party pinned the counterparty's conduct as
   written by somebody other than the two parties" **disappears from what the record establishes**.
@@ -68,8 +68,8 @@ Every one of these is TOshi's hand.
    `self_measured: true`.
 4. **The agent card sha256 for both sides.** Fetch each card, hash the bytes.
 5. **A recent Bitcoin block** for `lower_bound`, from the gate's own coordinate machinery.
-6. **Federico serves a key** at `https://babyblueviper.com/keys/agreement.json` and signs. That is
-   his decision and the reason for the DM.
+6. **babyblueviper1 serves a key** at `https://babyblueviper.com/keys/agreement.json` and signs. That is
+   babyblueviper1's decision and the reason for the DM.
 
 Until 1 to 6 exist the record cannot be signed, and until both signatures exist there is nothing
 to file. No intake, no ledger entry, no anchor yet.
@@ -101,7 +101,7 @@ to file. No intake, no ledger entry, no anchor yet.
     {
       "domain": "babyblueviper.com",
       "key_url": "https://api.babyblueviper.com/keys/agreement.json",
-      "public_key_ed25519_b64": "TODO prerequisite 6, from Federico, and see section 8",
+      "public_key_ed25519_b64": "TODO prerequisite 6, from babyblueviper1, and see section 8",
       "agent_card": "https://api.babyblueviper.com/.well-known/agent-card.json",
       "agent_card_sha256": "d8013f58216c5400108365656eaa7c32fad59985bff1a048bd1bd2a89b3e175d",
       "conduct_record": {
@@ -138,19 +138,19 @@ to file. No intake, no ledger entry, no anchor yet.
 }
 ```
 
-## 6. Open questions for Federico
+## 6. Open questions for babyblueviper1
 
 These go in the DM, not decided here.
 
-1. Will he serve an Ed25519 public key at a URL under his own domain and sign? The private half
-   never leaves his machine and the verifier never fetches anything.
-2. Does he object to the three disclosures being on the record, given that they name him as a self
+1. Will babyblueviper1 serve an Ed25519 public key at a URL under the babyblueviper1 domain and sign? The private half
+   never leaves the signer's machine and the verifier never fetches anything.
+2. Does babyblueviper1 object to the three disclosures being on the record, given that they name babyblueviper1 as a self
    measurer? The alternative is waiting for a third party measurer, which would mean waiting
    indefinitely.
-3. Does the wording of `terms.what` match what he believes he demonstrated? He asked once that his
+3. Does the wording of `terms.what` match what babyblueviper1 believes was demonstrated? babyblueviper1 asked once that the
    surname carry the accent and that citations use a record's own phrasing verbatim; the same care
-   applies to a sentence he is about to sign.
-4. Break it first. He is the one person who will try the verifier before signing anything, and the
+   applies to a sentence babyblueviper1 is about to sign.
+4. Break it first. babyblueviper1 is the one person who will try the verifier before signing anything, and the
    two holes above are proof that trying to use a thing is what finds its holes.
 
 ## 7. What this is not
@@ -177,16 +177,16 @@ in `verify-directory/survey/data/lookup_index.json` row 622, from the survey. Th
 served, and declares `invinoveritas-reasoning-agent`, A2A `protocolVersion` 0.3.0,
 endpoint `https://api.babyblueviper.com/a2a`, transport JSONRPC.
 
-This is the part worth telling Federico. `api.babyblueviper.com` is a host **under**
+This is the part worth telling babyblueviper1. `api.babyblueviper.com` is a host **under**
 `babyblueviper.com`, so the party may still be `babyblueviper.com` while its key URL, its
 card and the conduct record's subject all sit on the api host. Yesterday that combination
-was three separate refusals. It holds today only because of the two rules his own review
+was three separate refusals. It holds today only because of the two rules babyblueviper1's own review
 produced: the subject may be the counterparty's domain or any host under it, and a key URL
 under the party domain binds without being an exact match. The first record cannot be
-built without the fix he asked for. That is not a compliment arranged after the fact; it
+built without the fix babyblueviper1 asked for. That is not a compliment arranged after the fact; it
 is the reason the record has a shape at all.
 
-**His card declares no `capabilities.extensions[]`.** So the walk in prerequisite 3 will
+**The babyblueviper1 card declares no `capabilities.extensions[]`.** So the walk in prerequisite 3 will
 record `conduct_ext_declared` FAIL, `compensation_well_formed` FAIL, and
 `extension_echoed` FAIL. Three of five. The card does carry a top-level `compensation`
 key, and prose about a 5% platform share settled over Lightning, but not in the
@@ -194,22 +194,22 @@ key, and prose about a 5% platform share settled over Lightning, but not in the
 see it and will not pretend to.
 
 That is a fact about the world, and the walk's own doctrine says a FAIL is one observation
-and not a verdict. But a mostly-FAIL record about his agent, pinned by sha256 inside the
-first agreement he is being asked to co-sign, is a different object socially than it is
-technically, and this document will not decide that quietly on his behalf. Two honest
-options, and the choice is TOshi's and then his:
+and not a verdict. But a mostly-FAIL record about the babyblueviper1 agent, pinned by sha256 inside the
+first agreement babyblueviper1 is being asked to co-sign, is a different object socially than it is
+technically, and this document will not decide that quietly on babyblueviper1's behalf. Two honest
+options, and the choice is TOshi's and then babyblueviper1's:
 
-- **Walk it and show him the record before asking for a signature.** The FAILs say his
+- **Walk it and show babyblueviper1 the record before asking for a signature.** The FAILs say the babyblueviper1
   agent does not implement an extension almost nobody implements. Pinning it says only
   what it says, and `does_not_establish` already carries "that the conduct record each
   side pinned is accurate".
-- **Ask him first whether he wants to declare the extension.** It is a few lines in his
+- **Ask babyblueviper1 first whether to declare the extension.** It is a few lines in the babyblueviper1
   card. Then the walk is run afterwards and the record pins an agent that passes. This
   costs a round trip and risks reading as a condition of the agreement, which it is not.
 
-**Federico has never served a key.** Both of his witness records in this ledger are
+**babyblueviper1 has never served a key.** Both babyblueviper1 witness records in this ledger are
 unsigned: they carry `witness_name` and `vantage`, and no `signed_domain`. Prerequisite 6
-is therefore a genuinely new step for him and not a repeat of something he has already
+is therefore a genuinely new step for babyblueviper1 and not a repeat of something already
 done. The DM should say so plainly rather than implying it is routine.
 
 **The local Bitcoin headers are stale.** Tip 965850 at 2026-09-06T23:38:48Z, about 530
@@ -227,7 +227,7 @@ hosts, which is why none of these values are filled in here already.
 `ops/first_record_prep_out/`. The walk of `api.babyblueviper.com` came back **FAIL 1 of 5**,
 sha256 `e43f4fad0bcf124953893618489a6f6e01ff9c18d30c8c9ed4affa5bb8a7ab3b`, and reading it
 showed that **two of those four failures were faults in the walk, not facts about that
-agent**. His endpoint answered `http 402 Payment Required`, which is the correct behaviour
+agent**. The babyblueviper1 endpoint answered `http 402 Payment Required`, which is the correct behaviour
 of an agent whose card declares `x402`, four payment methods and pay-per-use pricing; the
 walk recorded it in the same bucket as a 500. And `compensation_well_formed` failed on a
 declaration this project's own checker calls flawless, because the assertion was gated on
@@ -236,13 +236,13 @@ its evidence.
 
 Both are fixed, with vectors, in `ops/conduct_v1_3_paid_endpoint_20260911.md`. Replayed
 against the same card bytes the record is **FAIL 3 of 5**, and the two remaining failures
-are the two that are true: he does not declare the conduct extension, so he does not echo
+are the two that are true: the agent does not declare the conduct extension, so it does not echo
 it.
 
 So section 8's two options are both premature. The record to pin is the one produced after
 the fix, and the walk has to be re-run on the Mac to produce it against the live endpoint
 rather than against saved bytes. Prerequisite 3 is therefore: re-run the walk, read it,
-then decide whether to show it to him before asking for a signature.
+then decide whether to show it to babyblueviper1 before asking for a signature.
 
 Prerequisite 5 did not complete. The header sync was called with no mode and wrote a
 different window than the reader reads, so the manifest never advanced and the reader said
@@ -260,7 +260,7 @@ left are the two that are true about that agent.
 
 Both agent card hashes came back bit for bit identical to the run thirteen minutes
 earlier, which is not proof of anything but is the small corroboration `card_bytes_stable`
-exists to give: his card did not move under us while we were reading it.
+exists to give: the babyblueviper1 card did not move under us while we were reading it.
 
 Filled above from this run: both `agent_card_sha256` values and party A's
 `conduct_record.sha256`. Still open, and each is waiting on a person rather than a
@@ -286,4 +286,4 @@ command:
    `localheaders_p2p`. The two runs against `localheaders_catchup` before it failed for
    the reason in the commit, not because 8333 was blocked: it was never blocked, and the
    peers were answering the whole time.
-5. **Federico's key and signature.** His hand, and section 8 first.
+5. **babyblueviper1's key and signature.** babyblueviper1's hand, and section 8 first.

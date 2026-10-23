@@ -202,12 +202,12 @@ domain. It is a finding now (`key_url_off_domain`), the verdict stands, the attr
 withheld and the report names whose host the key was on. Under v1 it still refuses, because there
 the key is not in the record and a foreign host removes the only basis there is.
 
-Found by Federico Blanco Sánchez-Llanos, reviewing the 0.4.5 attribution change in
+Found by babyblueviper1, reviewing the 0.4.5 attribution change in
 `hs-verify-gate` and then reading this layer beside it. Two components of one operator were
-answering the same question two different ways: the gate downgraded, this refused. His reading was
-that no new machinery was needed, only the same discipline applied twice, and he was right.
+answering the same question two different ways: the gate downgraded, this refused. babyblueviper1's reading was
+that no new machinery was needed, only the same discipline applied twice, and that reading was right.
 
-One thing had to be added to his prescription. Withholding the claim cannot be left to the
+One thing had to be added to the babyblueviper1 prescription. Withholding the claim cannot be left to the
 existing path: if a key set supplies the foreign URL and the key served there matches the one in
 the signed bytes, the comparison succeeds and attribution would be asserted beside a finding that
 says it should not be. The flag is forced false instead. That is a vector now, and a mutant.

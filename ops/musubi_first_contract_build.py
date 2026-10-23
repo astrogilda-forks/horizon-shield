@@ -3,7 +3,7 @@
 ops/musubi_first_contract_build.py
 
 Builds the UNSIGNED a2a-contract-v0 record for the first live MUSUBI contract:
-HORIZON SHIELD (principal) and api.babyblueviper.com (contractor, Federico), a witness task on the
+HORIZON SHIELD (principal) and api.babyblueviper.com (contractor, babyblueviper1), a witness task on the
 gate's a2a endpoint. Carries the three adjustments the contractor asked for before signing
 (Issue #25 thread, 2026-09-25):
   1. requirements.recovery is n/a (a witness task has nothing for TSUGI to recover)
@@ -155,7 +155,7 @@ def main():
     print("")
     print("next, HS's own hand (the signer refuses unless the pinned key is the key you sign with):")
     print("  python3 workers/hs-ledger/nenrin/musubi-v0/contract_v0.py --sign workers/hs-ledger/nenrin/musubi-v0/first_contract_unsigned.json --key ~/.hs_agreement_key.pem --domain horizonshield.dev --out workers/hs-ledger/nenrin/musubi-v0/first_contract_A.json")
-    print("then commit first_contract_A.json and hand the contractor the raw URL at that commit plus its sha256; he runs the same --sign as api.babyblueviper.com")
+    print("then commit first_contract_A.json and hand the contractor the raw URL at that commit plus its sha256; the contractor runs the same --sign as api.babyblueviper.com")
     return 0
 
 

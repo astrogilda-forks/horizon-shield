@@ -216,7 +216,7 @@ another host leaves the row verified, withholds the attribution line, and names 
 does_not_establish. Two components of one operator answering the same question two different ways
 is the finding. The fix is not new machinery; it is the same rule applied twice.
 
-Found by Federico Blanco Sánchez-Llanos on 2026-09-10, reviewing the 0.4.5 attribution change and
+Found by babyblueviper1 on 2026-09-10, reviewing the 0.4.5 attribution change and
 then reading this layer beside it.
 
 ### 6.10 A rotated key keeps its attribution through a handover chain

@@ -3,16 +3,16 @@
 ops/agreement_second_record_finalize.py
 
 Writes the UNSIGNED canonical a2a-agreement-v1.1 record for the SECOND bilateral record between
-HORIZON SHIELD and Federico (babyblueviper.com): the mutual a2a-conduct-v1 walks of 2026-09-24.
+HORIZON SHIELD and babyblueviper1 (babyblueviper.com): the mutual a2a-conduct-v1 walks of 2026-09-24.
 Unlike the first record (JIDEC entry 34, self-measured), each party here pins the OTHER's endpoint,
-walked live and passing 5/5, and Federico's side is signed and content-addressed on his own host.
+walked live and passing 5/5, and babyblueviper1's side is signed and content-addressed on babyblueviper1's own host.
 
 It signs nothing, fetches nothing, never touches a private key. Standard library only, Python 3.8+.
 All known values are baked as defaults from the 2026-09-25 prep run, so it runs with no arguments.
 
     python3 ops/agreement_second_record_finalize.py
 
-The counterparty (Federico) walked gate.horizonshield.dev; HORIZON SHIELD walked
+The counterparty (babyblueviper1) walked gate.horizonshield.dev; HORIZON SHIELD walked
 api.babyblueviper.com. That is why party B's conduct subject_domain is gate.horizonshield.dev here,
 not mcp.horizonshield.dev as in the first record.
 """
@@ -25,7 +25,7 @@ A_CARD  = "9851541310db6b83a9a325e6a0b7250ccdd8eb62421398bd8aa5df71276e75d2"   #
 A_WALK  = "db73e0ceaf180c502bb324c67fa10bf87f343a5d2b980dead330d5f6b9e7a1c8"   # HS walked api.babyblueviper.com, PASS 5/5
 B_PUB   = "poTpqz0G34FMkZ1okV/fd5Dcvq7mCO4v1+qOgqBsje4="   # api.babyblueviper.com /keys/agreement.json (same key as record 1)
 B_CARD  = "5306018339599f3a8c7f6c932487b86f4c8d88a9766db3a1c2cec2f832816dac"   # api.babyblueviper.com card, 21082 B
-B_WALK  = "aba24be0b26463773432d1d090a16601440ba09a0ea8b81ab9fbe1051634e476"   # Federico walked gate.horizonshield.dev, a2a 0.3, PASS 5/5
+B_WALK  = "aba24be0b26463773432d1d090a16601440ba09a0ea8b81ab9fbe1051634e476"   # babyblueviper1 walked gate.horizonshield.dev, a2a 0.3, PASS 5/5
 B_WALK_URL = "https://api.babyblueviper.com/record/aba24be0b26463773432d1d090a16601440ba09a0ea8b81ab9fbe1051634e476"
 LB_HEIGHT = 968416
 LB_HASH   = "0000000000000000000122af55415c0cfe39fa65742f4083a4e464d5f074b9ac"
@@ -148,8 +148,8 @@ def main():
     print("     (expect a JSON reply whose sha equals the walk sha pinned above)")
     print("  1. sign as party A (set V first: V=workers/hs-ledger/nenrin/agreement-v0):")
     print("     python3 $V/agreement_sign.py " + out + " --key ~/.hs_agreement_key.pem --domain horizonshield.dev --out ops/mutual_walk_record_20260925/mutual_walk_A.json")
-    print("  2. hand mutual_walk_A.json to the counterparty by exact bytes (commit it and give the raw URL at that commit plus its sha256); he runs:")
-    print("     python3 agreement_sign.py mutual_walk_A.json --key <his.pem> --domain babyblueviper.com --out mutual_walk_AB.json")
+    print("  2. hand mutual_walk_A.json to the counterparty by exact bytes (commit it and give the raw URL at that commit plus its sha256); the counterparty runs:")
+    print("     python3 agreement_sign.py mutual_walk_A.json --key <babyblueviper1.pem> --domain babyblueviper.com --out mutual_walk_AB.json")
     print("  3. when it returns, verify and file:")
     print("     python3 $V/agreement_verify.py mutual_walk_AB.json --keys ops/second_record_prep_out/keys.json   # expect accepted; findings conduct_self_measured x2, operator_is_a_party")
     print("     curl -sS -X POST https://agreement.horizonshield.dev/agreement -H 'content-type: application/json' --data-binary @mutual_walk_AB.json")

@@ -1,9 +1,9 @@
 // card_signature_forms (2026-10-16): /.well-known/agent-card-signatures.json names which signature on the card covers
 // which bytes, and every value it states is recomputed here from the served card and JWKS, never taken from it.
 //
-// Why. The card carries two ES256 signatures by one key since 0.4.15 and said nothing about which was which. Sankalp
-// Gilda walked this card with his own verifier and key (probityai/agent-evidence-vectors#55, 2026-10-15): signature 0
-// verified over RFC 8785 of the served card, signature 1 did not, and he had to ask what it was over. The answer was
+// Why. The card carries two ES256 signatures by one key since 0.4.15 and said nothing about which was which. astrogilda
+// walked this card with astrogilda's own verifier and key (probityai/agent-evidence-vectors#55, 2026-10-15): signature 0
+// verified over RFC 8785 of the served card, signature 1 did not, and astrogilda had to ask what it was over. The answer was
 // right but lived only in this repository. This suite holds the published answer to the bytes.
 //
 // test/fixtures_live_card/sdk_form_payload.json is canonicalizeAgentCard(@a2a-js/sdk 1.1.0) of fixtures_live_card/card.json
