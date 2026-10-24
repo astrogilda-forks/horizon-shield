@@ -1,41 +1,41 @@
 # Scheduled workflows
 
-Written by `tools/status/bot_watch.mjs` at 2026-10-23T10:33:18.536Z. 32 scheduled workflows, none needs attention.
+Written by `tools/status/bot_watch.mjs` at 2026-10-24T09:49:43.564Z. 32 scheduled workflows, none needs attention.
 
 | Workflow | Schedule (UTC) | Expected every | Last run | Last scheduled success | Failures in a row | Status | Last bot commit to its paths |
 |---|---|---|---|---|---|---|---|
 | `adoption-weekly.yml` | `17 0 * * 1` | 7 d | 2026-10-19T05:15:33.000Z workflow_dispatch success | 2026-10-12T05:58:39.000Z | 1 | ok | 2026-10-19T05:16:39.000Z by horizon-shield-adoption-count |
 | `aps-reader-comparison.yml` | `17 4 * * 3` | 7 d | 2026-10-22T12:05:50.000Z push success | 2026-10-21T09:21:21.000Z | 0 | ok | not inferred |
-| `blog-post.yml` | `0 0 * * *` | 1 d | 2026-10-23T04:09:57.000Z schedule success | 2026-10-23T04:09:57.000Z | 0 | ok | 2026-08-18T01:28:27.000Z by KIRA Bot (quiet) |
-| `bot-watch.yml` | `47 5 * * *` | 1 d | 2026-10-23T10:32:59.000Z schedule in_progress | 2026-10-22T10:40:52.000Z | 0 | ok | 2026-10-22T10:42:00.000Z by horizon-shield-bot-watch |
+| `blog-post.yml` | `0 0 * * *` | 1 d | 2026-10-24T04:02:11.000Z schedule success | 2026-10-24T04:02:11.000Z | 0 | ok | 2026-08-18T01:28:27.000Z by KIRA Bot (quiet) |
+| `bot-watch.yml` | `47 5 * * *` | 1 d | 2026-10-24T09:49:24.000Z schedule in_progress | 2026-10-23T10:32:59.000Z | 0 | ok | 2026-10-23T10:34:08.000Z by horizon-shield-bot-watch |
 | `conduct-witness-dogfood.yml` | `23 4 * * 1` | 7 d | 2026-10-19T10:02:23.000Z schedule success | 2026-10-19T10:02:23.000Z | 0 | ok | not inferred |
-| `core-tests.yml` | `41 4 * * 2` | 7 d | 2026-10-23T04:16:25.000Z push success | 2026-10-20T09:38:15.000Z | 0 | ok | not inferred |
-| `ehn-card-pages.yml` | `40 15 * * *` | 1 d | 2026-10-22T19:27:24.000Z schedule success | 2026-10-22T19:27:24.000Z | 0 | ok | none in the last 30 commits by hs-ehn-card-pages (quiet) |
-| `evidence-mirror.yml` | `41 18 * * *` | 1 d | 2026-10-22T21:53:42.000Z schedule success | 2026-10-22T21:53:42.000Z | 0 | ok | 2026-10-22T21:54:44.000Z by hs-evidence-mirror |
-| `gate-coverage.yml` | `30 23 * * *` | 1 d | none | none in the last 20 | 0 | ok | not inferred |
+| `core-tests.yml` | `41 4 * * 2` | 7 d | 2026-10-23T23:25:09.000Z push success | 2026-10-20T09:38:15.000Z | 0 | ok | not inferred |
+| `ehn-card-pages.yml` | `40 15 * * *` | 1 d | 2026-10-23T19:31:29.000Z schedule success | 2026-10-23T19:31:29.000Z | 0 | ok | none in the last 30 commits by hs-ehn-card-pages (quiet) |
+| `evidence-mirror.yml` | `41 18 * * *` | 1 d | 2026-10-23T21:37:22.000Z schedule success | 2026-10-23T21:37:22.000Z | 0 | ok | 2026-10-23T21:38:19.000Z by hs-evidence-mirror |
+| `gate-coverage.yml` | `30 23 * * *` | 1 d | 2026-10-24T01:52:31.000Z schedule failure | none in the last 20 | 1 | ok | not inferred |
 | `gate-register-partners.yml` | `45 3 * * 1` | 7 d | 2026-10-22T12:05:50.000Z push success | 2026-10-19T09:18:26.000Z | 0 | ok | not inferred |
-| `interop-matrix-watch.yml` | `23 21 * * *` | 1 d | 2026-10-23T00:01:31.000Z schedule success | 2026-10-23T00:01:31.000Z | 0 | ok | not inferred |
-| `issuer-keys.yml` | `23 3 * * *` | 1 d | 2026-10-23T08:42:21.000Z schedule success | 2026-10-23T08:42:21.000Z | 0 | ok | 2026-10-23T08:42:51.000Z by nenrin-issuer-keys |
-| `jidec-stamp.yml` | `17 * * * *` | 1 h | 2026-10-23T07:36:08.000Z schedule success | 2026-10-23T07:36:08.000Z | 0 | ok | not inferred |
+| `interop-matrix-watch.yml` | `23 21 * * *` | 1 d | 2026-10-23T23:53:07.000Z schedule success | 2026-10-23T23:53:07.000Z | 0 | ok | not inferred |
+| `issuer-keys.yml` | `23 3 * * *` | 1 d | 2026-10-24T08:17:04.000Z schedule success | 2026-10-24T08:17:04.000Z | 0 | ok | 2026-10-24T08:17:33.000Z by nenrin-issuer-keys |
+| `jidec-stamp.yml` | `17 * * * *` | 1 h | 2026-10-24T05:56:58.000Z schedule success | 2026-10-24T05:56:58.000Z | 0 | ok | not inferred |
 | `law-watch-mirror.yml` | `23 21 * * 0` | 7 d | 2026-10-18T23:19:56.000Z schedule success | 2026-10-18T23:19:56.000Z | 0 | ok | 2026-09-27T05:29:47.000Z by hs-law-watch-mirror (quiet) |
-| `line-broadcast.yml` | `0 23 * * *` | 1 d | 2026-10-23T01:13:56.000Z schedule success | 2026-10-23T01:13:56.000Z | 0 | ok | not inferred |
+| `line-broadcast.yml` | `0 23 * * *` | 1 d | 2026-10-24T01:23:05.000Z schedule success | 2026-10-24T01:23:05.000Z | 0 | ok | not inferred |
 | `mcp-conduct.yml` | `30 3 * * 1` | 7 d | 2026-10-19T09:09:31.000Z schedule success | 2026-10-19T09:09:31.000Z | 0 | ok | not inferred |
 | `note-eigo.yml` | `0 21 * * 6` | 7 d | 2026-10-17T22:47:47.000Z schedule success | 2026-10-17T22:47:47.000Z | 0 | ok | not inferred |
-| `note-post.yml` | `0 0 * * *` | 1 d | 2026-10-23T02:53:58.000Z schedule success | 2026-10-23T02:53:58.000Z | 0 | ok | not inferred |
-| `pending-mirror.yml` | `23 * * * *` | 1 h | 2026-10-23T07:42:51.000Z schedule success | 2026-10-23T07:42:51.000Z | 0 | ok | 2026-10-22T18:39:19.000Z by hs-pending-mirror (quiet) |
-| `plugin-mirror-drift.yml` | `41 3 * * *` | 1 d | 2026-10-23T08:48:49.000Z schedule success | 2026-10-23T08:48:49.000Z | 0 | ok | not inferred |
-| `price-copies.yml` | `23 5 * * *` | 1 d | 2026-10-23T10:13:06.000Z schedule success | 2026-10-23T10:13:06.000Z | 0 | ok | not inferred |
+| `note-post.yml` | `0 0 * * *` | 1 d | 2026-10-24T02:50:45.000Z schedule success | 2026-10-24T02:50:45.000Z | 0 | ok | not inferred |
+| `pending-mirror.yml` | `23 * * * *` | 1 h | 2026-10-24T06:00:58.000Z schedule success | 2026-10-24T06:00:58.000Z | 0 | ok | 2026-10-23T13:36:51.000Z by hs-pending-mirror (quiet) |
+| `plugin-mirror-drift.yml` | `41 3 * * *` | 1 d | 2026-10-24T08:22:35.000Z schedule success | 2026-10-24T08:22:35.000Z | 0 | ok | not inferred |
+| `price-copies.yml` | `23 5 * * *` | 1 d | 2026-10-24T09:37:21.000Z schedule success | 2026-10-24T09:37:21.000Z | 0 | ok | not inferred |
 | `probity-witness-reader.yml` | `41 3 * * 2` | 7 d | 2026-10-22T12:05:50.000Z push success | 2026-10-20T08:50:35.000Z | 0 | ok | not inferred |
-| `receipt-anchor.yml` | `37 1 * * *` | 1 d | 2026-10-23T06:26:21.000Z schedule success | 2026-10-23T06:26:21.000Z | 0 | ok | none in the last 30 commits by hs-receipt-anchor (quiet) |
-| `registry-drift.yml` | `17 3 * * *` | 1 d | 2026-10-23T08:33:27.000Z schedule success | 2026-10-23T08:33:27.000Z | 0 | ok | not inferred |
+| `receipt-anchor.yml` | `37 1 * * *` | 1 d | 2026-10-24T06:22:33.000Z schedule success | 2026-10-24T06:22:33.000Z | 0 | ok | none in the last 30 commits by hs-receipt-anchor (quiet) |
+| `registry-drift.yml` | `17 3 * * *` | 1 d | 2026-10-24T08:08:29.000Z schedule success | 2026-10-24T08:08:29.000Z | 0 | ok | not inferred |
 | `scorecard.yml` | `41 2 * * 1` | 7 d | 2026-10-23T00:43:46.000Z push success | 2026-10-19T08:05:23.000Z | 0 | ok | not inferred |
-| `seki-heartbeat.yml` | `17 21 * * *` | 1 d | 2026-10-23T00:00:08.000Z schedule success | 2026-10-23T00:00:08.000Z | 0 | ok | not inferred |
-| `status-probe.yml` | `23 * * * *` | 1 h | 2026-10-23T07:41:27.000Z schedule success | 2026-10-23T07:41:27.000Z | 0 | ok | 2026-10-23T07:42:21.000Z by horizon-shield-status |
+| `seki-heartbeat.yml` | `17 21 * * *` | 1 d | 2026-10-23T23:52:15.000Z schedule success | 2026-10-23T23:52:15.000Z | 0 | ok | not inferred |
+| `status-probe.yml` | `23 * * * *` | 1 h | 2026-10-24T06:00:11.000Z schedule success | 2026-10-24T06:00:11.000Z | 0 | ok | 2026-10-24T06:00:59.000Z by horizon-shield-status |
 | `survey-observatory.yml` | `23 3 1 * *` | 31 d | 2026-10-01T10:16:23.000Z schedule success | 2026-10-01T10:16:23.000Z | 0 | ok | 2026-10-01T10:21:59.000Z by horizon-shield-observatory |
 | `survey-walk.yml` | `41 2 1 2,5,8,11 *` | 92 d | none | none in the last 20 | 0 | ok | 2026-10-01T10:21:59.000Z by horizon-shield-observatory |
-| `survive-drill.yml` | `17 3 * * *` | 1 d | 2026-10-23T08:35:37.000Z schedule success | 2026-10-23T08:35:37.000Z | 0 | ok | 2026-10-23T08:41:36.000Z by hs-survive-drill |
-| `tsunagi-board.yml` | `41 18 * * *` | 1 d | 2026-10-22T21:54:46.000Z schedule success | 2026-10-22T21:54:46.000Z | 0 | ok | 2026-10-22T21:56:28.000Z by horizon-shield-tsunagi |
-| `yakumo-guardian.yml` | `23 */6 * * *` | 6 h | 2026-10-23T05:02:18.000Z schedule success | 2026-10-23T05:02:18.000Z | 0 | ok | not inferred |
+| `survive-drill.yml` | `17 3 * * *` | 1 d | 2026-10-24T08:11:06.000Z schedule success | 2026-10-24T08:11:06.000Z | 0 | ok | 2026-10-24T08:19:46.000Z by hs-survive-drill |
+| `tsunagi-board.yml` | `41 18 * * *` | 1 d | 2026-10-23T21:39:06.000Z schedule success | 2026-10-23T21:39:06.000Z | 0 | ok | 2026-10-23T21:40:49.000Z by horizon-shield-tsunagi |
+| `yakumo-guardian.yml` | `23 */6 * * *` | 6 h | 2026-10-24T04:47:08.000Z schedule success | 2026-10-24T04:47:08.000Z | 0 | ok | not inferred |
 
 ## Rules
 
