@@ -1,0 +1,1 @@
+{"schema":"nenrin-agreement-batch-v1","anchored_at":"2026-10-24T00:30:31.011Z","count":1,"records":[{"canonical_sha256":"ace406abf5b95b19847713e2cb8a3091662c4d6706d0e52cbee3993e9b29d06b","record_schema":"a2a-admission-v0","verdict":"accepted","verifier_version":"admission-intake 0.3.1"}]}

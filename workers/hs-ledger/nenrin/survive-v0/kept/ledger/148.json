@@ -1,0 +1,12 @@
+{
+  "n": 148,
+  "work": "NENRIN agreement batch (1)",
+  "claim_sha256": "2704692af15a1a6ef39ebdb856961a1186fcf6f96f688380511ddfcf5998dd93",
+  "record_canonical": "{\"schema\":\"nenrin-agreement-batch-v1\",\"anchored_at\":\"2026-10-24T00:45:42Z\",\"count\":1,\"kinds\":{\"execution\":1},\"records\":[{\"sha\":\"e13c7f0178174118a2af9c5b5c6d86e9f425bc3804a291dbf0b94f0d796da62c\",\"kind\":\"execution\",\"schema\":\"a2a-execution-v0\",\"parties\":[\"shield.the-horizons-innovation.com\"],\"bytes_url\":\"https://agreement.horizonshield.dev/execution/e13c7f0178174118a2af9c5b5c6d86e9f425bc3804a291dbf0b94f0d796da62c\",\"musubi_version\":\"0.3.0\",\"contract_sha256\":\"d6703b32b7690290e553d1162a0abc1f1e316df5654dcf21ee9b67cd12c6d4f6\"}],\"intake_version\":\"0.4.0\",\"musubi_version\":\"0.3.0\",\"verifier_sha256\":\"27b5492cbd3612be8db7f084a2b0f8384c3b912388496247e08016efa03aa61c\",\"note\":\"NENRIN batch: each sha names the exact bytes of a record this intake accepted, an a2a-agreement (two party agreement, public verifier), an a2a-contract-v0 (MUSUBI terms, both parties signed, keys served) or an a2a-execution-v0 (evidence under a filed contract, signed by the contractor). Bytes at each record's bytes_url. This entry's Bitcoin anchor bounds every record in it from above; it settles nothing.\"}",
+  "schema": "v0",
+  "created_at": "2026-10-24T00:45:42.152Z",
+  "ots_status": "confirmed",
+  "bitcoin_block": 972858,
+  "block_time": "2026-10-24 02:03 UTC",
+  "stamped_at": "2026-10-24T03:30:31.286Z"
+}

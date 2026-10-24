@@ -1,0 +1,12 @@
+{
+  "n": 149,
+  "work": "FURUI blind-01: commitment root 8fd232fd093d3a06… anchored before opening",
+  "claim_sha256": "d8a54d5e7668d6a7b671340f572c09f590e56e738ecee0780c49ba704d967cec",
+  "record_canonical": "# FURUI blind-01: the commitment to the held-out answers, anchored before opening\n\n**Status:** a commitment record, anchored to the JIDEC ledger before blind-01 is opened. It names only public digests; the answers and the item texts stay sealed until opening.\n\n    repository        ogasurfproject-jpg/hs-furui-private (private), commit ca77c3c67ff92b890e8d39a822056e9cf7044d87\n    items             300\n    commitments root  8fd232fd093d3a06222123005621a494304ad4c19dc6aa45cfde608d23db8943\n    commitments.json  sha256 e2b0b6c3bab1c8485d72c88f049951e1108fed14d474349aa7bc5e5003f81869\n    item texts        sha256 15ba1c0e15a04ba188e534253ecfbc309b7b683628d870a045689aaf583ccd4f (ITEMS.sha256, sha256 0a5b7032a1baa76aeff6384461563de2b58df5cf1fe8570845a259b764d427c0)\n    0.1.4 flags       predictions_detector_84f11d07.jsonl, sha256 6d8eacfc68fd12f89674e46dd4a618e47f91e2c8e2d1c7d500b3da1f15c93905\n    README.txt        sha256 b58466457c2f960ef71053c826c99aa0837f495305f407a89f262dcad7748606\n\nEach answer is committed as sha256(salt || canonical JSON of {id, label, type}) with a 32-byte salt; the root is sha256 of the commitments joined by newlines in id order. At opening, check_open.py recomputes every commitment and the root from the answers.\n\n**The SHA-256 of this document is anchored to the JIDEC ledger and stamped to Bitcoin. After anchoring, this record cannot be altered. Corrections are later entries that cite this one.**\n",
+  "schema": "v0-plain",
+  "created_at": "2026-10-24T05:01:50.632Z",
+  "ots_status": "confirmed",
+  "bitcoin_block": 972881,
+  "block_time": "2026-10-24 05:10 UTC",
+  "stamped_at": "2026-10-24T05:57:34.614Z"
+}
