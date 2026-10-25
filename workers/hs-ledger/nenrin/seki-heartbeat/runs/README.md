@@ -4,7 +4,8 @@ Once a day the agent calls HORIZON SHIELD's own paid tool through the SEKI door 
 
 | day (UTC) | report (limit 20) | audit 30 (limit 25) | compare (prohibited) | settlement |
 |---|---|---|---|---|
-| 2026-10-24 | admit 6b33f14a | refuse 748138f9 | refuse 2280ce50 | waiting for Bitcoin |
+| 2026-10-25 | admit 47873483 | refuse 20a5a637 | refuse f1108945 | waiting for Bitcoin |
+| 2026-10-24 | admit 6b33f14a | refuse 748138f9 | refuse 2280ce50 | within_grant, final |
 | 2026-10-23 | admit fd331424 | refuse f67530fe | refuse bde27946 | within_grant, final |
 | 2026-10-22 | admit 0842c774 | refuse e6040235 | refuse 4aebf9ca | within_grant, final |
 | 2026-10-20 | admit 996db39a | refuse 14d7ddc8 | refuse e93c3e5a | deviation, final |
