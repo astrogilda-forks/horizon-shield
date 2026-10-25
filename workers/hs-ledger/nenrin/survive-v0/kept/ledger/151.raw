@@ -1,0 +1,10 @@
+# A pre-registration commitment
+
+**Status:** a commitment to a decision document that is kept private for now and published later. Only its digest is given here.
+
+    document sha256   8994db624e4220b23edfd5a961f4a0400e970e5da1177b732f35b57163e3d7fd
+    document size     3984 bytes
+
+When the document is published, anyone can check that its SHA-256 equals the value above and that this entry precedes the data it governs.
+
+**The SHA-256 of this document is anchored to the JIDEC ledger and stamped to Bitcoin. After anchoring, this record cannot be altered. Corrections are later entries that cite this one.**

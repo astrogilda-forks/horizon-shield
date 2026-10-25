@@ -1,0 +1,12 @@
+{
+  "n": 150,
+  "work": "FURUI blind-01: measuring pin bb4d4e0b1fc05c32… anchored before opening",
+  "claim_sha256": "b741210eea9e4efc63a8eb909497a0ee7fb4a2e316616394572cb0de45625f63",
+  "record_canonical": "# FURUI blind-01: the measuring version, the counting rules and the scorer, anchored before opening\n\n**Status:** a pin record, anchored to the JIDEC ledger before blind-01 is opened. It names only digests of files committed to the repository; the answers and the item texts stay sealed until opening.\n\n    repository          ogasurfproject-jpg/hs-furui-private (private), commit 2a250c9891be4780ab236569b2286ca093d5e473\n    MEASURE_PIN.json    sha256 bb4d4e0b1fc05c32997a1c6600ad78f645809c80544e6ac2b1de30afba435a1f\n    COUNTING_RULES.md   sha256 1f84f7db7364637a55db48cebec0dd83a9f1d9b0649647226c3e605992ddb9fc\n    score_blind01.py    sha256 627c5d21fe33beb316ff05e06294ee98d026d243305d8f30a585c23639d42969\n    version measured    0.2.4 (detector 84f11d0782823501, unwind c6a5cf61bc1a7786)\n    known holes         8, list sha256 340dd2eaee25b943be619dd428945883d576c226cb9fb171dc3408dd6bd7bd5f (named with the results)\n    commitments root    8fd232fd093d3a06222123005621a494304ad4c19dc6aa45cfde608d23db8943 (ledger entry 149)\n\nOrder: the pin is committed, then this record is anchored, then the disk image is opened. The known holes are measured as they are. The counting rules fix hits, false alarms, denominators, Wilson 95% intervals and the merging of cells under 20 items before any answer is seen.\n\n**The SHA-256 of this document is anchored to the JIDEC ledger and stamped to Bitcoin. After anchoring, this record cannot be altered. Corrections are later entries that cite this one.**\n",
+  "schema": "v0-plain",
+  "created_at": "2026-10-24T19:27:25.060Z",
+  "ots_status": "confirmed",
+  "bitcoin_block": 972968,
+  "block_time": "2026-10-24 20:06 UTC",
+  "stamped_at": "2026-10-24T20:54:46.460Z"
+}
