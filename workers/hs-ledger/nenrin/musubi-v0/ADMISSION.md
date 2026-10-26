@@ -39,7 +39,14 @@ settles after the fact. It renders no decision.
   `relying_party.domain`. A record signed with the applicant's own contract key is refused (`self_admission`).
 - **Reasons**, a closed list: `within_grant`, `conditional_needs_approval`, `prohibited_action`, `outside_grant`,
   `amount_over_limit`, `delegation_exceeds_parent`, `contract_expired`, `nonce_reused`, `grant_revoked`, `key_revoked`,
-  `presentation_unverifiable`, `signer_not_on_own_domain`, `action_digest_mismatch`. There is no score.
+  `presentation_unverifiable`, `signer_not_on_own_domain`, `action_digest_mismatch`, `content_flagged`,
+  `content_unchecked`, `exposure_full`. There is no score. The last three are refusals a door may add from its own
+  policy: the relying party's own content check refused the content that came with the request (`content_flagged`),
+  no such check covers those exact bytes (`content_unchecked`), or the relying party's own record of what it admitted
+  already holds the most acts of this kind its policy allows in the window (`exposure_full`).
+  Changed 2026-10-26: the last three reasons were added to the closed list (and to the intake and the schema). Records
+  made before keep verifying as they are; a verifier holding an older copy of the list refuses a new record that carries
+  one of the three, as a closed list should.
 - **`action_ref.action_binding_digest`**: sha256 of the musubi-canonical-v0 bytes of
   `{contract_sha256, action, target, amount, nonce, expiry_height}`. It binds what was asked to what was admitted, and
   settlement requires the execution to state the same values.

@@ -30,7 +30,8 @@ export const PREIMAGE_PROFILE = "a2a-admission-v0/action";
 export const DECISIONS = ["admit", "escalate", "refuse"];
 export const REASONS = ["within_grant", "conditional_needs_approval", "prohibited_action", "outside_grant", "amount_over_limit",
   "delegation_exceeds_parent", "contract_expired", "nonce_reused", "grant_revoked", "key_revoked",
-  "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch"];
+  "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch",
+  "content_flagged", "content_unchecked", "exposure_full"];
 export const REASONS_V02 = [...REASONS, "immune_hold", "immune_reject"];
 export const IMMUNE_RULES = "a2a-immune-v0";
 export const IMMUNE_VERDICTS = ["clear", "flagged", "released", "hold", "reject", "not_run"];

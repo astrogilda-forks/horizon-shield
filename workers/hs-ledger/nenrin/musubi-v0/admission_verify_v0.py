@@ -52,7 +52,8 @@ PREIMAGE_PROFILE = "a2a-admission-v0/action"
 DECISIONS = ("admit", "escalate", "refuse")
 REASONS = ("within_grant", "conditional_needs_approval", "prohibited_action", "outside_grant", "amount_over_limit",
            "delegation_exceeds_parent", "contract_expired", "nonce_reused", "grant_revoked", "key_revoked",
-           "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch")
+           "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch",
+           "content_flagged", "content_unchecked", "exposure_full")
 VERSION_IMMUNE = "0.2"
 REASONS_V02 = REASONS + ("immune_hold", "immune_reject")
 IMMUNE_RULES = "a2a-immune-v0"

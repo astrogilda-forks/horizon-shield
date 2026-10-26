@@ -30,7 +30,8 @@ export const PRIVACY_POLICY = "https://github.com/ogasurfproject-jpg/horizon-shi
 const DECISIONS = ["admit", "escalate", "refuse"];
 const REASONS = ["within_grant", "conditional_needs_approval", "prohibited_action", "outside_grant", "amount_over_limit",
   "delegation_exceeds_parent", "contract_expired", "nonce_reused", "grant_revoked", "key_revoked",
-  "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch"];
+  "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch",
+  "content_flagged", "content_unchecked", "exposure_full"];
 const REASONS_V0_2 = [...REASONS, "immune_hold", "immune_reject"];
 // v0.2 (2026-10-20) carries the immune block (immune_v0.py): digests and codes, no values. The intake checks its shape and
 // that it agrees with the decision, the same rule as admission_verify_v0.immune_problems. It does not rerun the rules.

@@ -242,7 +242,10 @@
           "key_revoked",
           "presentation_unverifiable",
           "signer_not_on_own_domain",
-          "action_digest_mismatch"
+          "action_digest_mismatch",
+          "content_flagged",
+          "content_unchecked",
+          "exposure_full"
         ]
       }
     },
