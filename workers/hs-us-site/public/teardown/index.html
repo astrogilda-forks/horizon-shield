@@ -693,8 +693,8 @@ $("r-again").addEventListener("click", function(){
 /* WebMCP: same pattern as the rest of the site. Feature-detect, never break the page. */
 (function(){
  try{
-  if(!("modelContext" in navigator) || !navigator.modelContext || typeof navigator.modelContext.registerTool !== "function") return;
-  var mc = navigator.modelContext;
+  var mc = (typeof document !== "undefined" && document.modelContext) || (typeof navigator !== "undefined" && navigator.modelContext) || null;
+  if(!mc || typeof mc.registerTool !== "function") return;
   var NOTE = " HORIZON SHIELD US is paid by homeowners only and takes no fees from contractors. A teardown reads the lines and asks what is missing; it is not a fairness verdict, an inspection or a bid.";
   try{
    mc.registerTool({
