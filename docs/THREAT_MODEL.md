@@ -1,6 +1,6 @@
 # Threat model
 
-As of 2026-10-22 (commit history of this file is its changelog). This file says what we protect, who we assume attacks it, what stops each attack today, and where nothing does. A gap is written as a gap, and stays here until a commit closes it. Paths are in this repository; `nenrin/` is `workers/hs-ledger/nenrin/`.
+As of 2026-10-26 (commit history of this file is its changelog). This file says what we protect, who we assume attacks it, what stops each attack today, and where nothing does. A gap is written as a gap, and stays here until a commit closes it. Paths are in this repository; `nenrin/` is `workers/hs-ledger/nenrin/`.
 
 ## What we protect
 
@@ -21,9 +21,9 @@ As of 2026-10-22 (commit history of this file is its changelog). This file says 
 
 ### T1. A forged or altered signed record
 
-**Today.** The ledger verifies Ed25519 over the exact canonical bytes at intake, refuses small-order keys (`src/ed25519_point.mjs`), refuses a `key_url` that redirects, is unsigned, or serves a different key. The readers accept one base64 spelling only. Key rotation needs both the old and the new key, chained by `prev_succession_sha256` (`key_succession.py` and its JS twin, with a parity test). Records signed after a declared compromise are refused. The gate publishes its key history at `/.well-known/key-history.json`.
+**Today.** The ledger verifies Ed25519 over the exact canonical bytes at intake, refuses small-order keys (`src/ed25519_point.mjs`), refuses a `key_url` that redirects, is unsigned, or serves a different key. The readers accept one base64 spelling only. Key rotation needs both the old and the new key, chained by `prev_succession_sha256` (`key_succession.py` and its JS twin, with a parity test). Records signed after a declared compromise are refused. The gate publishes its key history at `/.well-known/key-history.json`. A signature whose S is not reduced (S + L, S + 2L) is refused by both WebCrypto and node:crypto; the refusal comes from the runtime's OpenSSL and is pinned in `test/ed25519_point.test.mjs`, which fails if a runtime starts accepting it.
 
-**Gaps.** A compromise handover is signed by the new key alone, by design, so whoever controls a party's `key_url` can take over later attribution; only Bitcoin ordering limits it. Whether the WebCrypto path refuses a non-canonical S (signature malleability) is not tested here.
+**Gaps.** A compromise handover is signed by the new key alone, by design, so whoever controls a party's `key_url` can take over later attribution; only Bitcoin ordering limits it.
 
 ### T2. A rewritten, cut or forked ledger
 
