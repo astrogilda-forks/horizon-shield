@@ -1,6 +1,6 @@
 {
   "schema": "hs-adoption-count-v1",
-  "measured_at": "2026-10-19T05:15:57Z",
+  "measured_at": "2026-10-26T04:47:41Z",
   "metrics": {
     "independent_implementations": {
       "count": 19,
@@ -14,7 +14,7 @@
         "kuangmi-bit",
         "luiksksk"
       ],
-      "links_answering": 21,
+      "links_answering": 22,
       "by_subject": {
         "a2a-card-canonical-form": 1,
         "a2a-card-sign-v01": 7,
@@ -29,8 +29,8 @@
       },
       "other_kinds": {
         "reproduction": {
-          "count": 1,
-          "distinct_authors": 1
+          "count": 2,
+          "distinct_authors": 2
         },
         "integration": {
           "count": 1,
@@ -243,6 +243,16 @@
           "link_ok": true
         },
         {
+          "who": "astrogilda, Probity AI",
+          "author": "astrogilda",
+          "kind": "reproduction",
+          "subject": "priorseal-reader-v0",
+          "evidence": "https://github.com/probityai/agent-evidence/issues/30#issuecomment-6247270386",
+          "date": "2026-10-13",
+          "link_status": 200,
+          "link_ok": true
+        },
+        {
           "who": "kuangmi-bit",
           "author": "kuangmi-bit",
           "kind": "implementation",
@@ -257,9 +267,9 @@
     "independent_witnesses": {
       "count": 3,
       "ledger": {
-        "ledger_n": 119,
-        "ledger_head": "07f166f3ad5dda91a21f86bf5067935803007731540f8946a7b0c21c3b97d072",
-        "witness_batches": 27,
+        "ledger_n": 165,
+        "ledger_head": "f9769b0ca107e4c8ab4ad36f60ac7367a4d5ebcbd19f0116700c50e6c3dd5617",
+        "witness_batches": 34,
         "unreadable_entries": [],
         "refused_shared_host": [],
         "signed_domains": {
@@ -281,7 +291,14 @@
             103,
             107,
             111,
-            116
+            116,
+            121,
+            128,
+            133,
+            138,
+            144,
+            152,
+            159
           ],
           "pipavlo82.github.io": [
             65,
@@ -303,12 +320,13 @@
       },
       "reverification_pool": {
         "admitted": [
-          "api.babyblueviper.com"
+          "api.babyblueviper.com",
+          "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com"
         ],
         "file": "workers/hs-ledger/nenrin/recovery-v0/pool_report.json",
-        "generated_at": "2026-09-23T03:47:38Z",
+        "generated_at": "2026-10-22T14:42:22Z",
         "quorum_of_independent_controls_needed": 2,
-        "control_clusters": "1",
+        "control_clusters": "2",
         "diversity_file": "workers/hs-ledger/nenrin/recovery-v0/witness_diversity_report.json"
       }
     },
@@ -382,7 +400,228 @@
         }
       ],
       "published_not_counted": [],
-      "repo_not_counted": [],
+      "repo_not_counted": [
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b01/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b02/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b02/parent.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b03/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b04/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b04/parent.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b05/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b06/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b07/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b08/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b09/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b10/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b10/parent.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b11/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b12/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b13/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b14/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b15/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b15/parent.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b16/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b17/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b18/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b19/contract.json",
+          "why": "verify_contract did not accept it"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b20/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b21/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b22/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b23/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b24/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b24/parent.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b25/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b26/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b27/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b28/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b29/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b30/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b31/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b32/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b33/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b34/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b35/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b36/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b37/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b38/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b39/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b40/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b41/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b42/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b43/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b44/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b44/parent.json",
+          "why": "verify_contract did not accept it"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b45/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b46/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b47/contract.json",
+          "why": "a party has a reserved test name"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b48/contract.json",
+          "why": "verify_contract did not accept it"
+        },
+        {
+          "file": "workers/hs-ledger/nenrin/musubi-v0/settle-core-blind-01/inputs/b48/parent.json",
+          "why": "a party has a reserved test name"
+        }
+      ],
       "repo_test_material_skipped": {
         "dirs": [
           "workers/hs-ledger/nenrin/musubi-v0/settle-core-v0"
@@ -442,7 +681,7 @@
           "repo": "kuangmi-bit/conduct-witness",
           "created_from_template": true,
           "reproduce_success_last_30_days": true,
-          "last_success": "2026-10-12T13:32:02Z"
+          "last_success": "2026-10-19T11:16:25Z"
         }
       ],
       "method": "GitHub search for repositories named like conduct-witness, kept when template_repository is ogasurfproject-jpg/conduct-witness-template and reproduce.yml has a successful run in the last 30 days"
