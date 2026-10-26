@@ -1,0 +1,10 @@
+{
+ "schema": "hs-fair-price-receipt-index-v1",
+ "days": {
+  "2026-10-25": {
+   "ledger_entry": 166,
+   "claim_sha256": "0af5ea313022795c6989f303a9d6399abbb6b5fb7fe630379a1668cc86b05dec",
+   "count": 1
+  }
+ }
+}
