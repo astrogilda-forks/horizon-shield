@@ -1,0 +1,25 @@
+# FURUI blind-02: the score, anchored after opening
+
+**Status:** a result record, anchored to the JIDEC ledger after blind-02 was opened once and scored with the pinned versions, counting rules and scorers. It names digests only; the numbers are in the score files, whose SHA-256 are given here. The salt is published here, as the plan record requires at opening.
+
+    plan                    ledger entry 158, claim c55b5557cf3f7e7c72e1b1c5e05f33a4147d68a20059fa1dd4a9b509a6846acf
+    root                    ledger entry 164, claim e0b67a1e2d7b5da0f24ffa263c45352fed33385f5d6bd24438ed90922e2e58cd
+    pin                     ledger entry 165, claim 51e06132d7c25291b7792865dc9aa4ee244599b7b77a3a48668091644e8aad64
+    salt                    0afcbc3bbf665dda22c6828c6dd8ac5f7e648ce7f3af0142959c991bae4d7913 (sha256 of its 32 bytes acc03bf8a02e55bf69e993c42a52902f43c8ff756a2e0576256ce53c16c414ed, as in the plan)
+    block H hash            00000000000000000001a698f6259782125a20740a53b9fa4b36b763154decd8
+    manifest.json           sha256 a31f959feff76f810781ffac927c233ab09bb5cab05fbb1b2c79cdce54414677, published at data/furui-blind-02/manifest.json in horizon-shield commit e8ca10f985dc7c51d44ff93c1e088933170fd156
+    SCORE_blind02_f.json    sha256 a96de1966d30b867e389c8dc7154752be2a2df5ba8c48dee4efe77b23e1ffa6a (v_027_sieve, v_027, v_027c, v_028)
+    SCORE_blind02_v_024.json sha256 630ed90ab1c9996e14671dbb2a269f4f1fe102a693ccae6686ae403f373688ee
+    SCORE_blind02_v_027_sieve.json sha256 068e98a3461e01330e944b64020ccce4107f9c332066a55618aa642cbaac656c
+    per-row flags files     sha256 3537e0568cf2d5b2ca4b6c06eff41219e9f5977dfbd9e61b8cca87405781f324, d5a6993e3310db448264baa4018f8b7949d4f64dc612dc65711115e44b751dde, 3e7ca2992830b079740813e5de3fd4cec354fc6aef2b386f6c210330fe863eae (kept by the opener, not handed over)
+    raw model answers       sha256 df05498f13a71536382c80b3082d9653624774afd4e14727a6b271a0ede66047 (stage 1), 37cf230d8b8692ffab562c077eeee9c7443f2bc9faf95cb895b52bfaf094deb7 (stage 2) (kept by the opener, not handed over)
+    the two scorers         agree on 2030 of 2030 rows where they overlap (v_027_sieve)
+    sentences chosen        4, fixed in the pin before opening and chosen from the numbers; sha256 of each sentence's UTF-8 text, in order:
+        eeb2ccbc704b19c5169245c61cc45a03e46cf84bc17b1bc1a2ea2755562a0548
+        793430319a1c69f13edf253f58dad606ad104d0b43f1f988ae0dced32b309790
+        6161b34080a2f48376223d16a7a12a9cc186b2852089c27c968c5020518b1c3d
+        3769609f060bc60cf223ee5be5951bf796f336a893a3d44d8fa36fa8c3e7ea32
+
+Anyone can recompute the seed, the selection and the root from the salt, the block hash and the public datasets (draw_blind02.py verify). blind-02 is used once; a version changed after opening is not measured on it.
+
+**The SHA-256 of this document is anchored to the JIDEC ledger and stamped to Bitcoin. After anchoring, this record cannot be altered. Corrections are later entries that cite this one.**

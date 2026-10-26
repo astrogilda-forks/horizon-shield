@@ -1,0 +1,17 @@
+# FURUI blind-01: the score, anchored after opening
+
+**Status:** a result record, anchored to the JIDEC ledger after blind-01 was opened once and scored with the pinned version, counting rules and scorer. It names digests only; the numbers are in SCORE_blind01.json, whose SHA-256 is given here.
+
+    pin                     ledger entry 150, claim b741210eea9e4efc63a8eb909497a0ee7fb4a2e316616394572cb0de45625f63
+    SCORE_blind01.json      sha256 938393cdfd0961b5875aae84e285a28ce2128209b04887ef51754d41a07d380c
+    per-item flags file     sha256 b0ba1e096e917fe54fc8e36b3251bb813592125367e5b93208e2ca789254f697 (kept by the opener, not handed over: COUNTING_RULES.md 8)
+    items.jsonl             sha256 15ba1c0e15a04ba188e534253ecfbc309b7b683628d870a045689aaf583ccd4f
+    COUNTING_RULES.md       sha256 1f84f7db7364637a55db48cebec0dd83a9f1d9b0649647226c3e605992ddb9fc
+    score_blind01.py        sha256 627c5d21fe33beb316ff05e06294ee98d026d243305d8f30a585c23639d42969
+    commitments root        8fd232fd093d3a06222123005621a494304ad4c19dc6aa45cfde608d23db8943 (ledger entry 149)
+    opened                  2026-10-25T03:12:14Z, opening script 9b0c7265, disk image sha256 3ad92ee8f30e6c3269cb9479d4a7a2c925b7ccfdf023f2c2e51b1b6f4410e7b2
+    consistency             0 items where the 0.2.4 detector differs from the frozen 0.1.4 flags
+
+Fixes made after seeing this score are measured on blind-02, not on blind-01.
+
+**The SHA-256 of this document is anchored to the JIDEC ledger and stamped to Bitcoin. After anchoring, this record cannot be altered. Corrections are later entries that cite this one.**

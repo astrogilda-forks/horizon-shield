@@ -1,0 +1,27 @@
+# FURUI blind-02: the drawn set, sealed and anchored before anyone reads it
+
+**Status:** a commitment record. It names only digests and counts; the salt and the list of drawn rows stay sealed until opening.
+
+    plan record       JIDEC ledger entry 158, claim c55b5557cf3f7e7c72e1b1c5e05f33a4147d68a20059fa1dd4a9b509a6846acf
+    Bitcoin block     height 973171, hash 00000000000000000001a698f6259782125a20740a53b9fa4b36b763154decd8
+    salt sha256       acc03bf8a02e55bf69e993c42a52902f43c8ff756a2e0576256ce53c16c414ed
+    rows drawn        2030
+        Lakera/gandalf_ignore_instructions|attack      140
+        deepset/prompt-injections|attack               40
+        deepset/prompt-injections|benign               60
+        jackhhao/jailbreak-classification|attack       100
+        jackhhao/jailbreak-classification|benign       190
+        reshabhs/SPML_Chatbot_Prompt_Injection|attack  1000
+        reshabhs/SPML_Chatbot_Prompt_Injection|benign  500
+    root              46e93653b6de9ecc1d8ce94a6aab786369529482d1f00d33b505ddf0e37413c6
+    manifest.json     sha256 a31f959feff76f810781ffac927c233ab09bb5cab05fbb1b2c79cdce54414677
+    blind02.jsonl     sha256 ce5a4085dfc7e36da9fecd2e5e55e368e659bb701b1384c55d5201446edce2d4
+    sealed image      sha256 5d7750f2ca2ab01f7f9abb0db3338fc3c10d54fc25b8d43219a405083515b59a
+
+MEASURE files after removing the drawn rows (the only MEASURE files counted until opening):
+    Lakera__gandalf_ignore_instructions.measure.jsonl rows 356 sha256 bdb0e2d6034eaec85342d1e5f89d589aa9281fdfcb214de38767cc3d4411da3d
+    deepset__prompt-injections.measure.jsonl rows 242 sha256 b376a0c702c045fa71ad015f44ebd09b4d5be6a0bc1c60b154bbde27897d2192
+    jackhhao__jailbreak-classification.measure.jsonl rows 687 sha256 a0bc11140d8a7609b10a047e5a2e86836d671eb79056b5bfaafb63c2eecaa0fe
+    reshabhs__SPML_Chatbot_Prompt_Injection.measure.jsonl rows 6458 sha256 d51e44a3b4f3e1ea9c1bca128ac1db55a87f05aa896ec43b728924681a5556ca
+
+**The SHA-256 of this document is anchored to the JIDEC ledger and stamped to Bitcoin. After anchoring, this record cannot be altered. Corrections are later entries that cite this one.**
