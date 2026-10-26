@@ -66,6 +66,24 @@ t("a corrupted local copy is replaced by the verified bytes", m3.counts.mirrored
 const m4 = await mirror({ gate: G, out: mkdtempSync(path.join(tmpdir(), "mirror-")), only: EP2, fetchImpl: fakeFetch });
 t("--endpoint limits the run to one row", m4.endpoints === 1 && m4.counts.mirrored_new === 1);
 
+// 0.1.1: retries on network failure (waits set to 0 so the test runs fast)
+{
+  let n = 0;
+  const flaky = async (url, init) => { n++; if (url.endsWith("/register") && n === 1) throw new TypeError("fetch failed"); return fakeFetch(url, init); };
+  const mf = await mirror({ gate: G, out: mkdtempSync(path.join(tmpdir(), "mirror-")), fetchImpl: flaky, waits: [0, 0, 0], sleep: async () => {} });
+  t("a network failure on /register once is retried and the run completes", mf.endpoints === 2 && mf.counts.mirrored_new === 2, JSON.stringify(mf.counts));
+  let k = 0;
+  const flaky503 = async (url, init) => { if (url.includes("/record/" + SHA_GOOD) && k++ < 2) return { status: 503, arrayBuffer: async () => new ArrayBuffer(0) }; return fakeFetch(url, init); };
+  const m5 = await mirror({ gate: G, out: mkdtempSync(path.join(tmpdir(), "mirror-")), fetchImpl: flaky503, waits: [0, 0, 0], sleep: async () => {} });
+  t("503 twice then 200 is retried and the record is mirrored", m5.counts.mirrored_new === 2 && k === 3, JSON.stringify(m5.counts) + " k " + k);
+  const deadHistory = async (url, init) => { if (url.includes("/history?endpoint=" + encodeURIComponent(EP1))) throw new TypeError("fetch failed"); return fakeFetch(url, init); };
+  const m6 = await mirror({ gate: G, out: mkdtempSync(path.join(tmpdir(), "mirror-")), fetchImpl: deadHistory, waits: [0, 0, 0], sleep: async () => {} });
+  t("a /history that keeps failing is history_failed for that row and the other rows still run", m6.entries.some((e) => e.endpoint === EP1 && e.result === "history_failed" && /fetch failed/.test(e.reason)) && m6.counts.mirrored_new === 1, JSON.stringify(m6.counts));
+  let rejected = false;
+  try { await mirror({ gate: G, out: mkdtempSync(path.join(tmpdir(), "mirror-")), fetchImpl: async () => { throw new TypeError("fetch failed"); }, waits: [0, 0, 0], sleep: async () => {} }); } catch (e) { rejected = /fetch failed/.test(e.message); }
+  t("a /register that keeps failing still fails the run (after 4 tries)", rejected);
+}
+
 console.log("");
 console.log("=== " + pass + " / " + (pass + fail) + (fail ? " 不合格あり" : " 合格") + " (evidence mirror v0) ===");
 process.exit(fail ? 1 : 0);

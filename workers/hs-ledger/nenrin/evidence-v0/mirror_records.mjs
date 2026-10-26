@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 export const MIRROR_SCHEMA = "gate-record-mirror-v0";
-export const MIRROR_VERSION = "0.1.0";
+export const MIRROR_VERSION = "0.1.1";
 // Python urllib の既定 UA は扉の前段で 403 になる (KNOWN_UA_LIMITATION)。名乗って取る。
 export const UA = "hs-evidence-mirror/" + MIRROR_VERSION + " (+https://gate.horizonshield.dev/openapi.json)";
 
@@ -29,21 +29,36 @@ export const sha256hex = (buf) => createHash("sha256").update(buf).digest("hex")
 // conduct-v1 の rings と同じ slug 規則: https:// を落とし、小文字、[a-z0-9] 以外の連なりを 1 つのハイフン、両端のハイフンを落とす。
 export const slugOf = (endpoint) => String(endpoint).replace(/^https?:\/\//i, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
-async function getBytes(fetchImpl, url) {
-  const r = await fetchImpl(url, { headers: { "user-agent": UA, accept: "application/json" } });
-  const buf = Buffer.from(await r.arrayBuffer());
-  return { status: r.status, buf };
+// 0.1.1 (2026-10-27): the run of 2026-10-26 22:51Z failed as a whole on one network error ("fetch failed") on /register or
+// /history. A thrown network error and 502/503/504 are now retried up to 3 times with a wait. Nothing else changes: the
+// bytes received are still checked against their name.
+export const RETRY_WAITS_MS = [2000, 5000, 10000];
+const RETRY_STATUS = new Set([502, 503, 504]);
+async function getBytes(fetchImpl, url, { waits = RETRY_WAITS_MS, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+  let last;
+  for (let i = 0; i <= waits.length; i++) {
+    try {
+      const r = await fetchImpl(url, { headers: { "user-agent": UA, accept: "application/json" }, signal: AbortSignal.timeout(30000) });
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (!RETRY_STATUS.has(r.status) || i === waits.length) return { status: r.status, buf, attempts: i + 1 };
+      last = new Error("status " + r.status);
+    } catch (err) { last = err; if (i === waits.length) throw err; }
+    await sleep(waits[i]);
+  }
+  throw last;
 }
 
-export async function mirror({ gate = "https://gate.horizonshield.dev", out, only = null, fetchImpl = globalThis.fetch, now = () => new Date().toISOString() }) {
-  const reg = await getBytes(fetchImpl, gate + "/register");
+export async function mirror({ gate = "https://gate.horizonshield.dev", out, only = null, fetchImpl = globalThis.fetch, now = () => new Date().toISOString(), waits = RETRY_WAITS_MS, sleep }) {
+  const get = (url) => getBytes(fetchImpl, url, { waits, ...(sleep ? { sleep } : {}) });
+  const reg = await get(gate + "/register");
   if (reg.status !== 200) throw new Error("register answered " + reg.status);
   const rows = JSON.parse(reg.buf.toString("utf8")).rows || [];
   const endpoints = rows.map((r) => r.endpoint).filter((e) => typeof e === "string" && (!only || e === only));
   const entries = [];
   const counts = { mirrored_new: 0, already_mirrored: 0, not_stored_by_gate: 0, hash_mismatch: 0, fetch_failed: 0 };
   for (const ep of endpoints) {
-    const h = await getBytes(fetchImpl, gate + "/history?endpoint=" + encodeURIComponent(ep));
+    let h;
+    try { h = await get(gate + "/history?endpoint=" + encodeURIComponent(ep)); } catch (err) { entries.push({ endpoint: ep, result: "history_failed", reason: String(err && err.message || err) }); counts.fetch_failed++; continue; }
     if (h.status !== 200) { entries.push({ endpoint: ep, result: "history_failed", status: h.status }); counts.fetch_failed++; continue; }
     const hist = JSON.parse(h.buf.toString("utf8")).entries || [];
     for (const e of hist) {
@@ -53,7 +68,7 @@ export async function mirror({ gate = "https://gate.horizonshield.dev", out, onl
       const base = { endpoint: ep, at: e.at || null, status: e.status || null, record_sha256: sha, file: path.relative(out, file) };
       if (existsSync(file) && sha256hex(readFileSync(file)) === sha) { entries.push({ ...base, result: "already_mirrored" }); counts.already_mirrored++; continue; }
       let r;
-      try { r = await getBytes(fetchImpl, gate + "/record/" + sha); } catch (err) { entries.push({ ...base, file: null, result: "fetch_failed", reason: String(err && err.message || err) }); counts.fetch_failed++; continue; }
+      try { r = await get(gate + "/record/" + sha); } catch (err) { entries.push({ ...base, file: null, result: "fetch_failed", reason: String(err && err.message || err) }); counts.fetch_failed++; continue; }
       if (r.status === 404) { entries.push({ ...base, file: null, result: "not_stored_by_gate" }); counts.not_stored_by_gate++; continue; }
       if (r.status !== 200) { entries.push({ ...base, file: null, result: "fetch_failed", status: r.status }); counts.fetch_failed++; continue; }
       const got = sha256hex(r.buf);
