@@ -7,7 +7,11 @@
   第2部 PDF 47〜83 頁: 県別単価及び統一単価。列 = 徳島県〜高知県
   第3部 PDF 85〜107 頁: 上記外統一単価(アンカー・ボルト・標識・区画線工など、表の形が頁ごとに違う)は取り込んでいない。
 地区割表-1・-2(PDF 5・6 頁)は罫線の表なので pdfplumber でセルを切り、地区番号・地区名・該当市町村・国道・河川を読む。
-使い方: python3 parse_skr_zairyo.py [OBS2 のルート]
+使い方: python3 parse_skr_zairyo.py [OBS2 のルート] [--file 20261009|20260918] [--out 出力.csv] [--diag 診断.json]
+  四国地整は 10 月版を 2026-10-09 に同じ URL・同じ題で差し替えた(空欄だったセルに値が入った)。原本の版は FILES の sha256 で固定する。
+  --file を省くと今の原本(20261009、raw_restricted/skr-zairyo-r8-10.pdf)。20260918 は差し替え前の原本
+  (raw_restricted/skr-zairyo-r8-10.20260918.pdf)で、--out / --diag と一緒に使い、前の CSV と md5 を比べる(既存のファイルを書き換えないため)。
+  出力の既定は observations_restricted/jp/(行の一覧は公開の組み立てに入れない)。
 """
 import sys, os, re, json, hashlib, collections, unicodedata
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -17,13 +21,31 @@ from mlit_zairyo_common import words_of, layout_pages, parse_table_page, layout_
 from obs_common import make_id, pref, write_obs
 import pdfplumber
 
-ROOT = sys.argv[1] if len(sys.argv) > 1 else os.path.abspath(os.path.join(HERE, "..", ".."))
+def _opt(name, default=None):
+    return sys.argv[sys.argv.index(name) + 1] if name in sys.argv else default
+
+
+_pos = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith("--") and not sys.argv[i - 1].startswith("--")]
+ROOT = _pos[0] if _pos else os.path.abspath(os.path.join(HERE, "..", ".."))
 SID = "skr-zairyo-r8-10"
-PDF = os.path.join(ROOT, "raw_restricted", SID + ".pdf")
-OUT = os.path.join(ROOT, "observations", "jp", "material_skr_zairyo_r8_10.csv")
-DIAG = os.path.join(ROOT, "reports", "B1-kinki-chugoku-shikoku.skr_diag.json")
+# 原本の版。四国地整が 2026-10-09 に同じ URL で差し替えた(Last-Modified Fri, 09 Oct 2026 05:35:02 GMT)。
+FILES = {
+    "20260918": {"pdf": os.path.join(ROOT, "raw_restricted", SID + ".20260918.pdf"),
+                 "sha": "48df4a902b04a05589a597831db36dec8cb2b7b9f3537acac25b1b746678b790"},
+    "20261009": {"pdf": os.path.join(ROOT, "raw_restricted", SID + ".pdf"),
+                 "sha": "b9a2cc7b247a67fe2c14733c84b1c23a8bc134c5d876c5f209c68229f279dc40"},
+}
+FILE = _opt("--file", "20261009")
+if FILE not in FILES:
+    sys.exit("原本の版が無い: %s(あるのは %s)" % (FILE, ", ".join(sorted(FILES))))
+PDF = FILES[FILE]["pdf"]
+SHA = FILES[FILE]["sha"]
+_got = hashlib.sha256(open(PDF, "rb").read()).hexdigest()
+if _got != SHA:
+    sys.exit("原本の sha256 が FILES の %s と違う: %s" % (FILE, _got))
+OUT = _opt("--out", os.path.join(ROOT, "observations_restricted", "jp", "material_skr_zairyo_r8_10.csv"))
+DIAG = _opt("--diag", os.path.join(ROOT, "reports", "B1-kinki-chugoku-shikoku.skr_diag.json"))
 LED = json.load(open(os.path.join(ROOT, "sources", SID + ".json"), encoding="utf-8"))
-SHA = "48df4a902b04a05589a597831db36dec8cb2b7b9f3537acac25b1b746678b790"
 P1 = list(range(10, 45))
 P2 = list(range(47, 84))
 NOTE_R = "値は原本にあるが、表(頁 2)が第三者の複製・転載・磁気媒体入力を禁止しているため写さない。原本で見る。"

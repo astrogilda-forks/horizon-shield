@@ -5,6 +5,7 @@
 
 使い方: python3 parse_hrr_cbr_zairyo.py hrr|cbr
        python3 parse_hrr_cbr_zairyo.py hrr [--month r8_09|r8_10] [--out 出力.csv] [--summary 要約.json]
+       python3 parse_hrr_cbr_zairyo.py cbr [--month r8_10|r8_11] [--out 出力.csv] [--summary 要約.json]
   hrr: 原本 OBS2/raw/hrr-zairyo-<月>.pdf(PDL1.0。値を入れる)。--month を省くと r8_09(9月、最初の取り込みと同じ動き)。
        月ごとに別の source_id・別のファイル(古い月の行は消さない)。原本は HRR_MONTHS の sha256 で固定し、
        各頁の見出しの年月が HRR_MONTHS の period と同じこと、表でない頁が表紙・説明・地区割り一覧表だけであることを確かめる。
@@ -13,6 +14,9 @@
   cbr: 原本 OBS2/raw_restricted/cbr-zairyo-r8-10.pdf(PDF の 2 頁に「本単価表を無断転載・複写や電子媒体等に加工することを禁じます。」
        とあり、サイトの PDL1.0 の「権利表記の記載がない限り」に当たらないため、値は写さない。状態だけ)
        地区コード一覧表は別の PDF OBS2/raw/cbr-chikukubun.pdf(chikucode01.pdf)
+       --month を省くと r8_10(最初の取り込みと同じ動き。出力は observations/jp/ のままなので、作ったら observations_restricted/ の物と比べる)。
+       r8_11 からは CBR_MONTHS の out(observations_restricted/jp/)に直に書く。原本は CBR_MONTHS の sha256 で固定し、
+       各頁の見出しの年月が period と同じこと、表紙と 2 頁の文字が cover と同じことを確かめる。
 照合: 頁ごとに、-layout の本文で値の形の語(ASCII の数・「－」)を数え、bbox で列に割り当てた値の数と比べる。
 """
 import sys, os, re, json, hashlib, collections, unicodedata
@@ -55,18 +59,43 @@ def hrr_cfg(month):
     }
 
 
+CBR_NOTE = "中部地整が独自調査で設定した単価は原本に載っているが、原本に無断転載・複写・電子媒体への加工を禁じる表記があるため値は写さない。原本で見る。"
+CBR_MONTHS = {
+    # 10月: 最初の取り込み(2026-09-26 取得)。出力先は最初の取り込みと同じ observations/jp/(apply_decisions_20260926.py が observations_restricted/ へ移した)
+    "r8_10": {"sid": "cbr-zairyo-r8-10", "url": "https://www.cbr.mlit.go.jp/architecture/kensetsugijutsu/unit_price/pdf/shizai202610.pdf",
+              "period": "2026-10", "effective_from": "2026-10-01",
+              "sha": "6f782fa5185eff907637c8f506755c229b455a44f863acb90a82af2cd565015c",
+              "out": os.path.join(OBS2, "observations", "jp", "material_cbr_zairyo_r8_10.csv"),
+              "summary": os.path.join(OBS2, "reports", "B2_cbr_parse_summary.json"),
+              "cover": [(1, "令和８年１０月１日以降適用"), (2, "本単価表を無断転載・複写や電子媒体等に加工することを禁じます。")]},
+    # 11月: 2026-10-26 取得(Apify、Last-Modified 2026-10-23)。行の一覧は公開の組み立てに入れないので observations_restricted/ に直に書く
+    "r8_11": {"sid": "cbr-zairyo-r8-11", "url": "https://www.cbr.mlit.go.jp/architecture/kensetsugijutsu/unit_price/pdf/shizai202611.pdf",
+              "period": "2026-11", "effective_from": "2026-11-01",
+              "sha": "3a35cdaa484904c2b27ecf16f600da4f395f3c3c5c2d095375df8c00537e1075",
+              "out": os.path.join(OBS2, "observations_restricted", "jp", "material_cbr_zairyo_r8_11.csv"),
+              "summary": os.path.join(OBS2, "reports", "cbr_r8_11_parse_summary.json"),
+              "cover": [(1, "令和８年１１月１日以降適用"), (2, "本単価表を無断転載・複写や電子媒体等に加工することを禁じます。")]},
+}
+
+
+def cbr_cfg(month):
+    M = CBR_MONTHS[month]
+    return {
+        "sid": M["sid"],
+        "pdf": os.path.join(OBS2, "raw_restricted", M["sid"] + ".pdf"),
+        "url": M["url"],
+        "area_pdf": os.path.join(OBS2, "raw", "cbr-chikukubun.pdf"),
+        "out": M["out"],
+        "license": "restricted", "status_value": "published_restricted_not_copied", "copy_values": False,
+        "effective_from": M["effective_from"],
+        "note": CBR_NOTE,
+        "month": month, "period": M["period"], "sha": M["sha"], "summary": M["summary"], "cover": M["cover"],
+    }
+
+
 CFG = {
     "hrr": hrr_cfg("r8_09"),
-    "cbr": {
-        "sid": "cbr-zairyo-r8-10",
-        "pdf": os.path.join(OBS2, "raw_restricted", "cbr-zairyo-r8-10.pdf"),
-        "url": "https://www.cbr.mlit.go.jp/architecture/kensetsugijutsu/unit_price/pdf/shizai202610.pdf",
-        "area_pdf": os.path.join(OBS2, "raw", "cbr-chikukubun.pdf"),
-        "out": os.path.join(OBS2, "observations", "jp", "material_cbr_zairyo_r8_10.csv"),
-        "license": "restricted", "status_value": "published_restricted_not_copied", "copy_values": False,
-        "effective_from": "2026-10-01",
-        "note": "中部地整が独自調査で設定した単価は原本に載っているが、原本に無断転載・複写・電子媒体への加工を禁じる表記があるため値は写さない。原本で見る。",
-    },
+    "cbr": cbr_cfg("r8_10"),
 }
 VALNUM = re.compile(r"^[0-9]{1,3}(,[0-9]{3})*(\.[0-9]+)?$|^[0-9]+\.[0-9]+$")  # ASCII の数字だけ(全角の規格の数字を数えない)
 
@@ -152,9 +181,16 @@ def main(which):
             raise SystemExit("原本の sha256 が %s の値と違う: %s" % (C["month"], got))
         area, area_quote = hrr_area_table(C["pdf"])
     else:
+        got = hashlib.sha256(open(C["pdf"], "rb").read()).hexdigest()
+        if got != C["sha"]:
+            raise SystemExit("原本の sha256 が %s の値と違う: %s" % (C["month"], got))
         area, area_quote = cbr_area_table(C["area_pdf"])
     pages = words_of(C["pdf"])
     lay = layout_pages(C["pdf"])
+    if which == "cbr":
+        for cp, ctext in C["cover"]:
+            if ctext not in re.sub(r"\s", "", lay[cp - 1]):
+                raise SystemExit("p%d に「%s」が無い(%s の原本でない)" % (cp, ctext, C["month"]))
     rows, seen_nat, checks = [], {}, []
     stats = collections.Counter()
     maxd, maxsplit, offs = 0.0, 0.0, []
@@ -165,7 +201,7 @@ def main(which):
         if P is None:
             nontable.append(pno)
             continue
-        if which == "hrr" and P["period"] != C["period"]:
+        if P["period"] != C["period"]:
             raise SystemExit("p%d の見出しの年月 %s が %s の %s でない" % (pno, P["period"], C["month"], C["period"]))
         stats["pages"] += 1
         maxd = max(maxd, P["max_col_dist_pt"]); maxsplit = max(maxsplit, P["group_split_err_pt"]); offs.append(P["col_offset_pt"])
@@ -274,4 +310,8 @@ if __name__ == "__main__":
         CFG["hrr"] = hrr_cfg(_opt("--month", "r8_09"))
         CFG["hrr"]["out"] = _opt("--out", CFG["hrr"]["out"])
         CFG["hrr"]["summary"] = _opt("--summary", CFG["hrr"]["summary"])
+    elif sys.argv[1] == "cbr":
+        CFG["cbr"] = cbr_cfg(_opt("--month", "r8_10"))
+        CFG["cbr"]["out"] = _opt("--out", CFG["cbr"]["out"])
+        CFG["cbr"]["summary"] = _opt("--summary", CFG["cbr"]["summary"])
     main(sys.argv[1])
