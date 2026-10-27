@@ -76,7 +76,17 @@ if [ -z "$CHALLENGE" ]; then
 fi
 echo "challenge: $CHALLENGE_SRC (${#CHALLENGE} 文字)  ← 値そのものは出さない"
 
-npx wrangler deploy --var GATE_COMMIT:"$SHA" --var OPENAI_APPS_CHALLENGE:"$CHALLENGE"
+# 2026-10-27: wrangler の版を固定する。package.json が無いので素の npx は npm の最新を取り、新しい版が出た日は
+# 入れてよいかを聞いて止まる(10/27 の TSUGI の p2 で 23 分止まって見えた)。扉、台帳、関の扉を 4.152.0 に揃える(TOshi の決め)。
+# 版を上げる時は、その版で扉の試験と dry-run を通してから WRANGLER_VERSION を渡す。取れた版が頼んだ版でなければ撒かない。
+WV="${WRANGLER_VERSION:-4.152.0}"
+GOT=$(npx --yes wrangler@"$WV" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1 || true)
+if [ "$GOT" != "$WV" ]; then
+  echo "★ 拒否: wrangler の版が $WV でない(取れたのは ${GOT:-なし})。"
+  exit 1
+fi
+echo "wrangler: $GOT"
+npx --yes wrangler@"$WV" deploy --var GATE_COMMIT:"$SHA" --var OPENAI_APPS_CHALLENGE:"$CHALLENGE"
 # 2026-09-20 TSUGI: 撒いた commit を repo の外に残す。日次の証人 (ops/run_drift_witness_daily.sh) が --expect-commit に使う。
 # これが無いと証人は「ピンされとるか」しか見られず、「今日撒いた物か」が見られん。
 mkdir -p "$HOME/.config/hs" && printf '%s\n' "$SHA" > "$HOME/.config/hs/last_gate_commit.txt"
