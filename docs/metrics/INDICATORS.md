@@ -123,7 +123,7 @@ What exists, and why none of it counts as production use by an unaffiliated part
 
 What exists:
 
-- `ops/llm_visibility_monitor.py` asks one model (Claude Sonnet 4.6 with web search) 17 fixed questions in Japanese and records whether the answer cites our site. The last committed summary, [`ops/visibility_last_run.txt`](../../ops/visibility_last_run.txt), dated 2026-09-14, reads 0 of 17. *Owner-reported, not checkable*: the answers themselves are not published. One model, one day, Japanese questions only.
+- `ops/llm_visibility_monitor.py` asks one model (Claude Sonnet 4.6 with web search) 17 fixed questions in Japanese and records whether the answer cites our site. The last committed summary, [`ops/visibility_last_run.txt`](https://github.com/ogasurfproject-jpg/horizon-shield/blob/ff59188726319b8a3c00ff8cbf3892ffa1589bdd/ops/visibility_last_run.txt), dated 2026-09-14 (the file is no longer tracked; the weekly run rewrites it on the working machine), reads 0 of 17. *Owner-reported, not checkable*: the answers themselves are not published. One model, one day, Japanese questions only.
 - A note in Japanese, [`ops/citation_instrument_20260915.md`](../../ops/citation_instrument_20260915.md), summarises the AI Performance report of Bing Webmaster Tools, a dashboard only the site owner can see. The exports are not committed, so its figures are not repeated here.
 
 These two instruments measure different engines and must never be combined. The same note records that calling both of them "citations" was itself an earlier mistake.

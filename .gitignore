@@ -311,3 +311,6 @@ note-post/debug/
 # GRAVITY (citation formula, radar, experiments) is private: copies in hs-core-private/gravity_private
 tools/gravity
 experiments
+
+# 毎週月曜の visibility の定時(ops/run_visibility_weekly.sh)が書き直す印。追跡すると作業木が汚れる(2026-10-27 に外した)
+ops/visibility_last_run.txt
