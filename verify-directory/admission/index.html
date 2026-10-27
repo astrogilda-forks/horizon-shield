@@ -139,6 +139,14 @@ musubi-verify settle_v1_12 --selftest</pre>
 
 <section>
   <div class="wrap">
+    <div class="kh">Changed 27 October 2026</div>
+    <h2>Admission records at version 0.3</h2>
+    <p class="slead">MUSUBI admission records are now at version 0.3. A relying party that runs its own FURUI check can record the result as digests and three flags (instructions to an AI found, a conflict with the scope it gave, not checked), and settle v1.17 reads them. Records and settlements made before are unchanged byte for byte. FURUI is not yet wired into the door: its policy.furui is required = false, so a submission without a check is admitted as before. Public commit 3eba279d; the ledger intake is admission-intake 0.3.2.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <div class="kh">Limits</div>
     <h2>What an admission record does not show</h2>
     <p class="slead">Stated at the same size as the claim.</p>
@@ -147,6 +155,7 @@ musubi-verify settle_v1_12 --selftest</pre>
       <li><span class="x">&#10007;</span><span><b>Not that the action was lawful, safe or wise.</b> Only that it was inside or outside the grant both parties signed.</span></li>
       <li><span class="x">&#10007;</span><span><b>Not that a revocation published after the door's view of the chain was known.</b> The record says which revocations the door saw and whether each was anchored.</span></li>
       <li><span class="x">&#10007;</span><span><b>Not a legal authorization, and not a finding of liability.</b> It anchors facts by which others may judge.</span></li>
+      <li><span class="x">&#10007;</span><span><b>Not a content check at our door, yet.</b> FURUI is not yet wired into the door; so far a content check has run in tests only.</span></li>
       <li><span class="x">&#10007;</span><span><b>Not yet any identity format other than a signed MUSUBI contract.</b> Other formats are read only once they can be checked against their issuer's own fixed test vectors. Until then they are reported as unverified, and the door does not admit on them.</span></li>
     </ul>
   </div>

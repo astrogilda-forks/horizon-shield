@@ -9,6 +9,8 @@ this directory.** This page describes the shape of the record and how to check a
 identity, and nobody but the relying party stops anything. HORIZON SHIELD anchors records sent to its ledger and
 settles after the fact. It renders no decision.
 
+**Changed 2026-10-27.** MUSUBI admission records are now at version 0.3. A relying party that runs its own FURUI check can record the result as digests and three flags (instructions to an AI found, a conflict with the scope it gave, not checked), and settle v1.17 reads them. Records and settlements made before are unchanged byte for byte. FURUI is not yet wired into the door: its policy.furui is required = false, so a submission without a check is admitted as before. Public commit 3eba279d; the ledger intake is admission-intake 0.3.2.
+
 ## Files
 
 | file | what it is |
