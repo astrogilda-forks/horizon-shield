@@ -779,6 +779,11 @@
     "source_sha256": "7ee79eb6ee3796af9cc542a9d24da1fb3390a43c5bcc7ca9ceb250b0624c77f6",
     "vendored_sha256": "7ee79eb6ee3796af9cc542a9d24da1fb3390a43c5bcc7ca9ceb250b0624c77f6"
   },
+  "_repo/musubi-v0/requirements_furui_v0.mjs": {
+    "source": "workers/hs-ledger/nenrin/musubi-v0/requirements_furui_v0.mjs",
+    "source_sha256": "dc8798e36e733ec4cb274168c75d832515c788d93ddd3294d4b3f89282c39b25",
+    "vendored_sha256": "dc8798e36e733ec4cb274168c75d832515c788d93ddd3294d4b3f89282c39b25"
+  },
   "_repo/musubi-v0/requirements_furui_v0.py": {
     "source": "workers/hs-ledger/nenrin/musubi-v0/requirements_furui_v0.py",
     "source_sha256": "96b169e14e1881104f717083e60f2b1f0f55b1d8b855daee67b957cc1d595bde",

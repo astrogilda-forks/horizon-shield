@@ -57,6 +57,8 @@ MUSUBI_DATA = ["canonical_v0.mjs", "canonical_vectors.json", "anchor_compose_fix
                "fixtures/admission_immune/cases.json", "fixtures/admission_immune/demo.json",
                # admission v0.3 (the content block): the records its self-test reads
                "fixtures/admission_content/cases.json",
+               # requirements.furui (settle v1.17): its self-test holds it to its JavaScript twin
+               "requirements_furui_v0.mjs",
                # approval v3 (settle v1.13 and later): the vectors its self-test reads (0.7.0)
                "fixtures/approval_v3/vectors.json", "approval_v3.mjs", "approval_v3.test.mjs"]
 # convergence_v0 (settle v1.9) imports recovery-v0/recovery_verify.py by path, so that one file travels too.
