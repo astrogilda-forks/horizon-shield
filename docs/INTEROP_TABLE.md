@@ -9,7 +9,7 @@ agreement and disagreement; it does not certify anything. Rows are split by who 
 - **Ours**: checks this project runs, on code from others or from us. Useful, not independent.
 
 Every row names the commit, the input and where the result is published, so it can be run again. Last updated
-2026-10-25.
+2026-10-27.
 
 ## Outside
 
@@ -38,6 +38,7 @@ Earlier reproductions of our bytes or verdicts by other authors are listed with 
 | MUSUBI settle core reference | `settle_v1_16.py` | the 128 vectors | 128 of 128 on every revision since 0.4 | `settle-core-v0/run_reference.py` |
 | Anchor pointer draft 0 (agent-governance-vocabulary #217) on our JIDEC anchors | `anchor_pointer_check.py` by Tetsurohhori (`aos-standard/catalog` at `a348d35`, not ours), run unchanged by us | three pointers from JIDEC entries 142 (Bitcoin block 972686) and 120 (one proof with two attestations, 972141 and 972145), and the catalog's 14 vectors | 3 of 3 `anchored`, merkle roots from blockstream.info and mempool.space; 14 of 14 vectors. This is us running someone else's reader on our own anchors, not someone reproducing our work; the vectors from these entries are published on the branch `vectors/anchor-pointer-draft0-jidec` of `ogasurfproject-jpg/horizon-shield` at `ea658bdf` ([#217 comment](https://github.com/aeoess/agent-governance-vocabulary/issues/217#issuecomment-6380618615)). The draft's author answered that draft 1 will state that the earliest attestation is the tight bound, and will list inclusion of one batch member as an open, separate optional field ([#217 comment](https://github.com/aeoess/agent-governance-vocabulary/issues/217#issuecomment-6380496753)) | [#217 comment](https://github.com/aeoess/agent-governance-vocabulary/issues/217#issuecomment-6377576045) |
 | The four #51 set 2 acceptance records, rerun by us | `war_verify.py` from `maximusrufus/work-acceptance-record` at `6b2f730` (not ours), TSA roots from its vectors 31 and 32 | the four files at `235aaab`, sha256 as published (`204915d0…`, `7e05c6c1…`, `254a789f…`, `0b2a26dc…`) | 4 of 4: signature valid, criteria committed before the check, receipt timestamp imprint match, both TSA tokens verified, no problem or warning codes; verdicts recompute to the stated ones (A pass, B fail). Our run of someone else's verifier on someone else's records; it does not re-examine the audits | [#51 comment](https://github.com/ogasurfproject-jpg/horizon-shield/issues/51#issuecomment-6380613560) |
+| FURUI 0.2.8 (rules, then two AI stages) on blind-02 | FURUI 0.2.8, ours | 2,030 rows drawn from four public prompt-injection datasets (deepset, Lakera gandalf, SPML, jackhhao) after the plan was anchored in JIDEC entry 158, and sealed before anyone read them (root entry 164, pin entry 165) | 1,058 of 1,280 attacks refused (bar 991; counted strictly, 1,054); 3 of 560 ordinary rows wrongly refused (bar 3); 100 of 190 requests written to an assistant, outside the bar. English business sentences: 14 of 120 written in-house (ledger entry 176), 0 of 495 from real correspondence and contracts; the validation half, 500 sentences, is sealed and will be opened together with blind-03 | [the result](../data/furui-blind-02/RESULT.md), score entry 167, the salt and the selection in [`data/furui-blind-02/`](../data/furui-blind-02/) |
 
 ## Related drafts
 
