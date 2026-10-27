@@ -1,5 +1,6 @@
 # Dependabot keeps the GitHub Actions in .github/workflows current. Every action here is pinned by full commit SHA
 # with a "# vX.Y.Z" comment; Dependabot updates both the SHA and the comment in one pull request.
+# The pip entry covers .github/requirements-conduct-walk.txt, which the conduct-walk rfc8785 workflow installs from.
 # Not covered on purpose: the npm package nenrin-verify (workers/hs-ledger/nenrin/sdk) has no dependencies, the
 # PyPI package declares only cryptography>=41 with no pinned or locked versions, and the Go module uses the
 # standard library only.
@@ -22,5 +23,15 @@ updates:
       github-actions:
         patterns:
           - "*"
+    commit-message:
+      prefix: "ci"
+  - package-ecosystem: pip
+    directory: "/.github"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    # A release is taken only once it has been public for 14 days.
+    cooldown:
+      default-days: 14
     commit-message:
       prefix: "ci"
