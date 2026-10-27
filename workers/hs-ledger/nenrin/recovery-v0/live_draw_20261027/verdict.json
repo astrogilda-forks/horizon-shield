@@ -1,0 +1,25 @@
+{
+ "result": "quorum_met",
+ "recovered": true,
+ "drawn": [
+  "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+  "api.babyblueviper.com"
+ ],
+ "answered": [
+  "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+  "api.babyblueviper.com"
+ ],
+ "agreeing": [
+  "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+  "api.babyblueviper.com"
+ ],
+ "disagreeing": [],
+ "disagreement_fields": {},
+ "distinct_clusters_agreeing": "2",
+ "refusal_codes_js": [],
+ "refusal_codes_py": [],
+ "twin_agree": true,
+ "forms": [],
+ "anchor": null,
+ "v25": false
+}

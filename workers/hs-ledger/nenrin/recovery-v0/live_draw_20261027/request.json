@@ -1,0 +1,25 @@
+{
+ "schema": "nenrin-witness-request-v1",
+ "endpoint": "https://gate.horizonshield.dev",
+ "surfaces": [
+  "health.gate_commit",
+  "agent-card.signature",
+  "well-known.jwks",
+  "well-known.openai-apps-challenge",
+  "ext.conduct-v1.spec",
+  "keys.agreement",
+  "keys.witness",
+  "keys.operator",
+  "well-known.did"
+ ],
+ "subject_sha256": "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9",
+ "pool_sha256": "f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799",
+ "beacon": {
+  "kind": "bitcoin_block",
+  "height": "973321",
+  "hash": "0000000000000000000159071688e83f3b6933cc2e1b7e1bfe383edf4eee1411"
+ },
+ "requested_at": "2026-10-27T06:01:10Z",
+ "reply_schema": "nenrin-witness-observation-v1",
+ "instruction": "Measure the listed public surfaces of endpoint from your own vantage. Reply with one nenrin-witness-observation-v1 record: observed is surface -> what you saw, request_sha256 is the sha256 of this request's canonical bytes, source is { kind: external_witness, signed_domain, key_url }, signed Ed25519 over the canonical bytes with the key served at your key_url. Expected values are deliberately not given. Nothing you send is executed; only observed is compared, by hash, with the operator's expected state."
+}

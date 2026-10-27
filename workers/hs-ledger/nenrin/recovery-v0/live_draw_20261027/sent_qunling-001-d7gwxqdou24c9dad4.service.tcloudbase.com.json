@@ -1,0 +1,96 @@
+{
+ "signed_domain": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+ "answered": true,
+ "record": {
+  "schema": "nenrin-witness-observation-v1",
+  "recorded_at": "2026-10-27T06:01:18Z",
+  "witness": {
+   "name": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+   "vantage": "1ee730ae (witness network, qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com)"
+  },
+  "prev": null,
+  "endpoint": "https://gate.horizonshield.dev",
+  "observed": {
+   "health.gate_commit": {
+    "status": "200",
+    "gate_commit": "9371a5d6bbeb",
+    "gate_version": "0.4.20"
+   },
+   "agent-card.signature": {
+    "error": "Cannot find module '@a2a-js/sdk'\nRequire stack:\n- /a2a-card-sign/package.json"
+   },
+   "well-known.jwks": {
+    "status": "200",
+    "kids": "hs-2026-09",
+    "thumbprints": {
+     "hs-2026-09": "9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b"
+    }
+   },
+   "well-known.openai-apps-challenge": {
+    "status": "200",
+    "configured": "true",
+    "value": "6NWqUePGT5g0s5UCSdjQqgPd5hHd_3f0MJJz6isib1A",
+    "sha256": "efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454"
+   },
+   "ext.conduct-v1.spec": {
+    "status": "200",
+    "served_sha256": "fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b"
+   },
+   "keys.agreement": {
+    "status": "200",
+    "present": "true",
+    "key_sha256": "7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51"
+   },
+   "keys.witness": {
+    "status": "200",
+    "present": "true",
+    "key_sha256": "e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03"
+   },
+   "keys.operator": {
+    "status": "200",
+    "present": "true",
+    "key_sha256": "44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2"
+   },
+   "well-known.did": {
+    "status": "200",
+    "present": "true",
+    "id": "did:web:gate.horizonshield.dev",
+    "kids": "hs-2026-09,operator",
+    "did_sha256": "6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e"
+   }
+  },
+  "request_sha256": "c4dbc90bc9381ca4b6e011eafbfc7472e5fa8625b6fe9c6ab6b27be1e9536236",
+  "source": {
+   "kind": "external_witness",
+   "signed_domain": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+   "key_url": "https://qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com/keys/witness.json"
+  },
+  "establishes": [
+   "at recorded_at this witness, from its own vantage, saw the observed state of the listed surfaces of endpoint",
+   "the observation answers the request whose canonical sha256 is request_sha256"
+  ],
+  "does_not_establish": [
+   "that the observed state is the expected one: this witness was not told what to expect",
+   "anything about surfaces not listed in observed"
+  ],
+  "record_sha256": "fa9459c6b480c92d207021b399fabc2d3b0e846efd862e7f24c47436912e286a",
+  "signature_ed25519_b64": "BpnXwJ5CswfRow6+/5SU5Seu3y0SeobKN43mucAM+yvxFHg6WiFWhgy8I1Ky9bwmFuliZDnS6m0b102oy/zTCw==",
+  "public_key_ed25519_b64": "K8LSRek37R1K+Ds7q5om5retY3bGZlsFYhBkkz5jnHc="
+ },
+ "elapsed_ms": "7796",
+ "finished_at": "2026-10-27T06:01:19Z",
+ "accept_check": {
+  "ok": true,
+  "refusals": [],
+  "signed_domain": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+  "record_sha256": "fa9459c6b480c92d207021b399fabc2d3b0e846efd862e7f24c47436912e286a"
+ },
+ "raw_reply": {
+  "url": "https://qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com/a2a",
+  "request_body_sha256": "a0560b4b2352507d196b8cc31905148dbc4903363227f6814a16c0457627750b",
+  "status": "200",
+  "content_type": "application/json",
+  "body": "{\"jsonrpc\":\"2.0\",\"id\":\"hs-witness-5cd672d280e422d2\",\"result\":{\"kind\":\"message\",\"role\":\"agent\",\"messageId\":\"obs-fa9459c6b480c92d\",\"parts\":[{\"kind\":\"data\",\"data\":{\"schema\":\"nenrin-witness-observation-v1\",\"recorded_at\":\"2026-10-27T06:01:18Z\",\"witness\":{\"name\":\"qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com\",\"vantage\":\"1ee730ae (witness network, qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com)\"},\"prev\":null,\"endpoint\":\"https://gate.horizonshield.dev\",\"observed\":{\"health.gate_commit\":{\"status\":\"200\",\"gate_commit\":\"9371a5d6bbeb\",\"gate_version\":\"0.4.20\"},\"agent-card.signature\":{\"error\":\"Cannot find module '@a2a-js/sdk'\\nRequire stack:\\n- /a2a-card-sign/package.json\"},\"well-known.jwks\":{\"status\":\"200\",\"kids\":\"hs-2026-09\",\"thumbprints\":{\"hs-2026-09\":\"9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b\"}},\"well-known.openai-apps-challenge\":{\"status\":\"200\",\"configured\":\"true\",\"value\":\"6NWqUePGT5g0s5UCSdjQqgPd5hHd_3f0MJJz6isib1A\",\"sha256\":\"efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454\"},\"ext.conduct-v1.spec\":{\"status\":\"200\",\"served_sha256\":\"fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b\"},\"keys.agreement\":{\"status\":\"200\",\"present\":\"true\",\"key_sha256\":\"7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51\"},\"keys.witness\":{\"status\":\"200\",\"present\":\"true\",\"key_sha256\":\"e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03\"},\"keys.operator\":{\"status\":\"200\",\"present\":\"true\",\"key_sha256\":\"44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2\"},\"well-known.did\":{\"status\":\"200\",\"present\":\"true\",\"id\":\"did:web:gate.horizonshield.dev\",\"kids\":\"hs-2026-09,operator\",\"did_sha256\":\"6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e\"}},\"request_sha256\":\"c4dbc90bc9381ca4b6e011eafbfc7472e5fa8625b6fe9c6ab6b27be1e9536236\",\"source\":{\"kind\":\"external_witness\",\"signed_domain\":\"qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com\",\"key_url\":\"https://qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com/keys/witness.json\"},\"establishes\":[\"at recorded_at this witness, from its own vantage, saw the observed state of the listed surfaces of endpoint\",\"the observation answers the request whose canonical sha256 is request_sha256\"],\"does_not_establish\":[\"that the observed state is the expected one: this witness was not told what to expect\",\"anything about surfaces not listed in observed\"],\"record_sha256\":\"fa9459c6b480c92d207021b399fabc2d3b0e846efd862e7f24c47436912e286a\",\"signature_ed25519_b64\":\"BpnXwJ5CswfRow6+/5SU5Seu3y0SeobKN43mucAM+yvxFHg6WiFWhgy8I1Ky9bwmFuliZDnS6m0b102oy/zTCw==\",\"public_key_ed25519_b64\":\"K8LSRek37R1K+Ds7q5om5retY3bGZlsFYhBkkz5jnHc=\"}}],\"metadata\":{\"https://gate.horizonshield.dev/ext/conduct/v1/witness_reply\":\"answered\"}}}",
+  "body_sha256": "6bb66a3ba6c5c7e9c249a1fdff26e3e1b9af0bc31f6f0e8da4380549fc8654fc"
+ }
+}

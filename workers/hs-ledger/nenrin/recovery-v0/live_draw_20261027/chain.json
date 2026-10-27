@@ -1,0 +1,747 @@
+{
+ "what_this_is": "The first live TSUGI v2.4 draw with a quorum of two: a declared drill (redeploy_pinned of the gate at the same source, so that health.gate_commit changes and nothing else), whose execution record was committed with the pool hash and k on the JIDEC ledger before the beacon block, and re-verified by the two witnesses the draw names. 13 records: 9 drift, proposal, signed authorization, execution, verify.",
+ "how_to_verify": "npx tsugi-verify chain.json --operator-key fqrEpRuYScHz52eeiuAWAFEeJB3T7VtZJlducNIhzZM= --pool witness_pool.json --q 2 --k 2 --beacon 0000000000000000000159071688e83f3b6933cc2e1b7e1bfe383edf4eee1411 --require-commitment --anchor-height 973320 --anchor-hash 00000000000000000000460fc73c8fc81ca6926f12b883c54d28d705100304ed --require-v24 --beacon-time 2026-10-27T01:32:10Z",
+ "how_to_verify_note": "take the beacon and anchor blocks from your own chain source, and the anchor height from the .ots of the ledger entry named in draw.commitment",
+ "operator_public_key_ed25519_b64": "fqrEpRuYScHz52eeiuAWAFEeJB3T7VtZJlducNIhzZM=",
+ "records": [
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "health.gate_commit",
+   "drift": true,
+   "kind": "commit_mismatch",
+   "observed": {
+    "status": "200",
+    "gate_commit": "bfbef4e61fbb",
+    "gate_version": "0.4.20"
+   },
+   "expected": {
+    "pinned": "true",
+    "gate_commit": "9371a5d6bbeb"
+   },
+   "establishes": [
+    "at recorded_at, GET /health returned the observed gate_commit"
+   ],
+   "does_not_establish": [
+    "who deployed",
+    "what tree the build came from"
+   ],
+   "record_sha256": "bb4187e8bdd6e7075f129f11628ce44bbbe64da57077e2208783f4408e38fd4e"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "agent-card.signature",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "verified": "true",
+    "canonical_sha256": "c2b88aa27c3adf2378ae1d94500e7158763799f05685cda758d0471cd6791e15",
+    "kid": "hs-2026-09",
+    "alg": "ES256",
+    "jku": "https://gate.horizonshield.dev/.well-known/jwks.json",
+    "signatures": "2"
+   },
+   "expected": {
+    "verified": "true"
+   },
+   "establishes": [
+    "at recorded_at the served card had the observed canonical sha256",
+    "the first signature verified with the official SDK verifier against the served JWKS"
+   ],
+   "does_not_establish": [
+    "why the body changed, if it did",
+    "whether the signer is wrong (a verify failure alone cannot tell deploy drift from a signer fault)"
+   ],
+   "record_sha256": "d375fd23012b934f413995c37296685e2e43995b9093660f263bc22efb77bebc"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "well-known.jwks",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "kids": "hs-2026-09",
+    "thumbprints": {
+     "hs-2026-09": "9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b"
+    }
+   },
+   "expected": {
+    "present": "true"
+   },
+   "establishes": [
+    "at recorded_at the JWKS carried the observed kids and thumbprints"
+   ],
+   "does_not_establish": [
+    "that the keys are the right keys (that is the card verification above)",
+    "whether the keys changed (no --baseline given)"
+   ],
+   "record_sha256": "b212d31fc8f8259194de2d61761eafd7d21b9e9c973ea5155b3733a02f790d03"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "well-known.openai-apps-challenge",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "configured": "true",
+    "value": "6NWqUePGT5g0s5UCSdjQqgPd5hHd_3f0MJJz6isib1A",
+    "sha256": "efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454"
+   },
+   "expected": {
+    "configured": "true"
+   },
+   "establishes": [
+    "at recorded_at the endpoint served the recorded challenge value"
+   ],
+   "does_not_establish": [
+    "whether OpenAI currently accepts the value",
+    "who set or removed it"
+   ],
+   "record_sha256": "477d1bbc0ccb0241c777fc47c46e3734359dfb44aab6717a2268740531c0c293"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "ext.conduct-v1.spec",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "served_sha256": "fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b"
+   },
+   "expected": {
+    "served": "true"
+   },
+   "establishes": [
+    "at recorded_at the served spec carried the observed sha256"
+   ],
+   "does_not_establish": [
+    "that the spec is correct, only that the served and repository bytes were not compared, no --repo given; they match"
+   ],
+   "record_sha256": "9fe75f9f2e172ad9656f45f7cda6837f7574e6d021a1c6f23afa676553fba673"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "keys.agreement",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "present": "true",
+    "key_sha256": "7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51"
+   },
+   "expected": {
+    "answers": "true"
+   },
+   "establishes": [
+    "at recorded_at the key route served a key with the recorded sha256"
+   ],
+   "does_not_establish": [
+    "that the key is the operator's (that is attribution, gate 0.4.5)",
+    "whether a key was present earlier (no --baseline given)"
+   ],
+   "record_sha256": "356999fdb89006bafc6ee978fad7cbd5871855e13aad71593d08992729bf4e1f"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "keys.witness",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "present": "true",
+    "key_sha256": "e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03"
+   },
+   "expected": {
+    "answers": "true"
+   },
+   "establishes": [
+    "at recorded_at the key route served a key with the recorded sha256"
+   ],
+   "does_not_establish": [
+    "that the key is the operator's (that is attribution, gate 0.4.5)",
+    "whether a key was present earlier (no --baseline given)"
+   ],
+   "record_sha256": "22f1a1f191ef2c219239094d0246112e3b939e92112d57184c572975a33994c4"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "keys.operator",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "present": "true",
+    "key_sha256": "44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2"
+   },
+   "expected": {
+    "answers": "true"
+   },
+   "establishes": [
+    "at recorded_at the key route served a key with the recorded sha256"
+   ],
+   "does_not_establish": [
+    "that the key is the operator's (that is attribution, gate 0.4.5)",
+    "whether a key was present earlier (no --baseline given)"
+   ],
+   "record_sha256": "b88acaba2acd1b11cd5e2239724f5876db13022917ac471f174586ad3bd0ab52"
+  },
+  {
+   "schema": "nenrin-drift-record-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "nenrin-drift-witness",
+    "vantage": "Mac.lan (operator network)"
+   },
+   "prev": null,
+   "endpoint": "https://gate.horizonshield.dev",
+   "surface": "well-known.did",
+   "drift": false,
+   "observed": {
+    "status": "200",
+    "present": "true",
+    "id": "did:web:gate.horizonshield.dev",
+    "kids": "hs-2026-09,operator",
+    "did_sha256": "6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e"
+   },
+   "expected": {
+    "answers": "true"
+   },
+   "establishes": [
+    "at recorded_at /.well-known/did.json served a DID document binding the recorded keys (did_sha256) to did:web:gate.horizonshield.dev"
+   ],
+   "does_not_establish": [
+    "that a third party resolving did:web gets these bytes (that is off this vantage), only that these bytes were served here",
+    "whether a DID was present earlier (no --baseline given)"
+   ],
+   "record_sha256": "71d476b638c6fc1cb174c6c94b1986562d5ef6885b76a2bffad63f59358271e7"
+  },
+  {
+   "schema": "nenrin-repair-proposal-v1",
+   "recorded_at": "2026-10-27T00:00:25Z",
+   "witness": {
+    "name": "recovery-agent-manual",
+    "vantage": "written on the operator side from the drift records above and the git history of the public repository"
+   },
+   "prev": "71d476b638c6fc1cb174c6c94b1986562d5ef6885b76a2bffad63f59358271e7",
+   "drift_sha256": [
+    "bb4187e8bdd6e7075f129f11628ce44bbbe64da57077e2208783f4408e38fd4e"
+   ],
+   "primitive": "redeploy_pinned",
+   "diagnosis": "Declared drill for the first live TSUGI v2.4 draw with a quorum of two; not a fault. The one drift is health.gate_commit commit_mismatch, measured with --expect-commit 9371a5d6bbeb (the current main): the live gate reports bfbef4e61fbb. git log bfbef4e61fbb..9371a5d6bbeb -- workers/hs-verify-gate/src workers/hs-verify-gate/wrangler.jsonc workers/hs-verify-gate/package.json workers/hs-verify-gate/package-lock.json is empty, so no commit after the live build changes what deploy_gate.sh ships (commits that touch only the gate's tests or docs do not change the deployed worker). redeploy_pinned runs deploy_gate.sh at 9371a5d6bbeb: the same worker source, its own suites, GATE_COMMIT 9371a5d6bbeb. The one public value that changes is health.gate_commit. The card bytes, the JWKS, the three key routes, the DID document, the challenge and the served spec stay as measured in the drift records, and expected_after holds them to that.",
+   "rejected": [
+    {
+     "primitive": "resign_agent_card",
+     "why": "the card bytes do not change in this execution; re-signing would change the card for no reason"
+    },
+    {
+     "primitive": "quarantine_endpoint",
+     "why": "the gate is not faulty, and a quarantine changes the register, which the drawn witnesses do not measure"
+    }
+   ],
+   "expected_after": {
+    "health.gate_commit": {
+     "status": "200",
+     "gate_commit": "9371a5d6bbeb",
+     "gate_version": "0.4.20"
+    },
+    "well-known.jwks": {
+     "status": "200",
+     "kids": "hs-2026-09",
+     "thumbprints": {
+      "hs-2026-09": "9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b"
+     }
+    },
+    "well-known.openai-apps-challenge": {
+     "status": "200",
+     "configured": "true",
+     "sha256": "efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454"
+    },
+    "ext.conduct-v1.spec": {
+     "status": "200",
+     "served_sha256": "fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b"
+    },
+    "keys.agreement": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51"
+    },
+    "keys.witness": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03"
+    },
+    "keys.operator": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2"
+    },
+    "well-known.did": {
+     "status": "200",
+     "present": "true",
+     "id": "did:web:gate.horizonshield.dev",
+     "did_sha256": "6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e"
+    }
+   },
+   "rollback": "redeploy the Cloudflare version that served bfbef4e61fbb (wrangler rollback to it, by the operator), then measure again",
+   "establishes": [
+    "from the cited drift record and the public git history, the live build is the last change to the gate's source",
+    "redeploy_pinned at 9371a5d6bbeb reaches expected_after if the deploy guard runs the same source"
+   ],
+   "does_not_establish": [
+    "that anything was broken: this is a drill chosen so that one public value changes and nothing else",
+    "that the repair has been authorized or executed",
+    "agent-card.signature after the execution: it is measured and published, but not held to expected_after, because a witness without @a2a-js/sdk cannot measure it"
+   ],
+   "record_sha256": "42e3b45d3d12cefaa87c86115f5bbcf7c2a8c0a7a80fa131a8cb45465e4784ac"
+  },
+  {
+   "schema": "nenrin-authorization-v1",
+   "recorded_at": "2026-10-27T00:03:37Z",
+   "witness": {
+    "name": "policy-gate",
+    "vantage": "operator Ed25519 key at ~/.hs_operator_key.pem"
+   },
+   "prev": "42e3b45d3d12cefaa87c86115f5bbcf7c2a8c0a7a80fa131a8cb45465e4784ac",
+   "proposal_sha256": "42e3b45d3d12cefaa87c86115f5bbcf7c2a8c0a7a80fa131a8cb45465e4784ac",
+   "decision": "approved",
+   "by": "TOshi",
+   "expires_at": "2026-10-27T04:03:37Z",
+   "establishes": [
+    "the operator TOshi approved proposal 42e3b45d3d12 (redeploy_pinned) before expires_at, signed with the operator Ed25519 key that only the operator holds"
+   ],
+   "does_not_establish": [
+    "that the repair was executed",
+    "that it succeeded",
+    "that the diagnosis is correct (this authorizes the action, it does not endorse the reasoning)"
+   ],
+   "record_sha256": "e4dff6139b68f9ae18012a4b7959d98bd60553322a5d46f45e7966f0a7774d47",
+   "signature_ed25519_b64": "9pZjLiLlUAfWXElkX+aVHrtOOivLpWek3oxirkUteqePbmg6B0OfOiw0QRamH7MIks14sUdnps5fLWk9uhj6AQ==",
+   "public_key_ed25519_b64": "fqrEpRuYScHz52eeiuAWAFEeJB3T7VtZJlducNIhzZM="
+  },
+  {
+   "schema": "nenrin-repair-execution-v1",
+   "recorded_at": "2026-10-27T00:32:22Z",
+   "witness": {
+    "name": "executor-manual",
+    "vantage": "operator terminal; the operator ran deploy_gate.sh"
+   },
+   "prev": "e4dff6139b68f9ae18012a4b7959d98bd60553322a5d46f45e7966f0a7774d47",
+   "authorization_sha256": "e4dff6139b68f9ae18012a4b7959d98bd60553322a5d46f45e7966f0a7774d47",
+   "primitive": "redeploy_pinned",
+   "before": {
+    "health.gate_commit": "bfbef4e61fbb",
+    "cloudflare_version": "4bb2c54d-2106-4b4a-a21d-41147bb085ea"
+   },
+   "steps": [
+    "bash workers/hs-verify-gate/deploy_gate.sh at 9371a5d6bbeb: the source check was clean and the gate's own suites passed (the guard refuses otherwise)",
+    "deploying with GATE_COMMIT=9371a5d6bbeb",
+    "wrangler deploy produced version af6b04aa-6e6e-4008-9e41-91d8766ab9c0",
+    "node drift_witness.mjs https://gate.horizonshield.dev --expect-commit 9371a5d6bbeb from the operator network: 0 drift"
+   ],
+   "after": {
+    "health.gate_commit": "9371a5d6bbeb",
+    "cloudflare_version": "af6b04aa-6e6e-4008-9e41-91d8766ab9c0"
+   },
+   "outcome": "ok",
+   "establishes": [
+    "the guarded deploy at 9371a5d6bbeb completed and Cloudflare reported version af6b04aa-6e6e-4008-9e41-91d8766ab9c0",
+    "the operator's own measurement after the deploy matches expected_after"
+   ],
+   "does_not_establish": [
+    "that anyone other than the operator observed the state after the deploy (that is the verify record and its drawn witnesses)",
+    "anything about the card signature beyond the operator's own measurement"
+   ],
+   "record_sha256": "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9"
+  },
+  {
+   "schema": "nenrin-verify-record-v1",
+   "recorded_at": "2026-10-27T06:01:20Z",
+   "witness": {
+    "name": "tsugi-orchestrator",
+    "vantage": "operator network (the draw is recomputable; the operator is not a witness of the outcome)"
+   },
+   "prev": "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9",
+   "execution_sha256": "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9",
+   "observed": {
+    "health.gate_commit": {
+     "status": "200",
+     "gate_commit": "9371a5d6bbeb",
+     "gate_version": "0.4.20"
+    },
+    "agent-card.signature": {
+     "status": "200",
+     "verified": "true",
+     "canonical_sha256": "c2b88aa27c3adf2378ae1d94500e7158763799f05685cda758d0471cd6791e15",
+     "kid": "hs-2026-09",
+     "alg": "ES256",
+     "jku": "https://gate.horizonshield.dev/.well-known/jwks.json",
+     "signatures": "2"
+    },
+    "well-known.jwks": {
+     "status": "200",
+     "kids": "hs-2026-09",
+     "thumbprints": {
+      "hs-2026-09": "9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b"
+     }
+    },
+    "well-known.openai-apps-challenge": {
+     "status": "200",
+     "configured": "true",
+     "value": "6NWqUePGT5g0s5UCSdjQqgPd5hHd_3f0MJJz6isib1A",
+     "sha256": "efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454"
+    },
+    "ext.conduct-v1.spec": {
+     "status": "200",
+     "served_sha256": "fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b"
+    },
+    "keys.agreement": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51"
+    },
+    "keys.witness": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03"
+    },
+    "keys.operator": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2"
+    },
+    "well-known.did": {
+     "status": "200",
+     "present": "true",
+     "id": "did:web:gate.horizonshield.dev",
+     "kids": "hs-2026-09,operator",
+     "did_sha256": "6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e"
+    }
+   },
+   "expected_after": {
+    "health.gate_commit": {
+     "status": "200",
+     "gate_commit": "9371a5d6bbeb",
+     "gate_version": "0.4.20"
+    },
+    "well-known.jwks": {
+     "status": "200",
+     "kids": "hs-2026-09",
+     "thumbprints": {
+      "hs-2026-09": "9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b"
+     }
+    },
+    "well-known.openai-apps-challenge": {
+     "status": "200",
+     "configured": "true",
+     "sha256": "efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454"
+    },
+    "ext.conduct-v1.spec": {
+     "status": "200",
+     "served_sha256": "fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b"
+    },
+    "keys.agreement": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51"
+    },
+    "keys.witness": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03"
+    },
+    "keys.operator": {
+     "status": "200",
+     "present": "true",
+     "key_sha256": "44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2"
+    },
+    "well-known.did": {
+     "status": "200",
+     "present": "true",
+     "id": "did:web:gate.horizonshield.dev",
+     "did_sha256": "6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e"
+    }
+   },
+   "recovered": true,
+   "draw": {
+    "beacon": {
+     "kind": "bitcoin_block",
+     "height": "973321",
+     "hash": "0000000000000000000159071688e83f3b6933cc2e1b7e1bfe383edf4eee1411"
+    },
+    "pool_sha256": "f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799",
+    "pool_size": "2",
+    "k": "2",
+    "subject_sha256": "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9",
+    "request_sha256": "c4dbc90bc9381ca4b6e011eafbfc7472e5fa8625b6fe9c6ab6b27be1e9536236",
+    "drawn": [
+     "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+     "api.babyblueviper.com"
+    ],
+    "k_requested": "2",
+    "request": {
+     "schema": "nenrin-witness-request-v1",
+     "endpoint": "https://gate.horizonshield.dev",
+     "surfaces": [
+      "health.gate_commit",
+      "agent-card.signature",
+      "well-known.jwks",
+      "well-known.openai-apps-challenge",
+      "ext.conduct-v1.spec",
+      "keys.agreement",
+      "keys.witness",
+      "keys.operator",
+      "well-known.did"
+     ],
+     "subject_sha256": "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9",
+     "pool_sha256": "f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799",
+     "beacon": {
+      "kind": "bitcoin_block",
+      "height": "973321",
+      "hash": "0000000000000000000159071688e83f3b6933cc2e1b7e1bfe383edf4eee1411"
+     },
+     "requested_at": "2026-10-27T06:01:10Z",
+     "reply_schema": "nenrin-witness-observation-v1",
+     "instruction": "Measure the listed public surfaces of endpoint from your own vantage. Reply with one nenrin-witness-observation-v1 record: observed is surface -> what you saw, request_sha256 is the sha256 of this request's canonical bytes, source is { kind: external_witness, signed_domain, key_url }, signed Ed25519 over the canonical bytes with the key served at your key_url. Expected values are deliberately not given. Nothing you send is executed; only observed is compared, by hash, with the operator's expected state."
+    },
+    "commitment": {
+     "subject_sha256": "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9",
+     "pool_sha256": "f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799",
+     "k_requested": "2",
+     "ledger_entry": "173",
+     "ledger_url": "https://ledger.horizonshield.dev/ledger/173",
+     "claim_sha256": "858dc670890ad5ab36698b53c7c73899229d337237d926175186c525d5b7f86a",
+     "anchor": {
+      "kind": "bitcoin_block",
+      "height": "973320",
+      "hash": "00000000000000000000460fc73c8fc81ca6926f12b883c54d28d705100304ed"
+     }
+    }
+   },
+   "external": [
+    {
+     "signed_domain": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+     "answered": true,
+     "record": {
+      "schema": "nenrin-witness-observation-v1",
+      "recorded_at": "2026-10-27T06:01:18Z",
+      "witness": {
+       "name": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+       "vantage": "1ee730ae (witness network, qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com)"
+      },
+      "prev": null,
+      "endpoint": "https://gate.horizonshield.dev",
+      "observed": {
+       "health.gate_commit": {
+        "status": "200",
+        "gate_commit": "9371a5d6bbeb",
+        "gate_version": "0.4.20"
+       },
+       "agent-card.signature": {
+        "error": "Cannot find module '@a2a-js/sdk'\nRequire stack:\n- /a2a-card-sign/package.json"
+       },
+       "well-known.jwks": {
+        "status": "200",
+        "kids": "hs-2026-09",
+        "thumbprints": {
+         "hs-2026-09": "9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b"
+        }
+       },
+       "well-known.openai-apps-challenge": {
+        "status": "200",
+        "configured": "true",
+        "value": "6NWqUePGT5g0s5UCSdjQqgPd5hHd_3f0MJJz6isib1A",
+        "sha256": "efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454"
+       },
+       "ext.conduct-v1.spec": {
+        "status": "200",
+        "served_sha256": "fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b"
+       },
+       "keys.agreement": {
+        "status": "200",
+        "present": "true",
+        "key_sha256": "7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51"
+       },
+       "keys.witness": {
+        "status": "200",
+        "present": "true",
+        "key_sha256": "e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03"
+       },
+       "keys.operator": {
+        "status": "200",
+        "present": "true",
+        "key_sha256": "44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2"
+       },
+       "well-known.did": {
+        "status": "200",
+        "present": "true",
+        "id": "did:web:gate.horizonshield.dev",
+        "kids": "hs-2026-09,operator",
+        "did_sha256": "6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e"
+       }
+      },
+      "request_sha256": "c4dbc90bc9381ca4b6e011eafbfc7472e5fa8625b6fe9c6ab6b27be1e9536236",
+      "source": {
+       "kind": "external_witness",
+       "signed_domain": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+       "key_url": "https://qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com/keys/witness.json"
+      },
+      "establishes": [
+       "at recorded_at this witness, from its own vantage, saw the observed state of the listed surfaces of endpoint",
+       "the observation answers the request whose canonical sha256 is request_sha256"
+      ],
+      "does_not_establish": [
+       "that the observed state is the expected one: this witness was not told what to expect",
+       "anything about surfaces not listed in observed"
+      ],
+      "record_sha256": "fa9459c6b480c92d207021b399fabc2d3b0e846efd862e7f24c47436912e286a",
+      "signature_ed25519_b64": "BpnXwJ5CswfRow6+/5SU5Seu3y0SeobKN43mucAM+yvxFHg6WiFWhgy8I1Ky9bwmFuliZDnS6m0b102oy/zTCw==",
+      "public_key_ed25519_b64": "K8LSRek37R1K+Ds7q5om5retY3bGZlsFYhBkkz5jnHc="
+     }
+    },
+    {
+     "signed_domain": "api.babyblueviper.com",
+     "answered": true,
+     "record": {
+      "schema": "nenrin-witness-observation-v1",
+      "recorded_at": "2026-10-27T06:01:20Z",
+      "witness": {
+       "name": "api.babyblueviper.com",
+       "vantage": "usa (witness network, api.babyblueviper.com)"
+      },
+      "prev": null,
+      "endpoint": "https://gate.horizonshield.dev",
+      "observed": {
+       "health.gate_commit": {
+        "status": "200",
+        "gate_commit": "9371a5d6bbeb",
+        "gate_version": "0.4.20"
+       },
+       "agent-card.signature": {
+        "error": "Cannot find module '@a2a-js/sdk'\nRequire stack:\n- /a2a-card-sign/package.json"
+       },
+       "well-known.jwks": {
+        "status": "200",
+        "kids": "hs-2026-09",
+        "thumbprints": {
+         "hs-2026-09": "9831160527124c11066f31aa6f9d9ffb425b949a894a548777077c2029c7b85b"
+        }
+       },
+       "well-known.openai-apps-challenge": {
+        "status": "200",
+        "configured": "true",
+        "value": "6NWqUePGT5g0s5UCSdjQqgPd5hHd_3f0MJJz6isib1A",
+        "sha256": "efe89e909ceec1474d42ccbf57f931a78e539f3f4565e96db8755711908dc454"
+       },
+       "ext.conduct-v1.spec": {
+        "status": "200",
+        "served_sha256": "fe53cc852eee3f1a269f059d0abef8c1556877880d6d73b9dcf5205b9feceb8b"
+       },
+       "keys.agreement": {
+        "status": "200",
+        "present": "true",
+        "key_sha256": "7d3152d6e643dba4313861bdf9b77beed76647d71c31756d161dffc1f4762a51"
+       },
+       "keys.witness": {
+        "status": "200",
+        "present": "true",
+        "key_sha256": "e1423c0225250817fbdb7dea0203ce2c3a2e1b93a65e29847db7bc506b4c0c03"
+       },
+       "keys.operator": {
+        "status": "200",
+        "present": "true",
+        "key_sha256": "44b3d7a88d6d005cb12ce134ef986e45c57826df02d2c3e9c88f6106fab3a5e2"
+       },
+       "well-known.did": {
+        "status": "200",
+        "present": "true",
+        "id": "did:web:gate.horizonshield.dev",
+        "kids": "hs-2026-09,operator",
+        "did_sha256": "6bfac2f023d46afb510f3e260eb1e4ac42156f842594259a37bb52b48af2bd9e"
+       }
+      },
+      "request_sha256": "c4dbc90bc9381ca4b6e011eafbfc7472e5fa8625b6fe9c6ab6b27be1e9536236",
+      "source": {
+       "kind": "external_witness",
+       "signed_domain": "api.babyblueviper.com",
+       "key_url": "https://api.babyblueviper.com/keys/witness.json"
+      },
+      "establishes": [
+       "at recorded_at this witness, from its own vantage, saw the observed state of the listed surfaces of endpoint",
+       "the observation answers the request whose canonical sha256 is request_sha256"
+      ],
+      "does_not_establish": [
+       "that the observed state is the expected one: this witness was not told what to expect",
+       "anything about surfaces not listed in observed"
+      ],
+      "record_sha256": "a1ac150515832f5cbb6861d26eb6a63bc28dd28315a2bc1a38520acedeaccd90",
+      "signature_ed25519_b64": "silIybrwhHpckubcegPcU6DUEsfrcvpFnCWgfGmysZAtthlXkPu5utwrdFfSdyNjv7wnLjNxWIB9JGNXuT6+AA==",
+      "public_key_ed25519_b64": "RN/Y6826Xrn8iz0TOtmKhCiQT5puaZYwA1JETt2TTPM="
+     }
+    }
+   ],
+   "establishes": [
+    "the draw of witnesses is recomputable from beacon, pool and subject (draw), and subject, pool and k were committed on the ledger before the beacon block",
+    "each embedded observation is signed by the domain it names and answers the one blinded request carried in the draw",
+    "the operator's own re-measurement (observed) matches expected_after"
+   ],
+   "does_not_establish": [
+    "that any witness is a real independent agent: being in the pool means the card met the stated conditions, not that it is trusted",
+    "the truth of what a witness observed beyond that it signed it",
+    "anything about surfaces not held in expected_after (agent-card.signature is measured but not held)",
+    "that a repair was needed: the execution is a declared drill"
+   ],
+   "record_sha256": "b343549fbb1d2854d8559df07ba5fdbb6ea5badd6459de344d67df2501d2863c"
+  }
+ ]
+}

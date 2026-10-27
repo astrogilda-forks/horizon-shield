@@ -1,0 +1,100 @@
+{
+  "verifier": "tsugi_verify 0.4.0",
+  "mode": {
+    "operator_keys": 1,
+    "witness_quorum": {
+      "pool": {
+        "schema": "nenrin-witness-pool-v1",
+        "generated_at": "2026-10-22T14:42:22Z",
+        "what_this_is": "the live pool TSUGI draws re-verification witnesses from (design 14.2). Entries are agent cards that declare conduct-v1, serve a domain-bound Ed25519 key at key_url (conduct-v1.1 11.4) and declare witness_policy.reciprocal true (11.6). Every card that meets the conditions goes in; the operator does not pick. The pool's canonical sha256 is written into every draw, so a later change is visible.",
+        "what_this_is_not": "a list of trusted witnesses. Being in the pool means only that the card met the stated conditions when it was added. A signed liar is still a liar; the draw only removes the operator's choice of who is asked.",
+        "admission": [
+          "agent card declares https://gate.horizonshield.dev/ext/conduct/v1 (or https://w3id.org/horizonshield/conduct/v1)",
+          "key_url serves {\"public_key_ed25519_b64\": ...} and its host is signed_domain",
+          "witness_policy.reciprocal is true in the consent file",
+          "signed_domain is not gate.horizonshield.dev (self_witness)",
+          "planned (ADR): a walked_as_witness count in the ring before admission, to price Sybil entries"
+        ],
+        "min_walked": "0",
+        "candidates": "2",
+        "entries": [
+          {
+            "signed_domain": "api.babyblueviper.com",
+            "key_url": "https://api.babyblueviper.com/keys/witness.json",
+            "public_key_ed25519_b64": "RN/Y6826Xrn8iz0TOtmKhCiQT5puaZYwA1JETt2TTPM=",
+            "a2a_url": "https://api.babyblueviper.com/a2a"
+          },
+          {
+            "signed_domain": "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+            "key_url": "https://qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com/keys/witness.json",
+            "public_key_ed25519_b64": "K8LSRek37R1K+Ds7q5om5retY3bGZlsFYhBkkz5jnHc=",
+            "a2a_url": "https://qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com/a2a"
+          }
+        ],
+        "note": "2 of 2 candidates met the conditions on generated_at"
+      },
+      "q": 2,
+      "k": 2,
+      "beaconHash": "0000000000000000000159071688e83f3b6933cc2e1b7e1bfe383edf4eee1411",
+      "requireCommitment": true,
+      "commitmentAnchor": {
+        "height": "973320",
+        "hash": "00000000000000000000460fc73c8fc81ca6926f12b883c54d28d705100304ed"
+      },
+      "requireV24": true,
+      "beaconTime": "2026-10-27T01:32:10Z"
+    }
+  },
+  "ok": true,
+  "refusals": [],
+  "segment": {
+    "drifts": [
+      "bb4187e8bdd6e7075f129f11628ce44bbbe64da57077e2208783f4408e38fd4e",
+      "d375fd23012b934f413995c37296685e2e43995b9093660f263bc22efb77bebc",
+      "b212d31fc8f8259194de2d61761eafd7d21b9e9c973ea5155b3733a02f790d03",
+      "477d1bbc0ccb0241c777fc47c46e3734359dfb44aab6717a2268740531c0c293",
+      "9fe75f9f2e172ad9656f45f7cda6837f7574e6d021a1c6f23afa676553fba673",
+      "356999fdb89006bafc6ee978fad7cbd5871855e13aad71593d08992729bf4e1f",
+      "22f1a1f191ef2c219239094d0246112e3b939e92112d57184c572975a33994c4",
+      "b88acaba2acd1b11cd5e2239724f5876db13022917ac471f174586ad3bd0ab52",
+      "71d476b638c6fc1cb174c6c94b1986562d5ef6885b76a2bffad63f59358271e7"
+    ],
+    "hashes": [
+      "bb4187e8bdd6e7075f129f11628ce44bbbe64da57077e2208783f4408e38fd4e",
+      "d375fd23012b934f413995c37296685e2e43995b9093660f263bc22efb77bebc",
+      "b212d31fc8f8259194de2d61761eafd7d21b9e9c973ea5155b3733a02f790d03",
+      "477d1bbc0ccb0241c777fc47c46e3734359dfb44aab6717a2268740531c0c293",
+      "9fe75f9f2e172ad9656f45f7cda6837f7574e6d021a1c6f23afa676553fba673",
+      "356999fdb89006bafc6ee978fad7cbd5871855e13aad71593d08992729bf4e1f",
+      "22f1a1f191ef2c219239094d0246112e3b939e92112d57184c572975a33994c4",
+      "b88acaba2acd1b11cd5e2239724f5876db13022917ac471f174586ad3bd0ab52",
+      "71d476b638c6fc1cb174c6c94b1986562d5ef6885b76a2bffad63f59358271e7",
+      "42e3b45d3d12cefaa87c86115f5bbcf7c2a8c0a7a80fa131a8cb45465e4784ac",
+      "e4dff6139b68f9ae18012a4b7959d98bd60553322a5d46f45e7966f0a7774d47",
+      "5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9",
+      "b343549fbb1d2854d8559df07ba5fdbb6ea5badd6459de344d67df2501d2863c"
+    ],
+    "complete": true,
+    "witness": {
+      "drawn": [
+        "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+        "api.babyblueviper.com"
+      ],
+      "answered": [
+        "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+        "api.babyblueviper.com"
+      ],
+      "agreeing": [
+        "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+        "api.babyblueviper.com"
+      ],
+      "disagreeing": [],
+      "forms": []
+    }
+  },
+  "does_not_establish": [
+    "that any record is true: hashes and signatures prove who wrote what and in which order, not that the observation was correct",
+    "that the repair was the right one: that is the proposal's own does_not_establish",
+    "operator independence of the witness that wrote the drift records: read witness.vantage"
+  ]
+}

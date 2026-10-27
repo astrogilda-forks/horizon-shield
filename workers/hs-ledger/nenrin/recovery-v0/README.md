@@ -39,12 +39,12 @@ HORIZON SHIELD 第2の柱 TSUGI (継)。検証の次に置く、回復を証明�
     node run_all.mjs                                   # 採点 (node と python の suite を両方回す)
     node recovery_fixture_build.mjs                    # fixture を書き直す (中身を変えた時だけ。変えたら test が byte 一致で止める)
     node drift_witness.mjs https://gate.horizonshield.dev --expect-commit <sha> --expect-canonical <hex> --repo <repo> --out drift.jsonl
-    node witness_draw.mjs --commit-seed <execution の record_sha256> > seed.json                 # v2.2 (1) subject を台帳に錨打ちする seed
-    zsh ../../append_witness.sh seed.json                                                   # (2) JIDEC に append (entry n)。OTS がブロック H に付くのを待つ (毎時)
-    node witness_draw.mjs --pool witness_pool.json --subject <同じ hash> --k 3 --commit-height H --commit-hash <H の hash> --ledger-entry n --exclude-host gate.horizonshield.dev   # (3) beacon = H+1
+    node witness_draw.mjs --commit-seed <execution の record_sha256> --pool witness_pool.json --k 2 > seed.json   # (1) subject と池と k を台帳に錨打ちする seed。--pool と --k が無いと v1 の約束 (主題だけ) になる
+    zsh ../../append_witness.sh "$PWD/seed.json"                                            # (2) JIDEC に append (entry n)。OTS がブロック H に付くのを待つ (毎時)。台本は hs-ledger に cd してから seed を探すので絶対パスで渡す
+    node witness_draw.mjs --pool witness_pool.json --subject <同じ hash> --k 3 --commit-height H --commit-hash <H の hash> --ledger-entry n --exclude-host gate.horizonshield.dev   # (3) beacon = H+1。この CLI は v1 の約束と v2.4 でない draw 欄しか作らん (--require-v24 の読み手は draw_k_unrecorded などで断る)。v2.4 の形の本番の籤は live_draw_20261027/ を見よ
     node witness_draw.mjs --pool witness_pool.json --subject <execution の record_sha256> --k 3 --after 2026-09-20T08:02:00Z --exclude-host gate.horizonshield.dev   # v2.1 の形 (錨無し。方針が requireCommitment なら draw_uncommitted)
     node executor.mjs proposal.json --endpoint https://x.example/mcp --drifts drift.jsonl         # 隔離 (auto)。--lift で解除。token は ~/.hs_sweep_token
-    node ../sdk/tsugi_verify.mjs chain.json --fetch-operator-key --pool witness_pool.json --q 2 --k 3 --beacon <H+1 の hash> --require-commitment --anchor-height H --anchor-hash <H の hash>
+    node ../sdk/tsugi_verify.mjs chain.json --fetch-operator-key https://gate.horizonshield.dev --pool witness_pool.json --q 2 --k 2 --beacon <H+1 の hash> --require-commitment --anchor-height H --anchor-hash <H の hash>
     node witness_pool_build.mjs --register --report pool_report.json          # 扉の register の endpoint を候補に池を書き直す
     node witness_reply.mjs serve --key ~/.hs_witness_key.pem --domain <自分の host> --key-url https://<自分の host>/keys/witness.json --port 8787
     bash ../../../../ops/run_drift_witness_daily.sh                             # 日次証人 (launchd: ops/com.horizonshield.driftwitness.plist)
@@ -93,7 +93,7 @@ Shield は再検証の証人を自分で選ばん。公開の池 (witness_pool.j
 - **R5-F1 池の選び直し**: v2.2 の約束 (tsugi-draw-commitment-v1) は主題しか固めていなかった。beacon を見てから池を選び直せた (答えない候補を落とす、Sybil を足す)。v2 の約束 (tsugi-draw-commitment-v2、`commitmentClaimTextV2`) は主題・池の hash・k を一緒に固める。検証器は籤の池と k を約束と照らす (`commitment_pool_mismatch`、`commitment_k_mismatch`)。
 - **前の記録**: v2.2 の形の記録は読めるまま。検証器は報告の `segment.witness.forms` に印を付ける (`k_not_recorded`、`request_not_carried`、`pool_not_committed`)。読む側が `requireV24` (`--require-v24`) を求めた時だけ断る (`draw_k_unrecorded`、`draw_request_absent`、`draw_pool_uncommitted`)。
 - **試験**: 攻めと対照は witness_v24_cases.mjs (15 件)、採点は witness_v24_test.mjs。同じ入力を recovery_twin_test.py (Python と node)、sdk/tsugi_verify.test.mjs (1 ファイルの SDK)、sdk-python の固定の試験と生の突き合わせに通す。直す前の検証器 (0.3.1) では、v2.2 の形の攻めは全部通っていた。
-- **言わないこと**: 依頼を結び付けても、証人が本物で独立かは言わない。本番の池は 1 件 (api.babyblueviper.com、2026-09-23 から) で、定足数 2 の籤はまだ成り立たない。v2.4 が効き目を持つのは、池が定足数を満たしてからになる。
+- **言わないこと**: 依頼を結び付けても、証人が本物で独立かは言わない。本番の池は 2026-10-22 から 2 件 (支配の塊 2 つ) で、定足数 2 の籤が成り立つ。最初の本番の籤は live_draw_20261027/ にあり、結果は quorum_met (一致 2/2)。2 件とも運営者が声を掛けて入った (witness_arrivals.json) ので、塊が 2 つでも池の外の誰かが選んだ証人ではない。
 
 ## 手 (v2.2): 隔離だけを持つ executor
 
@@ -138,7 +138,7 @@ Shield は再検証の証人を自分で選ばん。公開の池 (witness_pool.j
 
 ## まだ無い物 (v2.2)
 
-- 池の中身。道具は在る (witness_pool_build)。池に入った後の支配の多様性は witness_diversity が数える (v2.3)。条件を満たす card がまだ無い。うち自身も、扉の A2A 面が witness_request に答えるまでは他所の池に入れん (consent の witness_policy.reciprocal は答えられるようになってから true にする。先に宣言せん)。
+- 池の中身。道具は在る (witness_pool_build)。池に入った後の支配の多様性は witness_diversity が数える (v2.3)。池は 2026-10-22 から 2 件 (witness_pool.json)。扉も 0.4.14 から /a2a で witness_request に答え、card の witness_policy.reciprocal は true (2026-10-27 に配信中の card で確かめた)。
 - 証人を Worker の cron に (公式 SDK の card 検証を Worker の中でやる必要が有る)。今は Mac の launchd。
 - 台帳 (hs-ledger) への intake と JIDEC への anchor。記録の型はそのために witness intake と同じ規律にしてある。
 - beacon の予備 (drand)。今は mempool.space と blockstream.info。

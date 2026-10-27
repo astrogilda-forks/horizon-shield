@@ -1,0 +1,35 @@
+{
+ "ok": true,
+ "refusals": [],
+ "segment": {
+  "drifts": [
+   "bb4187e8bdd6e7075f129f11628ce44bbbe64da57077e2208783f4408e38fd4e",
+   "d375fd23012b934f413995c37296685e2e43995b9093660f263bc22efb77bebc",
+   "b212d31fc8f8259194de2d61761eafd7d21b9e9c973ea5155b3733a02f790d03",
+   "477d1bbc0ccb0241c777fc47c46e3734359dfb44aab6717a2268740531c0c293",
+   "9fe75f9f2e172ad9656f45f7cda6837f7574e6d021a1c6f23afa676553fba673",
+   "356999fdb89006bafc6ee978fad7cbd5871855e13aad71593d08992729bf4e1f",
+   "22f1a1f191ef2c219239094d0246112e3b939e92112d57184c572975a33994c4",
+   "b88acaba2acd1b11cd5e2239724f5876db13022917ac471f174586ad3bd0ab52",
+   "71d476b638c6fc1cb174c6c94b1986562d5ef6885b76a2bffad63f59358271e7"
+  ],
+  "complete": true,
+  "witness": {
+   "drawn": [
+    "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+    "api.babyblueviper.com"
+   ],
+   "answered": [
+    "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+    "api.babyblueviper.com"
+   ],
+   "agreeing": [
+    "qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com",
+    "api.babyblueviper.com"
+   ],
+   "disagreeing": [],
+   "forms": []
+  }
+ },
+ "verifier": "recovery_verify.py 0.4.0"
+}

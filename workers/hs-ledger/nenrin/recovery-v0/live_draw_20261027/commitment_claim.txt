@@ -1,0 +1,7 @@
+# tsugi-draw-commitment-v2
+
+subject_sha256: 5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9
+pool_sha256: f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799
+k_requested: 2
+
+This entry commits the record named by subject_sha256 (a TSUGI execution record), the witness pool named by pool_sha256 and the number of witnesses to draw, before any re-verification witness is drawn. The draw's beacon must be the Bitcoin block after the block this entry is anchored to. Establishes: that subject, pool and k were fixed no later than the anchor block. Does not establish: anything about the record's content or about the witnesses in the pool.

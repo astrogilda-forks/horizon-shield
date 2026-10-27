@@ -1,0 +1,13 @@
+{
+ "notices": {
+  "babyblueviper1": "https://github.com/ogasurfproject-jpg/horizon-shield/issues/59",
+  "kuangmi-bit": "https://github.com/ogasurfproject-jpg/horizon-shield/issues/59"
+ },
+ "notice_issue": 59,
+ "notice_posted_utc": "2026-10-23T00:48:19Z",
+ "opt_out_deadline_utc": "2026-10-27T00:00:00Z",
+ "planned_window_utc": {
+  "start": "2026-10-27T06:00:00Z",
+  "end": "2026-10-28T06:00:00Z"
+ }
+}

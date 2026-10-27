@@ -1,0 +1,11 @@
+{
+ "kind": "bitcoin_block",
+ "height": "973321",
+ "hash": "0000000000000000000159071688e83f3b6933cc2e1b7e1bfe383edf4eee1411",
+ "timestamp": "1793064730",
+ "time_iso": "2026-10-27T01:32:10Z",
+ "sources": [
+  "https://mempool.space/api",
+  "https://blockstream.info/api"
+ ]
+}
