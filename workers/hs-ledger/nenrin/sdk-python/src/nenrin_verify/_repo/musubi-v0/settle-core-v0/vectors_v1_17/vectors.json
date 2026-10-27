@@ -1,0 +1,279 @@
+{
+ "schema": "settle-v1.17-vectors",
+ "spec": "SETTLE_CORE_v0.md section 17",
+ "reference": "settle_v1_17.settle_v1_17(contract, events, view, admissions=..., relying_keys=...) in musubi-v0 (a2a-settlement-v1.17)",
+ "admission_versions": [
+  "0.1",
+  "0.3"
+ ],
+ "vectors": [
+  {
+   "id": "v117_requirements_furui_inert",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "contract.json": "1f8332930e64d3f1fb9ad88497ad971b57c47f7364ae9754911be069ab2578d3",
+    "events/e00.json": "4cc1f8b4fa97ad3776b8c528411fdaceb92924855892877d54379f2570c50c95",
+    "expected.json": "6e4bca9221e69be9619d6992d013318e2c82362fadcbb3fa6078646b1a064b7b",
+    "relying_keys.json": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "view.json": "fbe086c5f6be4a82696c36e672eb091b90cfdeda66389e2c9617b537840ff35e"
+   }
+  },
+  {
+   "id": "v117_requirements_furui_malformed",
+   "expect": {
+    "verdict": "underspecified",
+    "status": "undetermined",
+    "deviation_codes": [],
+    "content_gate_counts": null
+   },
+   "files": {
+    "contract.json": "d888e5b0da916fcd643a855b4b6594139a95d290cb14f024b42be6a953f812fc",
+    "events/e00.json": "c5255acfe6464e4ae5f1b204d96ebef35c28ade58d4c04dc6a3853e55de50423",
+    "expected.json": "8e9ef1ae5f9c3d4f1175345d2f0c48a98911a15cf3d578cdcbf5f1cd4e773d4e",
+    "relying_keys.json": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "view.json": "5164af2e85a49c36f0846d320836db79cf8282fd3d2061339073a329ca1b891b"
+   }
+  },
+  {
+   "id": "v117_v01_admit_no_furui",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "content_gate_counts": null
+   },
+   "files": {
+    "admissions/a00.json": "860fa607664b62269d520164fff4293de6d4b8d9cf12d88c2a2cbd87159a12f0",
+    "contract.json": "65ff927187920d569ef18db815a8837ff294bacdacc205299b911fea9cd8493c",
+    "events/e00.json": "9d918807a049cdc53ca448b26f335580a9f4b7375df5194dd07e76ab0824c0f8",
+    "expected.json": "b454beb266e5b489191f9de223510be22fb225429951f1b663aaff105909fd4f",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "c1652cfa2f0b95b2ef3fc5d07d4b8410978b9eb9560d881fb28b6b37437fd127"
+   }
+  },
+  {
+   "id": "v117_v01_admit_under_furui",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "content_not_checked"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 1
+    }
+   },
+   "files": {
+    "admissions/a00.json": "f586cba7930b79d64767be8a3ccb8be2bd6fdc27227db150f71b840d2ad0a919",
+    "contract.json": "f45cea627d3355b4edfe22ff13562bf18c53ef1dd3c5797320dd0728844bf4e3",
+    "events/e00.json": "8b8895dd0513c81f49897336eca3a5b3a22ca5344678b0c40c7203191ecfa3f5",
+    "expected.json": "c657f316cd455caf92c48de2befdbd691844bd0ffeea413773fc12e14b19b210",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "e0aaef52d02d7938bdca366a4fe24e159408042e88173ad5aa933c0ff6ac97a6"
+   }
+  },
+  {
+   "id": "v117_v01_refuse_under_furui",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "executed_after_refusal"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "b8bab469f407e1825945590926510ca62ce7f4dd48610de71fdd690e65ec0823",
+    "contract.json": "1af59033694261eecee6e9dc21cf38fef8caadab0b5c2ec803e2642e635a60a1",
+    "events/e00.json": "5faf12d201afbc1b0d7f3f647e79358d1391e40bf0300da13c23338556135831",
+    "expected.json": "c0845c3ff7a81e297c8b62fcbd5f5fb5b733a1613b6bcf280a5c564cfa44b524",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "32151d3b499f9f85927800aa8591bef9a82ffcec24aad0a906fb882be107da58"
+   }
+  },
+  {
+   "id": "v117_v01_admit_furui_without_rules",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "content_gate_counts": null
+   },
+   "files": {
+    "admissions/a00.json": "f8b3e0aae8637e699344438caa85c13a44a4685365a2a68ef71dd45385299157",
+    "contract.json": "e529c5cb4102cf3663c318f61ee140251fadef32d55f35332c98ef47db355954",
+    "events/e00.json": "72b1261884f12ea42af2e2d293769756fa6f0bd6ea7cc82b078dd57ee60e8e2b",
+    "expected.json": "fc873f8c73b544cab70871b623533986ce1aeab6ef5ea62bc7f824cd0a61d3c0",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "96bfe171a3bae5d64c71d6830f69bad13b56d3e8e56bd679e9ebf5bc347120bd"
+   }
+  },
+  {
+   "id": "v117_v03_admit_same_rules",
+   "expect": {
+    "verdict": "within_grant",
+    "status": "final",
+    "deviation_codes": [],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "b3161a6dcba22451a83929521291477a7a070f33986c747d84c9f7b82df6355d",
+    "contract.json": "171f116723477ec5a7d2ab8ee31eeaf0ced6392824f8911ca1423ab6bbf9b9da",
+    "events/e00.json": "7f068f2d193eab3f50e93cc94046227a11c11f543163b6f3d7115c180ddd137f",
+    "expected.json": "6606ab0c6fbc35bf9cb62751bf1da2d57ebab82e74efc443954bdda516ae9f5c",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "20923f53d2edda36617f1493dbc5ee5d6062ef1cda58991968f53065640a1462"
+   }
+  },
+  {
+   "id": "v117_v03_admit_other_rules",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "content_rules_mismatch"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 1,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "21c9b06a08adaf3611c24dadda6c7272454a5d4d7968ea4e62b19f730bf6e4af",
+    "contract.json": "591bfc30efa72f041dadcfc15b820bbd0860d5aa8bd3c4c4639fac868a7e4bb5",
+    "events/e00.json": "2d813c87491972e478e9db03fc0b33deaae5b5a22ed1e1aeb6f8a1e9a6688a92",
+    "expected.json": "47585f123b08ff296d743f2074ff45fbee58e7e5bab14b14626221e490ede28d",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "f7df59ee79303bc1f795fafdeb7c13a7dc9d9882ac3dd4cbb7abc4b5becf2538"
+   }
+  },
+  {
+   "id": "v117_v03_admit_unchecked",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "unadmitted_execution"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "4cece927eebafb23fd495afa679426ac1a334bf73cd11dad8a7b0269e8b20711",
+    "contract.json": "ab7ee78854102e0f0760c886a943d299483e76b15e004a07ca685bd0a0831dc6",
+    "events/e00.json": "354656bf0ecad0aed047d4b6cc8aa27f2b02936e8cba70fa9012ea850fa59226",
+    "expected.json": "d2a20e11952d6f67b506e20dd5fd83af6ecd4c2a2586226138217318c2ee0c5b",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "61fd75d3ed5957a3495f5c8bb22f3534f10dc4d290d94ab37c0f93fd4440a48b"
+   }
+  },
+  {
+   "id": "v117_v03_refuse_flagged",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "executed_after_refusal"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "1e0336860bc04bb04441fed18b34422fb02c8be7e2772e73a7d1eb74d323e49c",
+    "contract.json": "758a8458a14fab4b2bf333757bb372523e0c6b357fba3ae1433b4785b31fc83d",
+    "events/e00.json": "235195046f938d27455f7400cad7768dd8852e93c631f9e1458a333f2e7e0f3d",
+    "expected.json": "f59e55c5467f0eb4b2671047fc8d8523e602c7969bd5e245deb643bfb9b299fd",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "da94093359d0ff5c49b6d3465a7bc9a949825c7916d334d24367de3411b2e5a6"
+   }
+  },
+  {
+   "id": "v117_v03_refuse_other_rules",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "executed_after_refusal"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "d896da35dba2317044306892e110f5c46306908e8e1af5d2a37a500c6e5d74bc",
+    "contract.json": "bb47006e9cf54e435c7047cfcebce83746ee209bcf87ac4df80b40972362b2bf",
+    "events/e00.json": "eb5a7ee8e59dee90e158f90f968221495a2f6b7b9cfeb8c5c65fc324c6948671",
+    "expected.json": "133b55268333358e3df3d3a46374607a1e709b6ba733988e1041ecb4d1fbde31",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "d08d1758be2a71f691996d5627383aa82a04c57e32b6118237809e3d2fb4419e"
+   }
+  },
+  {
+   "id": "v117_v03_admit_prohibited_same_rules",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "admitted_out_of_grant",
+     "prohibited"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 0,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "d75d92f6d88f579dd86e357c160c9d9d702c7f8c24d4aa420327372e9f6f0872",
+    "contract.json": "f6a840bf5cce126209ab5a18fbfda8ceba4c23b65791a270ae4b2531f1d25581",
+    "events/e00.json": "dae1614a2d32e475ec7d7e7e3bbc3cdeb05412e323d65385cda0d0eac8d71962",
+    "expected.json": "ddd844b3cdcfb2da23ed82c63afb5409bc11deffe6f31bf18e123bf4dcb245a7",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "2be74f4643d908fb28be9ab8c61727a7dd6599b0fb0166d63d8675890addb426"
+   }
+  },
+  {
+   "id": "v117_v03_admit_prohibited_other_rules",
+   "expect": {
+    "verdict": "deviation",
+    "status": "final",
+    "deviation_codes": [
+     "admitted_out_of_grant",
+     "content_rules_mismatch",
+     "prohibited"
+    ],
+    "content_gate_counts": {
+     "content_rules_mismatch": 1,
+     "content_not_checked": 0
+    }
+   },
+   "files": {
+    "admissions/a00.json": "1873c029511935f44e8c691bc8e8a8f3d21bd5b83ae615fba1ed037c5e9952d0",
+    "contract.json": "c916be1ba9679cde5f7ce4c447c7a66b8036ff3a722896ca8f4e9f6ca75c0d51",
+    "events/e00.json": "b4f57829e52239eeb2c33202be685f3f6a345cf1fbeeb6e59926d93f386b65fa",
+    "expected.json": "ae25f0bcca07156bad3d7beeb33588f74bfe32b05a62cedd6738f8d40f50d03c",
+    "relying_keys.json": "4a7a0999e4c332540e7a3ec42ce77f6f4cfcfd992967381254dbb339ddc85263",
+    "view.json": "e911c1e7805e3c46efded6d98b3c8751ac8aa6576b465aa9a0996fd126b0a002"
+   }
+  }
+ ]
+}

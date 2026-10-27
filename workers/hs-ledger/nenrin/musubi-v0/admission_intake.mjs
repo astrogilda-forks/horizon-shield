@@ -21,7 +21,7 @@
 import { parseStrict, canonicalUtf8, CanonicalError } from "../agreement-v0/agreement_canonical.mjs";
 import { ed25519Verify } from "../agreement-v0/agreement_verify.mjs";
 
-export const ADMISSION_INTAKE_VERSION = "admission-intake 0.3.1";
+export const ADMISSION_INTAKE_VERSION = "admission-intake 0.3.2";
 export const ADMISSION_SCHEMA = "a2a-admission-v0";
 export const REVOCATION_SCHEMA = "a2a-revocation-v0";
 export const MAX_BYTES = 65536;
@@ -33,6 +33,7 @@ const REASONS = ["within_grant", "conditional_needs_approval", "prohibited_actio
   "presentation_unverifiable", "signer_not_on_own_domain", "action_digest_mismatch",
   "content_flagged", "content_unchecked", "exposure_full"];
 const REASONS_V0_2 = [...REASONS, "immune_hold", "immune_reject"];
+const REASONS_V0_3 = [...REASONS_V0_2, "content_scope_conflict"];
 // v0.2 (2026-10-20) carries the immune block (immune_v0.py): digests and codes, no values. The intake checks its shape and
 // that it agrees with the decision, the same rule as admission_verify_v0.immune_problems. It does not rerun the rules.
 const IMMUNE_KEYS = ["codes", "evaluator_sha256", "evidence_sha256", "rules", "second_signal", "terms_sha256", "verdict"];
@@ -58,6 +59,27 @@ function immuneCodes(record) {
   else ok = !h && !j && c.length === 0;
   return ok ? [] : ["immune_inconsistent"];
 }
+// v0.3 (2026-10-27) carries immune and the content block: what the relying party says its content check read, as digests
+// and flags. The intake checks its shape and its seven rules, the same as admission_verify_v0.content_problems. It never sees the content.
+const CONTENT_KEYS = ["answered", "check_sha256", "checked", "input_sha256", "rules", "rules_sha256", "scope_conflict", "scope_sha256", "verdict"];
+const CONTENT_CONFLICTS = ["none", "forbidden_by_rule", "skips_required_step", "outside_task"];
+const CONTENT_REASONS = ["content_flagged", "content_scope_conflict", "content_unchecked"];
+function contentCodes(record) {
+  const c = record.content, r = record.reasons, d = record.decision;
+  if (!isObj(c) || JSON.stringify(Object.keys(c).sort()) !== JSON.stringify(CONTENT_KEYS) || c.rules !== "a2a-content-check-v0" || !Array.isArray(r)) return ["malformed"];
+  const hexNull = (k) => c[k] === null || (typeof c[k] === "string" && H64.test(c[k]));
+  const v = c.verdict, sc = c.scope_conflict, ans = c.answered, chk = c.checked;
+  if (!(["input_sha256", "check_sha256", "rules_sha256", "scope_sha256"].every(hexNull) && (v === null || v === "instruction" || v === "none")
+    && (sc === null || CONTENT_CONFLICTS.includes(sc)) && typeof ans === "boolean" && typeof chk === "boolean")) return ["malformed"];
+  const ok = (chk || (v === null && sc === null && r.includes("content_unchecked")))
+    && (!chk || ["input_sha256", "check_sha256", "rules_sha256"].every((k) => c[k] !== null))
+    && (ans || (v === null && sc === null && r.includes("content_unchecked")))
+    && ((v === "instruction") === r.includes("content_flagged"))
+    && ((sc !== null && sc !== "none") === r.includes("content_scope_conflict"))
+    && (c.scope_sha256 !== null || sc === null)
+    && (d !== "admit" || !CONTENT_REASONS.some((x) => r.includes(x)));
+  return ok ? [] : ["malformed"];
+}
 // The stated limits a record must carry, by the version of admit() that wrote it. A v0 record has no rules.version;
 // a v0.1 record says "0.1" and states the limit about unanchored revocations. A record of one version carrying the
 // other's list is refused, and so is a version this intake does not know.
@@ -77,7 +99,10 @@ const DOES_NOT_ESTABLISH_V0_1 = [
 const DOES_NOT_ESTABLISH_V0_2 = [...DOES_NOT_ESTABLISH_V0_1,
   "that the immune rules stopped every harmful act; a clear verdict says only that no rule in the contract's immune terms fired on the request as "
     + "presented, and the values it read are not in this record"];
-const LIMITS_BY_VERSION = { v0: DOES_NOT_ESTABLISH_V0, "0.1": DOES_NOT_ESTABLISH_V0_1, "0.2": DOES_NOT_ESTABLISH_V0_2 };
+const DOES_NOT_ESTABLISH_V0_3 = [...DOES_NOT_ESTABLISH_V0_2,
+  "that any content check ran, or that the same check would answer the same way again; the record carries the digests of the bytes the relying "
+    + "party says it checked and of the verdict it says it read, the identifier of the rule set, and the flags, and nothing else about the content"];
+const LIMITS_BY_VERSION = { v0: DOES_NOT_ESTABLISH_V0, "0.1": DOES_NOT_ESTABLISH_V0_1, "0.2": DOES_NOT_ESTABLISH_V0_2, "0.3": DOES_NOT_ESTABLISH_V0_3 };
 const RECORD_KEYS = ["schema", "admission_id", "relying_party", "contract_ref", "action_ref", "presentation_ref", "chain_view",
   "revocations_seen", "decision", "reasons", "clause", "rules", "establishes", "does_not_establish", "signatures"];
 const REVOKE_KEYS = ["schema", "contract_ref", "revoked_by", "signatures"];
@@ -182,14 +207,15 @@ export async function handleAdmissionIntake(request, deps) {
   const keys = Object.keys(record);
   const rules = isObj(record.rules) ? record.rules : {};
   const version = Object.prototype.hasOwnProperty.call(rules, "version") ? rules.version : "v0";
-  const want = version === "0.2" ? [...RECORD_KEYS, "immune"] : RECORD_KEYS;
+  const want = version === "0.3" ? [...RECORD_KEYS, "immune", "content"] : version === "0.2" ? [...RECORD_KEYS, "immune"] : RECORD_KEYS;
   if (!want.every((k) => keys.includes(k)) || keys.some((k) => !want.includes(k) && k !== "publication")) codes.push("malformed");
   // the same shape rules as admission_verify_v0.verify_admission: every number a safe integer, and these fields of their type
   if (!numbersOk(record) || textProblem(record) || !isObj(record.rules) || !isObj(record.contract_ref) || !Array.isArray(record.does_not_establish)
     || !Array.isArray(record.signatures)) codes.push("malformed");
-  const allowed = version === "0.2" ? REASONS_V0_2 : REASONS;
+  const allowed = version === "0.3" ? REASONS_V0_3 : version === "0.2" ? REASONS_V0_2 : REASONS;
   if (!DECISIONS.includes(record.decision) || !Array.isArray(record.reasons) || !record.reasons.length || record.reasons.some((r) => !allowed.includes(r))) codes.push("malformed");
-  if (version === "0.2" && keys.includes("immune")) codes.push(...immuneCodes(record));
+  if ((version === "0.2" || version === "0.3") && keys.includes("immune")) codes.push(...immuneCodes(record));
+  if (version === "0.3" && keys.includes("content")) codes.push(...contentCodes(record));
   // the chain height a decision was made at is an integer (a float would let a door step outside the inflammation count)
   const cvh = isObj(record.chain_view) ? record.chain_view.height : undefined;
   // (the strict parser may hand integers over as BigInt)
@@ -222,7 +248,8 @@ export async function handleAdmissionIntake(request, deps) {
   const report = { record_schema: ADMISSION_SCHEMA, verdict: "accepted", canonical_sha256: canonicalSha, admission_sha256: admissionSha,
     relying_party: dom, decision: record.decision, admit_version: version === "v0" ? "0" : version, verifier_version: ADMISSION_INTAKE_VERSION,
     checked: ["canonical bytes", "closed lists for decision and reasons", "the stated limits are unaltered", "key_url on the relying party's own domain",
-      ...(version === "0.2" ? ["the immune block's shape and its agreement with the decision and reasons (not the immune rules themselves)"] : []),
+      ...(version === "0.2" || version === "0.3" ? ["the immune block's shape and its agreement with the decision and reasons (not the immune rules themselves)"] : []),
+      ...(version === "0.3" ? ["the content block's shape and its seven rules against the decision and reasons (digests and flags only; the content is not sent here)"] : []),
       "Ed25519 signature under the key that key_url serves", "signed consent to publication"],
     not_checked: ["the decision itself; this intake does not run admit() and does not hold the contract"] };
   const payload = { canonical_sha256: canonicalSha, record_canonical: rb.b.record_canonical, report, verifier_version: ADMISSION_INTAKE_VERSION,
@@ -308,6 +335,7 @@ export function admissionSelfDescription(origin) {
     what_this_does: "stores what a relying party (admission) or a principal (revocation) signed, under its sha256, and anchors it with the daily batch",
     what_this_does_not_do: ["run admit() or hold the contract", "say whether an action should have been admitted", "allow or block anything"],
     function: "https://github.com/ogasurfproject-jpg/horizon-shield/tree/main/workers/hs-ledger/nenrin/musubi-v0 (admission_verify_v0.py, admission_verify_v0.mjs, settle_v1_11.py, settle_v1_12.py, immune_v0.py)",
-    versions: ["v0 (no rules.version)", "0.1", "0.2 (carries the immune block of immune_v0.py: digests and codes, no values; the intake checks its shape, not the rules)"],
+    versions: ["v0 (no rules.version)", "0.1", "0.2 (carries the immune block of immune_v0.py: digests and codes, no values; the intake checks its shape, not the rules)",
+      "0.3 (carries immune and the content block, a2a-content-check-v0: digests and flags, no content; the intake checks its shape and its seven rules, not the check)"],
     publication: "an admission is stored only when its signed bytes say \"publication\": \"public\"", policy: PRIVACY_POLICY };
 }

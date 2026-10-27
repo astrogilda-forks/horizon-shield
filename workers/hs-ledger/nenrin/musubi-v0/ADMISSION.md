@@ -47,6 +47,11 @@ settles after the fact. It renders no decision.
   Changed 2026-10-26: the last three reasons were added to the closed list (and to the intake and the schema). Records
   made before keep verifying as they are; a verifier holding an older copy of the list refuses a new record that carries
   one of the three, as a closed list should.
+  Changed 2026-10-27: v0.3 adds `content_scope_conflict`, the relying party's content check found that answering the
+  content as asked would act against the task scope it was given (a rule the scope forbids, a step it requires, or a
+  topic it does not cover). It is a separate flag from `content_flagged` (an instruction to an AI in the content) and
+  never counted with it. `content_unchecked` also covers a check that returned no answer, and a request that came
+  without content when the door's policy requires a check.
 - **`action_ref.action_binding_digest`**: sha256 of the musubi-canonical-v0 bytes of
   `{contract_sha256, action, target, amount, nonce, expiry_height}`. It binds what was asked to what was admitted, and
   settlement requires the execution to state the same values.
@@ -73,6 +78,19 @@ settles after the fact. It renders no decision.
   carries immune terms (`immune_missing`), must name those terms (`immune_terms_not_this_contracts`) and may say
   `not_run` only on a refusal (`immune_not_run`). In every version `chain_view.height` and every other number is an
   integer within 2^53 - 1. See "Immune rules" below.
+- **Version 0.3 (2026-10-27)**: the record keeps `immune` and carries one more field, `content`, the relying party's
+  account of its content check (a2a-content-check-v0): `{"rules", "input_sha256", "check_sha256", "rules_sha256",
+  "scope_sha256", "verdict", "scope_conflict", "answered", "checked"}`. `input_sha256` is the sha256 of the
+  musubi-canonical-v0 bytes of the content the door received, `check_sha256` that of the check's own record,
+  `rules_sha256` the identifier of the rule set the door's policy names, `scope_sha256` the task scope the check was
+  given; each is null when absent. `verdict` is `instruction` or `none`, `scope_conflict` is `none`,
+  `forbidden_by_rule`, `skips_required_step` or `outside_task`, both null when there is no answer. It carries digests
+  and flags, never the content. One reason is added, `content_scope_conflict`, and `does_not_establish` gains one
+  line. Seven rules tie the block to the record, and a record that breaks one is malformed: (1) not `checked` means no
+  flags and `content_unchecked`; (2) `checked` means the three digests are there; (3) not `answered` means no flags and
+  `content_unchecked`; (4) `verdict` `instruction` if and only if `content_flagged`; (5) a conflict other than `none`
+  if and only if `content_scope_conflict`; (6) no `scope_sha256`, no conflict; (7) an `admit` carries none of the
+  three content reasons. Whether a flag refuses or escalates is the door's policy; the record says which it did.
 - **Publication**: a record leaves the relying party only by the relying party's choice. The ledger intake stores a
   record only when its signed bytes say `"publication": "public"`.
 
@@ -185,12 +203,18 @@ served content and the block headers in the fixture:
   collude after it; since every drawn witness must confirm, a coalition of c in a pool of N gets a value through with probability
   C(c, n) / C(N, n), zero when c < n. Two entities the contract names are not proven to be two owners in the world; reports can
   only refuse more, never admit more.
+- A v0.3 record says what the relying party says it checked: the digests of the bytes and of the check's record, the
+  rule set's identifier and the flags. It does not show that any check ran, or that the same check would answer the
+  same way again (a model's answer can change between runs). Without the content disclosed, a reader can only match
+  digests. The door HS runs does not yet connect a content check; so far the check has run in tests only.
 - The fixture records were made with fixed test keys by a door this repository does not carry. Their sha256 is listed
   so that a change to them is visible; the settlements they lead to are recomputed here on every run.
+  `fixtures/admission_content/cases.json` (v0.3) was made from the v0.2 fixture and signed with a scratch key, before the
+  door writes v0.3; the door's own records replace it.
 
 ## Tests
 
-    python3 admission_verify_v0.py --selftest        # records of all three versions, the request, the revocation, the JavaScript twin
+    python3 admission_verify_v0.py --selftest        # records of all four versions, the request, the revocation, the JavaScript twin
     python3 immune_v0.py --selftest                  # the immune rules, and the first attack recomputed
     python3 immune_v0.py --check-demo
     python3 admission_verify_v0.py --check-fixtures

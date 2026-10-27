@@ -174,14 +174,19 @@ def recompute_run0002():
 
 
 def settle_core():
-    """settle core v0, offline: the 128 vectors against settle_v1_16 (run_reference.py) and EXERCISE.txt."""
+    """settle core v0, offline: its vectors against settle_v1_16 (run_reference.py), the section 17 vectors against settle_v1_17
+    when they are present, and EXERCISE.txt."""
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
     r = subprocess.run([sys.executable, os.path.join(SETTLE_CORE_DIR, "run_reference.py")], capture_output=True, text=True, env=env)
     e = subprocess.run([sys.executable, os.path.join(SETTLE_CORE_DIR, "exercise_inputs.py"), "--check"], capture_output=True, text=True, env=env)
     last = lambda p: (p.stdout.strip().splitlines() or [""])[-1]
     vectors = hashlib.sha256(open(os.path.join(SETTLE_CORE_DIR, "vectors", "vectors.json"), "rb").read()).hexdigest()
-    ok = r.returncode == 0 and last(r).startswith("128/128") and e.returncode == 0 and last(e) == "EXERCISE.txt agrees"
-    return {"ok": ok, "vectors": last(r).split(" (")[0], "exercise": last(e), "vectors_json_sha256": vectors,
+    core = next((l for l in r.stdout.splitlines() if " vectors agree with the reference (settle_v1_16.py" in l), "")
+    n = core.split(" ", 1)[0].split("/")
+    ok = (r.returncode == 0 and len(n) == 2 and n[0] == n[1] and int(n[0] or 0) >= 128 and e.returncode == 0
+          and last(e) == "EXERCISE.txt agrees")
+    v117 = next((l for l in r.stdout.splitlines() if " v1.17 vectors agree with the reference" in l), "")
+    return {"ok": ok, "vectors": core.split(" (")[0], "v1_17": v117.split(" (")[0], "exercise": last(e), "vectors_json_sha256": vectors,
             "why": "" if ok else (r.stderr or e.stderr or r.stdout)[-400:]}
 
 

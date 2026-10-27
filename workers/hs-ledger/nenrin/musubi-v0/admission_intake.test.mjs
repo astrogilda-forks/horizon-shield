@@ -230,6 +230,28 @@ t("the self description says what the intake does not do", d.what_this_does_not_
   }
 }
 
+// ---- v0.3: the content block (fixtures/admission_content/cases.json, v0.2 records moved to v0.3 and signed by a scratch key) ----
+{
+  const CC = JSON.parse(readFileSync(path.join(HERE, "fixtures", "admission_content", "cases.json"), "utf8"));
+  const keyUrl = JSON.parse(CC.records.A_clear_refused_by_immune).relying_party.key_url;
+  const wc = world({ keys: { [keyUrl]: CC.relying_pub_b64 } });
+  const good = Object.keys(CC.records).filter((k) => /^[A-Z]/.test(k));
+  let okAll = true;
+  for (const k of good) {
+    const rr = await handleAdmissionIntake(post({ record_canonical: CC.records[k] }), wc.deps);
+    okAll = okAll && rr.status === 201 && rr.body.report.admit_version === "0.3" && rr.body.report.checked.some((x) => /content block/.test(x));
+  }
+  t("v0.3: the " + good.length + " records with a content block (both flags, unchecked, no scope, an admit and a refusal) are accepted and stored", okAll && wc.mem.size === good.length);
+  for (const k of Object.keys(CC.records).filter((k) => !/^[A-Z]/.test(k))) {
+    await refusal("v0.3 broken: " + k, CC.records[k], "malformed", world({ keys: { [keyUrl]: CC.relying_pub_b64 } }));
+    const v = verifyAdmissionText(CC.records[k], CC.relying_pub_b64);
+    t("the verifier refuses it too: " + k, v.verdict === "refused" && v.refusals.includes("malformed"), v);
+  }
+  await refusal("a v0.3 record carrying v0.2's stated limits", edit(CC.records.A_clear_refused_by_immune, (o) => { o.does_not_establish.pop(); }), "does_not_establish_altered",
+    world({ keys: { [keyUrl]: CC.relying_pub_b64 } }));
+  t("the intake says it reads v0.3", admissionSelfDescription().versions.some((x) => x.startsWith("0.3")));
+}
+
 console.log("");
 if (fail) { console.log("FAIL " + fail + " of " + (pass + fail) + " (admission_intake)"); process.exit(1); }
 console.log("PASS " + pass + "/" + pass + " (admission_intake: records made by the Python reference; stored only when signed, on the signer's own domain, and public by the signer's consent)");

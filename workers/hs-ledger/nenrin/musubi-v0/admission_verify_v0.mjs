@@ -25,6 +25,7 @@ import * as ce from "./clause_eval_v0.mjs";
 export const SCHEMA = "a2a-admission-v0";
 export const VERSION = "0.1";
 export const VERSION_IMMUNE = "0.2";
+export const VERSION_CONTENT = "0.3";
 export const REVOKE_SCHEMA = "a2a-revocation-v0";
 export const PREIMAGE_PROFILE = "a2a-admission-v0/action";
 export const DECISIONS = ["admit", "escalate", "refuse"];
@@ -39,6 +40,12 @@ export const IMMUNE_REJECT_CODES = ["receptor_closed", "indicator_match", "hold_
 export const IMMUNE_HOLD_CODES = ["unmarked_from_content", "unmarked_novel", "inflamed", "exposure_full", "cooling_off"];
 export const IMMUNE_FLAG_CODES = ["unmarked_from_content", "unmarked_novel", "indicator_seen"];
 const IMMUNE_KEYS = ["rules", "evaluator_sha256", "terms_sha256", "verdict", "codes", "evidence_sha256", "second_signal"];
+export const REASONS_V03 = [...REASONS_V02, "content_scope_conflict"];
+export const CONTENT_RULES = "a2a-content-check-v0";
+export const CONTENT_VERDICTS = ["instruction", "none"];
+export const CONTENT_CONFLICTS = ["none", "forbidden_by_rule", "skips_required_step", "outside_task"];
+const CONTENT_KEYS = ["rules", "input_sha256", "check_sha256", "rules_sha256", "scope_sha256", "verdict", "scope_conflict", "answered", "checked"];
+const CONTENT_REASONS = ["content_flagged", "content_scope_conflict", "content_unchecked"];
 export const DOES_NOT_ESTABLISH_V0 = [
   "that HS allowed or blocked anything; the relying party ran the function at its own door",
   "that the agent is who it claims to be beyond what the presented signatures and keys on its own domain show",
@@ -55,6 +62,9 @@ export const DOES_NOT_ESTABLISH = [
 export const DOES_NOT_ESTABLISH_V02 = [...DOES_NOT_ESTABLISH,
   "that the immune rules stopped every harmful act; a clear verdict says only that no rule in the contract's immune terms fired on the request as "
     + "presented, and the values it read are not in this record"];
+export const DOES_NOT_ESTABLISH_V03 = [...DOES_NOT_ESTABLISH_V02,
+  "that any content check ran, or that the same check would answer the same way again; the record carries the digests of the bytes the relying "
+    + "party says it checked and of the verdict it says it read, the identifier of the rule set, and the flags, and nothing else about the content"];
 const RECORD_KEYS = ["schema", "admission_id", "relying_party", "contract_ref", "action_ref", "presentation_ref", "chain_view",
   "revocations_seen", "decision", "reasons", "clause", "rules", "establishes", "does_not_establish", "signatures"];
 const HEX32 = /^[0-9a-f]{32}$/;
@@ -140,6 +150,26 @@ export function immuneProblems(record) {
   return ok ? [] : ["immune_inconsistent"];
 }
 
+// admission_verify_v0.content_problems: a v0.3 record's content block, its shape and the seven rules that tie its flags
+// to the decision and reasons. Digests and flags only; the content is never in the record.
+export function contentProblems(record) {
+  const c = get(record, "content"), reasons = get(record, "reasons"), d = get(record, "decision");
+  if (!isObj(c) || !same(Object.keys(c).sort(), [...CONTENT_KEYS].sort()) || c.rules !== CONTENT_RULES || !Array.isArray(reasons)) return ["malformed"];
+  const hexNull = (k) => c[k] === null || (typeof c[k] === "string" && HEX64.test(c[k]));
+  const v = c.verdict, sc = c.scope_conflict, ans = c.answered, chk = c.checked;
+  if (!(["input_sha256", "check_sha256", "rules_sha256", "scope_sha256"].every(hexNull) && (v === null || CONTENT_VERDICTS.includes(v))
+    && (sc === null || CONTENT_CONFLICTS.includes(sc)) && typeof ans === "boolean" && typeof chk === "boolean")) return ["malformed"];
+  const r = new Set(reasons);
+  const ok = (chk || (v === null && sc === null && r.has("content_unchecked")))                                  // 1 unchecked: no flags
+    && (!chk || ["input_sha256", "check_sha256", "rules_sha256"].every((k) => c[k] !== null))                 // 2 checked: three digests
+    && (ans || (v === null && sc === null && r.has("content_unchecked")))                                     // 3 no answer: no flags
+    && ((v === "instruction") === r.has("content_flagged"))                                                   // 4 the verdict flag
+    && ((sc !== null && sc !== "none") === r.has("content_scope_conflict"))                                   // 5 the scope flag
+    && (c.scope_sha256 !== null || sc === null)                                                               // 6 no scope, no conflict
+    && (d !== "admit" || !CONTENT_REASONS.some((x) => r.has(x)));                                             // 7 an admit carries none
+  return ok ? [] : ["malformed"];
+}
+
 const MAX_SAFE = 2 ** 53 - 1;
 const MAX_SAFE_BIG = BigInt(MAX_SAFE);
 const safeBig = (v) => typeof v === "bigint" && v <= MAX_SAFE_BIG && v >= -MAX_SAFE_BIG;
@@ -174,7 +204,8 @@ export function protoKey(x) {
 export function immuneBindingProblems(record, contract) {
   const terms = isObj(get(contract, "requirements")) ? get(contract.requirements, "immune") : undefined;
   if (!isObj(terms)) return [];
-  if (get(get(record, "rules"), "version") !== VERSION_IMMUNE || !isObj(get(record, "immune"))) return ["immune_missing"];
+  const ver = get(get(record, "rules"), "version");
+  if ((ver !== VERSION_IMMUNE && ver !== VERSION_CONTENT) || !isObj(get(record, "immune"))) return ["immune_missing"];
   const im = record.immune;
   if (get(im, "verdict") === "not_run") return get(record, "decision") === "refuse" ? [] : ["immune_not_run"];
   if (get(im, "terms_sha256") !== createHash("sha256").update(canonical(terms), "utf8").digest("hex")) return ["immune_terms_not_this_contracts"];
@@ -230,19 +261,21 @@ function verifyParsed(record, relyingKeyB64, contract, proto) {
   if (!isObj(get(record, "contract_ref"))) ref.add("malformed");
   const rules = isObj(get(record, "rules")) ? record.rules : {};
   const version = get(rules, "version");
-  const want = version === VERSION_IMMUNE ? [...RECORD_KEYS, "immune"] : RECORD_KEYS;
+  const want = version === VERSION_CONTENT ? [...RECORD_KEYS, "immune", "content"] : version === VERSION_IMMUNE ? [...RECORD_KEYS, "immune"] : RECORD_KEYS;
   if (keys.some((k) => !want.includes(k) && k !== "publication") || !want.every((k) => has(record, k))
     || (has(record, "publication") && record.publication !== "public")) ref.add("malformed");
   const rp = isObj(get(record, "relying_party")) ? record.relying_party : {};
   const dom = typeof get(rp, "domain") === "string" ? rp.domain : null;
   const reasons = get(record, "reasons");
-  const allowed = version === VERSION_IMMUNE ? REASONS_V02 : REASONS;
+  const allowed = version === VERSION_CONTENT ? REASONS_V03 : version === VERSION_IMMUNE ? REASONS_V02 : REASONS;
   if (!DECISIONS.includes(get(record, "decision")) || !Array.isArray(reasons) || !reasons.length || reasons.some((r) => !allowed.includes(r))) ref.add("malformed");
-  if (version !== null && version !== VERSION && version !== VERSION_IMMUNE) ref.add("malformed");
+  if (version !== null && version !== VERSION && version !== VERSION_IMMUNE && version !== VERSION_CONTENT) ref.add("malformed");
   if (has(rules, "version") && rules.version === null) ref.add("malformed");   // an explicit null is not v0
-  if (version === VERSION_IMMUNE && has(record, "immune")) for (const c of immuneProblems(record)) ref.add(c);
+  if ((version === VERSION_IMMUNE || version === VERSION_CONTENT) && has(record, "immune")) for (const c of immuneProblems(record)) ref.add(c);
+  if (version === VERSION_CONTENT && has(record, "content")) for (const c of contentProblems(record)) ref.add(c);
   const dne = get(record, "does_not_establish");
-  const stated = version === VERSION_IMMUNE ? DOES_NOT_ESTABLISH_V02 : version === VERSION ? DOES_NOT_ESTABLISH : DOES_NOT_ESTABLISH_V0;
+  const stated = version === VERSION_CONTENT ? DOES_NOT_ESTABLISH_V03 : version === VERSION_IMMUNE ? DOES_NOT_ESTABLISH_V02
+    : version === VERSION ? DOES_NOT_ESTABLISH : DOES_NOT_ESTABLISH_V0;
   if (!Array.isArray(dne)) ref.add("malformed");
   if (!sameStrings(dne, stated)) ref.add("does_not_establish_altered");
   if (!dom || hostOf(get(rp, "key_url")) !== dom.toLowerCase()) ref.add("signer_not_on_own_domain");

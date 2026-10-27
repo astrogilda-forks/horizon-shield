@@ -19,6 +19,8 @@ Revision 0.8, 2026-10-22: the file list in section 16 named two files at their r
 
 Revision 0.9, 2026-10-23: the reference added `unscoped_approvals_refused` when 4.1 rejected the contract, contrary to 4.2, which applies only when 4.1 accepts (NOTES.md N23). Differential fuzzing against two independent implementations that follow the text found it. The reference is fixed (settle_v1_16.py); on the 128 vectors its complete output is the same before and after. 2.3 and 9.2 now say plainly that every bound record is triaged (6.0) and keeps its disposition whatever sections 4 and 5 find, as the reference and the vectors already did. No rule, reason or vector changed; section 16 gives the new sha256 of settle_v1_16.py.
 
+Revision 0.10, 2026-10-27: section 17 is new, outside core v0: the one settle rule that reads `requirements.furui` (a2a-settlement-v1.17), which reads admissions (section 1), and the shape of `requirements.furui` it accepts. Core v0 does not change: the contract door of 4.1 gains no rule, the 128 vectors did not change, file for file, and an implementation of core v0 that does not read `requirements.furui` is unaffected. The two shape vectors and the rule's own are in `vectors_v1_17/`. The reference's contract door (contract_v0.py and contract_door_v0.mjs, 4.1) is unchanged, byte for byte; the shape is checked by requirements_furui_v0.py and its twin, which only contract builders (before signing), settle v1.17 and render_scope_v0 read. No core vector carries `requirements.furui`.
+
 ## 0. Why this document exists
 
 Until now the MUSUBI settle function was defined only by Python code (settle_v1.py to settle_v1_16.py, each layer importing the ones below it).
@@ -183,8 +185,7 @@ The reference reports a list of refusal codes alongside; those codes are informa
 14. `does_not_establish` is a non-empty list. Lowercased, its strings together contain: one of `runtime` or `enforce`; one of `judge`, `liability` or `fault`; `deviat`; and `legal`. Each of the four groups must be hit by at least one string.
 15. `signatures` is a list. For each object in it: its `domain` normalizes (rule 4) to a party's normalized domain, or the contract is refused. Its `signature` is verified (3.4) with that party's key over the contract signing bytes. False or unusable refuses the contract, even if the same party also has a good signature (WRITTEN BEHAVIOUR). `alg` is not read.
 16. Each party has at least one signature that verifies.
-
-Not read by the door, and not read anywhere in core v0: `expiry` (a wall clock), `agreed_at`, `requirements.recovery`, `selection_provenance`, `liability_boundary`, `settlement`. `lower_bound` is not checked here; section 5 checks it. `requirements.evidence` is read in section 11, `bond` and `parent_contract` in 4.3.
+Not read by the door, and not read anywhere in core v0: `expiry` (a wall clock), `agreed_at`, `requirements.recovery`, `selection_provenance`, `liability_boundary`, `settlement`. `requirements.furui` is not read in core v0 (section 17, outside it, reads it). `lower_bound` is not checked here; section 5 checks it. `requirements.evidence` is read in section 11, `bond` and `parent_contract` in 4.3.
 
 ### 4.2 Settleable terms
 
@@ -739,6 +740,30 @@ Synthetic vectors use keys named synthetic-principal, synthetic-contractor, synt
 The reference, as run for these vectors (first 16 hex digits of each file's sha256):
 settle_v1.py 0e51350331c8931c, settle_v1_1.py a2391a5db199bcda, settle_v1_10.py 34beeebaa1397059, settle_v1_11.py fb03687cbacd2713, settle_v1_12.py 40a8fbb82a8e7680, settle_v1_13.py eb02b3a6544b1bf1, settle_v1_14.py 7d0704fa060adafd, settle_v1_15.py a2be5de8ba60656e, settle_v1_16.py a7a1621224a63ef2, settle_v1_2.py 6c674fd54a1a5c89, settle_v1_3.py 17119bbc7802647f, settle_v1_4.py ef3779d05fc98e40, settle_v1_5.py f9b313566713cdc4, settle_v1_6.py 6752a748ed7b6e3b, settle_v1_7.py 878a3a3697775d3a, settle_v1_8.py fe61f67c1593c776, settle_v1_9.py 7a84302be1ec38a1, admission_verify_v0.py 4bc36aa7a34ec024, agreement_verify.py fd8c34ce8a11cf42 (agreement-v0/agreement_verify.py, the copy settle_v1_16.py imports), anchor_compose.py a661f673c05dbe6e, approval_v3.py e8dde985dbe6fbf4, clause_eval_v0.py fee48c3a66c28fe1, contract_v0.py 211a568783705e11, convergence_v0.py 65a267380fa623f5, corroboration_v0.py 62ae1d6c27a92228, independence_v0.py 50964883c27896de, recovery_verify.py fd4c93f015f6b495, spine_verify.py ad2076d49be6763e, terms_v0.py 6532d5c6160a3974, as of commit f23867e0, except settle_v1_16.py, which is its revision 0.9 copy (NOTES.md N23; ec332ecb387e9b56 at f23867e0). Python 3.14.7, cryptography 50.0.1. Two of these files changed after revision 0.4 without changing any output on the vectors (NOTES.md N22).
 The reference is called as a library, `settle_v1_16.settle_v1_16(contract, events, view, parent=..., nenrin_records=...)`. Its command line (`--settle`, `--event`, `--view`, `--nenrin`, `--parent`) first checks each view's strict form and runs fork choice, and for a view that does not pass prints why and writes no settlement.
+
+## 17. The content rule (a2a-settlement-v1.17), outside core v0
+
+This section is not part of core v0: the rule reads admissions, and a contract that requires admission is out of scope (section 1). It is written here so that an implementation that settles admissions can add the rule from the text, and its vectors are kept apart, in `vectors_v1_17/`.
+
+The reference is settle_v1_17.py, called as `settle_v1_17.settle_v1_17(contract, events, view, admissions=..., relying_keys=...)`. It is settle v1.16 plus one rule.
+
+When it applies. Only when `requirements.furui.rules_sha256` is 64 lowercase hex. For every other contract the output is v1.16's, byte for byte, schema line included (checked over the 128 vectors of section 16 and every admission fixture case).
+
+The shape it accepts. `requirements.furui`, when present and not null, is an object whose keys are only `rules_sha256` and `scope_text`. `rules_sha256`, when present and not null, is 64 lowercase hex; `scope_text`, when present and not null, is a non-empty string. Any other shape refuses the contract (code `bad_requirements_furui`, contract_not_verified). Vectors `v117_requirements_furui_inert` and `v117_requirements_furui_malformed`. The check is requirements_furui_v0.problems (requirements_furui_v0.mjs is its twin); settle_v1_17 runs it first, and it is read otherwise only by contract builders, before signing, and by render_scope_v0. Core v0 does not check this shape: the contract door of 4.1 is unchanged, and a core v0 implementation that does not read `requirements.furui` settles those two contracts as it settles any other.
+
+What it reads. The admissions v1.11 reads: an admission named by an accepted execution's `admission_ref`, for the action performed, that verifies under the relying party's key in hand and was not used by an earlier action. Executions are taken in event set order (8.1); within one, actions in `performed_actions` order. Each admission is read once.
+
+The rule, for each such action and admission:
+
+1. If v1.11 raised `executed_after_refusal` for the same execution, action and admission, nothing is added.
+2. Else, if the admission's `rules.version` is `"0.3"` and its `content.rules_sha256` is not the contract's `requirements.furui.rules_sha256`: deviation `content_rules_mismatch`.
+3. Else, if the admission's decision is `admit` and either its `rules.version` is not `"0.3"` (it carries no content check) or its `content.checked` is not `true`: deviation `content_not_checked`.
+
+Any deviation makes the verdict `deviation`, and the bond outcome follows as in 9.3. The output also carries `content_gate`: the rule, the named rules_sha256, the admissions read and the count of each code.
+
+What it does not do. It reads digests and two fields. It does not read the content, run a check, or recompute rules_sha256 from any file (furui_rules_id_v0.py says how that digest is made). That the door ran the check its admission names, or that the same check would answer the same way again, is not established.
+
+Vectors. `vectors_v1_17/vectors.json` indexes them, with `admission_versions` saying which admission versions the generator could write (version 0.3 only when admission_verify_v0 knows it). Each vector folder holds the core files of section 16 plus `admissions/aNN.json` (each with its anchor) and `relying_keys.json`; `expected.json` holds the core fields (9.1) and `content_gate_counts`. `run_reference.py` checks them after the core vectors.
 
 ## Appendix A. Codes
 

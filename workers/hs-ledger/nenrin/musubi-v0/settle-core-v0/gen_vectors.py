@@ -39,7 +39,7 @@ import settle_v1_2 as v12                    # noqa: E402
 import settle_v1_6 as v16                    # noqa: E402
 import settle_v1_16 as s16                   # noqa: E402
 from contract_v0 import canonical, parse_strict, contract_sha256, EXEC_SCHEMA   # noqa: E402
-from run_reference import core_fields, settle_dir                               # noqa: E402
+from run_reference import core_fields, settle_dir, settle_v1_17_dir, core_fields_v1_17                               # noqa: E402
 from cryptography.hazmat.primitives import serialization                        # noqa: E402
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey  # noqa: E402
 
@@ -982,6 +982,92 @@ synth("synth_finality_without_depth", "4.2",
       _C_FIN0, one(_C_FIN0))
 
 
+_FURUI_TEXT = "Answer questions about the synthetic price list; change nothing."
+_C_FUR = synth_contract(top={"requirements": {"evidence": "nenrin_required", "recovery": "n/a",
+                                              "furui": {"rules_sha256": "a1" * 32, "scope_text": _FURUI_TEXT}}},
+                        label="settle-core-v0 synthetic requirements.furui")
+# The shape of requirements.furui is section 17's, not core v0's: these two vectors are written into vectors_v1_17/ and
+# settled by settle_v1_17.py, so the 128 core vectors stay as they were (revision 0.10).
+SHAPE_V117 = []
+
+
+def shape_v117(vid, description, c, build, pad=DEPTH):
+    ch = Chain()
+    recs = build(ch)
+    ch.pad(pad)
+    SHAPE_V117.append({"id": vid, "description": description, "contract": c, "events": recs, "view": ch.view()})
+
+
+shape_v117("v117_requirements_furui_inert",
+           "requirements.furui names a content check (rules_sha256) and the task in the parties' words. Section 17 accepts the shape; with no "
+           "admission named, nothing is read: within_grant, as for the baseline. Revision 0.10.",
+           _C_FUR, one(_C_FUR))
+
+_C_FURX = synth_contract(sign=False, label="settle-core-v0 synthetic requirements.furui malformed",
+                         top={"requirements": {"evidence": "nenrin_required", "recovery": "n/a", "furui": {"rules_sha256": "A1" * 32}}})
+_C_FURX = _resigned(_C_FURX)
+shape_v117("v117_requirements_furui_malformed",
+           "requirements.furui.rules_sha256 is upper case hex. Section 17 refuses the contract: contract_not_verified. Revision 0.10.",
+           _C_FURX, one(_C_FURX))
+
+
+# ----------------------------------------------------------------------------------------------- a2a-settlement-v1.17
+# Outside core v0: the content rule reads admissions, and requirements.admission is out of scope (section 1). These
+# vectors carry admissions/aNN.json and relying_keys.json besides the core files, and are settled by settle_v1_17.py.
+# Admissions of version 0.3 are written only when admission_verify_v0 knows that version (A.VERSION_CONTENT).
+OUT_V117 = os.path.join(HERE, "vectors_v1_17")
+
+
+def v1_17_vectors():
+    import settle_v1_17 as s17
+    import admission_verify_v0 as A
+    know_03 = getattr(A, "VERSION_CONTENT", None) == s17.CONTENT_VERSION
+    out = []
+    for name, furui, build, want in s17.scenarios():
+        if name.startswith("v03_") and not know_03:
+            continue
+        w = s17.World(furui, label="settle v1.17 " + name)
+        events, adms = build(w)
+        out.append({"id": "v117_" + name, "contract": w.contract, "events": events, "view": w.view(), "admissions": adms,
+                    "relying_keys": w.keys, "want": want})
+    return out, know_03
+
+
+def write_v1_17():
+    import settle_v1_17 as s17
+    if os.path.isdir(OUT_V117):
+        shutil.rmtree(OUT_V117)
+    os.makedirs(OUT_V117)
+    vs, know_03 = v1_17_vectors()
+    vs = [dict(v, admissions=[], relying_keys={}, want=None) for v in SHAPE_V117] + vs
+    index = {"schema": "settle-v1.17-vectors", "spec": "SETTLE_CORE_v0.md section 17",
+             "reference": "settle_v1_17.settle_v1_17(contract, events, view, admissions=..., relying_keys=...) in musubi-v0 (a2a-settlement-v1.17)",
+             "admission_versions": ["0.1", "0.3"] if know_03 else ["0.1"], "vectors": []}
+    for v in vs:
+        d = os.path.join(OUT_V117, v["id"])
+        _emit(os.path.join(d, "contract.json"), v["contract"])
+        _emit(os.path.join(d, "view.json"), v["view"])
+        _emit(os.path.join(d, "relying_keys.json"), v["relying_keys"])
+        for i, e in enumerate(v["events"]):
+            _emit(os.path.join(d, "events", "e%02d.json" % i), e)
+        for i, a in enumerate(v["admissions"]):
+            _emit(os.path.join(d, "admissions", "a%02d.json" % i), a)
+        got = core_fields_v1_17(settle_v1_17_dir(d, s17.settle_v1_17, parse_strict))
+        assert v["want"] is None or got["deviation_codes"] == v["want"], (v["id"], got["deviation_codes"], v["want"])
+        with open(os.path.join(d, "expected.json"), "w", encoding="utf-8", newline="") as f:
+            f.write(json.dumps(got, indent=1, sort_keys=True) + "\n")
+        files = {}
+        for root, _, fs in os.walk(d):
+            for f in fs:
+                p = os.path.join(root, f)
+                files[os.path.relpath(p, d).replace(os.sep, "/")] = sha_file(p)
+        index["vectors"].append({"id": v["id"], "expect": {k: got[k] for k in ("verdict", "status", "deviation_codes", "content_gate_counts")},
+                                 "files": dict(sorted(files.items()))})
+    with open(os.path.join(OUT_V117, "vectors.json"), "w", encoding="utf-8", newline="") as f:
+        f.write(json.dumps(index, indent=1, ensure_ascii=False) + "\n")
+    print("%d v1.17 vectors written to %s (admission versions %s)" % (len(index["vectors"]), OUT_V117, ", ".join(index["admission_versions"])))
+
+
 def main():
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
@@ -1021,6 +1107,7 @@ def main():
         e = x["expect"]
         print("%-52s %-14s %-12s %s" % (x["id"], e["verdict"], e["status"], ",".join(e["deviation_codes"] + e["underspecified_reasons"]) or "-"))
     print("\n%d vectors written to %s" % (len(index["vectors"]), OUT))
+    write_v1_17()
 
 
 if __name__ == "__main__":

@@ -91,6 +91,23 @@ def settle_dir(vdir, settle, parse_strict):
     return settle(contract, events, view, parent=parent, nenrin_records=nenrin or None)
 
 
+def settle_v1_17_dir(vdir, settle, parse_strict):
+    rd_ = lambda p: parse_strict(open(p, encoding="utf-8").read())
+    contract, view = rd_(os.path.join(vdir, "contract.json")), rd_(os.path.join(vdir, "view.json"))
+    ed, ad = os.path.join(vdir, "events"), os.path.join(vdir, "admissions")
+    events = [rd_(os.path.join(ed, f)) for f in sorted(os.listdir(ed))] if os.path.isdir(ed) else []
+    adms = [rd_(os.path.join(ad, f)) for f in sorted(os.listdir(ad))] if os.path.isdir(ad) else []
+    keys = rd_(os.path.join(vdir, "relying_keys.json"))
+    return settle(contract, events, view, admissions=adms, relying_keys=keys)
+
+
+def core_fields_v1_17(s):
+    got = core_fields(s)
+    got["content_gate_counts"] = (s.get("content_gate") or {}).get("counts")
+    return got
+
+
+
 def main():
     settle, parse_strict = load_reference()
     idx = json.load(open(os.path.join(HERE, "vectors", "vectors.json"), encoding="utf-8"))
@@ -116,7 +133,42 @@ def main():
             ok += 1
             print("ok   %-44s %-14s %-12s %s" % (v["id"], got["verdict"], got["status"], ",".join(got["deviation_codes"] + got["underspecified_reasons"]) or "-"))
     print("\n%d/%d vectors agree with the reference (settle_v1_16.py at %s)" % (ok, n, REF))
-    return 0 if ok == n else 1
+    ok2, n2 = main_v1_17()
+    return 0 if ok == n and ok2 == n2 else 1
+
+
+def main_v1_17():
+    """The vectors of section 17 (a2a-settlement-v1.17, outside core v0), when vectors_v1_17/ is present."""
+    base = os.path.join(HERE, "vectors_v1_17")
+    if not os.path.isfile(os.path.join(base, "vectors.json")):
+        return 0, 0
+    sys.path.insert(0, REF)
+    import settle_v1_17
+    from contract_v0 import parse_strict
+    idx = json.load(open(os.path.join(base, "vectors.json"), encoding="utf-8"))
+    n = ok = 0
+    for v in idx["vectors"]:
+        n += 1
+        vdir = os.path.join(base, v["id"])
+        problems = []
+        for rel, want in sorted(v["files"].items()):
+            got = hashlib.sha256(open(os.path.join(vdir, rel), "rb").read()).hexdigest()
+            if got != want:
+                problems.append("file %s sha256 %s, index says %s" % (rel, got[:12], want[:12]))
+        exp = json.load(open(os.path.join(vdir, "expected.json"), encoding="utf-8"))
+        got = core_fields_v1_17(settle_v1_17_dir(vdir, settle_v1_17.settle_v1_17, parse_strict))
+        for k in sorted(set(exp) | set(got)):
+            if exp.get(k) != got.get(k):
+                problems.append("%s: expected %s, got %s" % (k, json.dumps(exp.get(k))[:200], json.dumps(got.get(k))[:200]))
+        if problems:
+            print("FAIL %s" % v["id"])
+            for p in problems:
+                print("     " + p)
+        else:
+            ok += 1
+            print("ok   %-44s %-14s %-12s %s" % (v["id"], got["verdict"], got["status"], ",".join(got["deviation_codes"]) or "-"))
+    print("\n%d/%d v1.17 vectors agree with the reference (settle_v1_17.py, section 17, admission versions %s)" % (ok, n, ", ".join(idx["admission_versions"])))
+    return ok, n
 
 
 if __name__ == "__main__":
