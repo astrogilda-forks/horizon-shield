@@ -1,0 +1,23 @@
+# 公開の評価用データの固定 (2026-10-24 取得、Hugging Face から読むだけ。repo には入れない)
+# 列: dataset | revision (commit sha) | license (その revision の README の license 欄) | file | sha256 | bytes
+deepset/prompt-injections | 4f61ecb038e9c3fb77e21034b22511b523772cdd | apache-2.0 | data/test-00000-of-00001-701d16158af87368.parquet | 39ac797cabc157eeed58435a08593b2952bb6cb16fc394a2d383f447cc7b246e | 10892
+deepset/prompt-injections | 4f61ecb038e9c3fb77e21034b22511b523772cdd | apache-2.0 | data/train-00000-of-00001-9564e8b05b4757ab.parquet | 2e10bc7ab30f542c97e4e83e2a5683000b5057d25ec10908784c631d44124c04 | 40323
+deepset/prompt-injections | 4f61ecb038e9c3fb77e21034b22511b523772cdd | apache-2.0 | README.md | d90b4518dfe06154deeec938243d1ec9119bdfbfd2105aee9cf1567999764b94 | 500
+Lakera/gandalf_ignore_instructions | 04737b65e90a6794ec227012e4a255a7def6344b | mit | data/test-00000-of-00001-bc92128b9288a6d1.parquet | 56b646d133335ebc535266bd55dbe1b5bee7caa4b95bf49d040684b9b5dd9972 | 7336
+Lakera/gandalf_ignore_instructions | 04737b65e90a6794ec227012e4a255a7def6344b | mit | data/train-00000-of-00001-ded53be747ff55cd.parquet | 5b6acf3e5a5998d21f8e1222bb45bbdec25a14408747b1cd63bebef4a75fa439 | 36715
+Lakera/gandalf_ignore_instructions | 04737b65e90a6794ec227012e4a255a7def6344b | mit | data/validation-00000-of-00001-94481a2a09ff2fff.parquet | f51ab3e3407a368845b0f57932cc745c09280429416d7507bd178a16326a79f6 | 7464
+Lakera/gandalf_ignore_instructions | 04737b65e90a6794ec227012e4a255a7def6344b | mit | README.md | 94e2abfab9caf8cb881098d16633334c2f63069e52440aaa94d7c150a8d8455f | 2828
+Lakera/mosscap_prompt_injection | b7e495ff63373ff7f7dabc1e9390cf62b5838570 | mit | data/test-00000-of-00001-06acab2d6a2bcf9f.parquet | 9311f64ca579c947e43ff64ad4996585c51e4dae8ae747342926cf0091160d21 | 7036282
+Lakera/mosscap_prompt_injection | b7e495ff63373ff7f7dabc1e9390cf62b5838570 | mit | data/train-00000-of-00001-07ae0ed17fa07cc1.parquet | a3c354dd1457c0125243ed107a4cc3eafdc09b2c60eb7ce3e3854a2fbb12a4b2 | 49606158
+Lakera/mosscap_prompt_injection | b7e495ff63373ff7f7dabc1e9390cf62b5838570 | mit | data/validation-00000-of-00001-e136a45438d15f16.parquet | d6c112992c73a1744f540cc3f6d51ecafabdf4023ec2188de6dde31ca7e52d24 | 7143330
+Lakera/mosscap_prompt_injection | b7e495ff63373ff7f7dabc1e9390cf62b5838570 | mit | README.md | f8774e6c4712fd55b1daa3f7b2f647bbf9316dbbc81ec3a9a7050d90eb6e3d45 | 3697
+reshabhs/SPML_Chatbot_Prompt_Injection | 02ce8084e979bc7d4c24ee35d22ecb7f2db96ff5 | mit | README.md | 8f583aa131c37be5e2a7f454bb63495bdba38c7011c75b8f8fca2151891e0327 | 6091
+reshabhs/SPML_Chatbot_Prompt_Injection | 02ce8084e979bc7d4c24ee35d22ecb7f2db96ff5 | mit | spml_prompt_injection.csv | 4ca6590cd8ec10832fcebee5e243acb32be5c3e79b7a260f8638eed738c784f8 | 29051327
+jackhhao/jailbreak-classification | 2f2ceeb39658696fd3f462403562b6eea5306287 | apache-2.0 | default/jailbreak_dataset_full.csv | 79a7b90b0abe00e3586cc5048353c3236543cca228a1ee261fe3b57a7cb7e29f | 2143822
+jackhhao/jailbreak-classification | 2f2ceeb39658696fd3f462403562b6eea5306287 | apache-2.0 | default/jailbreak_dataset_test.csv | a546ce540973d8f5ef87ce3be4bd21ee5923154b9dda86eba5a12c7fa00829da | 453350
+jackhhao/jailbreak-classification | 2f2ceeb39658696fd3f462403562b6eea5306287 | apache-2.0 | default/jailbreak_dataset_train.csv | a5cb24b0865ef37a248d6d82bd21026ce39c89f11abae5d26d4ae58aad3ffe40 | 1690484
+jackhhao/jailbreak-classification | 2f2ceeb39658696fd3f462403562b6eea5306287 | apache-2.0 | README.md | 4698cabf6cef60b56885cdd49c6a4386909c16715e89a06ba1e80ebef8fc93be | 988
+
+# 注: deepset/prompt-injections の README は、上の license: apache-2.0 の他に dataset_info の中に license: cc-by-4.0 の行も持つ (どちらが正かは上げた人に確かめていない)。
+# 注: license は上げた人の書いた値。中の文の元の出どころ (ゲームの利用者の投稿、jailbreak_llms、OpenOrca、GPTeacher ほか) の権利までは確かめていない。
+# 取り方: https://huggingface.co/api/datasets/<id> で sha と siblings を読み、https://huggingface.co/datasets/<id>/resolve/<sha>/<file> を curl で取った。jackhhao は default/ の 3 つを取り、使ったのは default/jailbreak_dataset_full.csv だけ。
