@@ -27,6 +27,9 @@
 # 2026-10-21: musubi-v0 の免疫の固定試料(fixtures/admission_immune/*.json と Python パッケージの写し)は、固定の種から作った
 # 試験用の公開鍵(Ed25519、持ち主・通報者・証人の reporter_key / witness_key / public_key_ed25519_b64 / key)を持つ。
 # 秘密鍵は種から生成時にメモリ内だけで作り、ファイルには書かない。generic-api-key が名前の key に反応するので、その 2 つのファイルだけ許す。
+# 2026-10-27: musubi-v0 の settle v1.17 の vectors(vectors_v1_17/vectors.json と Python パッケージの写し)は、各ベクトルの
+# relying_keys.json(公開鍵の一覧の file)のバイトの sha256 を "relying_keys.json" の欄に持つ。file の digest で、鍵でも秘密でもない。
+# generic-api-key が名前の keys に反応する(3eba279d で 26 件)ので、その欄の形だけ許す。
 title = "horizon-shield gitleaks config"
 
 [extend]
@@ -43,6 +46,7 @@ regexes = [
   "fqrEpRuYScHz52eeiuAWAFEeJB3T7VtZJlducNIhzZM=",
   '''key_thumbprint"?\s*:\s*"[A-Za-z0-9_-]{43}"''',
   '''"witness_key":"[0-9a-f]{64}"''',
+  '''"relying_keys\.json":\s*"[0-9a-f]{64}"''',
 ]
 paths = [
   '''workers/hs-ledger/nenrin/task-delegation-bind-v0/t4_fixture\.json''',
