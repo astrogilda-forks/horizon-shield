@@ -1,0 +1,27 @@
+# TSUGI live draw 2026-10-27: the first draw with a quorum of two, result quorum_met (tsugi-live-draw-v1)
+
+**Status:** a TSUGI chain whose verify record carries a v2.4 draw. Anchored here so the chain cannot be rewritten after the fact. Cited, never edited.
+
+**File:** workers/hs-ledger/nenrin/recovery-v0/live_draw_20261027/chain.json at commit b28a7280 of github.com/ogasurfproject-jpg/horizon-shield, sha256 6e5d7ed2e9b4391fb92e66de7ac8a7efee8588435d88213d76f16711f771621c
+
+**Draw:** subject 5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9, pool f8df2aeb25260df7605837467f944e2defa93cc3c2c353f1759d4e7168e82799, k 2, committed in ledger entry 173, anchored at Bitcoin block 973320, beacon block 973321 (0000000000000000000159071688e83f3b6933cc2e1b7e1bfe383edf4eee1411).
+
+**Result:** drawn qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com, api.babyblueviper.com; answered qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com, api.babyblueviper.com; agreeing qunling-001-d7gwxqdou24c9dad4.service.tcloudbase.com, api.babyblueviper.com; disagreeing none; refusal codes none (the JavaScript and Python verifiers agree).
+
+**Records (schema, recorded_at, record_sha256):**
+
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z bb4187e8bdd6e7075f129f11628ce44bbbe64da57077e2208783f4408e38fd4e
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z d375fd23012b934f413995c37296685e2e43995b9093660f263bc22efb77bebc
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z b212d31fc8f8259194de2d61761eafd7d21b9e9c973ea5155b3733a02f790d03
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z 477d1bbc0ccb0241c777fc47c46e3734359dfb44aab6717a2268740531c0c293
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z 9fe75f9f2e172ad9656f45f7cda6837f7574e6d021a1c6f23afa676553fba673
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z 356999fdb89006bafc6ee978fad7cbd5871855e13aad71593d08992729bf4e1f
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z 22f1a1f191ef2c219239094d0246112e3b939e92112d57184c572975a33994c4
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z b88acaba2acd1b11cd5e2239724f5876db13022917ac471f174586ad3bd0ab52
+- nenrin-drift-record-v1 2026-10-27T00:00:25Z 71d476b638c6fc1cb174c6c94b1986562d5ef6885b76a2bffad63f59358271e7
+- nenrin-repair-proposal-v1 2026-10-27T00:00:25Z 42e3b45d3d12cefaa87c86115f5bbcf7c2a8c0a7a80fa131a8cb45465e4784ac
+- nenrin-authorization-v1 2026-10-27T00:03:37Z e4dff6139b68f9ae18012a4b7959d98bd60553322a5d46f45e7966f0a7774d47
+- nenrin-repair-execution-v1 2026-10-27T00:32:22Z 5cd672d280e422d21900ba06c7e6d0a886cf541bcc69e6b629601c1e2a51dcd9
+- nenrin-verify-record-v1 2026-10-27T06:01:20Z b343549fbb1d2854d8559df07ba5fdbb6ea5badd6459de344d67df2501d2863c
+
+**Establishes:** that these record hashes and this chain file existed no later than the block this entry is anchored to. **Does not establish:** that a repair was needed (the execution is a declared drill), or that any witness is independent or truthful beyond its signature.

@@ -1,0 +1,12 @@
+{
+  "n": 176,
+  "work": "FURUI 0.2.8 on 120 in-house business sentences: result 79b5d30758a32abf… anchored",
+  "claim_sha256": "a70b43ef5e6a075329004726d4872b4d31f368917c925c93dbe7113515a0e478",
+  "record_canonical": "# FURUI 0.2.8 on 120 English business sentences: the result, anchored\n\n**Status:** a result record for a check outside blind-02. 120 English business sentences (estimates, invoices, contracts, requests, delegations and notices, 20 of each) were written in-house on 2026-10-26 for this check and frozen before any narrowed rules were written. They are not drawn and not blind, and they are not published. FURUI 0.2.8 (the versions, prompt and scorer pinned for blind-02) was run over them once. This record names digests only.\n\n    pin                     ledger entry 165, claim 51e06132d7c25291b7792865dc9aa4ee244599b7b77a3a48668091644e8aad64 (BLIND02_PIN.json sha256 5cf6fe65a0c203a8fb52e13c59d4e5ce2f3ec1cb04be2757e04df39db02d0f8d)\n    business sentences      sha256 6256ab78854e0d190f0214c90dd71386149f185665a4feb3eeffc67717ab3566 (kept in-house)\n    freeze note             BIZ_FREEZE.txt sha256 8c6175fbef6e699fb772410c943d7c79b6a0bd0b606a4f3d3d17d4160a7d717d\n    sentence file maker     make_business_control.py sha256 ebf91c0e1829ee86e8a4ed50a59a398e3ced12a2ab335f928fcdd94648d44d50\n    result                  BIZ_v028.json sha256 79b5d30758a32abf7a8ac06479bbe11d819e3675e76fe514159b1d051d15aa08\n    rule flags per sentence flags_rules.jsonl sha256 1b166e10ad0ea03fd43196eb5ed8b3553dd493d7c9150593b739d528d9fee0a5 (kept in-house)\n    raw model answers       sha256 f86f2991d0aa5637e04949bcd098c3c92fb2076ed88226f46be07a327309584e (stage 1), 7a978ab3d8f1d3e244eb2f767358d95a68cc2c0f08d4dcaf5a6547e410f1183c (stage 2) (kept in-house)\n    runner                  biz_v028.py sha256 3f19559c9c0d855e2ba1cd1c7622bd2991053c23e1834fbd3d07b8117fe39ebe\n\n**The SHA-256 of this document is anchored to the JIDEC ledger and stamped to Bitcoin. After anchoring, this record cannot be altered. Corrections are later entries that cite this one.**\n",
+  "schema": "v0-plain",
+  "created_at": "2026-10-27T06:18:25.941Z",
+  "ots_status": "confirmed",
+  "bitcoin_block": 973358,
+  "block_time": "2026-10-27 06:35 UTC",
+  "stamped_at": "2026-10-27T08:04:31.006Z"
+}
