@@ -1,0 +1,9 @@
+{
+  "public_key_ed25519_b64": "dQKAsTR3iPKsYi2Qw00J7oPiflhqtpZcMtXCnICfp3k=",
+  "alg": "ed25519",
+  "domain": "the-horizons-innovation.com",
+  "key_url": "https://shield.the-horizons-innovation.com/keys/shiken-madoka-approver.json",
+  "role": "approver of the SHIKEN v1 contracts for Madoka: Madoka herself (signs a2a-approval-v2 as approver \"madoka\" and declines)",
+  "operator": "The HORIZONs Co., Ltd.",
+  "note": "the principal (The HORIZONs Co., Ltd., signed by its representative TOshi), the contractor (SHIKEN for Madoka), the approver (Madoka) and the relying party (SHIKEN's door) are all The HORIZONs Co., Ltd. and its officers; this contract binds an agent the company grants to its officer Madoka and is not an arm's-length agreement"
+}

@@ -1,0 +1,9 @@
+{
+  "public_key_ed25519_b64": "bsEtSasb7o3xlV+L0PeCwYtiN/ymB4Fbmu4KPq8hhxk=",
+  "alg": "ed25519",
+  "domain": "shield.the-horizons-innovation.com",
+  "key_url": "https://shield.the-horizons-innovation.com/keys/shiken-madoka-door.json",
+  "role": "the door of Madoka's SHIKEN, the relying party in front of every tool SHIKEN uses (signs a2a-admission-v0)",
+  "operator": "The HORIZONs Co., Ltd.",
+  "note": "the principal (The HORIZONs Co., Ltd., signed by its representative TOshi), the contractor (SHIKEN for Madoka), the approver (Madoka) and the relying party (SHIKEN's door) are all The HORIZONs Co., Ltd. and its officers; this contract binds an agent the company grants to its officer Madoka and is not an arm's-length agreement"
+}
