@@ -16,3 +16,14 @@ updates:
           - "*"
     commit-message:
       prefix: "ci"
+  # agent-evidence-vectors, the corpus the RFC 8785 conduct-walk check runs, is pinned in requirements/agent-evidence-vectors.txt
+  # so a new release arrives as a pull request that CI tests, not as a stale number inside a workflow line.
+  - package-ecosystem: pip
+    directory: "/requirements"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: "ci"

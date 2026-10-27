@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: install the pinned corpus and the selftest dependencies
-        run: python -m pip install --disable-pip-version-check agent-evidence-vectors==0.20.0 cryptography==46.0.7 rfc8785==0.1.4
+        run: python -m pip install --disable-pip-version-check -r requirements/agent-evidence-vectors.txt cryptography==46.0.7 rfc8785==0.1.4
       - name: rfc8785 vectors
         run: python workers/hs-ledger/nenrin/a2a-conduct-walk/rfc8785_corpus_check.py
       - name: selftests (walk, helpers, MCP server, task bind)
